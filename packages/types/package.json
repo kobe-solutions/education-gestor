@@ -1,0 +1,10 @@
+{
+  "name": "@education-gestor/types",
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
