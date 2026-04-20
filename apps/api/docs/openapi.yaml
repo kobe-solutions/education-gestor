@@ -1,0 +1,288 @@
+openapi: 3.0.3
+info:
+  title: Education Gestor API
+  version: 1.0.0
+  description: |
+    API REST para gestão escolar multi-role e multi-tenant.
+    Roles atuais no JWT: admin, gestor, professor.
+servers:
+  - url: http://localhost:3333
+    description: Local development
+tags:
+  - name: Health
+  - name: Auth
+  - name: Schools
+  - name: Teachers
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check da API
+      responses:
+        '200':
+          description: API online
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                required: [status]
+
+  /sessions:
+    post:
+      tags: [Auth]
+      summary: Login único (admin, gestor, professor)
+      description: |
+        Autentica pelo par email/senha e retorna JWT.
+        O token contém: userId, schoolId, role.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+            examples:
+              admin:
+                value:
+                  email: admin@education.com
+                  password: change-me-now
+      responses:
+        '200':
+          description: Login realizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Invalid credentials
+
+  /schools:
+    post:
+      tags: [Schools]
+      summary: Criar usuário gestor (school)
+      description: Cria uma school com role padrão gestor.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSchoolBody'
+      responses:
+        '201':
+          description: Gestor criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSchoolResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: School já existe por slug ou email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: School already exists with this slug or email
+
+  /schools/users/management:
+    post:
+      tags: [Schools]
+      summary: Alias para criação de usuário gestor
+      description: Mesmo comportamento de POST /schools.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSchoolBody'
+      responses:
+        '201':
+          description: Gestor criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSchoolResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: School já existe por slug ou email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /teachers:
+    post:
+      tags: [Teachers]
+      summary: Criar professor
+      description: |
+        Endpoint protegido por JWT + tenant + RBAC.
+        Apenas roles admin e gestor podem acessar.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeacherBody'
+      responses:
+        '201':
+          description: Professor criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTeacherResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Unauthorized
+        '403':
+          description: Role sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Forbidden
+        '409':
+          description: Professor já existe com esse email na mesma school
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Teacher already exists with this email
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    ValidationError:
+      description: Erro de validação de entrada
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+  schemas:
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required: [email, password]
+    SessionResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+      required: [accessToken]
+    CreateSchoolBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        slug:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required: [name, slug, email, password]
+    CreateSchoolResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [gestor]
+      required: [id, name, slug, email, role]
+    CreateTeacherBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+      required: [name, email, password]
+    CreateTeacherResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [gestor, professor]
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, schoolId, name, email, role, createdAt]
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Validation error
+        issues:
+          type: array
+          items:
+            type: object
+      required: [message, issues]

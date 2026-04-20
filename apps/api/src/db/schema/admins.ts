@@ -1,12 +1,11 @@
-import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
-export const schools = pgTable('schools', {
+export const admins = pgTable('admins', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  slug: text('slug').notNull().unique(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
-  role: text('role').notNull().default('gestor'),
+  role: text('role').notNull().default('admin'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

@@ -6,7 +6,8 @@
     "start": "node dist/server.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "admin:provision": "tsx src/scripts/provision-admin.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.0",

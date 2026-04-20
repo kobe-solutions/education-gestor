@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1776180083780,
+      "tag": "0000_fancy_mephisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776437419463,
+      "tag": "0001_superb_blur",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1776698937303,
+      "tag": "0002_special_marvel_boy",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776717089242,
+      "tag": "0003_dizzy_the_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776720137085,
+      "tag": "0004_first_lila_cheney",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776721164156,
+      "tag": "0005_secret_vermin",
+      "breakpoints": true
+    }
+  ]
+}

@@ -6,7 +6,8 @@
     "build": "pnpm -r build",
     "db:generate": "pnpm --filter api db:generate",
     "db:migrate": "pnpm --filter api db:migrate",
-    "db:studio": "pnpm --filter api db:studio"
+    "db:studio": "pnpm --filter api db:studio",
+    "admin:provision": "pnpm --filter api admin:provision"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

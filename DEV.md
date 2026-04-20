@@ -68,12 +68,25 @@ pnpm --filter web dev
 # Abrir o Drizzle Studio (visualizador do banco)
 pnpm db:studio
 
+# Provisionar admin inicial (sem endpoint público)
+pnpm admin:provision --name="Admin Root" --email="admin@education.com" --password="change-me-now"
+
 # Gerar nova migration após alterar o schema
 pnpm db:generate
 
 # Aplicar migrations pendentes
 pnpm db:migrate
 ```
+
+## Documentação da API
+
+- Especificação oficial (fonte de verdade): `apps/api/docs/openapi.yaml`
+- Guia rápido para o time: `apps/api/docs/endpoints.md`
+
+Regra de manutenção:
+- toda rota nova ou alterada deve atualizar **os dois arquivos** (`openapi.yaml` e `endpoints.md`) no mesmo PR;
+- toda mudança de autenticação/autorização (JWT, roles, middlewares) deve refletir na matriz RBAC da documentação;
+- exemplos de request/response devem ser atualizados junto com mudanças de contrato.
 
 ---
 
@@ -147,6 +160,29 @@ Todo request autenticado carrega `schoolId` no JWT:
 ```
 
 O middleware `tenant.ts` injeta o `schoolId` no contexto do request. Os repositories **sempre** devem filtrar por `schoolId` — nunca fazer queries sem esse filtro.
+
+---
+
+## Provisionamento de Admin
+
+Por segurança, a API **não expõe** endpoint público para criação de `admin`.
+
+Crie administradores via script operacional:
+
+```bash
+pnpm admin:provision --name="Admin Root" --email="admin@education.com" --password="change-me-now"
+```
+
+Também é possível usar variáveis de ambiente:
+
+```bash
+ADMIN_NAME="Admin Root" ADMIN_EMAIL="admin@education.com" ADMIN_PASSWORD="change-me-now" pnpm admin:provision
+```
+
+Boas práticas:
+- execute somente em ambiente controlado (bootstrap, CI/CD, ou shell restrito);
+- não compartilhe senha em histórico de terminal;
+- prefira injeção de secrets pela plataforma de deploy.
 
 ---
 

@@ -1,0 +1,1 @@
+ALTER TABLE "schools" ADD COLUMN "role" text DEFAULT 'gestor' NOT NULL;
