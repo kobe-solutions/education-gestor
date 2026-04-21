@@ -13,6 +13,8 @@ tags:
   - name: Auth
   - name: Schools
   - name: Teachers
+  - name: Classes
+  - name: Subjects
 paths:
   /health:
     get:
@@ -172,6 +174,97 @@ paths:
               example:
                 message: Teacher already exists with this email
 
+  /school-classes:
+    post:
+      tags: [Classes]
+      summary: Criar turma (school class)
+      description: Endpoint protegido por JWT + tenant + RBAC. Apenas roles `admin` e `gestor` podem acessar.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSchoolClassBody'
+      responses:
+        '201':
+          description: Turma criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSchoolClassResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Unauthorized
+        '403':
+          description: Role sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Forbidden
+
+  /subjects:
+    post:
+      tags: [Subjects]
+      summary: Criar disciplina (subject)
+      description: Endpoint protegido por JWT + tenant + RBAC. Apenas roles `admin` e `gestor` podem acessar.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubjectBody'
+      responses:
+        '201':
+          description: Disciplina criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSubjectResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Unauthorized
+        '403':
+          description: Role sem permissão
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              example:
+                message: Forbidden
+        '409':
+          description: Conflito (nome ou código já existe)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+              examples:
+                nameConflict:
+                  value:
+                    message: Subject already exists with this name
+                codeConflict:
+                  value:
+                    message: Subject already exists with this code
+
 components:
   securitySchemes:
     bearerAuth:
@@ -286,3 +379,73 @@ components:
           items:
             type: object
       required: [message, issues]
+    CreateSchoolClassBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        shift:
+          type: string
+        grade:
+          type: string
+        termTime:
+          type: string
+      required: [name, shift, grade, termTime]
+    CreateSchoolClassResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        grade:
+          type: string
+        shift:
+          type: string
+        termTime:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, schoolId, name, grade, shift, termTime, createdAt]
+    CreateSubjectBody:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+        code:
+          type: string
+          minLength: 1
+          nullable: true
+        weeklyHours:
+          type: integer
+          format: int32
+          minimum: 1
+      required: [name, weeklyHours]
+    CreateSubjectResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        schoolId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+          nullable: true
+        weeklyHours:
+          type: integer
+          format: int32
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, schoolId, name, weeklyHours, createdAt]

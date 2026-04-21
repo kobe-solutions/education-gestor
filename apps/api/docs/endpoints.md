@@ -27,6 +27,9 @@ Este documento complementa o OpenAPI em `apps/api/docs/openapi.yaml` com uma vis
 
 Observação: `POST /teachers` aplica `authorizeRoles(['admin', 'gestor'])`.
 
+| `POST /school-classes` | Sim | Sim | Não | Sim (Bearer JWT) |
+| `POST /subjects` | Sim | Sim | Não | Sim (Bearer JWT) |
+
 ## Endpoints
 
 ### GET /health
@@ -139,3 +142,66 @@ Erros:
 - `401` Unauthorized
 - `403` Forbidden
 - `409` Teacher already exists with this email
+
+## POST /school-classes
+
+Cria uma turma na `school` do token autenticado.
+
+Request:
+```json
+{
+  "name": "Turma 101",
+  "shift": "Matutino",
+  "grade": "1º Ano",
+  "termTime": "2026-1"
+}
+```
+
+Response `201`:
+```json
+{
+  "id": "uuid",
+  "schoolId": "uuid",
+  "name": "Turma 101",
+  "grade": "1º Ano",
+  "shift": "Matutino",
+  "termTime": "2026-1",
+  "createdAt": "2026-04-20T12:00:00.000Z"
+}
+```
+
+Erros:
+- `400` Validation error
+- `401` Unauthorized
+- `403` Forbidden
+
+## POST /subjects
+
+Cria uma disciplina na `school` do token autenticado.
+
+Request:
+```json
+{
+  "name": "Matemática",
+  "code": "MAT101",
+  "weeklyHours": 4
+}
+```
+
+Response `201`:
+```json
+{
+  "id": "uuid",
+  "schoolId": "uuid",
+  "name": "Matemática",
+  "code": "MAT101",
+  "weeklyHours": 4,
+  "createdAt": "2026-04-20T12:00:00.000Z"
+}
+```
+
+Erros:
+- `400` Validation error
+- `401` Unauthorized
+- `403` Forbidden
+- `409` Subject already exists with this name | Subject already exists with this code
