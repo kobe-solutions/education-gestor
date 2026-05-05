@@ -3,6 +3,10 @@ import {
   createTeacherRepository,
   findTeacherByEmailRepository,
   findTeacherForAuthRepository,
+  findAllTeachersRepository,
+  findTeacherByIdRepository,
+  updateTeacherRepository,
+  deleteTeacherRepository,
 } from './teachers.repository'
 
 type CreateTeacherServiceInput = {
@@ -58,6 +62,34 @@ export async function createTeacherService(input: CreateTeacherServiceInput) {
   })
 
   return teacher
+}
+
+export async function listTeachersService(schoolId: string) {
+  return findAllTeachersRepository(schoolId)
+}
+
+export async function getTeacherService(schoolId: string, id: string) {
+  const teacher = await findTeacherByIdRepository(schoolId, id)
+  if (!teacher) throw new Error('Teacher not found')
+  return teacher
+}
+
+export async function updateTeacherService(
+  schoolId: string,
+  id: string,
+  input: { name?: string; email?: string },
+) {
+  const teacher = await findTeacherByIdRepository(schoolId, id)
+  if (!teacher) throw new Error('Teacher not found')
+  const updated = await updateTeacherRepository(schoolId, id, input)
+  if (!updated) throw new Error('Teacher not found')
+  return updated
+}
+
+export async function deleteTeacherService(schoolId: string, id: string) {
+  const teacher = await findTeacherByIdRepository(schoolId, id)
+  if (!teacher) throw new Error('Teacher not found')
+  await deleteTeacherRepository(schoolId, id)
 }
 
 export async function authenticateTeacherService(input: AuthenticateTeacherServiceInput) {

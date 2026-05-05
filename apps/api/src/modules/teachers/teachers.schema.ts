@@ -23,5 +23,11 @@ export const createTeacherResponseSchema = z.object({
   createdAt: z.date(),
 })
 
+export const updateTeacherBodySchema = z.object({
+  name: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+})
+
 export type CreateTeacherBody = z.infer<typeof createTeacherBodySchema>
 export type LoginTeacherBody = z.infer<typeof loginTeacherBodySchema>
+export type UpdateTeacherBody = z.infer<typeof updateTeacherBodySchema>

@@ -60,6 +60,65 @@ export async function findTeacherForAuthRepository(schoolId: string, email: stri
   return teacher
 }
 
+export async function findAllTeachersRepository(schoolId: string) {
+  return db
+    .select({
+      id: teachers.id,
+      schoolId: teachers.schoolId,
+      name: teachers.name,
+      email: teachers.email,
+      role: teachers.role,
+      createdAt: teachers.createdAt,
+      updatedAt: teachers.updatedAt,
+    })
+    .from(teachers)
+    .where(eq(teachers.schoolId, schoolId))
+}
+
+export async function findTeacherByIdRepository(schoolId: string, id: string) {
+  const [teacher] = await db
+    .select({
+      id: teachers.id,
+      schoolId: teachers.schoolId,
+      name: teachers.name,
+      email: teachers.email,
+      role: teachers.role,
+      createdAt: teachers.createdAt,
+      updatedAt: teachers.updatedAt,
+    })
+    .from(teachers)
+    .where(and(eq(teachers.schoolId, schoolId), eq(teachers.id, id)))
+    .limit(1)
+
+  return teacher
+}
+
+export async function updateTeacherRepository(
+  schoolId: string,
+  id: string,
+  input: { name?: string; email?: string },
+) {
+  const [teacher] = await db
+    .update(teachers)
+    .set({ ...input, updatedAt: new Date() })
+    .where(and(eq(teachers.schoolId, schoolId), eq(teachers.id, id)))
+    .returning({
+      id: teachers.id,
+      schoolId: teachers.schoolId,
+      name: teachers.name,
+      email: teachers.email,
+      role: teachers.role,
+      createdAt: teachers.createdAt,
+      updatedAt: teachers.updatedAt,
+    })
+
+  return teacher
+}
+
+export async function deleteTeacherRepository(schoolId: string, id: string) {
+  await db.delete(teachers).where(and(eq(teachers.schoolId, schoolId), eq(teachers.id, id)))
+}
+
 export async function findTeachersByEmailRepository(email: string) {
   const teachersFound = await db
     .select({

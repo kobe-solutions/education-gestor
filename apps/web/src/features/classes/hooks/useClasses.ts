@@ -1,0 +1,117 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { api } from '../../../lib/api'
+import type { SchoolClass, AcademicPeriod } from '@education-gestor/types'
+
+export function useClasses() {
+  return useQuery({
+    queryKey: ['classes'],
+    queryFn: async () => {
+      const res = await api.get<SchoolClass[]>('/school-classes')
+      return res.data
+    },
+  })
+}
+
+export function useClass(id: string) {
+  return useQuery({
+    queryKey: ['classes', id],
+    queryFn: async () => {
+      const res = await api.get<SchoolClass>(`/school-classes/${id}`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
+
+interface ClassInput {
+  name: string
+  grade: string
+  shift: string
+  termTime: string
+}
+
+export function useCreateClass() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: ClassInput) => {
+      const res = await api.post<SchoolClass>('/school-classes', data)
+      return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['classes'] }),
+  })
+}
+
+export function useUpdateClass(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: Partial<ClassInput>) => {
+      const res = await api.put<SchoolClass>(`/school-classes/${id}`, data)
+      return res.data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['classes'] })
+      qc.invalidateQueries({ queryKey: ['classes', id] })
+    },
+  })
+}
+
+export function useDeleteClass() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/school-classes/${id}`)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['classes'] }),
+  })
+}
+
+export function useAddStudentToClass(classId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (studentId: string) => {
+      await api.post(`/school-classes/${classId}/students`, { id: studentId })
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['classes', classId] }),
+  })
+}
+
+export function useRemoveStudentFromClass(classId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (studentId: string) => {
+      await api.delete(`/school-classes/${classId}/students/${studentId}`)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['classes', classId] }),
+  })
+}
+
+export function useAddTeacherToClass(classId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (teacherId: string) => {
+      await api.post(`/school-classes/${classId}/teachers`, { id: teacherId })
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['classes', classId] }),
+  })
+}
+
+export function useAcademicPeriods() {
+  return useQuery({
+    queryKey: ['academic-periods'],
+    queryFn: async () => {
+      const res = await api.get<AcademicPeriod[]>('/academic-periods')
+      return res.data
+    },
+  })
+}
+
+export function useCreateAcademicPeriod() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: { name: string; startDate: string; endDate: string }) => {
+      const res = await api.post<AcademicPeriod>('/academic-periods', data)
+      return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['academic-periods'] }),
+  })
+}

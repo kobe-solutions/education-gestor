@@ -1,5 +1,6 @@
 import { scryptSync, timingSafeEqual } from 'node:crypto'
 import { findAdminByEmailRepository } from '../admins/admins.repository'
+import { findSecretariaByEmailRepository } from '../secretarias/secretarias.repository'
 import { findSchoolByEmailRepository } from '../schools/schools.repository'
 import { findTeachersByEmailRepository } from '../teachers/teachers.repository'
 
@@ -34,6 +35,15 @@ export async function authenticateService(input: AuthenticateServiceInput) {
       userId: admin.id,
       schoolId: admin.id,
       role: 'admin' as const,
+    }
+  }
+
+  const secretaria = await findSecretariaByEmailRepository(normalizedEmail)
+  if (secretaria && verifyPassword(input.password, secretaria.passwordHash)) {
+    return {
+      userId: secretaria.id,
+      secretariaId: secretaria.id,
+      role: 'secretaria' as const,
     }
   }
 

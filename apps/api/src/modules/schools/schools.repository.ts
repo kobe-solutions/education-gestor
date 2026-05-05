@@ -44,6 +44,16 @@ export async function findSchoolByEmailRepository(email: string) {
   return school
 }
 
+export async function findSchoolByIdRepository(id: string) {
+  const [school] = await db
+    .select({ id: schools.id, name: schools.name, slug: schools.slug, email: schools.email })
+    .from(schools)
+    .where(eq(schools.id, id))
+    .limit(1)
+
+  return school
+}
+
 export async function findSchoolBySlugOrEmailRepository(slug: string, email: string) {
   const [school] = await db
     .select({

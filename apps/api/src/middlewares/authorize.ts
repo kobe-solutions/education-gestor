@@ -1,26 +1,29 @@
 import type { FastifyReply, FastifyRequest, preHandlerHookHandler } from 'fastify'
 
-type JwtPayload = {
+export type AdminPayload = {
+  userId: string
+  role: 'admin'
+}
+
+export type SecretariaPayload = {
+  userId: string
+  secretariaId: string
+  role: 'secretaria'
+}
+
+export type TenantPayload = {
   userId: string
   schoolId: string
-  role: string
+  role: 'gestor' | 'professor'
 }
 
-function normalizeRole(role: string) {
-  if (role === 'gestao') {
-    return 'gestor'
-  }
+export type JwtPayload = AdminPayload | SecretariaPayload | TenantPayload
 
-  return role
-}
-
-export function authorizeRoles(allowedRoles: string[]): preHandlerHookHandler {
+export function authorizeRoles(allowedRoles: JwtPayload['role'][]): preHandlerHookHandler {
   return async function authorize(request: FastifyRequest, reply: FastifyReply) {
     const payload = request.user as JwtPayload
-    const userRole = normalizeRole(payload.role)
-    const normalizedAllowedRoles = allowedRoles.map(normalizeRole)
 
-    if (!normalizedAllowedRoles.includes(userRole)) {
+    if (!allowedRoles.includes(payload.role)) {
       return reply.status(403).send({ message: 'Forbidden' })
     }
   }
