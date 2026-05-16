@@ -8,13 +8,18 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "admin:provision": "tsx src/scripts/provision-admin.ts",
+    "db:seed": "tsx src/scripts/seed.ts",
+    "db:clear": "tsx src/scripts/clear.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@fastify/cors": "^10.0.0",
     "@fastify/jwt": "^9.0.0",
+    "@fastify/multipart": "^10.0.0",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.41.0",
     "fastify": "^5.0.0",

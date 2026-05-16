@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { ArrowLeft, Plus } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useStudent, useStudentGuardians, useAddGuardian } from '../hooks/useStudents'
+import { useStudentTuitions } from '../../financial/hooks/useFinancial'
+import { TuitionStatusBadge } from '../../financial/components/TuitionStatusBadge'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -26,6 +29,7 @@ export function StudentDetailPage() {
   const navigate = useNavigate()
   const { data: student, isLoading } = useStudent(id!)
   const { data: guardians } = useStudentGuardians(id!)
+  const { data: tuitions } = useStudentTuitions(id!)
   const addGuardian = useAddGuardian(id!)
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false)
 
@@ -38,7 +42,7 @@ export function StudentDetailPage() {
 
   function onAddGuardian(data: GuardianForm) {
     addGuardian.mutate(
-      { ...data, email: data.email || undefined },
+      { ...data, email: data.email || null, phone: data.phone ?? null, cpf: null, profession: null, isResponsible: false, isAuthorizedPickup: false },
       { onSuccess: () => { setGuardianDialogOpen(false); reset() } },
     )
   }
@@ -53,6 +57,11 @@ export function StudentDetailPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-xl font-semibold">{student.name}</h1>
+        <div className="ml-auto">
+          <Link to={`/students/${id}/report`}>
+            <Button size="sm" variant="outline">Ver boletim</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -97,6 +106,37 @@ export function StudentDetailPage() {
                     <TableCell>{g.relationship}</TableCell>
                     <TableCell>{g.email ?? '—'}</TableCell>
                     <TableCell>{g.phone ?? '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="font-medium">Mensalidades</h2>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Vencimento</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {!tuitions?.length && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center text-muted-foreground">Nenhuma mensalidade</TableCell>
+                  </TableRow>
+                )}
+                {tuitions?.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>R$ {parseFloat(t.amount).toFixed(2)}</TableCell>
+                    <TableCell><TuitionStatusBadge status={t.status} /></TableCell>
                   </TableRow>
                 ))}
               </TableBody>

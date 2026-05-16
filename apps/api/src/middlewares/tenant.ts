@@ -16,6 +16,10 @@ export async function injectTenant(request: FastifyRequest, reply: FastifyReply)
     if (!payload.secretariaId) {
       return reply.status(401).send({ message: 'Tenant not identified' })
     }
+    const schoolId = request.headers['x-school-id'] as string | undefined
+    if (schoolId) {
+      ;(request.user as Record<string, unknown>).schoolId = schoolId
+    }
     return
   }
 

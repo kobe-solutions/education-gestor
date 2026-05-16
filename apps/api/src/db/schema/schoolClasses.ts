@@ -1,30 +1,29 @@
-import {
-  pgTable,
-  uuid,
-  text,
-  timestamp,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
-import { schools } from "./schools";
+import { pgTable, uuid, text, timestamp, uniqueIndex, integer } from 'drizzle-orm/pg-core'
+import { schools } from './schools'
+import { series } from './series'
+import { academicPeriods } from './academicPeriods'
 
 export const schoolClasses = pgTable(
-  "schoolClasses",
+  'schoolClasses',
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    schoolId: uuid("school_id")
+    id: uuid('id').primaryKey().defaultRandom(),
+    schoolId: uuid('school_id')
       .notNull()
       .references(() => schools.id),
-    name: text("name").notNull(),
-    grade: text("grade").notNull(),
-    shift: text("shift").notNull(),
-    termTime: text("term_time").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    serieId: uuid('serie_id').references(() => series.id, { onDelete: 'set null' }),
+    academicPeriodId: uuid('academic_period_id').references(() => academicPeriods.id, {
+      onDelete: 'set null',
+    }),
+    name: text('name').notNull(),
+    shift: text('shift').notNull(),
+    maxStudents: integer('max_students').notNull().default(40),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => ({
-    schoolEmailUnique: uniqueIndex("schoolClasses_school_email_unique").on(
+    schoolNameUnique: uniqueIndex('schoolClasses_school_email_unique').on(
       table.schoolId,
       table.name,
     ),
   }),
-);
+)

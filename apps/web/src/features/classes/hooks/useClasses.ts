@@ -25,9 +25,9 @@ export function useClass(id: string) {
 
 interface ClassInput {
   name: string
-  grade: string
   shift: string
-  termTime: string
+  serieId?: string | null
+  academicPeriodId?: string | null
 }
 
 export function useCreateClass() {
@@ -111,6 +111,47 @@ export function useCreateAcademicPeriod() {
     mutationFn: async (data: { name: string; startDate: string; endDate: string }) => {
       const res = await api.post<AcademicPeriod>('/academic-periods', data)
       return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['academic-periods'] }),
+  })
+}
+
+interface UpdateAcademicPeriodInput {
+  name?: string
+  startDate?: string
+  endDate?: string
+  active?: boolean
+}
+
+export function useUpdateAcademicPeriod() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpdateAcademicPeriodInput }) => {
+      const res = await api.put<AcademicPeriod>(`/academic-periods/${id}`, data)
+      return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['academic-periods'] }),
+  })
+}
+
+export function useStudentClasses(studentId: string) {
+  return useQuery({
+    queryKey: ['student-classes', studentId],
+    queryFn: async () => {
+      const res = await api.get<{ id: string; name: string; shift: string; serieId: string | null }[]>(
+        `/school-classes/students/${studentId}`,
+      )
+      return res.data
+    },
+    enabled: !!studentId,
+  })
+}
+
+export function useDeleteAcademicPeriod() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/academic-periods/${id}`)
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['academic-periods'] }),
   })

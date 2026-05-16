@@ -67,7 +67,7 @@ export function AttendancePage() {
             <SelectTrigger><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
             <SelectContent>
               {classes?.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name} — {c.grade}º</SelectItem>
+                <SelectItem key={c.id} value={c.id}>{c.name} — {c.serie?.name ?? c.shift}</SelectItem>
               ))}
             </SelectContent>
           </Select>

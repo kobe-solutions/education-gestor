@@ -1,4 +1,4 @@
-import { scryptSync, timingSafeEqual } from 'node:crypto'
+import { verifyPassword } from '../../lib/crypto'
 import { findAdminByEmailRepository } from '../admins/admins.repository'
 import { findSecretariaByEmailRepository } from '../secretarias/secretarias.repository'
 import { findSchoolByEmailRepository } from '../schools/schools.repository'
@@ -7,23 +7,6 @@ import { findTeachersByEmailRepository } from '../teachers/teachers.repository'
 type AuthenticateServiceInput = {
   email: string
   password: string
-}
-
-function verifyPassword(password: string, storedHash: string) {
-  const [salt, originalHash] = storedHash.split(':')
-
-  if (!salt || !originalHash) {
-    return false
-  }
-
-  const hashBuffer = scryptSync(password, salt, 64)
-  const originalHashBuffer = Buffer.from(originalHash, 'hex')
-
-  if (hashBuffer.length !== originalHashBuffer.length) {
-    return false
-  }
-
-  return timingSafeEqual(hashBuffer, originalHashBuffer)
 }
 
 export async function authenticateService(input: AuthenticateServiceInput) {
@@ -52,6 +35,7 @@ export async function authenticateService(input: AuthenticateServiceInput) {
     return {
       userId: school.id,
       schoolId: school.id,
+      schoolName: school.name,
       role: 'gestor' as const,
     }
   }

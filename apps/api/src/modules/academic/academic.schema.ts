@@ -4,9 +4,9 @@ export const registerGradeBodySchema = z.object({
   classId: z.string().uuid(),
   studentId: z.string().uuid(),
   teacherId: z.string().uuid(),
-  subject: z.string().min(1),
+  subjectId: z.string().uuid(),
+  academicPeriodId: z.string().uuid(),
   value: z.number().min(0).max(10),
-  period: z.string().min(1),
 })
 
 export const registerAttendanceBodySchema = z.object({
@@ -28,5 +28,6 @@ export const bulkAttendanceBodySchema = z.object({
 })
 
 export type RegisterGradeBody = z.infer<typeof registerGradeBodySchema>
+
 export type RegisterAttendanceBody = z.infer<typeof registerAttendanceBodySchema>
 export type BulkAttendanceBody = z.infer<typeof bulkAttendanceBodySchema>

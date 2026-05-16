@@ -12,11 +12,11 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (data: LoginInput) => {
-      const res = await api.post<{ token: string }>('/sessions', data)
+      const res = await api.post<{ accessToken: string }>('/sessions', data)
       return res.data
     },
-    onSuccess: ({ token }) => {
-      login(token)
+    onSuccess: ({ accessToken }) => {
+      login(accessToken)
     },
   })
 }

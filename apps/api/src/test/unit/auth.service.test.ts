@@ -71,7 +71,7 @@ describe('authenticateService', () => {
 
     const result = await authenticateService({ email: 'gestor@test.com', password: 'senha123!' })
 
-    expect(result).toEqual({ userId: 'school-id', schoolId: 'school-id', role: 'gestor' })
+    expect(result).toEqual({ userId: 'school-id', schoolId: 'school-id', schoolName: 'Escola X', role: 'gestor' })
   })
 
   it('autentica professor com credenciais corretas', async () => {

@@ -8,12 +8,12 @@ import {
   getClassAttendanceByDateService,
 } from '../../modules/academic/academic.service'
 import * as repo from '../../modules/academic/academic.repository'
-import * as studentRepo from '../../modules/students/students.repository'
-import * as classRepo from '../../modules/classes/schoolClasses.repository'
+import * as studentService from '../../modules/students/students.service'
+import * as classService from '../../modules/classes/schoolClasses.service'
 
 vi.mock('../../modules/academic/academic.repository')
-vi.mock('../../modules/students/students.repository')
-vi.mock('../../modules/classes/schoolClasses.repository')
+vi.mock('../../modules/students/students.service')
+vi.mock('../../modules/classes/schoolClasses.service')
 
 const mockStudent = {
   id: 'student-id',
@@ -64,29 +64,29 @@ beforeEach(() => vi.clearAllMocks())
 
 describe('registerGradeService', () => {
   it('registra nota quando turma e aluno existem', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(mockClass)
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
-    vi.mocked(repo.upsertGradeRepository).mockResolvedValue(mockGrade)
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(studentService.getStudentService).mockResolvedValue(mockStudent as any)
+    vi.mocked(repo.upsertGradeRepository).mockResolvedValue(mockGrade as any)
 
     const result = await registerGradeService({
       schoolId: 'school-id',
       classId: 'class-id',
       studentId: 'student-id',
       teacherId: 'teacher-id',
-      subject: 'Matemática',
+      subjectId: 'subject-id',
+      academicPeriodId: 'period-id',
       value: 8.5,
-      period: '1B',
     })
 
     expect(result).toEqual(mockGrade)
     expect(repo.upsertGradeRepository).toHaveBeenCalledWith(
-      expect.objectContaining({ value: '8.5' }),
+      expect.objectContaining({ value: 8.5 }),
     )
   })
 
   it('lança erro se turma não existe', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(undefined)
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(classService.getSchoolClassService).mockRejectedValue(new Error('Class not found'))
+    vi.mocked(studentService.getStudentService).mockResolvedValue(mockStudent as any)
 
     await expect(
       registerGradeService({
@@ -94,16 +94,16 @@ describe('registerGradeService', () => {
         classId: 'nao-existe',
         studentId: 'student-id',
         teacherId: 'teacher-id',
-        subject: 'Mat',
+        subjectId: 'subject-id',
+        academicPeriodId: 'period-id',
         value: 8,
-        period: '1B',
       }),
     ).rejects.toThrow('Class not found')
   })
 
   it('lança erro se aluno não existe', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(mockClass)
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(studentService.getStudentService).mockRejectedValue(new Error('Student not found'))
 
     await expect(
       registerGradeService({
@@ -111,9 +111,9 @@ describe('registerGradeService', () => {
         classId: 'class-id',
         studentId: 'nao-existe',
         teacherId: 'teacher-id',
-        subject: 'Mat',
+        subjectId: 'subject-id',
+        academicPeriodId: 'period-id',
         value: 8,
-        period: '1B',
       }),
     ).rejects.toThrow('Student not found')
   })
@@ -121,8 +121,8 @@ describe('registerGradeService', () => {
 
 describe('registerAttendanceService', () => {
   it('registra frequência quando turma e aluno existem', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(mockClass)
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(studentService.getStudentService).mockResolvedValue(mockStudent as any)
     vi.mocked(repo.upsertAttendanceRepository).mockResolvedValue(mockAttendance)
 
     const result = await registerAttendanceService({
@@ -137,8 +137,8 @@ describe('registerAttendanceService', () => {
   })
 
   it('lança erro se turma não existe', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(undefined)
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(classService.getSchoolClassService).mockRejectedValue(new Error('Class not found'))
+    vi.mocked(studentService.getStudentService).mockResolvedValue(mockStudent as any)
 
     await expect(
       registerAttendanceService({
@@ -154,8 +154,8 @@ describe('registerAttendanceService', () => {
 
 describe('registerBulkAttendanceService', () => {
   it('registra frequência em lote para turma existente', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(mockClass)
-    vi.mocked(repo.upsertAttendanceRepository).mockResolvedValue(mockAttendance)
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.upsertBulkAttendanceRepository).mockResolvedValue([mockAttendance, mockAttendance])
 
     const result = await registerBulkAttendanceService({
       schoolId: 'school-id',
@@ -168,11 +168,11 @@ describe('registerBulkAttendanceService', () => {
     })
 
     expect(result).toHaveLength(2)
-    expect(repo.upsertAttendanceRepository).toHaveBeenCalledTimes(2)
+    expect(repo.upsertBulkAttendanceRepository).toHaveBeenCalledTimes(1)
   })
 
   it('lança erro se turma não existe', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(classService.getSchoolClassService).mockRejectedValue(new Error('Class not found'))
 
     await expect(
       registerBulkAttendanceService({
@@ -187,8 +187,8 @@ describe('registerBulkAttendanceService', () => {
 
 describe('getStudentGradesService', () => {
   it('retorna notas do aluno', async () => {
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
-    vi.mocked(repo.findGradesByStudentRepository).mockResolvedValue([mockGrade])
+    vi.mocked(studentService.getStudentService).mockResolvedValue(mockStudent as any)
+    vi.mocked(repo.findGradesByStudentRepository).mockResolvedValue([mockGrade as any])
 
     const result = await getStudentGradesService('school-id', 'student-id')
 
@@ -196,7 +196,7 @@ describe('getStudentGradesService', () => {
   })
 
   it('lança erro se aluno não existe', async () => {
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(studentService.getStudentService).mockRejectedValue(new Error('Student not found'))
 
     await expect(getStudentGradesService('school-id', 'nao-existe')).rejects.toThrow('Student not found')
   })
@@ -204,7 +204,7 @@ describe('getStudentGradesService', () => {
 
 describe('getStudentAttendancesService', () => {
   it('retorna frequências do aluno', async () => {
-    vi.mocked(studentRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(studentService.getStudentService).mockResolvedValue(mockStudent as any)
     vi.mocked(repo.findAttendancesByStudentRepository).mockResolvedValue([mockAttendance])
 
     const result = await getStudentAttendancesService('school-id', 'student-id')
@@ -215,7 +215,7 @@ describe('getStudentAttendancesService', () => {
 
 describe('getClassAttendanceByDateService', () => {
   it('retorna frequências da turma na data', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(mockClass)
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
     vi.mocked(repo.findAttendancesByClassAndDateRepository).mockResolvedValue([mockAttendance])
 
     const result = await getClassAttendanceByDateService('school-id', 'class-id', '2025-04-01')
@@ -224,7 +224,7 @@ describe('getClassAttendanceByDateService', () => {
   })
 
   it('lança erro se turma não existe', async () => {
-    vi.mocked(classRepo.findSchoolClassByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(classService.getSchoolClassService).mockRejectedValue(new Error('Class not found'))
 
     await expect(
       getClassAttendanceByDateService('school-id', 'nao-existe', '2025-04-01'),

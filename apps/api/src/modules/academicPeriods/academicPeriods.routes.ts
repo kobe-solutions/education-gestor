@@ -1,9 +1,8 @@
 import type { FastifyInstance } from 'fastify'
-import { ZodError } from 'zod'
 import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles } from '../../middlewares/authorize'
-import type { TenantPayload } from '../../middlewares/authorize'
+import { getSchoolId } from '../../lib/routeHelpers'
 import { createAcademicPeriodBodySchema, updateAcademicPeriodBodySchema } from './academicPeriods.schema'
 import {
   listAcademicPeriodsService,
@@ -15,22 +14,15 @@ import {
 
 const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
 
-function getSchoolId(request: { user: unknown }): string {
-  const payload = request.user as TenantPayload
-  return payload.schoolId
-}
-
 export async function academicPeriodsRoutes(app: FastifyInstance) {
   app.get('/academic-periods', { preHandler }, async (request, reply) => {
-    const schoolId = getSchoolId(request)
-    return reply.send(await listAcademicPeriodsService(schoolId))
+    return reply.send(await listAcademicPeriodsService(getSchoolId(request)))
   })
 
   app.get('/academic-periods/:id', { preHandler }, async (request, reply) => {
     try {
-      const schoolId = getSchoolId(request)
       const { id } = request.params as { id: string }
-      return reply.send(await getAcademicPeriodService(schoolId, id))
+      return reply.send(await getAcademicPeriodService(getSchoolId(request), id))
     } catch (error) {
       if (error instanceof Error && error.message === 'Academic period not found') {
         return reply.status(404).send({ message: error.message })
@@ -40,29 +32,17 @@ export async function academicPeriodsRoutes(app: FastifyInstance) {
   })
 
   app.post('/academic-periods', { preHandler }, async (request, reply) => {
-    try {
-      const schoolId = getSchoolId(request)
-      const body = createAcademicPeriodBodySchema.parse(request.body)
-      const period = await createAcademicPeriodService({ schoolId, ...body })
-      return reply.status(201).send(period)
-    } catch (error) {
-      if (error instanceof ZodError) {
-        return reply.status(400).send({ message: 'Validation error', issues: error.issues })
-      }
-      throw error
-    }
+    const body = createAcademicPeriodBodySchema.parse(request.body)
+    const period = await createAcademicPeriodService({ schoolId: getSchoolId(request), ...body })
+    return reply.status(201).send(period)
   })
 
   app.put('/academic-periods/:id', { preHandler }, async (request, reply) => {
     try {
-      const schoolId = getSchoolId(request)
       const { id } = request.params as { id: string }
       const body = updateAcademicPeriodBodySchema.parse(request.body)
-      return reply.send(await updateAcademicPeriodService(schoolId, id, body))
+      return reply.send(await updateAcademicPeriodService(getSchoolId(request), id, body))
     } catch (error) {
-      if (error instanceof ZodError) {
-        return reply.status(400).send({ message: 'Validation error', issues: error.issues })
-      }
       if (error instanceof Error && error.message === 'Academic period not found') {
         return reply.status(404).send({ message: error.message })
       }
@@ -72,9 +52,8 @@ export async function academicPeriodsRoutes(app: FastifyInstance) {
 
   app.delete('/academic-periods/:id', { preHandler }, async (request, reply) => {
     try {
-      const schoolId = getSchoolId(request)
       const { id } = request.params as { id: string }
-      await deleteAcademicPeriodService(schoolId, id)
+      await deleteAcademicPeriodService(getSchoolId(request), id)
       return reply.status(204).send()
     } catch (error) {
       if (error instanceof Error && error.message === 'Academic period not found') {

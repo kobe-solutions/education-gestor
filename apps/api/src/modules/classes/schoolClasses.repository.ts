@@ -1,51 +1,81 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, count, inArray } from 'drizzle-orm'
 import { db } from '../../db'
-import { schoolClasses, classTeachers, classStudents, teachers, students } from '../../db/schema'
+import { schoolClasses, classStudents, students, series, academicPeriods, educationLevels } from '../../db/schema'
 
 type CreateSchoolClassRepositoryInput = {
   schoolId: string
   name: string
-  grade: string
   shift: string
-  termTime: string
+  serieId?: string | null
+  academicPeriodId?: string | null
 }
 
 type UpdateSchoolClassRepositoryInput = {
   name?: string
-  grade?: string
   shift?: string
-  termTime?: string
+  serieId?: string | null
+  academicPeriodId?: string | null
+}
+
+const classFields = {
+  id: schoolClasses.id,
+  schoolId: schoolClasses.schoolId,
+  name: schoolClasses.name,
+  shift: schoolClasses.shift,
+  serieId: schoolClasses.serieId,
+  academicPeriodId: schoolClasses.academicPeriodId,
+  maxStudents: schoolClasses.maxStudents,
+  createdAt: schoolClasses.createdAt,
+  updatedAt: schoolClasses.updatedAt,
 }
 
 export async function findAllSchoolClassesRepository(schoolId: string) {
   return db
     .select({
-      id: schoolClasses.id,
-      schoolId: schoolClasses.schoolId,
-      name: schoolClasses.name,
-      grade: schoolClasses.grade,
-      shift: schoolClasses.shift,
-      termTime: schoolClasses.termTime,
-      createdAt: schoolClasses.createdAt,
-      updatedAt: schoolClasses.updatedAt,
+      ...classFields,
+      serie: {
+        id: series.id,
+        name: series.name,
+        educationLevel: {
+          id: educationLevels.id,
+          name: educationLevels.name,
+          type: educationLevels.type,
+        },
+      },
+      academicPeriod: {
+        id: academicPeriods.id,
+        name: academicPeriods.name,
+      },
     })
     .from(schoolClasses)
+    .leftJoin(series, eq(schoolClasses.serieId, series.id))
+    .leftJoin(educationLevels, eq(series.educationLevelId, educationLevels.id))
+    .leftJoin(academicPeriods, eq(schoolClasses.academicPeriodId, academicPeriods.id))
     .where(eq(schoolClasses.schoolId, schoolId))
 }
 
 export async function findSchoolClassByIdRepository(schoolId: string, id: string) {
   const [schoolClass] = await db
     .select({
-      id: schoolClasses.id,
-      schoolId: schoolClasses.schoolId,
-      name: schoolClasses.name,
-      grade: schoolClasses.grade,
-      shift: schoolClasses.shift,
-      termTime: schoolClasses.termTime,
-      createdAt: schoolClasses.createdAt,
-      updatedAt: schoolClasses.updatedAt,
+      ...classFields,
+      serie: {
+        id: series.id,
+        name: series.name,
+        educationLevel: {
+          id: educationLevels.id,
+          name: educationLevels.name,
+          type: educationLevels.type,
+        },
+      },
+      academicPeriod: {
+        id: academicPeriods.id,
+        name: academicPeriods.name,
+      },
     })
     .from(schoolClasses)
+    .leftJoin(series, eq(schoolClasses.serieId, series.id))
+    .leftJoin(educationLevels, eq(series.educationLevelId, educationLevels.id))
+    .leftJoin(academicPeriods, eq(schoolClasses.academicPeriodId, academicPeriods.id))
     .where(and(eq(schoolClasses.schoolId, schoolId), eq(schoolClasses.id, id)))
     .limit(1)
 
@@ -58,19 +88,11 @@ export async function createSchoolClassRepository(input: CreateSchoolClassReposi
     .values({
       schoolId: input.schoolId,
       name: input.name,
-      grade: input.grade,
       shift: input.shift,
-      termTime: input.termTime,
+      serieId: input.serieId ?? null,
+      academicPeriodId: input.academicPeriodId ?? null,
     })
-    .returning({
-      id: schoolClasses.id,
-      schoolId: schoolClasses.schoolId,
-      name: schoolClasses.name,
-      termTime: schoolClasses.termTime,
-      grade: schoolClasses.grade,
-      shift: schoolClasses.shift,
-      createdAt: schoolClasses.createdAt,
-    })
+    .returning(classFields)
 
   return schoolClass
 }
@@ -84,16 +106,7 @@ export async function updateSchoolClassRepository(
     .update(schoolClasses)
     .set({ ...input, updatedAt: new Date() })
     .where(and(eq(schoolClasses.schoolId, schoolId), eq(schoolClasses.id, id)))
-    .returning({
-      id: schoolClasses.id,
-      schoolId: schoolClasses.schoolId,
-      name: schoolClasses.name,
-      grade: schoolClasses.grade,
-      shift: schoolClasses.shift,
-      termTime: schoolClasses.termTime,
-      createdAt: schoolClasses.createdAt,
-      updatedAt: schoolClasses.updatedAt,
-    })
+    .returning(classFields)
 
   return schoolClass
 }
@@ -102,20 +115,6 @@ export async function deleteSchoolClassRepository(schoolId: string, id: string) 
   await db
     .delete(schoolClasses)
     .where(and(eq(schoolClasses.schoolId, schoolId), eq(schoolClasses.id, id)))
-}
-
-export async function addTeacherToClassRepository(classId: string, teacherId: string) {
-  const [link] = await db
-    .insert(classTeachers)
-    .values({ classId, teacherId })
-    .returning({
-      id: classTeachers.id,
-      classId: classTeachers.classId,
-      teacherId: classTeachers.teacherId,
-      createdAt: classTeachers.createdAt,
-    })
-
-  return link
 }
 
 export async function addStudentToClassRepository(classId: string, studentId: string) {
@@ -138,16 +137,6 @@ export async function removeStudentFromClassRepository(classId: string, studentI
     .where(and(eq(classStudents.classId, classId), eq(classStudents.studentId, studentId)))
 }
 
-export async function findClassTeacherLinkRepository(classId: string, teacherId: string) {
-  const [link] = await db
-    .select({ id: classTeachers.id })
-    .from(classTeachers)
-    .where(and(eq(classTeachers.classId, classId), eq(classTeachers.teacherId, teacherId)))
-    .limit(1)
-
-  return link
-}
-
 export async function findClassStudentLinkRepository(classId: string, studentId: string) {
   const [link] = await db
     .select({ id: classStudents.id })
@@ -156,19 +145,6 @@ export async function findClassStudentLinkRepository(classId: string, studentId:
     .limit(1)
 
   return link
-}
-
-export async function findTeachersByClassRepository(classId: string) {
-  return db
-    .select({
-      id: teachers.id,
-      name: teachers.name,
-      email: teachers.email,
-      role: teachers.role,
-    })
-    .from(classTeachers)
-    .innerJoin(teachers, eq(classTeachers.teacherId, teachers.id))
-    .where(eq(classTeachers.classId, classId))
 }
 
 export async function findStudentsByClassRepository(classId: string) {
@@ -181,4 +157,27 @@ export async function findStudentsByClassRepository(classId: string) {
     .from(classStudents)
     .innerJoin(students, eq(classStudents.studentId, students.id))
     .where(eq(classStudents.classId, classId))
+}
+
+export async function countStudentsByClassesRepository(classIds: string[]) {
+  if (classIds.length === 0) return {} as Record<string, number>
+  const rows = await db
+    .select({ classId: classStudents.classId, total: count() })
+    .from(classStudents)
+    .where(inArray(classStudents.classId, classIds))
+    .groupBy(classStudents.classId)
+  return Object.fromEntries(rows.map((r) => [r.classId, Number(r.total)])) as Record<string, number>
+}
+
+export async function findClassesByStudentRepository(schoolId: string, studentId: string) {
+  return db
+    .select({
+      id: schoolClasses.id,
+      name: schoolClasses.name,
+      shift: schoolClasses.shift,
+      serieId: schoolClasses.serieId,
+    })
+    .from(classStudents)
+    .innerJoin(schoolClasses, eq(classStudents.classId, schoolClasses.id))
+    .where(and(eq(classStudents.studentId, studentId), eq(schoolClasses.schoolId, schoolId)))
 }

@@ -7,6 +7,10 @@ export const createSchoolBodySchema = z.object({
   slug: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(8),
+  director: z.string().optional(),
+  coordinator: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
 })
 
 export const loginSchoolBodySchema = z.object({
@@ -26,5 +30,21 @@ export const createSchoolResponseSchema = z.object({
   role: schoolRoleSchema,
 })
 
+export const updateSchoolBodySchema = z.object({
+  name: z.string().min(2).optional(),
+  slug: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+  director: z.string().optional().nullable(),
+  coordinator: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+})
+
+export const changePasswordBodySchema = z.object({
+  password: z.string().min(8),
+})
+
 export type CreateSchoolBody = z.infer<typeof createSchoolBodySchema>
 export type LoginSchoolBody = z.infer<typeof loginSchoolBodySchema>
+export type UpdateSchoolBody = z.infer<typeof updateSchoolBodySchema>
+export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>

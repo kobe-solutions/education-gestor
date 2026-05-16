@@ -19,6 +19,8 @@ const IDS = {
   student: '00000000-0000-0000-0000-000000000002',
   teacher: '00000000-0000-0000-0000-000000000003',
   student2: '00000000-0000-0000-0000-000000000004',
+  subject: '00000000-0000-0000-0000-000000000005',
+  period: '00000000-0000-0000-0000-000000000006',
 }
 
 let app: FastifyInstance
@@ -29,9 +31,12 @@ const mockGrade = {
   id: 'grade-id',
   classId: IDS.class,
   studentId: IDS.student,
-  subject: 'Matemática',
+  teacherId: IDS.teacher,
+  subjectId: IDS.subject,
+  academicPeriodId: IDS.period,
   value: '8.5',
-  period: '1B',
+  subject: { id: IDS.subject, name: 'Matemática' },
+  academicPeriod: { id: IDS.period, name: '1º Bimestre' },
   createdAt: new Date().toISOString(),
 }
 
@@ -66,9 +71,9 @@ describe('POST /grades', () => {
         classId: IDS.class,
         studentId: IDS.student,
         teacherId: IDS.teacher,
-        subject: 'Matemática',
+        subjectId: IDS.subject,
+        academicPeriodId: IDS.period,
         value: 8.5,
-        period: '1B',
       },
     })
 
@@ -86,9 +91,9 @@ describe('POST /grades', () => {
         classId: IDS.class,
         studentId: IDS.student,
         teacherId: IDS.teacher,
-        subject: 'Matemática',
+        subjectId: IDS.subject,
+        academicPeriodId: IDS.period,
         value: 8.5,
-        period: '1B',
       },
     })
 
@@ -104,9 +109,9 @@ describe('POST /grades', () => {
         classId: IDS.class,
         studentId: IDS.student,
         teacherId: IDS.teacher,
-        subject: 'Matemática',
+        subjectId: IDS.subject,
+        academicPeriodId: IDS.period,
         value: 15, // > 10
-        period: '1B',
       },
     })
 

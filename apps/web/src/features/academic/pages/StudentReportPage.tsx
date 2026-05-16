@@ -15,8 +15,9 @@ export function StudentReportPage() {
   const { data: attendances } = useStudentAttendances(id!)
 
   const gradesBySubject = grades?.reduce<Record<string, { period: string; value: string }[]>>((acc, g) => {
-    if (!acc[g.subject]) acc[g.subject] = []
-    acc[g.subject].push({ period: g.period, value: g.value })
+    const subjectName = g.subject?.name ?? g.subjectId
+    if (!acc[subjectName]) acc[subjectName] = []
+    acc[subjectName].push({ period: g.academicPeriod?.name ?? g.academicPeriodId, value: g.value })
     return acc
   }, {})
 
@@ -63,7 +64,7 @@ export function StudentReportPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Disciplina</TableHead>
-                  {Array.from(new Set(grades?.map((g) => g.period))).map((p) => (
+                  {Array.from(new Set(grades?.map((g) => g.academicPeriod?.name ?? g.academicPeriodId))).map((p) => (
                     <TableHead key={p}>{p}</TableHead>
                   ))}
                 </TableRow>

@@ -1,51 +1,37 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../lib/api'
-import type { Student, Guardian } from '@education-gestor/types'
+import type { Student, Guardian, StudentMedical, StudentDocument } from '@education-gestor/types'
+
+// ─── Alunos ────────────────────────────────────────────────────────────────────
 
 export function useStudents() {
   return useQuery({
     queryKey: ['students'],
-    queryFn: async () => {
-      const res = await api.get<Student[]>('/students')
-      return res.data
-    },
+    queryFn: async () => (await api.get<Student[]>('/students')).data,
   })
 }
 
 export function useStudent(id: string) {
   return useQuery({
     queryKey: ['students', id],
-    queryFn: async () => {
-      const res = await api.get<Student>(`/students/${id}`)
-      return res.data
-    },
+    queryFn: async () => (await api.get<Student>(`/students/${id}`)).data,
     enabled: !!id,
   })
 }
 
-export function useStudentGuardians(studentId: string) {
-  return useQuery({
-    queryKey: ['students', studentId, 'guardians'],
-    queryFn: async () => {
-      const res = await api.get<Guardian[]>(`/students/${studentId}/guardians`)
-      return res.data
-    },
-    enabled: !!studentId,
-  })
-}
-
-interface CreateStudentInput {
-  name: string
-  email?: string
-  birthDate?: string
-}
+export type CreateStudentInput = Pick<Student,
+  'name' | 'email' | 'cpf' | 'rg' | 'birthDate' | 'sex' | 'bloodType' | 'naturalidade' | 'phone' |
+  'motherName' | 'fatherName' | 'motherPhone' |
+  'addressCep' | 'addressStreet' | 'addressNumber' | 'addressComplement' |
+  'addressNeighborhood' | 'addressCity' | 'addressState' |
+  'comorbidities' | 'observations' | 'enrollmentDate' | 'internalCode'
+>
 
 export function useCreateStudent() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (data: CreateStudentInput) => {
-      const res = await api.post<Student>('/students', data)
-      return res.data
+    mutationFn: async (data: Partial<CreateStudentInput> & { name: string }) => {
+      return (await api.post<Student>('/students', data)).data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students'] }),
   })
@@ -54,9 +40,8 @@ export function useCreateStudent() {
 export function useUpdateStudent(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (data: Partial<CreateStudentInput>) => {
-      const res = await api.put<Student>(`/students/${id}`, data)
-      return res.data
+    mutationFn: async (data: Partial<CreateStudentInput> & { enrollmentStatus?: string }) => {
+      return (await api.put<Student>(`/students/${id}`, data)).data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students'] })
@@ -68,27 +53,121 @@ export function useUpdateStudent(id: string) {
 export function useDeleteStudent() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
-      await api.delete(`/students/${id}`)
-    },
+    mutationFn: async (id: string) => { await api.delete(`/students/${id}`) },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students'] }),
   })
 }
 
-interface AddGuardianInput {
-  name: string
-  email?: string
-  phone?: string
-  relationship: string
+// ─── Foto ─────────────────────────────────────────────────────────────────────
+
+export function useUploadStudentPhoto(studentId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<Student>(`/students/${studentId}/photo`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['students', studentId] })
+      qc.invalidateQueries({ queryKey: ['students'] })
+    },
+  })
 }
+
+// ─── Responsáveis ─────────────────────────────────────────────────────────────
+
+export function useStudentGuardians(studentId: string) {
+  return useQuery({
+    queryKey: ['students', studentId, 'guardians'],
+    queryFn: async () => (await api.get<Guardian[]>(`/students/${studentId}/guardians`)).data,
+    enabled: !!studentId,
+  })
+}
+
+export type GuardianInput = Omit<Guardian, 'id' | 'studentId' | 'createdAt'>
 
 export function useAddGuardian(studentId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (data: AddGuardianInput) => {
-      const res = await api.post<Guardian>(`/students/${studentId}/guardians`, data)
-      return res.data
+    mutationFn: async (data: GuardianInput) =>
+      (await api.post<Guardian>(`/students/${studentId}/guardians`, data)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'guardians'] }),
+  })
+}
+
+export function useUpdateGuardian(studentId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<GuardianInput> }) =>
+      (await api.put<Guardian>(`/students/${studentId}/guardians/${id}`, data)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'guardians'] }),
+  })
+}
+
+export function useDeleteGuardian(studentId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (guardianId: string) => {
+      await api.delete(`/students/${studentId}/guardians/${guardianId}`)
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'guardians'] }),
+  })
+}
+
+// ─── Ficha médica ──────────────────────────────────────────────────────────────
+
+export function useStudentMedical(studentId: string) {
+  return useQuery({
+    queryKey: ['students', studentId, 'medical'],
+    queryFn: async () => (await api.get<StudentMedical>(`/students/${studentId}/medical`)).data,
+    enabled: !!studentId,
+  })
+}
+
+export function useUpsertMedical(studentId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: Partial<Omit<StudentMedical, 'id' | 'studentId' | 'createdAt' | 'updatedAt'>>) =>
+      (await api.put<StudentMedical>(`/students/${studentId}/medical`, data)).data,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'medical'] }),
+  })
+}
+
+// ─── Documentos ────────────────────────────────────────────────────────────────
+
+export function useStudentDocuments(studentId: string) {
+  return useQuery({
+    queryKey: ['students', studentId, 'documents'],
+    queryFn: async () => (await api.get<StudentDocument[]>(`/students/${studentId}/documents`)).data,
+    enabled: !!studentId,
+  })
+}
+
+export function useUploadDocument(studentId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ file, type }: { file: File; type: string }) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<StudentDocument>(
+        `/students/${studentId}/documents?type=${type}`,
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      )).data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'documents'] }),
+  })
+}
+
+export function useDeleteDocument(studentId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (docId: string) => {
+      await api.delete(`/students/${studentId}/documents/${docId}`)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'documents'] }),
   })
 }

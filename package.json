@@ -7,7 +7,9 @@
     "db:generate": "pnpm --filter api db:generate",
     "db:migrate": "pnpm --filter api db:migrate",
     "db:studio": "pnpm --filter api db:studio",
-    "admin:provision": "pnpm --filter api admin:provision"
+    "admin:provision": "pnpm --filter api admin:provision",
+    "db:seed": "pnpm --filter api db:seed",
+    "db:clear": "pnpm --filter api db:clear"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"

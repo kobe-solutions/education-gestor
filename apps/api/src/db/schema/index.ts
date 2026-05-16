@@ -1,4 +1,5 @@
 export * from "./admins";
+export * from "./auditLog";
 export * from "./schools";
 export * from "./secretarias";
 export * from "./subjects";
@@ -9,3 +10,8 @@ export * from "./academicPeriods";
 export * from "./classRelations";
 export * from "./academic";
 export * from "./financial";
+export * from "./educationLevels";
+export * from "./series";
+export * from "./timetableSlots";
+export * from "./studentMedical";
+export * from "./studentDocuments";

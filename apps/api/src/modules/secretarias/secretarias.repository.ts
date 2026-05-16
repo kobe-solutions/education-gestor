@@ -6,6 +6,9 @@ type CreateSecretariaRepositoryInput = {
   name: string
   email: string
   passwordHash: string
+  phone?: string | null
+  address?: string | null
+  responsible?: string | null
 }
 
 export async function createSecretariaRepository(input: CreateSecretariaRepositoryInput) {
@@ -15,11 +18,18 @@ export async function createSecretariaRepository(input: CreateSecretariaReposito
       name: input.name,
       email: input.email,
       passwordHash: input.passwordHash,
+      phone: input.phone ?? null,
+      address: input.address ?? null,
+      responsible: input.responsible ?? null,
     })
     .returning({
       id: secretarias.id,
       name: secretarias.name,
       email: secretarias.email,
+      phone: secretarias.phone,
+      address: secretarias.address,
+      responsible: secretarias.responsible,
+      active: secretarias.active,
       role: secretarias.role,
       createdAt: secretarias.createdAt,
     })
@@ -95,6 +105,62 @@ export async function findSchoolsBySecretariaIdRepository(secretariaId: string) 
     .from(secretariaSchools)
     .innerJoin(schools, eq(secretariaSchools.schoolId, schools.id))
     .where(eq(secretariaSchools.secretariaId, secretariaId))
+}
+
+type UpdateSecretariaRepositoryInput = {
+  name?: string
+  email?: string
+  phone?: string | null
+  address?: string | null
+  responsible?: string | null
+  active?: boolean
+}
+
+export async function updateSecretariaRepository(id: string, data: UpdateSecretariaRepositoryInput) {
+  const [secretaria] = await db
+    .update(secretarias)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(secretarias.id, id))
+    .returning({
+      id: secretarias.id,
+      name: secretarias.name,
+      email: secretarias.email,
+      phone: secretarias.phone,
+      address: secretarias.address,
+      responsible: secretarias.responsible,
+      active: secretarias.active,
+      role: secretarias.role,
+      createdAt: secretarias.createdAt,
+    })
+
+  return secretaria
+}
+
+export async function deleteSecretariaRepository(id: string) {
+  await db.delete(secretarias).where(eq(secretarias.id, id))
+}
+
+export async function updateSecretariaPasswordRepository(id: string, passwordHash: string) {
+  await db
+    .update(secretarias)
+    .set({ passwordHash, updatedAt: new Date() })
+    .where(eq(secretarias.id, id))
+}
+
+export async function listSecretariasRepository() {
+  return db
+    .select({
+      id: secretarias.id,
+      name: secretarias.name,
+      email: secretarias.email,
+      phone: secretarias.phone,
+      address: secretarias.address,
+      responsible: secretarias.responsible,
+      active: secretarias.active,
+      role: secretarias.role,
+      createdAt: secretarias.createdAt,
+    })
+    .from(secretarias)
 }
 
 export async function findSecretariaSchoolLinkRepository(secretariaId: string, schoolId: string) {

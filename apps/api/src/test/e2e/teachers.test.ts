@@ -8,7 +8,6 @@ vi.mock('../../modules/teachers/teachers.service', () => ({
   createTeacherService: vi.fn(),
   updateTeacherService: vi.fn(),
   deleteTeacherService: vi.fn(),
-  authenticateTeacherService: vi.fn(),
 }))
 
 import * as teachersService from '../../modules/teachers/teachers.service'

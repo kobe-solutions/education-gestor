@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, date, numeric } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, date, numeric, index } from 'drizzle-orm/pg-core'
 import { schools } from './schools'
 import { students } from './students'
 
@@ -16,4 +16,7 @@ export const tuitions = pgTable('tuitions', {
   status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
-})
+}, (table) => ({
+  schoolStatusIdx: index('tuitions_school_status_idx').on(table.schoolId, table.status),
+  dueDateIdx: index('tuitions_due_date_idx').on(table.dueDate),
+}))

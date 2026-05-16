@@ -71,6 +71,69 @@
       "when": 1777310250519,
       "tag": "0009_faulty_boomerang",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1778633278345,
+      "tag": "0010_daily_firedrake",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1778681053598,
+      "tag": "0011_cultured_dakota_north",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778703321153,
+      "tag": "0012_nosy_shocker",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1778800000000,
+      "tag": "0013_schoolclasses_refactor",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1778900000000,
+      "tag": "0014_grades_fk_refactor",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1747267200000,
+      "tag": "0015_students_full_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1747270800000,
+      "tag": "0016_teachers_full_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1747278000000,
+      "tag": "0017_schoolclasses_max_students",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1778954516879,
+      "tag": "0018_yellow_shotgun",
+      "breakpoints": true
     }
   ]
 }

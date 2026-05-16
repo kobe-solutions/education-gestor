@@ -19,7 +19,7 @@ type FormData = z.infer<typeof schema>
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const { token } = useAuth()
+  const { token, payload } = useAuth()
   const { mutate: login, isPending, error } = useLogin()
 
   const {
@@ -29,11 +29,11 @@ export function LoginPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   useEffect(() => {
-    if (token) navigate('/', { replace: true })
-  }, [token, navigate])
+    if (token && payload) navigate('/', { replace: true })
+  }, [token, payload, navigate])
 
   function onSubmit(data: FormData) {
-    login(data, { onSuccess: () => navigate('/') })
+    login(data)
   }
 
   return (

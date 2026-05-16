@@ -1,18 +1,30 @@
 import type { FastifyInstance } from 'fastify'
-import { ZodError } from 'zod'
 import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles } from '../../middlewares/authorize'
-import { createSecretariaBodySchema, addSchoolBodySchema } from './secretarias.schema'
+import type { JwtPayload } from '../../middlewares/authorize'
+import { createSecretariaBodySchema, updateSecretariaBodySchema, addSchoolBodySchema } from './secretarias.schema'
 import {
   createSecretariaService,
+  updateSecretariaService,
+  deleteSecretariaService,
   addSchoolToSecretariaService,
   removeSchoolFromSecretariaService,
   listSchoolsBySecretariaService,
+  listSecretariasService,
+  changeSecretariaPasswordService,
 } from './secretarias.service'
-import type { JwtPayload } from '../../middlewares/authorize'
+import { changePasswordBodySchema } from '../schools/schools.schema'
 
 export async function secretariasRoutes(app: FastifyInstance) {
+  app.get(
+    '/secretarias',
+    { preHandler: [authenticate, injectTenant, authorizeRoles(['admin'])] },
+    async (_request, reply) => {
+      return reply.send(await listSecretariasService())
+    },
+  )
+
   app.post(
     '/secretarias',
     { preHandler: [authenticate, injectTenant, authorizeRoles(['admin'])] },
@@ -22,11 +34,61 @@ export async function secretariasRoutes(app: FastifyInstance) {
         const secretaria = await createSecretariaService(body)
         return reply.status(201).send(secretaria)
       } catch (error) {
-        if (error instanceof ZodError) {
-          return reply.status(400).send({ message: 'Validation error', issues: error.issues })
-        }
         if (error instanceof Error && error.message === 'Secretaria already exists with this email') {
           return reply.status(409).send({ message: error.message })
+        }
+        throw error
+      }
+    },
+  )
+
+  app.put(
+    '/secretarias/:id',
+    { preHandler: [authenticate, injectTenant, authorizeRoles(['admin'])] },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string }
+        const body = updateSecretariaBodySchema.parse(request.body)
+        return reply.send(await updateSecretariaService(id, body))
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === 'Secretaria not found') return reply.status(404).send({ message: error.message })
+          if (error.message === 'Email already in use') return reply.status(409).send({ message: error.message })
+        }
+        throw error
+      }
+    },
+  )
+
+  app.put(
+    '/secretarias/:id/password',
+    { preHandler: [authenticate, injectTenant, authorizeRoles(['admin'])] },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string }
+        const body = changePasswordBodySchema.parse(request.body)
+        await changeSecretariaPasswordService(id, body.password)
+        return reply.status(204).send()
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Secretaria not found') {
+          return reply.status(404).send({ message: error.message })
+        }
+        throw error
+      }
+    },
+  )
+
+  app.delete(
+    '/secretarias/:id',
+    { preHandler: [authenticate, injectTenant, authorizeRoles(['admin'])] },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string }
+        await deleteSecretariaService(id)
+        return reply.status(204).send()
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Secretaria not found') {
+          return reply.status(404).send({ message: error.message })
         }
         throw error
       }
@@ -45,8 +107,7 @@ export async function secretariasRoutes(app: FastifyInstance) {
           return reply.status(403).send({ message: 'Forbidden' })
         }
 
-        const schools = await listSchoolsBySecretariaService(secretariaId)
-        return reply.send(schools)
+        return reply.send(await listSchoolsBySecretariaService(secretariaId))
       } catch (error) {
         if (error instanceof Error && error.message === 'Secretaria not found') {
           return reply.status(404).send({ message: error.message })
@@ -72,9 +133,6 @@ export async function secretariasRoutes(app: FastifyInstance) {
         const link = await addSchoolToSecretariaService(secretariaId, body.schoolId)
         return reply.status(201).send(link)
       } catch (error) {
-        if (error instanceof ZodError) {
-          return reply.status(400).send({ message: 'Validation error', issues: error.issues })
-        }
         if (error instanceof Error) {
           if (error.message === 'Secretaria not found' || error.message === 'School not found') {
             return reply.status(404).send({ message: error.message })
@@ -94,10 +152,7 @@ export async function secretariasRoutes(app: FastifyInstance) {
     async (request, reply) => {
       try {
         const payload = request.user as JwtPayload
-        const { secretariaId, schoolId } = request.params as {
-          secretariaId: string
-          schoolId: string
-        }
+        const { secretariaId, schoolId } = request.params as { secretariaId: string; schoolId: string }
 
         if (payload.role === 'secretaria' && payload.secretariaId !== secretariaId) {
           return reply.status(403).send({ message: 'Forbidden' })

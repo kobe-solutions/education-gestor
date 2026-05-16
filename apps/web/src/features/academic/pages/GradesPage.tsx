@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useClasses } from '../../classes/hooks/useClasses'
+import { useClasses, useClass, useAcademicPeriods } from '../../classes/hooks/useClasses'
 import { useClassGrades, useRegisterGrade } from '../hooks/useAcademic'
-import { useStudents } from '../../students/hooks/useStudents'
+import { useSubjects } from '../../subjects/hooks/useSubjects'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -16,10 +16,10 @@ import { useAuth } from '../../../contexts/AuthContext'
 import type { TenantPayload } from '@education-gestor/types'
 
 const gradeSchema = z.object({
-  studentId: z.string().min(1, 'Selecione o aluno'),
-  subject: z.string().min(1, 'Disciplina obrigatória'),
+  studentId: z.string().uuid('Selecione o aluno'),
+  subjectId: z.string().uuid('Selecione a disciplina'),
+  academicPeriodId: z.string().uuid('Selecione o período'),
   value: z.coerce.number().min(0).max(10, 'Nota entre 0 e 10'),
-  period: z.string().min(1, 'Período obrigatório'),
 })
 
 type GradeForm = z.infer<typeof gradeSchema>
@@ -30,7 +30,9 @@ export function GradesPage() {
   const [selectedClassId, setSelectedClassId] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const { data: grades, isLoading } = useClassGrades(selectedClassId)
-  const { data: allStudents } = useStudents()
+  const { data: selectedClass } = useClass(selectedClassId)
+  const { data: subjects } = useSubjects()
+  const { data: periods } = useAcademicPeriods()
   const registerGrade = useRegisterGrade()
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<GradeForm>({
@@ -38,6 +40,8 @@ export function GradesPage() {
   })
 
   const studentIdValue = watch('studentId')
+  const subjectIdValue = watch('subjectId')
+  const periodIdValue = watch('academicPeriodId')
 
   function onSubmit(data: GradeForm) {
     const teacherId = (payload as TenantPayload)?.userId ?? ''
@@ -47,9 +51,7 @@ export function GradesPage() {
     )
   }
 
-  const classStudents = classes?.find((c) => c.id === selectedClassId)?.students ?? []
-  const studentIds = new Set(classStudents.map((s: any) => s.studentId))
-  const enrolledStudents = allStudents?.filter((s) => studentIds.has(s.id))
+  const enrolledStudents = selectedClass?.students ?? []
 
   return (
     <div className="space-y-4">
@@ -68,7 +70,7 @@ export function GradesPage() {
           </SelectTrigger>
           <SelectContent>
             {classes?.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name} — {c.grade}º {c.shift}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>{c.name} — {c.serie?.name ?? c.shift}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -94,12 +96,12 @@ export function GradesPage() {
                 </TableHeader>
                 <TableBody>
                   {grades?.map((g) => {
-                    const student = allStudents?.find((s) => s.id === g.studentId)
+                    const student = enrolledStudents.find((s) => s.id === g.studentId)
                     return (
                       <TableRow key={g.id}>
                         <TableCell>{student?.name ?? g.studentId}</TableCell>
-                        <TableCell>{g.subject}</TableCell>
-                        <TableCell>{g.period}</TableCell>
+                        <TableCell>{g.subject?.name ?? '—'}</TableCell>
+                        <TableCell>{g.academicPeriod?.name ?? '—'}</TableCell>
                         <TableCell className="font-medium">{g.value}</TableCell>
                       </TableRow>
                     )
@@ -120,7 +122,7 @@ export function GradesPage() {
               <Select value={studentIdValue} onValueChange={(v) => setValue('studentId', v)}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>
-                  {enrolledStudents?.map((s) => (
+                  {enrolledStudents.map((s) => (
                     <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -129,8 +131,15 @@ export function GradesPage() {
             </div>
             <div className="space-y-1">
               <Label>Disciplina</Label>
-              <Input placeholder="Ex: Matemática" {...register('subject')} />
-              {errors.subject && <p className="text-xs text-destructive">{errors.subject.message}</p>}
+              <Select value={subjectIdValue} onValueChange={(v) => setValue('subjectId', v)}>
+                <SelectTrigger><SelectValue placeholder="Selecione a disciplina" /></SelectTrigger>
+                <SelectContent>
+                  {subjects?.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.subjectId && <p className="text-xs text-destructive">{errors.subjectId.message}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -139,9 +148,16 @@ export function GradesPage() {
                 {errors.value && <p className="text-xs text-destructive">{errors.value.message}</p>}
               </div>
               <div className="space-y-1">
-                <Label>Período</Label>
-                <Input placeholder="Ex: 1B" {...register('period')} />
-                {errors.period && <p className="text-xs text-destructive">{errors.period.message}</p>}
+                <Label>Período letivo</Label>
+                <Select value={periodIdValue} onValueChange={(v) => setValue('academicPeriodId', v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecione o período" /></SelectTrigger>
+                  <SelectContent>
+                    {periods?.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.academicPeriodId && <p className="text-xs text-destructive">{errors.academicPeriodId.message}</p>}
               </div>
             </div>
             <DialogFooter>

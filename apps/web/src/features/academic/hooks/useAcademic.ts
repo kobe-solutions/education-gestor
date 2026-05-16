@@ -28,9 +28,9 @@ interface RegisterGradeInput {
   classId: string
   studentId: string
   teacherId: string
-  subject: string
+  subjectId: string
+  academicPeriodId: string
   value: number
-  period: string
 }
 
 export function useRegisterGrade() {

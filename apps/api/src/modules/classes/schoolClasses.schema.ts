@@ -1,17 +1,19 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const createSchoolClassBodySchema = z.object({
   name: z.string().min(2),
-  shift: z.string(),
-  grade: z.string(),
-  termTime: z.string(),
-});
+  shift: z.string().min(1),
+  serieId: z.string().uuid().optional(),
+  academicPeriodId: z.string().uuid().optional(),
+  maxStudents: z.number().int().min(1).optional(),
+})
 
 export const updateSchoolClassBodySchema = z.object({
   name: z.string().min(2).optional(),
   shift: z.string().optional(),
-  grade: z.string().optional(),
-  termTime: z.string().optional(),
+  serieId: z.string().uuid().nullable().optional(),
+  academicPeriodId: z.string().uuid().nullable().optional(),
+  maxStudents: z.number().int().min(1).optional(),
 })
 
 export const addMemberBodySchema = z.object({

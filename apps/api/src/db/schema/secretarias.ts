@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, uniqueIndex, boolean } from 'drizzle-orm/pg-core'
 import { schools } from './schools'
 
 export const secretarias = pgTable('secretarias', {
@@ -7,6 +7,10 @@ export const secretarias = pgTable('secretarias', {
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   role: text('role').notNull().default('secretaria'),
+  phone: text('phone'),
+  address: text('address'),
+  responsible: text('responsible'),
+  active: boolean('active').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

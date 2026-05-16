@@ -1,15 +1,17 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { db } from '../../db'
 import { grades, attendances } from '../../db/schema'
+import { subjects } from '../../db/schema/subjects'
+import { academicPeriods } from '../../db/schema/academicPeriods'
 
 type UpsertGradeInput = {
   schoolId: string
   classId: string
   studentId: string
   teacherId: string
-  subject: string
-  value: string
-  period: string
+  subjectId: string
+  academicPeriodId: string
+  value: number
 }
 
 type UpsertAttendanceInput = {
@@ -20,71 +22,62 @@ type UpsertAttendanceInput = {
   present: boolean
 }
 
+const gradeFields = {
+  id: grades.id,
+  classId: grades.classId,
+  studentId: grades.studentId,
+  teacherId: grades.teacherId,
+  subjectId: grades.subjectId,
+  academicPeriodId: grades.academicPeriodId,
+  value: grades.value,
+  createdAt: grades.createdAt,
+  subject: { id: subjects.id, name: subjects.name },
+  academicPeriod: { id: academicPeriods.id, name: academicPeriods.name },
+}
+
 export async function upsertGradeRepository(input: UpsertGradeInput) {
-  const existing = await db
-    .select({ id: grades.id })
-    .from(grades)
-    .where(
-      and(
-        eq(grades.schoolId, input.schoolId),
-        eq(grades.classId, input.classId),
-        eq(grades.studentId, input.studentId),
-        eq(grades.subject, input.subject),
-        eq(grades.period, input.period),
-      ),
-    )
-    .limit(1)
-
-  if (existing.length) {
-    const [grade] = await db
-      .update(grades)
-      .set({ value: input.value, teacherId: input.teacherId, updatedAt: new Date() })
-      .where(eq(grades.id, existing[0].id))
-      .returning()
-    return grade
-  }
-
-  const [grade] = await db
+  const [row] = await db
     .insert(grades)
     .values({
       schoolId: input.schoolId,
       classId: input.classId,
       studentId: input.studentId,
       teacherId: input.teacherId,
-      subject: input.subject,
-      value: input.value,
-      period: input.period,
+      subjectId: input.subjectId,
+      academicPeriodId: input.academicPeriodId,
+      value: input.value.toString(),
     })
-    .returning()
+    .onConflictDoUpdate({
+      target: [grades.schoolId, grades.classId, grades.studentId, grades.subjectId, grades.academicPeriodId],
+      set: { value: sql`excluded.value`, teacherId: sql`excluded.teacher_id`, updatedAt: new Date() },
+    })
+    .returning({ id: grades.id })
 
-  return grade
+  return db
+    .select(gradeFields)
+    .from(grades)
+    .leftJoin(subjects, eq(grades.subjectId, subjects.id))
+    .leftJoin(academicPeriods, eq(grades.academicPeriodId, academicPeriods.id))
+    .where(eq(grades.id, row.id))
+    .limit(1)
+    .then((rows) => rows[0])
 }
 
 export async function findGradesByStudentRepository(schoolId: string, studentId: string) {
   return db
-    .select({
-      id: grades.id,
-      classId: grades.classId,
-      subject: grades.subject,
-      value: grades.value,
-      period: grades.period,
-      createdAt: grades.createdAt,
-    })
+    .select(gradeFields)
     .from(grades)
+    .leftJoin(subjects, eq(grades.subjectId, subjects.id))
+    .leftJoin(academicPeriods, eq(grades.academicPeriodId, academicPeriods.id))
     .where(and(eq(grades.schoolId, schoolId), eq(grades.studentId, studentId)))
 }
 
 export async function findGradesByClassRepository(schoolId: string, classId: string) {
   return db
-    .select({
-      id: grades.id,
-      studentId: grades.studentId,
-      subject: grades.subject,
-      value: grades.value,
-      period: grades.period,
-      createdAt: grades.createdAt,
-    })
+    .select(gradeFields)
     .from(grades)
+    .leftJoin(subjects, eq(grades.subjectId, subjects.id))
+    .leftJoin(academicPeriods, eq(grades.academicPeriodId, academicPeriods.id))
     .where(and(eq(grades.schoolId, schoolId), eq(grades.classId, classId)))
 }
 
@@ -157,4 +150,18 @@ export async function findAttendancesByClassAndDateRepository(
         eq(attendances.date, date),
       ),
     )
+}
+
+export async function upsertBulkAttendanceRepository(
+  rows: UpsertAttendanceInput[],
+) {
+  if (rows.length === 0) return []
+  return db
+    .insert(attendances)
+    .values(rows)
+    .onConflictDoUpdate({
+      target: [attendances.schoolId, attendances.classId, attendances.studentId, attendances.date],
+      set: { present: sql`excluded.present` },
+    })
+    .returning()
 }

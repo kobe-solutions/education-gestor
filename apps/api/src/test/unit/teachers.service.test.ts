@@ -27,8 +27,7 @@ describe('createTeacherService', () => {
     vi.mocked(repo.findTeacherByEmailRepository).mockResolvedValue(undefined)
     vi.mocked(repo.createTeacherRepository).mockResolvedValue(mockTeacher)
 
-    const result = await createTeacherService({
-      schoolId: 'school-id',
+    const result = await createTeacherService('school-id', {
       name: 'Prof. Ana',
       email: 'ana@escola.com',
       password: 'senha123!',
@@ -44,7 +43,7 @@ describe('createTeacherService', () => {
     vi.mocked(repo.findTeacherByEmailRepository).mockResolvedValue({ id: 'existing' })
 
     await expect(
-      createTeacherService({ schoolId: 'school-id', name: 'Novo', email: 'ana@escola.com', password: 'senha123!' }),
+      createTeacherService('school-id', { name: 'Novo', email: 'ana@escola.com', password: 'senha123!' }),
     ).rejects.toThrow('Teacher already exists with this email')
 
     expect(repo.createTeacherRepository).not.toHaveBeenCalled()
@@ -54,7 +53,7 @@ describe('createTeacherService', () => {
     vi.mocked(repo.findTeacherByEmailRepository).mockResolvedValue(undefined)
     vi.mocked(repo.createTeacherRepository).mockResolvedValue(mockTeacher)
 
-    await createTeacherService({ schoolId: 'school-id', name: 'Ana', email: 'ANA@ESCOLA.COM', password: '123456789' })
+    await createTeacherService('school-id', { name: 'Ana', email: 'ANA@ESCOLA.COM', password: '123456789' })
 
     expect(repo.findTeacherByEmailRepository).toHaveBeenCalledWith('school-id', 'ana@escola.com')
   })
@@ -63,7 +62,7 @@ describe('createTeacherService', () => {
     vi.mocked(repo.findTeacherByEmailRepository).mockResolvedValue(undefined)
     vi.mocked(repo.createTeacherRepository).mockResolvedValue(mockTeacher)
 
-    await createTeacherService({ schoolId: 'school-id', name: 'Ana', email: 'ana@escola.com', password: 'senha123!' })
+    await createTeacherService('school-id', { name: 'Ana', email: 'ana@escola.com', password: 'senha123!' })
 
     const callArgs = vi.mocked(repo.createTeacherRepository).mock.calls[0][0]
     expect(callArgs.passwordHash).not.toBe('senha123!')
@@ -126,11 +125,11 @@ describe('deleteTeacherService', () => {
 
 describe('listTeachersService', () => {
   it('retorna lista de professores da escola', async () => {
-    vi.mocked(repo.findAllTeachersRepository).mockResolvedValue([mockTeacher])
+    vi.mocked(repo.findAllTeachersRepository).mockResolvedValue({ data: [mockTeacher], total: 1 })
 
     const result = await listTeachersService('school-id')
 
-    expect(result).toHaveLength(1)
-    expect(repo.findAllTeachersRepository).toHaveBeenCalledWith('school-id')
+    expect(result.data).toHaveLength(1)
+    expect(repo.findAllTeachersRepository).toHaveBeenCalledWith('school-id', {})
   })
 })

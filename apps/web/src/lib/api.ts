@@ -9,6 +9,11 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  // Injeta schoolId ativo para secretaria
+  const activeSchoolId = sessionStorage.getItem('activeSchoolId')
+  if (activeSchoolId) {
+    config.headers['X-School-Id'] = activeSchoolId
+  }
   return config
 })
 

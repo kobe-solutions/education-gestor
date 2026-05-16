@@ -1,29 +1,38 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, count } from 'drizzle-orm'
 import { db } from '../../db'
 import { tuitions } from '../../db/schema'
 
 type CreateTuitionRepositoryInput = {
   schoolId: string
   studentId: string
-  amount: string
+  amount: number
   dueDate: string
 }
 
-export async function findAllTuitionsRepository(schoolId: string) {
-  return db
-    .select({
-      id: tuitions.id,
-      schoolId: tuitions.schoolId,
-      studentId: tuitions.studentId,
-      amount: tuitions.amount,
-      dueDate: tuitions.dueDate,
-      paidAt: tuitions.paidAt,
-      status: tuitions.status,
-      createdAt: tuitions.createdAt,
-      updatedAt: tuitions.updatedAt,
-    })
-    .from(tuitions)
-    .where(eq(tuitions.schoolId, schoolId))
+export async function findAllTuitionsRepository(
+  schoolId: string,
+  { limit = 100, offset = 0 }: { limit?: number; offset?: number } = {},
+) {
+  const tuitionFields = {
+    id: tuitions.id,
+    schoolId: tuitions.schoolId,
+    studentId: tuitions.studentId,
+    amount: tuitions.amount,
+    dueDate: tuitions.dueDate,
+    paidAt: tuitions.paidAt,
+    status: tuitions.status,
+    createdAt: tuitions.createdAt,
+    updatedAt: tuitions.updatedAt,
+  }
+  const [data, [countResult]] = await Promise.all([
+    db.select(tuitionFields).from(tuitions)
+      .where(eq(tuitions.schoolId, schoolId))
+      .orderBy(tuitions.dueDate)
+      .limit(limit).offset(offset),
+    db.select({ total: count() }).from(tuitions)
+      .where(eq(tuitions.schoolId, schoolId)),
+  ])
+  return { data, total: countResult.total }
 }
 
 export async function findTuitionsByStudentRepository(schoolId: string, studentId: string) {
@@ -69,9 +78,37 @@ export async function createTuitionRepository(input: CreateTuitionRepositoryInpu
     .values({
       schoolId: input.schoolId,
       studentId: input.studentId,
-      amount: input.amount,
+      amount: input.amount.toString(),
       dueDate: input.dueDate,
     })
+    .returning({
+      id: tuitions.id,
+      schoolId: tuitions.schoolId,
+      studentId: tuitions.studentId,
+      amount: tuitions.amount,
+      dueDate: tuitions.dueDate,
+      paidAt: tuitions.paidAt,
+      status: tuitions.status,
+      createdAt: tuitions.createdAt,
+      updatedAt: tuitions.updatedAt,
+    })
+
+  return tuition
+}
+
+export async function updateTuitionRepository(
+  schoolId: string,
+  id: string,
+  input: { amount?: number; dueDate?: string },
+) {
+  const setValues: { amount?: string; dueDate?: string; updatedAt: Date } = { updatedAt: new Date() }
+  if (input.amount !== undefined) setValues.amount = input.amount.toString()
+  if (input.dueDate !== undefined) setValues.dueDate = input.dueDate
+
+  const [tuition] = await db
+    .update(tuitions)
+    .set(setValues)
+    .where(and(eq(tuitions.schoolId, schoolId), eq(tuitions.id, id)))
     .returning({
       id: tuitions.id,
       schoolId: tuitions.schoolId,

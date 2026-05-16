@@ -1,16 +1,10 @@
-import { randomBytes, scryptSync } from 'node:crypto'
+import { hashPassword } from '../../lib/crypto'
 import { createAdminRepository, findAdminByEmailRepository } from './admins.repository'
 
 type CreateAdminServiceInput = {
   name: string
   email: string
   password: string
-}
-
-function hashPassword(password: string) {
-  const salt = randomBytes(16).toString('hex')
-  const hash = scryptSync(password, salt, 64).toString('hex')
-  return `${salt}:${hash}`
 }
 
 export async function createAdminService(input: CreateAdminServiceInput) {

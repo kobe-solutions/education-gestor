@@ -2,40 +2,40 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../lib/api'
 import type { Teacher } from '@education-gestor/types'
 
+export type TeacherCreateInput = Pick<Teacher,
+  'name' | 'email' |
+  'cpf' | 'rg' | 'birthDate' | 'sex' | 'nationality' | 'maritalStatus' | 'phone' |
+  'addressCep' | 'addressStreet' | 'addressNumber' | 'addressComplement' |
+  'addressNeighborhood' | 'addressCity' | 'addressState' |
+  'position' | 'contractType' | 'workload' | 'workShift' |
+  'educationLevel' | 'degree' | 'institution' | 'professionalRegistry' |
+  'bank' | 'agency' | 'accountNumber' | 'accountType' | 'pixKey'
+> & { password: string }
+
+export type TeacherUpdateInput = Partial<Omit<TeacherCreateInput, 'password'>> & {
+  employmentStatus?: Teacher['employmentStatus']
+}
+
 export function useTeachers() {
   return useQuery({
     queryKey: ['teachers'],
-    queryFn: async () => {
-      const res = await api.get<Teacher[]>('/teachers')
-      return res.data
-    },
+    queryFn: async () => (await api.get<Teacher[]>('/teachers')).data,
   })
 }
 
 export function useTeacher(id: string) {
   return useQuery({
     queryKey: ['teachers', id],
-    queryFn: async () => {
-      const res = await api.get<Teacher>(`/teachers/${id}`)
-      return res.data
-    },
+    queryFn: async () => (await api.get<Teacher>(`/teachers/${id}`)).data,
     enabled: !!id,
   })
-}
-
-interface TeacherInput {
-  name: string
-  email: string
-  password?: string
 }
 
 export function useCreateTeacher() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (data: TeacherInput) => {
-      const res = await api.post<Teacher>('/teachers', data)
-      return res.data
-    },
+    mutationFn: async (data: Partial<TeacherCreateInput> & { name: string; email: string; password: string }) =>
+      (await api.post<Teacher>('/teachers', data)).data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),
   })
 }
@@ -43,10 +43,8 @@ export function useCreateTeacher() {
 export function useUpdateTeacher(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (data: Partial<TeacherInput>) => {
-      const res = await api.put<Teacher>(`/teachers/${id}`, data)
-      return res.data
-    },
+    mutationFn: async (data: TeacherUpdateInput) =>
+      (await api.put<Teacher>(`/teachers/${id}`, data)).data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teachers'] })
       qc.invalidateQueries({ queryKey: ['teachers', id] })
@@ -57,9 +55,15 @@ export function useUpdateTeacher(id: string) {
 export function useDeleteTeacher() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (id: string) => {
-      await api.delete(`/teachers/${id}`)
-    },
+    mutationFn: async (id: string) => { await api.delete(`/teachers/${id}`) },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),
+  })
+}
+
+export function useChangeTeacherPassword(id: string) {
+  return useMutation({
+    mutationFn: async (password: string) => {
+      await api.put(`/teachers/${id}/password`, { password })
+    },
   })
 }

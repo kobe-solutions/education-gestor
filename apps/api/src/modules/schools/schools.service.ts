@@ -1,8 +1,16 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { hashPassword } from '../../lib/crypto'
 import {
   createSchoolRepository,
   findSchoolByEmailRepository,
+  findSchoolByIdRepository,
   findSchoolBySlugOrEmailRepository,
+  listSchoolsRepository,
+  listSchoolsBySecretariaRepository,
+  updateSchoolRepository,
+  updateSchoolPasswordRepository,
+  deleteSchoolRepository,
+  linkSchoolToSecretariaRepository,
+  isSchoolOwnedBySecretariaRepository,
 } from './schools.repository'
 
 type CreateSchoolServiceInput = {
@@ -10,34 +18,11 @@ type CreateSchoolServiceInput = {
   slug: string
   email: string
   password: string
-}
-
-type AuthenticateSchoolServiceInput = {
-  email: string
-  password: string
-}
-
-function hashPassword(password: string) {
-  const salt = randomBytes(16).toString('hex')
-  const hash = scryptSync(password, salt, 64).toString('hex')
-  return `${salt}:${hash}`
-}
-
-function verifyPassword(password: string, storedHash: string) {
-  const [salt, originalHash] = storedHash.split(':')
-
-  if (!salt || !originalHash) {
-    return false
-  }
-
-  const hashBuffer = scryptSync(password, salt, 64)
-  const originalHashBuffer = Buffer.from(originalHash, 'hex')
-
-  if (hashBuffer.length !== originalHashBuffer.length) {
-    return false
-  }
-
-  return timingSafeEqual(hashBuffer, originalHashBuffer)
+  secretariaId: string
+  director?: string
+  coordinator?: string
+  phone?: string
+  address?: string
 }
 
 export async function createSchoolService(input: CreateSchoolServiceInput) {
@@ -54,7 +39,13 @@ export async function createSchoolService(input: CreateSchoolServiceInput) {
     slug: normalizedSlug,
     email: normalizedEmail,
     passwordHash: hashPassword(input.password),
+    director: input.director?.trim() || null,
+    coordinator: input.coordinator?.trim() || null,
+    phone: input.phone?.trim() || null,
+    address: input.address?.trim() || null,
   })
+
+  await linkSchoolToSecretariaRepository(school.id, input.secretariaId)
 
   return {
     ...school,
@@ -62,23 +53,68 @@ export async function createSchoolService(input: CreateSchoolServiceInput) {
   }
 }
 
-export async function authenticateSchoolService(input: AuthenticateSchoolServiceInput) {
-  const normalizedEmail = input.email.toLowerCase().trim()
-  const school = await findSchoolByEmailRepository(normalizedEmail)
+export async function listSchoolsService(secretariaId?: string) {
+  if (secretariaId) return listSchoolsBySecretariaRepository(secretariaId)
+  return listSchoolsRepository()
+}
 
-  if (!school) {
-    throw new Error('Invalid credentials')
-  }
+export async function getSchoolService(id: string) {
+  const school = await findSchoolByIdRepository(id)
+  if (!school) throw new Error('School not found')
+  return school
+}
 
-  const passwordMatches = verifyPassword(input.password, school.passwordHash)
+type UpdateSchoolServiceInput = {
+  name?: string
+  slug?: string
+  email?: string
+  director?: string | null
+  coordinator?: string | null
+  phone?: string | null
+  address?: string | null
+}
 
-  if (!passwordMatches) {
-    throw new Error('Invalid credentials')
-  }
+type RequesterInfo = { role: string; secretariaId?: string }
 
-  return {
-    userId: school.id,
-    schoolId: school.id,
-    role: 'gestor' as const,
+async function assertOwnership(schoolId: string, requester: RequesterInfo) {
+  if (requester.role === 'secretaria') {
+    const owns = await isSchoolOwnedBySecretariaRepository(schoolId, requester.secretariaId!)
+    if (!owns) throw new Error('Forbidden')
   }
 }
+
+export async function updateSchoolService(id: string, data: UpdateSchoolServiceInput, requester: RequesterInfo) {
+  const school = await findSchoolByIdRepository(id)
+  if (!school) throw new Error('School not found')
+  await assertOwnership(id, requester)
+
+  if (data.email || data.slug) {
+    const existing = await findSchoolBySlugOrEmailRepository(
+      data.slug ?? school.slug,
+      data.email ?? school.email,
+    )
+    if (existing && existing.id !== id) {
+      throw new Error('School already exists with this slug or email')
+    }
+  }
+
+  if (data.email) data.email = data.email.toLowerCase().trim()
+  if (data.slug) data.slug = data.slug.trim().toLowerCase()
+
+  return updateSchoolRepository(id, data)
+}
+
+export async function changeSchoolPasswordService(id: string, password: string, requester: RequesterInfo) {
+  const school = await findSchoolByIdRepository(id)
+  if (!school) throw new Error('School not found')
+  await assertOwnership(id, requester)
+  await updateSchoolPasswordRepository(id, hashPassword(password))
+}
+
+export async function deleteSchoolService(id: string, requester: RequesterInfo) {
+  const school = await findSchoolByIdRepository(id)
+  if (!school) throw new Error('School not found')
+  await assertOwnership(id, requester)
+  await deleteSchoolRepository(id)
+}
+

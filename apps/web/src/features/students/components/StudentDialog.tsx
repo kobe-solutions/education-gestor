@@ -2,11 +2,13 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import type { AxiosError } from 'axios'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { useCreateStudent, useUpdateStudent } from '../hooks/useStudents'
+import { toast } from '../../../lib/toast'
 import type { Student } from '@education-gestor/types'
 
 const schema = z.object({
@@ -49,7 +51,16 @@ export function StudentDialog({ open, onClose, student }: StudentDialogProps) {
   function onSubmit(data: FormData) {
     const payload = { ...data, email: data.email || undefined, birthDate: data.birthDate || undefined }
     const mutation = isEdit ? updateMutation : createMutation
-    mutation.mutate(payload as any, { onSuccess: onClose })
+    mutation.mutate(payload as any, {
+      onSuccess: () => {
+        toast.success(isEdit ? 'Aluno atualizado' : 'Aluno criado com sucesso')
+        onClose()
+      },
+      onError: (err) => {
+        const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
+        toast.error(msg ?? 'Erro inesperado')
+      },
+    })
   }
 
   const isPending = createMutation.isPending || updateMutation.isPending

@@ -4,55 +4,57 @@ import {
   createSchoolClassRepository,
   updateSchoolClassRepository,
   deleteSchoolClassRepository,
-  addTeacherToClassRepository,
   addStudentToClassRepository,
   removeStudentFromClassRepository,
-  findClassTeacherLinkRepository,
   findClassStudentLinkRepository,
-  findTeachersByClassRepository,
   findStudentsByClassRepository,
+  countStudentsByClassesRepository,
+  findClassesByStudentRepository,
 } from './schoolClasses.repository'
-import { findTeacherByIdRepository } from '../teachers/teachers.repository'
+import { findDistinctTeachersByClassRepository } from '../timetable/timetable.repository'
 import { findStudentByIdRepository } from '../students/students.repository'
 
 type CreateSchoolClassServiceInput = {
   schoolId: string
   name: string
-  grade: string
-  termTime: string
   shift: string
+  serieId?: string
+  academicPeriodId?: string
 }
 
 type UpdateSchoolClassServiceInput = {
   name?: string
-  grade?: string
   shift?: string
-  termTime?: string
+  serieId?: string | null
+  academicPeriodId?: string | null
 }
 
 export async function listSchoolClassesService(schoolId: string) {
-  return findAllSchoolClassesRepository(schoolId)
+  const classes = await findAllSchoolClassesRepository(schoolId)
+  if (classes.length === 0) return classes.map((c) => ({ ...c, studentCount: 0 }))
+  const counts = await countStudentsByClassesRepository(classes.map((c) => c.id))
+  return classes.map((c) => ({ ...c, studentCount: counts[c.id] ?? 0 }))
 }
 
 export async function getSchoolClassService(schoolId: string, id: string) {
   const schoolClass = await findSchoolClassByIdRepository(schoolId, id)
   if (!schoolClass) throw new Error('Class not found')
 
-  const [classTeachers, classStudents] = await Promise.all([
-    findTeachersByClassRepository(id),
+  const [teachers, students] = await Promise.all([
+    findDistinctTeachersByClassRepository(schoolId, id),
     findStudentsByClassRepository(id),
   ])
 
-  return { ...schoolClass, teachers: classTeachers, students: classStudents }
+  return { ...schoolClass, teachers, students }
 }
 
 export async function createSchoolClassService(input: CreateSchoolClassServiceInput) {
   return createSchoolClassRepository({
     schoolId: input.schoolId,
     name: input.name.trim(),
-    grade: input.grade,
     shift: input.shift,
-    termTime: input.termTime,
+    serieId: input.serieId ?? null,
+    academicPeriodId: input.academicPeriodId ?? null,
   })
 }
 
@@ -74,19 +76,6 @@ export async function deleteSchoolClassService(schoolId: string, id: string) {
   await deleteSchoolClassRepository(schoolId, id)
 }
 
-export async function addTeacherToClassService(schoolId: string, classId: string, teacherId: string) {
-  const schoolClass = await findSchoolClassByIdRepository(schoolId, classId)
-  if (!schoolClass) throw new Error('Class not found')
-
-  const teacher = await findTeacherByIdRepository(schoolId, teacherId)
-  if (!teacher) throw new Error('Teacher not found')
-
-  const alreadyLinked = await findClassTeacherLinkRepository(classId, teacherId)
-  if (alreadyLinked) throw new Error('Teacher already in class')
-
-  return addTeacherToClassRepository(classId, teacherId)
-}
-
 export async function addStudentToClassService(schoolId: string, classId: string, studentId: string) {
   const schoolClass = await findSchoolClassByIdRepository(schoolId, classId)
   if (!schoolClass) throw new Error('Class not found')
@@ -96,6 +85,10 @@ export async function addStudentToClassService(schoolId: string, classId: string
 
   const alreadyLinked = await findClassStudentLinkRepository(classId, studentId)
   if (alreadyLinked) throw new Error('Student already in class')
+
+  const counts = await countStudentsByClassesRepository([classId])
+  const enrolled = counts[classId] ?? 0
+  if (enrolled >= schoolClass.maxStudents) throw new Error('Class is full')
 
   return addStudentToClassRepository(classId, studentId)
 }
@@ -108,4 +101,8 @@ export async function removeStudentFromClassService(schoolId: string, classId: s
   if (!link) throw new Error('Student not in class')
 
   await removeStudentFromClassRepository(classId, studentId)
+}
+
+export async function listStudentClassesService(schoolId: string, studentId: string) {
+  return findClassesByStudentRepository(schoolId, studentId)
 }

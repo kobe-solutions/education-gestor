@@ -6,10 +6,15 @@ import {
   deleteStudentService,
   addGuardianService,
   listGuardiansService,
+  getMedicalService,
+  upsertMedicalService,
+  listDocumentsService,
 } from '../../modules/students/students.service'
 import * as repo from '../../modules/students/students.repository'
+import * as storage from '../../lib/storage'
 
 vi.mock('../../modules/students/students.repository')
+vi.mock('../../lib/storage')
 
 const mockStudent = {
   id: 'student-id',
@@ -17,7 +22,9 @@ const mockStudent = {
   name: 'João Silva',
   email: 'joao@test.com',
   birthDate: '2005-03-15',
-  enrollmentCode: 'MAT001',
+  photoUrl: null,
+  enrollmentCode: '20250001',
+  enrollmentStatus: 'active',
   createdAt: new Date(),
   updatedAt: new Date(),
 }
@@ -28,52 +35,58 @@ const mockGuardian = {
   name: 'Maria Silva',
   phone: '11999999999',
   relationship: 'mãe',
+  isResponsible: true,
+  isAuthorizedPickup: true,
   createdAt: new Date(),
+}
+
+const mockMedical = {
+  id: 'medical-id',
+  schoolId: 'school-id',
+  studentId: 'student-id',
+  allergies: 'Penicilina',
+  medications: null,
+  foodRestrictions: null,
+  diseases: null,
+  medicalContact: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('createStudentService', () => {
-  it('cria aluno quando matrícula é única', async () => {
-    vi.mocked(repo.findStudentByEnrollmentCodeRepository).mockResolvedValue(undefined)
+  it('cria aluno e gera código de matrícula automaticamente', async () => {
+    vi.mocked(repo.generateEnrollmentCodeRepository).mockResolvedValue('20250001')
     vi.mocked(repo.createStudentRepository).mockResolvedValue(mockStudent)
 
-    const result = await createStudentService({
-      schoolId: 'school-id',
-      name: '  João Silva  ',
-      enrollmentCode: 'MAT001',
-    })
+    const result = await createStudentService('school-id', { name: '  João Silva  ' })
 
     expect(result).toEqual(mockStudent)
     expect(repo.createStudentRepository).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'João Silva', enrollmentCode: 'MAT001' }),
+      expect.objectContaining({ name: 'João Silva', enrollmentCode: '20250001', schoolId: 'school-id' }),
     )
   })
 
-  it('lança erro se matrícula já existe', async () => {
-    vi.mocked(repo.findStudentByEnrollmentCodeRepository).mockResolvedValue({ id: 'existing' })
-
-    await expect(
-      createStudentService({ schoolId: 'school-id', name: 'Novo', enrollmentCode: 'MAT001' }),
-    ).rejects.toThrow('Enrollment code already in use')
-
-    expect(repo.createStudentRepository).not.toHaveBeenCalled()
-  })
-
   it('normaliza email para minúsculas', async () => {
-    vi.mocked(repo.findStudentByEnrollmentCodeRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.generateEnrollmentCodeRepository).mockResolvedValue('20250001')
     vi.mocked(repo.createStudentRepository).mockResolvedValue(mockStudent)
 
-    await createStudentService({
-      schoolId: 'school-id',
-      name: 'Test',
-      enrollmentCode: 'MAT002',
-      email: 'JOAO@TEST.COM',
-    })
+    await createStudentService('school-id', { name: 'Test', email: 'JOAO@TEST.COM' })
 
     expect(repo.createStudentRepository).toHaveBeenCalledWith(
       expect.objectContaining({ email: 'joao@test.com' }),
     )
+  })
+
+  it('define data de matrícula como hoje se não informada', async () => {
+    vi.mocked(repo.generateEnrollmentCodeRepository).mockResolvedValue('20250001')
+    vi.mocked(repo.createStudentRepository).mockResolvedValue(mockStudent)
+
+    await createStudentService('school-id', { name: 'Test' })
+
+    const callArgs = vi.mocked(repo.createStudentRepository).mock.calls[0][0]
+    expect(callArgs.enrollmentDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
   })
 })
 
@@ -117,7 +130,7 @@ describe('updateStudentService', () => {
     vi.mocked(repo.findStudentByEnrollmentCodeRepository).mockResolvedValue({ id: 'outro-aluno' })
 
     await expect(
-      updateStudentService('school-id', 'student-id', { enrollmentCode: 'MAT999' }),
+      updateStudentService('school-id', 'student-id', { enrollmentCode: '20259999' }),
     ).rejects.toThrow('Enrollment code already in use')
   })
 
@@ -125,20 +138,28 @@ describe('updateStudentService', () => {
     vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(mockStudent)
     vi.mocked(repo.updateStudentRepository).mockResolvedValue(mockStudent)
 
-    // Mesma matrícula → findStudentByEnrollmentCodeRepository não deve ser chamado
-    await updateStudentService('school-id', 'student-id', { enrollmentCode: 'MAT001' })
+    await updateStudentService('school-id', 'student-id', { enrollmentCode: '20250001' })
 
     expect(repo.findStudentByEnrollmentCodeRepository).not.toHaveBeenCalled()
   })
 })
 
 describe('deleteStudentService', () => {
-  it('deleta aluno quando existe', async () => {
+  it('deleta aluno sem foto', async () => {
     vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(mockStudent)
-    vi.mocked(repo.deleteStudentRepository).mockResolvedValue(undefined)
 
     await expect(deleteStudentService('school-id', 'student-id')).resolves.not.toThrow()
     expect(repo.deleteStudentRepository).toHaveBeenCalledWith('school-id', 'student-id')
+  })
+
+  it('deleta foto no storage ao remover aluno', async () => {
+    vi.mocked(repo.findStudentByIdRepository).mockResolvedValue({ ...mockStudent, photoUrl: 'https://s3.example.com/photo.jpg' })
+    vi.mocked(storage.extractKeyFromUrl).mockReturnValue('photo.jpg')
+    vi.mocked(storage.deleteFile).mockResolvedValue(undefined)
+
+    await deleteStudentService('school-id', 'student-id')
+
+    expect(storage.deleteFile).toHaveBeenCalledWith('photo.jpg')
   })
 
   it('lança erro se aluno não existe', async () => {
@@ -154,21 +175,24 @@ describe('addGuardianService', () => {
     vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(mockStudent)
     vi.mocked(repo.createGuardianRepository).mockResolvedValue(mockGuardian)
 
-    const result = await addGuardianService({
-      studentId: 'student-id',
-      schoolId: 'school-id',
+    const result = await addGuardianService('school-id', 'student-id', {
       name: 'Maria Silva',
       relationship: 'mãe',
+      isResponsible: true,
+      isAuthorizedPickup: true,
     })
 
     expect(result).toEqual(mockGuardian)
+    expect(repo.createGuardianRepository).toHaveBeenCalledWith(
+      expect.objectContaining({ studentId: 'student-id', name: 'Maria Silva' }),
+    )
   })
 
   it('lança erro se aluno não existe', async () => {
     vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(undefined)
 
     await expect(
-      addGuardianService({ studentId: 'nao-existe', schoolId: 'school-id', name: 'X', relationship: 'pai' }),
+      addGuardianService('school-id', 'nao-existe', { name: 'X', relationship: 'pai', isResponsible: false, isAuthorizedPickup: false }),
     ).rejects.toThrow('Student not found')
   })
 })
@@ -187,5 +211,52 @@ describe('listGuardiansService', () => {
     vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(undefined)
 
     await expect(listGuardiansService('school-id', 'nao-existe')).rejects.toThrow('Student not found')
+  })
+})
+
+describe('getMedicalService', () => {
+  it('retorna ficha médica do aluno', async () => {
+    vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(repo.findMedicalByStudentRepository).mockResolvedValue(mockMedical)
+
+    const result = await getMedicalService('school-id', 'student-id')
+
+    expect(result).toEqual(mockMedical)
+  })
+
+  it('retorna null se ficha não existe', async () => {
+    vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(repo.findMedicalByStudentRepository).mockResolvedValue(null)
+
+    const result = await getMedicalService('school-id', 'student-id')
+
+    expect(result).toBeNull()
+  })
+})
+
+describe('upsertMedicalService', () => {
+  it('salva ficha médica do aluno', async () => {
+    vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(repo.upsertMedicalRepository).mockResolvedValue(mockMedical)
+
+    const result = await upsertMedicalService('school-id', 'student-id', { allergies: 'Penicilina' })
+
+    expect(result).toEqual(mockMedical)
+    expect(repo.upsertMedicalRepository).toHaveBeenCalledWith(
+      expect.objectContaining({ schoolId: 'school-id', studentId: 'student-id', allergies: 'Penicilina' }),
+    )
+  })
+})
+
+describe('listDocumentsService', () => {
+  it('retorna documentos do aluno', async () => {
+    const mockDocs = [{ id: 'doc-1', studentId: 'student-id', name: 'RG.pdf', type: 'identidade' }]
+    vi.mocked(repo.findStudentByIdRepository).mockResolvedValue(mockStudent)
+    vi.mocked(repo.findDocumentsByStudentRepository).mockResolvedValue(mockDocs)
+
+    const result = await listDocumentsService('school-id', 'student-id')
+
+    expect(result).toHaveLength(1)
+    expect(result[0].name).toBe('RG.pdf')
   })
 })

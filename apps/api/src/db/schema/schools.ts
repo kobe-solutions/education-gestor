@@ -7,6 +7,11 @@ export const schools = pgTable('schools', {
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   role: text('role').notNull().default('gestor'),
+  director: text('director'),
+  coordinator: text('coordinator'),
+  phone: text('phone'),
+  address: text('address'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  deletedAt: timestamp('deleted_at'),
 })

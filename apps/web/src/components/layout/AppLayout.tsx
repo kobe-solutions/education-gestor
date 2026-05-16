@@ -1,29 +1,98 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import {
   Users,
-  GraduationCap,
   BookOpen,
   DollarSign,
   LayoutDashboard,
   LogOut,
   Building2,
-  CalendarDays,
-  ClipboardList,
+  School,
+  Settings2,
+  Network,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { SchoolSelector } from '../SchoolSelector'
 import { cn } from '../../lib/utils'
-import { Button } from '../ui/button'
+import { Tooltip, TooltipProvider } from '../ui/tooltip'
+import type { TenantPayload } from '@education-gestor/types'
 
-const navItems = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'gestor', 'professor', 'secretaria'] },
-  { to: '/students', label: 'Alunos', icon: Users, roles: ['gestor'] },
-  { to: '/teachers', label: 'Professores', icon: GraduationCap, roles: ['gestor'] },
-  { to: '/classes', label: 'Turmas', icon: BookOpen, roles: ['gestor', 'professor'] },
-  { to: '/grades', label: 'Notas', icon: ClipboardList, roles: ['gestor', 'professor'] },
-  { to: '/attendance', label: 'Frequência', icon: CalendarDays, roles: ['gestor', 'professor'] },
-  { to: '/financial', label: 'Financeiro', icon: DollarSign, roles: ['gestor'] },
-  { to: '/secretarias', label: 'Secretarias', icon: Building2, roles: ['admin'] },
+interface NavItem {
+  to: string
+  label: string
+  icon: React.ElementType
+  roles: string[]
+  matchPaths?: string[]
+}
+
+const navItems: NavItem[] = [
+  {
+    to: '/',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    roles: ['admin', 'gestor', 'professor', 'secretaria'],
+    matchPaths: ['/'],
+  },
+  {
+    to: '/pessoas',
+    label: 'Pessoas',
+    icon: Users,
+    roles: ['gestor', 'secretaria'],
+    matchPaths: ['/pessoas', '/students', '/teachers'],
+  },
+  {
+    to: '/academico',
+    label: 'Acadêmico',
+    icon: BookOpen,
+    roles: ['gestor', 'professor', 'secretaria'],
+    matchPaths: ['/academico', '/classes'],
+  },
+  {
+    to: '/financial',
+    label: 'Financeiro',
+    icon: DollarSign,
+    roles: ['gestor', 'secretaria'],
+    matchPaths: ['/financial'],
+  },
+  {
+    to: '/estrutura',
+    label: 'Estrutura',
+    icon: Network,
+    roles: ['gestor'],
+    matchPaths: ['/estrutura', '/education-levels', '/series'],
+  },
+  {
+    to: '/configuracoes',
+    label: 'Configurações',
+    icon: Settings2,
+    roles: ['gestor'],
+    matchPaths: ['/configuracoes', '/subjects', '/academic-periods'],
+  },
+  {
+    to: '/admin',
+    label: 'Administração',
+    icon: Building2,
+    roles: ['admin'],
+    matchPaths: ['/admin', '/secretarias'],
+  },
+  {
+    to: '/escolas',
+    label: 'Escolas',
+    icon: School,
+    roles: ['secretaria'],
+    matchPaths: ['/escolas', '/schools', '/my-schools'],
+  },
 ]
+
+function isActive(item: NavItem, pathname: string) {
+  if (item.matchPaths) {
+    return item.matchPaths.some((p) =>
+      p === '/' ? pathname === '/' : pathname === p || pathname.startsWith(p + '/'),
+    )
+  }
+  return item.to === '/'
+    ? pathname === '/'
+    : pathname === item.to || pathname.startsWith(item.to + '/')
+}
 
 export function AppLayout() {
   const { payload, logout } = useAuth()
@@ -41,37 +110,62 @@ export function AppLayout() {
 
   return (
     <div className="flex h-screen bg-background">
-      <aside className="w-60 border-r flex flex-col">
-        <div className="h-14 flex items-center px-4 border-b">
-          <span className="font-semibold text-sm">Education Gestor</span>
+      <aside className="w-[72px] border-r flex flex-col items-center py-0 shrink-0">
+        <div className="h-14 w-full flex items-center justify-center border-b">
+          <span className="text-xs font-bold text-primary tracking-wider">EG</span>
         </div>
-        <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-1">
-          {visibleItems.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-                location.pathname === to || (to !== '/' && location.pathname.startsWith(to))
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <div className="p-2 border-t">
-          <Button variant="ghost" size="sm" className="w-full justify-start gap-3 text-muted-foreground" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" />
-            Sair
-          </Button>
+
+        <TooltipProvider>
+          <nav className="flex-1 flex flex-col items-center gap-1 py-3 w-full px-2">
+            {visibleItems.map((item) => {
+              const Icon = item.icon
+              const active = isActive(item, location.pathname)
+              return (
+                <Tooltip key={item.to} content={item.label}>
+                  <Link
+                    to={item.to}
+                    className={cn(
+                      'flex flex-col items-center justify-center gap-1 w-full rounded-lg py-2 transition-colors',
+                      active
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    )}
+                  >
+                    <Icon className="h-[18px] w-[18px]" />
+                    <span className="text-[10px] font-medium leading-none text-center w-full truncate px-1">
+                      {item.label}
+                    </span>
+                  </Link>
+                </Tooltip>
+              )
+            })}
+          </nav>
+        </TooltipProvider>
+
+        <div className="pb-3 px-2 w-full">
+          <TooltipProvider>
+            <Tooltip content="Sair">
+              <button
+                onClick={handleLogout}
+                className="flex flex-col items-center justify-center gap-1 w-full rounded-lg py-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+              >
+                <LogOut className="h-[18px] w-[18px]" />
+                <span className="text-[10px] font-medium leading-none">Sair</span>
+              </button>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </aside>
+
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-14 border-b flex items-center px-6">
+        <header className="h-14 border-b flex items-center px-6 gap-4">
           <span className="text-sm text-muted-foreground capitalize">{role}</span>
+          {role === 'gestor' && (
+            <span className="text-sm font-medium">
+              {(payload as TenantPayload).schoolName}
+            </span>
+          )}
+          {role === 'secretaria' && <SchoolSelector />}
         </header>
         <div className="flex-1 overflow-y-auto p-6">
           <Outlet />

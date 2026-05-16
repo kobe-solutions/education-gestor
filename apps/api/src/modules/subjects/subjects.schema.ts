@@ -15,4 +15,11 @@ export const createSubjectResponseSchema = z.object({
   createdAt: z.date(),
 })
 
+export const updateSubjectBodySchema = z.object({
+  name: z.string().min(2).optional(),
+  code: z.string().min(1).nullable().optional(),
+  weeklyHours: z.number().int().positive().optional(),
+})
+
 export type CreateSubjectBody = z.infer<typeof createSubjectBodySchema>
+export type UpdateSubjectBody = z.infer<typeof updateSubjectBodySchema>

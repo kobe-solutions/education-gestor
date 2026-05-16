@@ -20,7 +20,14 @@ function parseToken(token: string): JwtPayload | null {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
+  const [token, setToken] = useState<string | null>(() => {
+    const t = localStorage.getItem('token')
+    if (t && !parseToken(t)) {
+      localStorage.removeItem('token')
+      return null
+    }
+    return t
+  })
   const [payload, setPayload] = useState<JwtPayload | null>(() => {
     const t = localStorage.getItem('token')
     return t ? parseToken(t) : null

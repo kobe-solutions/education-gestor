@@ -8,7 +8,6 @@ vi.mock('../../modules/classes/schoolClasses.service', () => ({
   createSchoolClassService: vi.fn(),
   updateSchoolClassService: vi.fn(),
   deleteSchoolClassService: vi.fn(),
-  addTeacherToClassService: vi.fn(),
   addStudentToClassService: vi.fn(),
   removeStudentFromClassService: vi.fn(),
 }))
@@ -40,9 +39,11 @@ const mockClass = {
   id: IDS.class,
   schoolId: IDS.school,
   name: '1A',
-  grade: '1',
   shift: 'manhã',
-  termTime: '2025',
+  serieId: null,
+  academicPeriodId: IDS.period,
+  serie: null,
+  academicPeriod: { id: IDS.period, name: '2025' },
   teachers: [],
   students: [],
   createdAt: new Date().toISOString(),
@@ -128,14 +129,27 @@ describe('GET /school-classes/:id', () => {
 })
 
 describe('POST /school-classes', () => {
-  it('retorna 201 ao criar turma', async () => {
+  it('retorna 201 ao criar turma com shift', async () => {
     vi.mocked(classesService.createSchoolClassService).mockResolvedValue(mockClass)
 
     const response = await app.inject({
       method: 'POST',
       url: '/school-classes',
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { name: '1A', grade: '1', shift: 'manhã', termTime: '2025' },
+      body: { name: '1A', shift: 'manhã' },
+    })
+
+    expect(response.statusCode).toBe(201)
+  })
+
+  it('retorna 201 ao criar turma com serie e período', async () => {
+    vi.mocked(classesService.createSchoolClassService).mockResolvedValue(mockClass)
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/school-classes',
+      headers: { authorization: `Bearer ${gestorToken}` },
+      body: { name: '1A', shift: 'manhã', serieId: IDS.class, academicPeriodId: IDS.period },
     })
 
     expect(response.statusCode).toBe(201)
@@ -146,45 +160,10 @@ describe('POST /school-classes', () => {
       method: 'POST',
       url: '/school-classes',
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { name: 'A' }, // campos obrigatórios faltando
+      body: { name: 'A' }, // nome muito curto
     })
 
     expect(response.statusCode).toBe(400)
-  })
-})
-
-describe('POST /school-classes/:id/teachers', () => {
-  it('retorna 201 ao adicionar professor à turma', async () => {
-    vi.mocked(classesService.addTeacherToClassService).mockResolvedValue({
-      id: 'link-id',
-      classId: IDS.class,
-      teacherId: IDS.teacher,
-      createdAt: new Date(),
-    })
-
-    const response = await app.inject({
-      method: 'POST',
-      url: '/school-classes/class-id/teachers',
-      headers: { authorization: `Bearer ${gestorToken}` },
-      body: { id: IDS.teacher },
-    })
-
-    expect(response.statusCode).toBe(201)
-  })
-
-  it('retorna 409 se professor já está na turma', async () => {
-    vi.mocked(classesService.addTeacherToClassService).mockRejectedValue(
-      new Error('Teacher already in class'),
-    )
-
-    const response = await app.inject({
-      method: 'POST',
-      url: '/school-classes/class-id/teachers',
-      headers: { authorization: `Bearer ${gestorToken}` },
-      body: { id: IDS.teacher },
-    })
-
-    expect(response.statusCode).toBe(409)
   })
 })
 
