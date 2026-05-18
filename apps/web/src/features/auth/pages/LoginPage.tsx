@@ -73,7 +73,7 @@ export function LoginPage() {
 
       <div className="text-center -mt-1">
         <h1 className="font-bold" style={{ fontSize: 18, color: '#042C53' }}>
-          Bem-vindo de volta
+          Bem-vindo
         </h1>
         <p className="text-xs mt-1" style={{ color: 'var(--iris-slate-500)' }}>
           Acesse a gestão escolar da sua instituição
