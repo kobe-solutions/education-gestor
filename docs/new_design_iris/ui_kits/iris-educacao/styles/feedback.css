@@ -1,0 +1,21 @@
+/* Feedback layer — dialog, toast, empty state. */
+
+/* ── Dialog ───────────────────────────────────────────────────────────────── */
+.dlg-scrim { position: fixed; inset: 0; background: rgba(4,44,83,.45); display:flex; align-items:center; justify-content:center; z-index: 30; }
+.dlg { width: 460px; background:#fff; border-radius: 14px; box-shadow: var(--shadow-lg); overflow:hidden; }
+.dlg .head  { padding: 18px 22px 6px; }
+.dlg .title { font-size: 17px; font-weight: 700; color: var(--fg-1); }
+.dlg .desc  { font-size: 12px; color: var(--fg-3); margin-top: 4px; }
+.dlg .body  { padding: 12px 22px 20px; display: flex; flex-direction: column; gap: 12px; }
+.dlg .foot  { padding: 12px 22px; background: var(--iris-slate-50); display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-1); }
+
+/* ── Toast ────────────────────────────────────────────────────────────────── */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--iris-blue-900); color: #fff; padding: 12px 16px; border-radius: 8px; font-size: 13px; box-shadow: var(--shadow-lg); display:flex; align-items:center; gap:10px; z-index: 50; animation: slideIn 240ms var(--ease-out-soft); }
+.toast.success { background: var(--iris-success-600); }
+@keyframes slideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+.empty { padding: 60px 0; display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(--fg-3); }
+.empty svg     { color: var(--iris-blue-300); }
+.empty .ttl    { font-size: 14px; font-weight: 600; color: var(--fg-1); }
+.empty .ds     { font-size: 12px; color: var(--fg-3); max-width: 320px; text-align: center; }

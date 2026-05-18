@@ -17,6 +17,7 @@ export async function authenticateService(input: AuthenticateServiceInput) {
     return {
       userId: admin.id,
       schoolId: admin.id,
+      name: admin.name,
       role: 'admin' as const,
     }
   }
@@ -26,6 +27,7 @@ export async function authenticateService(input: AuthenticateServiceInput) {
     return {
       userId: secretaria.id,
       secretariaId: secretaria.id,
+      name: secretaria.name,
       role: 'secretaria' as const,
     }
   }
@@ -35,7 +37,7 @@ export async function authenticateService(input: AuthenticateServiceInput) {
     return {
       userId: school.id,
       schoolId: school.id,
-      schoolName: school.name,
+      name: school.name,
       role: 'gestor' as const,
     }
   }
@@ -46,6 +48,7 @@ export async function authenticateService(input: AuthenticateServiceInput) {
       return {
         userId: teacher.id,
         schoolId: teacher.schoolId,
+        name: teacher.name,
         role: 'professor' as const,
       }
     }

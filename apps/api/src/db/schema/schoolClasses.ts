@@ -1,7 +1,7 @@
 import { pgTable, uuid, text, timestamp, uniqueIndex, integer } from 'drizzle-orm/pg-core'
 import { schools } from './schools'
 import { series } from './series'
-import { academicPeriods } from './academicPeriods'
+import { academicYears } from './academicYears'
 
 export const schoolClasses = pgTable(
   'schoolClasses',
@@ -11,7 +11,7 @@ export const schoolClasses = pgTable(
       .notNull()
       .references(() => schools.id),
     serieId: uuid('serie_id').references(() => series.id, { onDelete: 'set null' }),
-    academicPeriodId: uuid('academic_period_id').references(() => academicPeriods.id, {
+    academicYearId: uuid('academic_year_id').references(() => academicYears.id, {
       onDelete: 'set null',
     }),
     name: text('name').notNull(),

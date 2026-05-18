@@ -1,0 +1,42 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+.field { display:flex; flex-direction:column; gap:5px; min-width: 200px; }
+.lbl   { font-size: 12px; font-weight: 600; color: #1F2A37; }
+.inp   { height: 36px; padding: 0 12px; border-radius: 6px; border: 1px solid #D1D5DB; background:#fff; font: 400 13px/1 var(--font-body); color:#0B1E33; }
+.inp:focus, .inp.focus { outline: none; border-color:#378ADD; box-shadow: 0 0 0 3px rgba(55,138,221,.25); }
+.inp.err { border-color:#B91C1C; box-shadow: 0 0 0 3px rgba(185,28,28,.18); }
+.help  { font-size: 11px; color: var(--fg-3); }
+.err-msg { font-size: 11px; color:#B91C1C; }
+.search { position:relative; }
+.search svg { position:absolute; left:10px; top:50%; transform: translateY(-50%); }
+.search .inp { padding-left: 32px; min-width: 240px; }
+.row-f { display:flex; gap:16px; align-items:flex-start; flex-wrap: wrap; }
+</style>
+</head>
+<body><div class="card">
+  <div class="row-f">
+    <div class="field">
+      <div class="lbl">Email</div>
+      <input class="inp" value="diretor@colegio.com" />
+      <div class="help">Usado para enviar relatórios mensais</div>
+    </div>
+    <div class="field">
+      <div class="lbl">Senha</div>
+      <input class="inp focus" type="password" value="••••••••" />
+      <div class="help">Mínimo 8 caracteres</div>
+    </div>
+    <div class="field">
+      <div class="lbl">Nota</div>
+      <input class="inp err" value="11" />
+      <div class="err-msg">Nota deve estar entre 0 e 10</div>
+    </div>
+    <div class="field">
+      <div class="lbl">Buscar</div>
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="inp" placeholder="Buscar aluno ou matrícula…" />
+      </div>
+    </div>
+  </div>
+</div></body></html>

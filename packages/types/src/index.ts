@@ -2,19 +2,21 @@ export type UserRole = 'admin' | 'gestor' | 'professor' | 'secretaria'
 
 export type AdminPayload = {
   userId: string
+  name: string
   role: 'admin'
 }
 
 export type SecretariaPayload = {
   userId: string
   secretariaId: string
+  name: string
   role: 'secretaria'
 }
 
 export type TenantPayload = {
   userId: string
   schoolId: string
-  schoolName?: string
+  name: string
   role: 'gestor' | 'professor'
 }
 
@@ -176,13 +178,32 @@ export interface SchoolClass {
   updatedAt: string
 }
 
-export interface AcademicPeriod {
+export interface AcademicYear {
   id: string
   schoolId: string
+  year: number
   name: string
   startDate: string
   endDate: string
-  active: boolean
+  registrationStart: string | null
+  registrationEnd: string | null
+  status: 'planning' | 'active' | 'closed'
+  createdAt: string
+  updatedAt: string
+}
+
+export type PeriodType = 'bimestre' | 'trimestre' | 'semestre'
+
+export interface AcademicPeriod {
+  id: string
+  schoolId: string
+  academicYearId: string
+  name: string
+  type: PeriodType
+  order: number
+  startDate: string
+  endDate: string
+  gradeClosingDate: string | null
   createdAt: string
   updatedAt: string
 }

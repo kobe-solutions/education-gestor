@@ -1,16 +1,21 @@
 import 'dotenv/config'
-import { sql } from 'drizzle-orm'
 import { db } from '../db'
 import { tuitions } from '../db/schema/financial'
 import { attendances, grades } from '../db/schema/academic'
 import { classStudents } from '../db/schema/classRelations'
+import { timetableSlots } from '../db/schema/timetableSlots'
+import { teacherSubjects } from '../db/schema/teacherSubjects'
+import { studentMedical } from '../db/schema/studentMedical'
+import { studentDocuments } from '../db/schema/studentDocuments'
 import { guardians, students } from '../db/schema/students'
 import { schoolClasses } from '../db/schema/schoolClasses'
 import { teachers } from '../db/schema/teachers'
 import { subjects } from '../db/schema/subjects'
 import { series } from '../db/schema/series'
 import { educationLevels } from '../db/schema/educationLevels'
+import { classPeriods } from '../db/schema/classPeriods'
 import { academicPeriods } from '../db/schema/academicPeriods'
+import { academicYears } from '../db/schema/academicYears'
 import { schools } from '../db/schema/schools'
 import { admins } from '../db/schema/admins'
 
@@ -19,7 +24,11 @@ const TABELAS = [
   { nome: 'tuitions', tabela: tuitions },
   { nome: 'attendances', tabela: attendances },
   { nome: 'grades', tabela: grades },
+  { nome: 'timetable_slots', tabela: timetableSlots },
   { nome: 'class_students', tabela: classStudents },
+  { nome: 'teacher_subjects', tabela: teacherSubjects },
+  { nome: 'student_medical', tabela: studentMedical },
+  { nome: 'student_documents', tabela: studentDocuments },
   { nome: 'guardians', tabela: guardians },
   { nome: 'students', tabela: students },
   { nome: 'schoolClasses', tabela: schoolClasses },
@@ -27,7 +36,9 @@ const TABELAS = [
   { nome: 'subjects', tabela: subjects },
   { nome: 'series', tabela: series },
   { nome: 'education_levels', tabela: educationLevels },
+  { nome: 'class_periods', tabela: classPeriods },
   { nome: 'academic_periods', tabela: academicPeriods },
+  { nome: 'academic_years', tabela: academicYears },
   { nome: 'schools', tabela: schools },
   { nome: 'admins', tabela: admins },
 ] as const

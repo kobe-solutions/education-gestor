@@ -37,7 +37,7 @@ export async function timetableRoutes(app: FastifyInstance) {
   app.post('/timetable-slots', { preHandler }, async (request, reply) => {
     try {
       const body = createTimetableSlotBodySchema.parse(request.body)
-      const slot = await createTimetableSlotService({ schoolId: getSchoolId(request), ...body })
+      const slot = await createTimetableSlotService(getSchoolId(request), body)
       return reply.status(201).send(slot)
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher already has a slot at this time') {

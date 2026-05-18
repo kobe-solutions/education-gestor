@@ -4,53 +4,31 @@ import { useDashboard, isAdminDashboard } from '../features/dashboard/hooks/useD
 import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
 import { TuitionStatusBadge } from '../features/financial/components/TuitionStatusBadge'
-import { Card, CardContent } from '../components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
+import { PageHead } from '../components/PageHead'
+import { MetricCard } from '../components/MetricCard'
+import { Surface } from '../components/Surface'
 import { Skeleton } from '../components/ui/skeleton'
 import { Button } from '../components/ui/button'
 
-function MetricCard({
-  icon: Icon,
-  label,
-  value,
-  sub,
-  color,
-}: {
-  icon: React.ElementType
-  label: string
-  value: number | string
-  sub?: string
-  color: string
-}) {
-  return (
-    <Card>
-      <CardContent className="flex items-center gap-4 pt-6">
-        <div className={`rounded-full p-3 ${color}`}>
-          <Icon className="h-5 w-5 text-white" />
-        </div>
-        <div>
-          <p className="text-2xl font-bold">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
-        </div>
-      </CardContent>
-    </Card>
-  )
+function fmtBRL(v: string | number) {
+  return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
 function SkeletonCards({ count }: { count: number }) {
   return (
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
       {Array.from({ length: count }).map((_, i) => (
-        <Card key={i}>
-          <CardContent className="flex items-center gap-4 pt-6">
-            <Skeleton className="h-11 w-11 rounded-full" />
-            <div className="space-y-2 flex-1">
-              <Skeleton className="h-6 w-12" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-          </CardContent>
-        </Card>
+        <div
+          key={i}
+          className="flex items-center gap-4 p-4 rounded-xl"
+          style={{ background: '#fff', border: '1px solid var(--iris-slate-200)' }}
+        >
+          <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-6 w-12" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
       ))}
     </div>
   )
@@ -66,11 +44,11 @@ export function DashboardPage() {
   if (isSecretariaWithoutSchool) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <School className="h-12 w-12 text-muted-foreground" />
+        <School className="h-12 w-12" style={{ color: 'var(--iris-slate-300)' }} />
         <div className="text-center">
-          <p className="font-medium">Nenhuma escola selecionada</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Selecione uma escola para visualizar o dashboard
+          <p className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>Nenhuma escola selecionada</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--iris-slate-500)' }}>
+            Selecione uma escola para visualizar o painel
           </p>
         </div>
         <Link to="/my-schools">
@@ -83,7 +61,10 @@ export function DashboardPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
+        <div>
+          <Skeleton className="h-6 w-32 mb-1" />
+          <Skeleton className="h-4 w-56" />
+        </div>
         <SkeletonCards count={payload?.role === 'admin' ? 2 : 6} />
       </div>
     )
@@ -94,95 +75,95 @@ export function DashboardPage() {
   if (isAdminDashboard(data)) {
     return (
       <div className="space-y-6">
-        <h1 className="text-xl font-semibold">Dashboard</h1>
-        <div className="grid grid-cols-2 gap-4 max-w-sm">
-          <MetricCard icon={Building2} label="Secretarias" value={data.secretariasCount} color="bg-violet-500" />
-          <MetricCard icon={School} label="Escolas" value={data.schoolsCount} color="bg-blue-500" />
+        <PageHead title="Painel" subtitle="Visão geral da plataforma" />
+        <div className="grid grid-cols-2 gap-4 max-w-xs">
+          <MetricCard icon={Building2} label="Secretarias" value={data.secretariasCount} color="#185FA5" />
+          <MetricCard icon={School}    label="Escolas"     value={data.schoolsCount}     color="#378ADD" />
         </div>
       </div>
     )
   }
 
-  const fmt = (v: string) => `R$ ${parseFloat(v).toFixed(2)}`
-
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
+      <PageHead
+        title="Painel"
+        subtitle={`Visão geral da escola — ${new Date().getFullYear()}`}
+        actions={
+          <Button variant="outline" size="sm">Exportar relatório</Button>
+        }
+      />
 
+      {/* KPIs */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-        <MetricCard icon={Users} label="Alunos" value={data.studentsCount} color="bg-blue-500" />
-        <MetricCard icon={GraduationCap} label="Professores" value={data.teachersCount} color="bg-indigo-500" />
-        <MetricCard icon={BookOpen} label="Turmas" value={data.classesCount} color="bg-violet-500" />
-        <MetricCard
-          icon={Clock}
-          label="Pendentes"
-          value={data.tuitions.pending.count}
-          sub={fmt(data.tuitions.pending.total)}
-          color="bg-yellow-500"
-        />
-        <MetricCard
-          icon={CheckCircle2}
-          label="Pagas"
-          value={data.tuitions.paid.count}
-          sub={fmt(data.tuitions.paid.total)}
-          color="bg-green-500"
-        />
-        <MetricCard
-          icon={AlertCircle}
-          label="Atrasadas"
-          value={data.tuitions.overdue.count}
-          sub={fmt(data.tuitions.overdue.total)}
-          color="bg-red-500"
-        />
+        <MetricCard icon={Users}         label="Alunos"     value={data.studentsCount}          color="#185FA5" />
+        <MetricCard icon={GraduationCap} label="Professores" value={data.teachersCount}         color="#378ADD" />
+        <MetricCard icon={BookOpen}      label="Turmas"     value={data.classesCount}            color="#042C53" />
+        <MetricCard icon={Clock}         label="Pendentes"  value={data.tuitions.pending.count}  sub={fmtBRL(data.tuitions.pending.total)}  color="#B45309" />
+        <MetricCard icon={CheckCircle2}  label="Pagas"      value={data.tuitions.paid.count}     sub={fmtBRL(data.tuitions.paid.total)}     color="#15803D" />
+        <MetricCard icon={AlertCircle}   label="Atrasadas"  value={data.tuitions.overdue.count}  sub={fmtBRL(data.tuitions.overdue.total)}  color="#B91C1C" />
       </div>
 
+      {/* Tabela de vencimentos próximos */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">Mensalidades vencendo nos próximos 7 dias</h2>
+          <div>
+            <h2 className="font-bold text-base" style={{ color: 'var(--iris-blue-900)' }}>
+              Mensalidades vencendo nos próximos 7 dias
+            </h2>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+              Acompanhe alunos com vencimento próximo.
+            </p>
+          </div>
           <Link to="/financial">
             <Button variant="outline" size="sm">Ver todas</Button>
           </Link>
         </div>
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Aluno</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.upcomingTuitions.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                      Nenhuma mensalidade vencendo nos próximos 7 dias
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  data.upcomingTuitions.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell>
-                        <Link to={`/students/${t.studentId}`} className="font-medium hover:underline">
-                          {t.studentName}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell>{fmt(t.amount)}</TableCell>
-                      <TableCell>
-                        <TuitionStatusBadge status={t.status} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+
+        <Surface>
+          <table className="tbl w-full">
+            <thead>
+              <tr>
+                <th>Aluno</th>
+                <th>Turma</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.upcomingTuitions.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="text-center py-8"
+                    style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                  >
+                    Nenhuma mensalidade vencendo nos próximos 7 dias
+                  </td>
+                </tr>
+              ) : (
+                data.upcomingTuitions.map((t) => (
+                  <tr key={t.id}>
+                    <td>
+                      <Link
+                        to={`/students/${t.studentId}`}
+                        className="font-semibold hover:underline"
+                        style={{ color: 'var(--iris-blue-900)' }}
+                      >
+                        {t.studentName}
+                      </Link>
+                    </td>
+                    <td style={{ color: 'var(--iris-slate-500)' }}>—</td>
+                    <td>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
+                    <td>{fmtBRL(t.amount)}</td>
+                    <td><TuitionStatusBadge status={t.status} /></td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </Surface>
       </div>
     </div>
   )

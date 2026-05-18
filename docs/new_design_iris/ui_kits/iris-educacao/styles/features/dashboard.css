@@ -1,0 +1,3 @@
+/* Dashboard feature — currently no feature-specific overrides; the screen
+   uses .metric, .tbl, .hub-card from primitives.css. Kept here as a stub
+   so feature stylesheets stay 1:1 with feature folders. */

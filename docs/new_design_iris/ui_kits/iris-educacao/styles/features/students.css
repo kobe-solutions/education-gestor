@@ -1,0 +1,78 @@
+/* Students feature — Aluno detail header, photo uploader, doc/guardian rows,
+   inline add-guardian form, KV pairs, class chip on enrolment tab. */
+
+/* ── Detail header ────────────────────────────────────────────────────────── */
+.detail-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.detail-head .back {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1px solid var(--border-2); background: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--iris-slate-700); cursor: pointer;
+}
+.detail-head .back:hover { background: var(--iris-slate-100); color: var(--fg-1); }
+.detail-head .ttl     { flex: 1; }
+.detail-head h1       { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: var(--fg-1); }
+.detail-head .meta    { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12px; color: var(--fg-3); }
+.detail-head .meta .mono { font-family: var(--font-mono); }
+.detail-head .actions { display: flex; gap: 8px; }
+
+/* ── Photo uploader (Pessoal tab) ─────────────────────────────────────────── */
+.photo-uploader {
+  width: 140px; height: 140px;
+  border-radius: 9999px;
+  border: 2px dashed var(--iris-slate-300);
+  background: var(--iris-slate-50);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; cursor: pointer; color: var(--iris-slate-300);
+  transition: border-color var(--duration-base), background var(--duration-base);
+}
+.photo-uploader:hover { border-color: var(--iris-blue-700); background: var(--iris-blue-50); color: var(--iris-blue-500); }
+.photo-uploader img   { width: 100%; height: 100%; object-fit: cover; }
+.photo-uploader-wrap  { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.photo-hint           { font-size: 11px; color: var(--fg-3); text-align: center; max-width: 160px; }
+
+/* ── Document row (Documentos tab) ────────────────────────────────────────── */
+.doc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  background: #fff;
+}
+.doc-row .info       { display: flex; align-items: center; gap: 12px; }
+.doc-row .info .ico  { width: 36px; height: 36px; border-radius: 8px; background: var(--iris-blue-50); color: var(--iris-blue-700); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.doc-row .nm         { font-size: 13px; font-weight: 600; color: var(--fg-1); }
+.doc-row .ds         { font-size: 11px; color: var(--fg-3); }
+
+/* ── Guardian row + inline add form (Família tab) ─────────────────────────── */
+.guardian-row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  background: #fff;
+  gap: 12px;
+}
+.guardian-row .left  { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0; }
+.guardian-row .nm    { font-size: 13px; font-weight: 600; color: var(--fg-1); }
+.guardian-row .meta  { font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.guardian-row .tags  { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+
+.inline-form {
+  border: 1px solid var(--border-1);
+  background: var(--iris-slate-50);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.inline-form .h       { font-size: 12px; font-weight: 700; color: var(--fg-1); }
+.inline-form .actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── Read-only key/value grid (Matrícula tab) ─────────────────────────────── */
+.kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+.kv .k   { font-size: 11px; color: var(--fg-3); }
+.kv .v   { font-size: 13px; font-weight: 600; color: var(--fg-1); margin-top: 2px; }
+
+/* ── Class chip on enrolment tab ──────────────────────────────────────────── */
+.cls-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border: 1px solid var(--border-1); border-radius: 8px; background: #fff; }
+.cls-row .nm { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--fg-1); }

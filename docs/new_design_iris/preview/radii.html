@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+.row-r { display:flex; gap:18px; align-items:flex-end; }
+.r { width: 72px; height: 72px; background:#EAF4FD; border:1px solid #C7DEF4; display:flex; align-items:flex-end; justify-content:center; padding:6px; }
+.r span { font-family: var(--font-mono); font-size: 10px; color: #185FA5; font-weight:600; }
+.cap { font-size:11px; color: var(--fg-2); font-weight:600; }
+.stack { display:flex; flex-direction:column; gap:4px; align-items:center; }
+</style>
+</head>
+<body><div class="card">
+  <div class="row-r">
+    <div class="stack"><div class="r" style="border-radius:4px"><span>4</span></div><div class="cap">xs</div></div>
+    <div class="stack"><div class="r" style="border-radius:6px"><span>6</span></div><div class="cap">sm</div></div>
+    <div class="stack"><div class="r" style="border-radius:8px"><span>8</span></div><div class="cap">md</div></div>
+    <div class="stack"><div class="r" style="border-radius:10px"><span>10</span></div><div class="cap">lg · default</div></div>
+    <div class="stack"><div class="r" style="border-radius:14px"><span>14</span></div><div class="cap">xl</div></div>
+    <div class="stack"><div class="r" style="border-radius:20px"><span>20</span></div><div class="cap">2xl</div></div>
+    <div class="stack"><div class="r" style="border-radius:9999px; width:120px;"><span>pill</span></div><div class="cap">pill</div></div>
+  </div>
+</div></body></html>

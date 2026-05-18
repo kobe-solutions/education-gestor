@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+body { background: rgba(4,44,83,.45); }
+.card { background: transparent; padding: 24px; align-items: center; justify-content: center; }
+.dlg { width: 420px; background:#fff; border-radius: 14px; box-shadow: 0 24px 50px -10px rgba(4,44,83,.30), 0 8px 16px -4px rgba(4,44,83,.12); overflow: hidden; }
+.dlg .head { padding: 18px 20px 4px; }
+.dlg .title { font-size: 16px; font-weight: 700; color:#0B1E33; }
+.dlg .desc  { font-size: 12px; color:#6B7280; margin-top: 4px; }
+.dlg .body  { padding: 12px 20px 18px; display:flex; flex-direction:column; gap: 10px; }
+.dlg .lbl   { font-size: 11px; font-weight: 600; color:#1F2A37; }
+.dlg .inp   { height: 34px; padding: 0 10px; border: 1px solid #D1D5DB; border-radius: 6px; font: 400 12px var(--font-body); }
+.dlg .foot  { padding: 12px 20px; background:#F8FAFC; display:flex; justify-content:flex-end; gap: 8px; border-top: 1px solid #E5E7EB; }
+.btn { height: 32px; padding: 0 14px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid transparent; cursor: pointer; }
+.btn.outline { background:#fff; border-color:#D1D5DB; color:#0B1E33; }
+.btn.primary { background:#185FA5; color:#fff; }
+</style>
+</head>
+<body><div class="card">
+  <div class="dlg">
+    <div class="head">
+      <div class="title">Nova mensalidade</div>
+      <div class="desc">Cadastre o vencimento e o valor — o boleto é gerado em seguida.</div>
+    </div>
+    <div class="body">
+      <div><div class="lbl">Aluno</div><input class="inp" value="Helena Vasconcellos" style="width:100%"/></div>
+      <div style="display:flex; gap:10px;">
+        <div style="flex:1"><div class="lbl">Valor (R$)</div><input class="inp" value="980,00" style="width:100%"/></div>
+        <div style="flex:1"><div class="lbl">Vencimento</div><input class="inp" value="10/06/2026" style="width:100%"/></div>
+      </div>
+    </div>
+    <div class="foot">
+      <button class="btn outline">Cancelar</button>
+      <button class="btn primary">Salvar</button>
+    </div>
+  </div>
+</div></body></html>

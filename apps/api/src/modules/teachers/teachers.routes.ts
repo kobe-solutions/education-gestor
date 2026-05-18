@@ -11,6 +11,8 @@ import {
   updateTeacherService,
   deleteTeacherService,
   changeTeacherPasswordService,
+  addTeacherSubjectService,
+  removeTeacherSubjectService,
 } from './teachers.service'
 
 const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
@@ -79,6 +81,34 @@ export async function teachersRoutes(app: FastifyInstance) {
       const { id } = request.params as { id: string }
       const body = changePasswordBodySchema.parse(request.body)
       await changeTeacherPasswordService(getSchoolId(request), id, body.password)
+      return reply.status(204).send()
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.post('/teachers/:id/subjects', { preHandler }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const { subjectId } = request.body as { subjectId: string }
+      if (!subjectId) return reply.status(400).send({ message: 'subjectId is required' })
+      const result = await addTeacherSubjectService(getSchoolId(request), id, subjectId)
+      return reply.status(201).send(result)
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.delete('/teachers/:id/subjects/:subjectId', { preHandler }, async (request, reply) => {
+    try {
+      const { id, subjectId } = request.params as { id: string; subjectId: string }
+      await removeTeacherSubjectService(getSchoolId(request), id, subjectId)
       return reply.status(204).send()
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher not found') {

@@ -1,0 +1,6 @@
+/* Tokens layer — inherits the root design system, then resets the box-model. */
+@import url("../../../colors_and_type.css");
+
+* { box-sizing: border-box; }
+html, body, #app { height: 100%; margin: 0; }
+body { background: var(--bg-app); }

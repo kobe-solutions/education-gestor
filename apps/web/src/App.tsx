@@ -26,7 +26,7 @@ import { MySchoolsPage } from './features/secretarias/pages/MySchoolsPage'
 
 import { SubjectsPage } from './features/subjects/pages/SubjectsPage'
 import { SchoolsPage } from './features/schools/pages/SchoolsPage'
-import { AcademicPeriodsPage } from './features/classes/pages/AcademicPeriodsPage'
+import { AcademicYearsPage } from './features/classes/pages/AcademicYearsPage'
 import { EducationLevelsPage } from './features/educationLevels/pages/EducationLevelsPage'
 import { SeriesPage } from './features/series/pages/SeriesPage'
 import { TimetablePage } from './features/timetable/pages/TimetablePage'
@@ -35,6 +35,7 @@ import { LocacaoAlunosPage } from './features/locacao/pages/LocacaoAlunosPage'
 import { EstruturaPage } from './features/estrutura/pages/EstruturaPage'
 import { EstruturaTurmasPage } from './features/academico/pages/EstruturaTurmasPage'
 import { HubPessoasPage } from './pages/HubPessoasPage'
+import { AcademicoHubPage } from './pages/AcademicoHubPage'
 import { HubConfiguracoesPage } from './pages/HubConfiguracoesPage'
 import { HubAdminPage } from './pages/HubAdminPage'
 import { HubEscolasPage } from './pages/HubEscolasPage'
@@ -58,9 +59,9 @@ export function App() {
                 {/* Hubs de navegação — gestor */}
                 <Route element={<PrivateRoute allowedRoles={['gestor']} />}>
                   <Route path="/estrutura" element={<EstruturaPage />} />
+                  <Route path="/estrutura/turmas" element={<EstruturaTurmasPage />} />
                   <Route path="/configuracoes" element={<HubConfiguracoesPage />} />
                   <Route path="/subjects" element={<SubjectsPage />} />
-                  <Route path="/academic-periods" element={<AcademicPeriodsPage />} />
                   <Route path="/education-levels" element={<EducationLevelsPage />} />
                   <Route path="/education-levels/:levelId/series" element={<SeriesPage />} />
                   <Route path="/series" element={<SeriesPage />} />
@@ -68,6 +69,7 @@ export function App() {
 
                 {/* Hubs de navegação — gestor e secretaria */}
                 <Route element={<PrivateRoute allowedRoles={['gestor', 'secretaria']} />}>
+                  <Route path="/academic-years" element={<AcademicYearsPage />} />
                   <Route path="/pessoas" element={<HubPessoasPage />} />
                   <Route path="/students" element={<StudentsPage />} />
                   <Route path="/students/new" element={<StudentFormPage />} />
@@ -83,7 +85,7 @@ export function App() {
 
                 {/* Hubs de navegação — gestor, professor e secretaria */}
                 <Route element={<PrivateRoute allowedRoles={['gestor', 'professor', 'secretaria']} />}>
-                  <Route path="/academico" element={<EstruturaTurmasPage />} />
+                  <Route path="/academico" element={<AcademicoHubPage />} />
                   <Route path="/classes/:id" element={<ClassDetailPage />} />
                   <Route path="/classes/:id/timetable" element={<TimetablePage />} />
                 </Route>

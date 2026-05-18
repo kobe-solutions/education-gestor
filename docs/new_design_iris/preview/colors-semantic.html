@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+.pair { display:flex; flex-direction:column; gap:0; border-radius:8px; overflow:hidden; border:1px solid #E5E7EB; min-width:140px; }
+.pair .top { padding:14px 12px; color:#fff; font-weight:600; font-size:12px; }
+.pair .bot { padding:8px 12px; color:#0B1E33; font-size:11px; font-weight:500; display:flex; justify-content:space-between; align-items:center; }
+.pair .mono { font-family: var(--font-mono); font-size: 10px; color: #475569; }
+</style>
+</head>
+<body><div class="card">
+  <div class="row" style="gap:12px; align-items:stretch;">
+    <div class="pair">
+      <div class="top" style="background:#15803D">Success · Pago</div>
+      <div class="bot" style="background:#DCFCE7"><span>Surface</span><span class="mono">#DCFCE7</span></div>
+    </div>
+    <div class="pair">
+      <div class="top" style="background:#B45309">Warning · Pendente</div>
+      <div class="bot" style="background:#FEF3C7"><span>Surface</span><span class="mono">#FEF3C7</span></div>
+    </div>
+    <div class="pair">
+      <div class="top" style="background:#B91C1C">Danger · Atrasado</div>
+      <div class="bot" style="background:#FEE2E2"><span>Surface</span><span class="mono">#FEE2E2</span></div>
+    </div>
+    <div class="pair">
+      <div class="top" style="background:#185FA5">Info · Informativo</div>
+      <div class="bot" style="background:#EAF4FD"><span>Surface</span><span class="mono">#EAF4FD</span></div>
+    </div>
+  </div>
+</div></body></html>

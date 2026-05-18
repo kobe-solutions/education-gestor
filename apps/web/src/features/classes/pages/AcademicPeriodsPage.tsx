@@ -32,10 +32,9 @@ interface PeriodFormData {
   name: string
   startDate: string
   endDate: string
-  active: boolean
 }
 
-const emptyForm: PeriodFormData = { name: '', startDate: '', endDate: '', active: true }
+const emptyForm: PeriodFormData = { name: '', startDate: '', endDate: '' }
 
 export function AcademicPeriodsPage() {
   const { data: periods, isLoading } = useAcademicPeriods()
@@ -64,7 +63,6 @@ export function AcademicPeriodsPage() {
       // Formata para yyyy-MM-dd para o input type="date"
       startDate: period.startDate.slice(0, 10),
       endDate: period.endDate.slice(0, 10),
-      active: period.active,
     })
     setErrors({})
     updateMutation.reset()
@@ -105,7 +103,6 @@ export function AcademicPeriodsPage() {
             name: form.name,
             startDate: form.startDate,
             endDate: form.endDate,
-            active: form.active,
           },
         },
         {
@@ -182,11 +179,7 @@ export function AcademicPeriodsPage() {
                     <TableCell className="text-muted-foreground">
                       {new Date(p.endDate).toLocaleDateString('pt-BR')}
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={p.active ? 'default' : 'secondary'}>
-                        {p.active ? 'Ativo' : 'Inativo'}
-                      </Badge>
-                    </TableCell>
+                    <TableCell />
                     <TableCell>
                       <div className="flex gap-1 justify-end">
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(p)}>
@@ -238,21 +231,6 @@ export function AcademicPeriodsPage() {
               />
               {errors.endDate && <p className="text-xs text-destructive">{errors.endDate}</p>}
             </div>
-            {editing && (
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setForm({ ...form, active: !form.active })}
-                >
-                  {form.active ? 'Marcar como inativo' : 'Marcar como ativo'}
-                </Button>
-                <span className="text-xs text-muted-foreground">
-                  Status atual: {form.active ? 'Ativo' : 'Inativo'}
-                </span>
-              </div>
-            )}
             {apiError && <p className="text-xs text-destructive">{apiError}</p>}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../lib/api'
+import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Teacher } from '@education-gestor/types'
 
 export type TeacherCreateInput = Pick<Teacher,
@@ -17,9 +18,15 @@ export type TeacherUpdateInput = Partial<Omit<TeacherCreateInput, 'password'>> &
 }
 
 export function useTeachers() {
+  const { schoolKey, enabled } = useSchoolKey()
   return useQuery({
-    queryKey: ['teachers'],
-    queryFn: async () => (await api.get<Teacher[]>('/teachers')).data,
+    queryKey: ['teachers', schoolKey],
+    queryFn: async () => {
+      const res = await api.get<{ data: Teacher[]; total: number } | Teacher[]>('/teachers')
+      const body = res.data
+      return Array.isArray(body) ? body : body.data
+    },
+    enabled,
   })
 }
 

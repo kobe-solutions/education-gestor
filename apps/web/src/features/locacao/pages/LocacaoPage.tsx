@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react'
-import { GripVertical, Plus, X, ChevronDown, ChevronUp, Search, Zap } from 'lucide-react'
+import { GripVertical, Plus, X, ChevronDown, ChevronUp, Search, Zap, ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { PageHead } from '../../../components/PageHead'
 import type { AxiosError } from 'axios'
 import { useTeachers } from '../../teachers/hooks/useTeachers'
 import { useClasses, useAcademicPeriods } from '../../classes/hooks/useClasses'
@@ -379,13 +381,19 @@ export function LocacaoPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] gap-4 overflow-hidden">
+    <div className="flex flex-col gap-4" style={{ height: 'calc(100vh - var(--header-h) - 2rem)' }}>
+      <PageHead
+        title="Locação de Aulas"
+        subtitle="Monte a grade horária — arraste o professor para o slot da turma"
+      />
+
+      <div className="flex flex-1 gap-4 overflow-hidden min-h-0">
 
       {/* ── Sidebar: Professores ──────────────────────────────────────────── */}
       <aside className="flex flex-col gap-3 w-72 shrink-0">
         <div>
-          <h2 className="text-base font-semibold">Professores</h2>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--iris-slate-500)', letterSpacing: '0.06em' }}>Professores</p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--iris-slate-400)' }}>
             Arraste ou clique para selecionar
           </p>
         </div>
@@ -446,8 +454,8 @@ export function LocacaoPage() {
       <div className="flex flex-col flex-1 min-w-0 gap-3 overflow-hidden">
         <div className="flex items-center gap-3 shrink-0">
           <div>
-            <h2 className="text-base font-semibold">Turmas</h2>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--iris-slate-500)', letterSpacing: '0.06em' }}>Turmas</p>
+            <p className="text-[11px] mt-0.5" style={{ color: 'var(--iris-slate-400)' }}>
               Arraste um professor até a turma para alocar
             </p>
           </div>
@@ -486,6 +494,8 @@ export function LocacaoPage() {
           </div>
         )}
       </div>
+
+      </div>{/* fim do flex wrapper */}
 
       {/* ── Dialog: Alocar aula ───────────────────────────────────────────── */}
       <Dialog open={!!assignTarget} onOpenChange={(v) => !v && setAssignTarget(null)}>

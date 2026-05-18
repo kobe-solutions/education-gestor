@@ -31,6 +31,7 @@ export async function findAdminByEmailRepository(email: string) {
   const [admin] = await db
     .select({
       id: admins.id,
+      name: admins.name,
       email: admins.email,
       passwordHash: admins.passwordHash,
       role: admins.role,

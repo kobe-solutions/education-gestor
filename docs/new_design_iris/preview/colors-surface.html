@@ -1,0 +1,25 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+.surf-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; }
+.surf { border-radius:10px; height:96px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; font-size:11px; }
+.surf .title { font-weight:600; font-size:12px; }
+.surf .tok { font-family: var(--font-mono); opacity:.75; font-size:10px; }
+</style>
+</head>
+<body><div class="card">
+  <div class="surf-grid">
+    <div class="surf" style="background:#F8FAFC; color:#0B1E33; border:1px solid #E5E7EB;">
+      <div class="title">bg-app</div><div class="tok">#F8FAFC</div>
+    </div>
+    <div class="surf" style="background:#FFFFFF; color:#0B1E33; border:1px solid #E5E7EB;">
+      <div class="title">bg-surface</div><div class="tok">#FFFFFF</div>
+    </div>
+    <div class="surf" style="background:#EAF4FD; color:#042C53; border:1px solid #DCE9F8;">
+      <div class="title">bg-tint</div><div class="tok">#EAF4FD</div>
+    </div>
+    <div class="surf" style="background:#042C53; color:#EAF4FD;">
+      <div class="title">bg-inverse</div><div class="tok">#042C53</div>
+    </div>
+  </div>
+</div></body></html>

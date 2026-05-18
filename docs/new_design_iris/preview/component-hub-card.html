@@ -1,0 +1,33 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+body { background:#F8FAFC; }
+.card { background:#F8FAFC; padding:22px 24px; }
+.hubs { display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.hub { background:#fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 18px; display:flex; flex-direction:column; gap: 14px; transition: border-color 160ms; cursor: pointer; box-shadow: 0 1px 2px rgba(4,44,83,.04); }
+.hub:hover { border-color:#185FA5; }
+.hub .ico { width: 40px; height: 40px; border-radius: 10px; background:rgba(24,95,165,.10); color:#185FA5; display:flex; align-items:center; justify-content:center; }
+.hub .tt { font-weight: 700; font-size: 13px; color:#0B1E33; }
+.hub .ds { font-size: 11.5px; line-height: 1.45; color:#6B7280; margin-top:2px; }
+.hub .lk { display:flex; align-items:center; gap:4px; font-size: 11px; font-weight: 700; color:#185FA5; text-transform:none; margin-top:auto; }
+</style>
+</head>
+<body><div class="card">
+  <div class="hubs">
+    <div class="hub">
+      <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <div><div class="tt">Alunos</div><div class="ds">Cadastro, matrículas e dados completos. Acesse boletim e histórico individual.</div></div>
+      <div class="lk">Acessar <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </div>
+    <div class="hub">
+      <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+      <div><div class="tt">Professores</div><div class="ds">Cadastro de professores, disciplinas e vínculos por turma.</div></div>
+      <div class="lk">Acessar <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </div>
+    <div class="hub">
+      <div class="ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+      <div><div class="tt">Locação de Aulas</div><div class="ds">Monte visualmente a grade horária — arraste professores para as turmas.</div></div>
+      <div class="lk">Acessar <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+    </div>
+  </div>
+</div></body></html>

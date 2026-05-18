@@ -1,0 +1,180 @@
+/* ===========================================================================
+   Primitives — every reusable atom (buttons, inputs, badges, cards, tabs…)
+   Order: Button · Input · Field · Search · Badge · Chip · Surface · Card
+          · Hub-card · Metric · Table · Tabs · Textarea · Select · Checkbox
+          · Avatar · SectionCard
+   =========================================================================== */
+
+/* ── Button ───────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 36px; padding: 0 16px;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  font-family: var(--font-display);
+  border: 1px solid transparent; cursor: pointer;
+  line-height: 1; white-space: nowrap;
+  transition: background var(--duration-base) var(--ease-out-soft),
+              border-color var(--duration-base) var(--ease-out-soft),
+              color var(--duration-base) var(--ease-out-soft),
+              transform var(--duration-fast);
+}
+.btn:active { transform: translateY(0.5px); }
+.btn:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+.btn.sm { height: 30px; padding: 0 12px; font-size: 12px; border-radius: 6px; }
+.btn.lg { height: 42px; padding: 0 22px; font-size: 14px; }
+.btn.primary    { background: var(--iris-blue-700); color: #fff; }
+.btn.primary:hover    { background: #134C84; }
+.btn.outline    { background: #fff; color: var(--fg-1); border-color: var(--border-2); }
+.btn.outline:hover    { background: var(--bg-tint); border-color: var(--iris-blue-300); color: var(--iris-blue-700); }
+.btn.ghost      { background: transparent; color: var(--iris-slate-700); }
+.btn.ghost:hover      { background: var(--iris-slate-100); color: var(--fg-1); }
+.btn.danger     { background: var(--iris-danger-600); color: #fff; }
+.btn.icon       { width: 32px; height: 32px; padding: 0; }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+
+/* ── Input · Field · Search ──────────────────────────────────────────────── */
+.input {
+  height: 36px; padding: 0 12px;
+  border-radius: 6px; border: 1px solid var(--border-2);
+  background: #fff;
+  font: 400 13px/1 var(--font-body);
+  color: var(--fg-1);
+  width: 100%;
+  transition: border-color var(--duration-base), box-shadow var(--duration-base);
+}
+.input:focus { outline: none; border-color: var(--iris-blue-500); box-shadow: var(--shadow-focus); }
+.input.error { border-color: var(--iris-danger-600); box-shadow: 0 0 0 3px rgba(185,28,28,.18); }
+.label { font-size: 12px; font-weight: 600; color: var(--iris-slate-900); }
+.help  { font-size: 11px; color: var(--fg-3); }
+.err   { font-size: 11px; color: var(--iris-danger-600); }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.search-wrap { position: relative; }
+.search-wrap .icn { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--iris-slate-500); }
+.search-wrap .input { padding-left: 32px; }
+
+/* ── Badge / Chip ─────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 700; height: 22px; line-height: 1;
+  font-family: var(--font-display);
+}
+.badge.success { background: var(--iris-success-50); color: var(--iris-success-600); }
+.badge.warning { background: var(--iris-warning-50); color: var(--iris-warning-600); }
+.badge.danger  { background: var(--iris-danger-50);  color: var(--iris-danger-600); }
+.badge.info    { background: var(--iris-blue-50);    color: var(--iris-blue-700); }
+.badge.outline { background: #fff; color: var(--fg-1); border: 1px solid var(--border-2); }
+.badge.solid   { background: var(--iris-blue-700); color: #fff; }
+.chip          { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:9999px; background:#fff; border:1px solid #BFD8F0; color: var(--iris-blue-700); font-size:11px; font-weight:600; cursor:pointer; }
+.chip:hover    { background: var(--iris-blue-700); color: #fff; border-color: var(--iris-blue-700); }
+
+/* ── Card surfaces ────────────────────────────────────────────────────────── */
+.card-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+.card-body    { padding: 18px 20px; }
+.card-header  { padding: 18px 20px 0; }
+.card-divider { height:1px; background: var(--border-1); margin: 12px 0 0; }
+.card-padded-0 .card-header + .card-body { padding-top: 0; }
+
+/* ── Section card (titled panel inside tabs) ──────────────────────────────── */
+.section-card { background: var(--bg-surface); }
+.section-card-h {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-1);
+}
+.section-card-t { font-size: 13px; font-weight: 700; color: var(--fg-1); }
+.section-card-b { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+
+/* ── Hub card (Pessoas / Configuração hub grids) ─────────────────────────── */
+.hub-card {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 14px;
+  cursor: pointer; min-height: 138px;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--duration-base), box-shadow var(--duration-base), transform var(--duration-fast);
+  text-decoration: none; color: inherit;
+}
+.hub-card:hover { border-color: var(--iris-blue-700); box-shadow: var(--shadow-md); }
+.hub-card .ico-tile { width: 40px; height: 40px; border-radius: 10px; background: rgba(24,95,165,.10); color: var(--iris-blue-700); display: flex; align-items: center; justify-content: center; }
+.hub-card .tt { font-size: 14px; font-weight: 700; color: var(--fg-1); }
+.hub-card .ds { font-size: 12px; color: var(--fg-3); line-height: 1.5; margin-top: 4px; }
+.hub-card .lk { display:flex; align-items:center; gap:4px; font-size: 12px; font-weight: 700; color: var(--iris-blue-700); margin-top: auto; }
+
+/* ── Metric card (Dashboard KPI tiles) ───────────────────────────────────── */
+.metric { background:#fff; border:1px solid var(--border-1); border-radius: var(--radius-xl); padding: 16px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-xs); }
+.metric .ico { width: 44px; height: 44px; border-radius: 9999px; display:flex; align-items:center; justify-content:center; color: #fff; flex-shrink:0; }
+.metric .v { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; color: var(--fg-1); }
+.metric .l { font-size: 12px; color: var(--fg-3); margin-top: 4px; }
+.metric .s { font-family: var(--font-mono); font-size: 10px; color: var(--iris-slate-500); margin-top: 2px; }
+
+/* ── Table ────────────────────────────────────────────────────────────────── */
+.tbl { width: 100%; border-collapse: collapse; font-family: var(--font-body); font-size: 13px; }
+.tbl th { text-align: left; font-weight: 600; font-size: 11px; color: var(--iris-slate-500); letter-spacing: .04em; text-transform: uppercase; padding: 10px 16px; background: var(--iris-slate-50); border-bottom: 1px solid var(--border-1); }
+.tbl td { padding: 12px 16px; border-bottom: 1px solid var(--iris-slate-100); color: var(--fg-1); }
+.tbl tr:hover td { background: #F8FBFF; cursor: pointer; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl .mono { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+.tbl .row-actions { display:flex; gap:2px; justify-content:flex-end; }
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+.tabs-list { display: flex; gap: 4px; border-bottom: 1px solid var(--border-1); padding: 0 2px; }
+.tab {
+  padding: 10px 14px;
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 600;
+  color: var(--iris-slate-500);
+  background: transparent; border: 0; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--duration-fast), border-color var(--duration-fast);
+}
+.tab:hover:not(.disabled) { color: var(--fg-1); }
+.tab.active   { color: var(--iris-blue-700); border-bottom-color: var(--iris-blue-700); }
+.tab.disabled { color: var(--iris-slate-300); cursor: not-allowed; }
+
+/* ── Textarea ─────────────────────────────────────────────────────────────── */
+.textarea {
+  width: 100%; min-height: 72px; resize: vertical;
+  padding: 10px 12px;
+  border-radius: 6px; border: 1px solid var(--border-2);
+  background: #fff;
+  font: 400 13px/1.5 var(--font-body); color: var(--fg-1);
+  transition: border-color var(--duration-base), box-shadow var(--duration-base);
+}
+.textarea:focus { outline: none; border-color: var(--iris-blue-500); box-shadow: var(--shadow-focus); }
+
+/* ── Select ───────────────────────────────────────────────────────────────── */
+.select-wrap { position: relative; width: 100%; }
+.select { appearance: none; -webkit-appearance: none; padding-right: 30px; cursor: pointer; }
+.select-caret { position: absolute; right: 10px; top: 50%; transform: translateY(-50%) rotate(90deg); color: var(--iris-slate-500); pointer-events: none; }
+
+/* ── Checkbox ─────────────────────────────────────────────────────────────── */
+.cbox { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg-1); cursor: pointer; user-select: none; }
+.cbox input { position: absolute; opacity: 0; pointer-events: none; }
+.cbox-fake {
+  width: 16px; height: 16px; border-radius: 4px;
+  border: 1px solid var(--border-2); background: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.cbox input:checked       + .cbox-fake { background: var(--iris-blue-700); border-color: var(--iris-blue-700); }
+.cbox input:focus-visible + .cbox-fake { box-shadow: var(--shadow-focus); }
+
+/* ── Avatar (circle) ──────────────────────────────────────────────────────── */
+.avatar-circle {
+  border-radius: 9999px;
+  background: var(--iris-blue-50);
+  color: var(--iris-blue-700);
+  font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  overflow: hidden; flex-shrink: 0;
+}
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }

@@ -3,13 +3,18 @@ import { db } from '../db'
 import { admins } from '../db/schema/admins'
 import { schools } from '../db/schema/schools'
 import { academicPeriods } from '../db/schema/academicPeriods'
+import { academicYears } from '../db/schema/academicYears'
+import { classPeriods } from '../db/schema/classPeriods'
 import { educationLevels } from '../db/schema/educationLevels'
 import { series } from '../db/schema/series'
 import { subjects } from '../db/schema/subjects'
 import { teachers } from '../db/schema/teachers'
+import { teacherSubjects } from '../db/schema/teacherSubjects'
 import { schoolClasses } from '../db/schema/schoolClasses'
 import { students, guardians } from '../db/schema/students'
+import { studentMedical } from '../db/schema/studentMedical'
 import { classStudents } from '../db/schema/classRelations'
+import { timetableSlots } from '../db/schema/timetableSlots'
 import { grades, attendances } from '../db/schema/academic'
 import { tuitions } from '../db/schema/financial'
 import { hashPassword } from '../lib/crypto'
@@ -178,27 +183,71 @@ async function main() {
     console.log(`\n  📚 Escola: ${escola.name}`)
 
     // -----------------------------------------------------------------------
-    // Períodos letivos
+    // Ano letivo
+    // -----------------------------------------------------------------------
+    const [anoLetivo] = await db
+      .insert(academicYears)
+      .values({
+        schoolId: escola.id,
+        year: 2025,
+        name: 'Ano Letivo 2025',
+        startDate: '2025-02-03',
+        endDate: '2025-12-19',
+        registrationStart: '2024-11-01',
+        registrationEnd: '2025-01-31',
+        status: 'active',
+      })
+      .returning()
+    console.log(`    → Ano letivo 2025 criado`)
+
+    // -----------------------------------------------------------------------
+    // Períodos letivos (bimestres)
     // -----------------------------------------------------------------------
     const periodosData = [
       {
         schoolId: escola.id,
-        name: '1º Semestre 2025',
+        academicYearId: anoLetivo.id,
+        name: '1º Bimestre',
+        type: 'bimestre',
+        order: 1,
         startDate: '2025-02-03',
-        endDate: '2025-06-30',
-        active: false,
+        endDate: '2025-04-11',
+        gradeClosingDate: '2025-04-14',
       },
       {
         schoolId: escola.id,
-        name: '2º Semestre 2025',
+        academicYearId: anoLetivo.id,
+        name: '2º Bimestre',
+        type: 'bimestre',
+        order: 2,
+        startDate: '2025-04-14',
+        endDate: '2025-06-30',
+        gradeClosingDate: '2025-07-04',
+      },
+      {
+        schoolId: escola.id,
+        academicYearId: anoLetivo.id,
+        name: '3º Bimestre',
+        type: 'bimestre',
+        order: 3,
         startDate: '2025-07-28',
+        endDate: '2025-09-26',
+        gradeClosingDate: '2025-09-29',
+      },
+      {
+        schoolId: escola.id,
+        academicYearId: anoLetivo.id,
+        name: '4º Bimestre',
+        type: 'bimestre',
+        order: 4,
+        startDate: '2025-09-29',
         endDate: '2025-12-19',
-        active: true,
+        gradeClosingDate: '2025-12-22',
       },
     ]
 
     const periodosInseridos = await db.insert(academicPeriods).values(periodosData).returning()
-    console.log(`    → ${periodosInseridos.length} períodos letivos`)
+    console.log(`    → ${periodosInseridos.length} bimestres`)
 
     // -----------------------------------------------------------------------
     // Níveis de ensino
@@ -303,6 +352,34 @@ async function main() {
 
     const professoresInseridos = await db.insert(teachers).values(professoresData).returning()
     console.log(`    → ${professoresInseridos.length} professores`)
+
+    // -----------------------------------------------------------------------
+    // Vínculo professor ↔ disciplina (2-3 por professor)
+    // -----------------------------------------------------------------------
+    const teacherSubjectsData: (typeof teacherSubjects.$inferInsert)[] = []
+    for (const professor of professoresInseridos) {
+      const qtd = 2 + Math.floor(Math.random() * 2) // 2 ou 3
+      const shuffle = [...disciplinasInseridas].sort(() => Math.random() - 0.5).slice(0, qtd)
+      for (const disc of shuffle) {
+        teacherSubjectsData.push({ teacherId: professor.id, subjectId: disc.id, schoolId: escola.id })
+      }
+    }
+    await db.insert(teacherSubjects).values(teacherSubjectsData).onConflictDoNothing()
+    console.log(`    → ${teacherSubjectsData.length} vínculos professor-disciplina`)
+
+    // -----------------------------------------------------------------------
+    // Períodos de aula (6 horários)
+    // -----------------------------------------------------------------------
+    const classPeriodsData = [
+      { schoolId: escola.id, name: '1º Período', startTime: '07:00', endTime: '07:50', order: 1 },
+      { schoolId: escola.id, name: '2º Período', startTime: '07:50', endTime: '08:40', order: 2 },
+      { schoolId: escola.id, name: '3º Período', startTime: '08:50', endTime: '09:40', order: 3 },
+      { schoolId: escola.id, name: '4º Período', startTime: '09:40', endTime: '10:30', order: 4 },
+      { schoolId: escola.id, name: '5º Período', startTime: '10:40', endTime: '11:30', order: 5 },
+      { schoolId: escola.id, name: '6º Período', startTime: '11:30', endTime: '12:20', order: 6 },
+    ]
+    const periodsInseridos = await db.insert(classPeriods).values(classPeriodsData).returning()
+    console.log(`    → ${periodsInseridos.length} períodos de aula`)
 
     // -----------------------------------------------------------------------
     // Turmas (12 por escola — 4 Fundamental + 4 Médio por turno)
@@ -421,6 +498,70 @@ async function main() {
 
     await db.insert(classStudents).values(matriculasData)
     console.log(`    → ${matriculasData.length} matrículas em turmas`)
+
+    // -----------------------------------------------------------------------
+    // Grade horária (timetable) — seg a sex, 6 períodos por turma
+    // -----------------------------------------------------------------------
+    const DIAS_SEMANA = ['mon', 'tue', 'wed', 'thu', 'fri']
+    const timetableSlotsData: (typeof timetableSlots.$inferInsert)[] = []
+    const usedTeacherSlots = new Set<string>()
+
+    for (const turma of turmasInseridas) {
+      for (const dia of DIAS_SEMANA) {
+        for (const periodo of periodsInseridos) {
+          const disc = pick(disciplinasInseridas)
+          // Encontrar professor vinculado à disciplina, sem conflito no mesmo dia+período+ano
+          const candidatos = professoresInseridos.filter((p) => {
+            const key = `${p.id}-${dia}-${periodo.id}`
+            return !usedTeacherSlots.has(key)
+          })
+          if (candidatos.length === 0) continue
+          const prof = pick(candidatos)
+          const key = `${prof.id}-${dia}-${periodo.id}`
+          usedTeacherSlots.add(key)
+          timetableSlotsData.push({
+            schoolId: escola.id,
+            classId: turma.id,
+            academicYearId: anoLetivo.id,
+            classPeriodId: periodo.id,
+            subjectId: disc.id,
+            teacherId: prof.id,
+            weekDay: dia,
+          })
+        }
+      }
+    }
+
+    for (let i = 0; i < timetableSlotsData.length; i += 200) {
+      await db.insert(timetableSlots).values(timetableSlotsData.slice(i, i + 200)).onConflictDoNothing()
+    }
+    console.log(`    → ${timetableSlotsData.length} slots de grade horária`)
+
+    // -----------------------------------------------------------------------
+    // Ficha médica — 40% dos alunos têm alguma informação
+    // -----------------------------------------------------------------------
+    const ALERGIAS = ['Poeira', 'Látex', 'Amendoim', 'Leite', 'Glúten', 'Frutos do mar']
+    const MEDICAMENTOS = ['Ritalina', 'Concerta', 'Omeprazol', 'Antihistamínico', 'Dipirona']
+    const RESTRICOES = ['Lactose', 'Glúten', 'Amendoim', 'Frutos do mar']
+    const DOENCAS = ['Asma', 'Diabetes tipo 1', 'Epilepsia', 'TDAH', 'Hipertensão']
+
+    const fichasMedicasData: (typeof studentMedical.$inferInsert)[] = []
+    for (const aluno of alunosInseridos) {
+      if (Math.random() > 0.6) continue
+      fichasMedicasData.push({
+        schoolId: escola.id,
+        studentId: aluno.id,
+        allergies: Math.random() > 0.4 ? pick(ALERGIAS) : null,
+        medications: Math.random() > 0.6 ? pick(MEDICAMENTOS) : null,
+        foodRestrictions: Math.random() > 0.5 ? pick(RESTRICOES) : null,
+        diseases: Math.random() > 0.6 ? pick(DOENCAS) : null,
+        medicalContact: Math.random() > 0.5 ? gerarTelefone() : null,
+      })
+    }
+    if (fichasMedicasData.length > 0) {
+      await db.insert(studentMedical).values(fichasMedicasData)
+    }
+    console.log(`    → ${fichasMedicasData.length} fichas médicas`)
 
     // -----------------------------------------------------------------------
     // Notas — por período, por disciplina, por aluno/turma/professor

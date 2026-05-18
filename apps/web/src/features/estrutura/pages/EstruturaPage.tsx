@@ -4,8 +4,8 @@ import { useEducationLevels, EDUCATION_LEVEL_TYPE_LABELS } from '../../education
 import { useSeries } from '../../series/hooks/useSeries'
 import { useClasses } from '../../classes/hooks/useClasses'
 import { Badge } from '../../../components/ui/badge'
+import { PageHead } from '../../../components/PageHead'
 import { Skeleton } from '../../../components/ui/skeleton'
-import { cn } from '../../../lib/utils'
 
 export function EstruturaPage() {
   const navigate = useNavigate()
@@ -18,34 +18,16 @@ export function EstruturaPage() {
   const unlinkedClasses = allClasses?.filter((c) => !c.serieId) ?? []
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold">Estrutura Escolar</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Hierarquia completa: Nível de Ensino → Série → Turma
-          </p>
-        </div>
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-sm bg-primary/20 border border-primary/40" />
-            Nível de ensino
-          </span>
-          <span className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-sm bg-muted border" />
-            Série
-          </span>
-          <span className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-secondary border" />
-            Turma
-          </span>
-        </div>
-      </div>
+    <div className="space-y-5">
+      <PageHead
+        title="Estrutura Escolar"
+        subtitle="Hierarquia completa: Nível de Ensino → Série → Turma"
+      />
 
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 w-full" />
+            <Skeleton key={i} className="h-32 w-full rounded-xl" />
           ))}
         </div>
       ) : (
@@ -62,85 +44,111 @@ export function EstruturaPage() {
             return (
               <div
                 key={level.id}
-                className="border rounded-lg overflow-hidden"
+                className="rounded-xl overflow-hidden"
+                style={{ border: '1px solid var(--iris-slate-200)', background: '#fff', boxShadow: 'var(--shadow-sm)' }}
               >
-                {/* Cabeçalho do nível */}
+                {/* Cabeçalho do nível — fundo tint azul */}
                 <div
-                  className="flex items-center gap-3 px-4 py-3 bg-primary/5 border-b cursor-pointer hover:bg-primary/10 transition-colors"
+                  className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors"
+                  style={{ background: 'var(--iris-blue-50)', borderBottom: '1px solid var(--iris-slate-200)' }}
                   onClick={() => navigate(`/education-levels/${level.id}/series`)}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#dceefa' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
                 >
-                  <div className="h-8 w-8 rounded-md bg-primary/15 flex items-center justify-center shrink-0">
-                    <Layers className="h-4 w-4 text-primary" />
+                  <div
+                    className="flex items-center justify-center rounded-xl shrink-0"
+                    style={{ width: 36, height: 36, background: 'rgba(24,95,165,0.15)', color: '#185FA5' }}
+                  >
+                    <Layers size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm">{level.name}</span>
-                      <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+                        {level.name}
+                      </span>
+                      <Badge variant="info" className="text-[10px] h-4 px-1.5">
                         {EDUCATION_LEVEL_TYPE_LABELS[level.type] ?? level.type}
                       </Badge>
                       {!level.active && (
-                        <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Inativo</Badge>
+                        <Badge variant="outline" className="text-[10px] h-4 px-1.5">Inativo</Badge>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
                       {levelSeries.length} {levelSeries.length === 1 ? 'série' : 'séries'} · {levelClassCount} {levelClassCount === 1 ? 'turma' : 'turmas'}
                     </p>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <ChevronRight size={16} style={{ color: 'var(--iris-slate-500)' }} />
                 </div>
 
                 {/* Séries */}
                 {levelSeries.length === 0 ? (
-                  <div className="px-4 py-3 text-xs text-muted-foreground italic">
+                  <div className="px-5 py-3 text-xs italic" style={{ color: 'var(--iris-slate-500)' }}>
                     Nenhuma série cadastrada neste nível.
                   </div>
                 ) : (
-                  <div className="divide-y">
-                    {levelSeries.map((serie) => {
-                      const serieClasses = (allClasses ?? []).filter(
-                        (c) => c.serieId === serie.id,
-                      )
+                  <div>
+                    {levelSeries.map((serie, idx) => {
+                      const serieClasses = (allClasses ?? []).filter((c) => c.serieId === serie.id)
+                      const isLast = idx === levelSeries.length - 1
 
                       return (
-                        <div key={serie.id} className="flex items-start gap-0">
+                        <div
+                          key={serie.id}
+                          className="flex items-start gap-0"
+                          style={!isLast ? { borderBottom: '1px solid var(--iris-slate-100)' } : undefined}
+                        >
                           {/* Linha de indentação */}
-                          <div className="w-10 shrink-0 flex justify-center pt-3.5">
-                            <div className="w-px h-full bg-border" />
+                          <div className="flex justify-center pt-4 shrink-0" style={{ width: 40 }}>
+                            <div style={{ width: 1, height: '100%', background: 'var(--iris-slate-200)' }} />
                           </div>
 
-                          <div className="flex-1 py-2.5 pr-4">
+                          <div className="flex-1 py-3 pr-5">
                             <div className="flex items-center gap-2 mb-2">
-                              <div className="h-6 w-6 rounded bg-muted flex items-center justify-center shrink-0">
-                                <GraduationCap className="h-3 w-3 text-muted-foreground" />
+                              <div
+                                className="flex items-center justify-center rounded shrink-0"
+                                style={{ width: 22, height: 22, background: 'var(--iris-slate-100)', color: 'var(--iris-slate-500)' }}
+                              >
+                                <GraduationCap size={12} />
                               </div>
                               <span
-                                className="text-sm font-medium cursor-pointer hover:text-primary transition-colors"
+                                className="text-sm font-semibold cursor-pointer transition-colors"
+                                style={{ color: 'var(--iris-blue-900)' }}
                                 onClick={() => navigate('/classes')}
+                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#185FA5' }}
+                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--iris-blue-900)' }}
                               >
                                 {serie.name}
                               </span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
                                 {serieClasses.length} {serieClasses.length === 1 ? 'turma' : 'turmas'}
                               </span>
                             </div>
 
                             {serieClasses.length > 0 && (
-                              <div className="flex flex-wrap gap-1.5 ml-8">
+                              <div className="flex flex-wrap gap-1.5 ml-7">
                                 {serieClasses.map((turma) => (
                                   <button
                                     key={turma.id}
                                     onClick={() => navigate(`/classes/${turma.id}`)}
-                                    className={cn(
-                                      'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors',
-                                      'bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary',
-                                    )}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
+                                    style={{ border: '1px solid var(--iris-slate-300)', background: '#fff', color: 'var(--iris-slate-700)' }}
+                                    onMouseEnter={(e) => {
+                                      const el = e.currentTarget as HTMLElement
+                                      el.style.background = '#185FA5'
+                                      el.style.borderColor = '#185FA5'
+                                      el.style.color = '#fff'
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      const el = e.currentTarget as HTMLElement
+                                      el.style.background = '#fff'
+                                      el.style.borderColor = 'var(--iris-slate-300)'
+                                      el.style.color = 'var(--iris-slate-700)'
+                                    }}
                                   >
-                                    <BookOpen className="h-3 w-3" />
+                                    <BookOpen size={11} />
                                     {turma.name}
                                     {turma.shift && (
-                                      <span className="text-muted-foreground group-hover:text-primary-foreground">
-                                        · {turma.shift}
-                                      </span>
+                                      <span style={{ opacity: 0.65 }}>· {turma.shift}</span>
                                     )}
                                   </button>
                                 ))}
@@ -156,26 +164,52 @@ export function EstruturaPage() {
             )
           })}
 
-          {/* Turmas sem série */}
+          {/* Turmas sem série — borda tracejada */}
           {unlinkedClasses.length > 0 && (
-            <div className="border rounded-lg overflow-hidden border-dashed">
-              <div className="flex items-center gap-3 px-4 py-3 bg-muted/40 border-b">
-                <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center shrink-0">
-                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{ border: '1px dashed var(--iris-slate-300)', background: '#fff' }}
+            >
+              <div
+                className="flex items-center gap-3 px-5 py-4"
+                style={{ background: 'var(--iris-slate-50)', borderBottom: '1px dashed var(--iris-slate-200)' }}
+              >
+                <div
+                  className="flex items-center justify-center rounded-xl shrink-0"
+                  style={{ width: 36, height: 36, background: 'var(--iris-slate-100)', color: 'var(--iris-slate-500)' }}
+                >
+                  <BookOpen size={16} />
                 </div>
                 <div>
-                  <span className="font-medium text-sm text-muted-foreground">Sem série atribuída</span>
-                  <p className="text-xs text-muted-foreground">{unlinkedClasses.length} {unlinkedClasses.length === 1 ? 'turma' : 'turmas'} sem vínculo com uma série</p>
+                  <span className="font-semibold text-sm" style={{ color: 'var(--iris-slate-700)' }}>
+                    Sem série atribuída
+                  </span>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+                    {unlinkedClasses.length} {unlinkedClasses.length === 1 ? 'turma' : 'turmas'} sem vínculo com uma série
+                  </p>
                 </div>
               </div>
-              <div className="px-4 py-3 flex flex-wrap gap-1.5">
+              <div className="px-5 py-4 flex flex-wrap gap-1.5">
                 {unlinkedClasses.map((turma) => (
                   <button
                     key={turma.id}
                     onClick={() => navigate(`/classes/${turma.id}`)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
+                    style={{ border: '1px solid var(--iris-slate-300)', background: '#fff', color: 'var(--iris-slate-700)' }}
+                    onMouseEnter={(e) => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.background = '#185FA5'
+                      el.style.borderColor = '#185FA5'
+                      el.style.color = '#fff'
+                    }}
+                    onMouseLeave={(e) => {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.background = '#fff'
+                      el.style.borderColor = 'var(--iris-slate-300)'
+                      el.style.color = 'var(--iris-slate-700)'
+                    }}
                   >
-                    <BookOpen className="h-3 w-3" />
+                    <BookOpen size={11} />
                     {turma.name} · {turma.shift}
                   </button>
                 ))}
@@ -184,10 +218,17 @@ export function EstruturaPage() {
           )}
 
           {(!levels || levels.length === 0) && (
-            <div className="text-center py-12 text-sm text-muted-foreground border rounded-lg border-dashed">
-              Nenhum nível de ensino cadastrado ainda.{' '}
+            <div
+              className="text-center py-12 rounded-xl"
+              style={{ border: '1px dashed var(--iris-slate-300)' }}
+            >
+              <GraduationCap size={32} className="mx-auto mb-3" style={{ color: 'var(--iris-slate-300)' }} />
+              <p className="text-sm" style={{ color: 'var(--iris-slate-500)' }}>
+                Nenhum nível de ensino cadastrado ainda.
+              </p>
               <button
-                className="text-primary hover:underline"
+                className="text-sm font-medium mt-1 hover:underline"
+                style={{ color: '#185FA5' }}
                 onClick={() => navigate('/education-levels')}
               >
                 Cadastrar agora

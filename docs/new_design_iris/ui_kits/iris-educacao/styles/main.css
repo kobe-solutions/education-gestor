@@ -1,0 +1,12 @@
+/* IRIS Educação — UI kit stylesheet manifest.
+   Imports are ordered: tokens → primitives → layout → feedback → features.   */
+@import url("./tokens.css");
+@import url("./primitives.css");
+@import url("./layout.css");
+@import url("./feedback.css");
+@import url("./features/auth.css");
+@import url("./features/dashboard.css");
+@import url("./features/hubs.css");
+@import url("./features/students.css");
+@import url("./features/academic.css");
+@import url("./features/locacao.css");

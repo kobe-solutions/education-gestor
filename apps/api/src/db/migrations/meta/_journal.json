@@ -134,6 +134,27 @@
       "when": 1778954516879,
       "tag": "0018_yellow_shotgun",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1778967363853,
+      "tag": "0019_academic_year_calendar",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1778967684170,
+      "tag": "0020_class_periods_timetable",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1747623600000,
+      "tag": "0021_teacher_subjects",
+      "breakpoints": true
     }
   ]
 }

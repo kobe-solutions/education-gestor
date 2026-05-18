@@ -7,6 +7,8 @@ import {
   updateTeacherRepository,
   deleteTeacherRepository,
   updateTeacherPasswordRepository,
+  addSubjectToTeacherRepository,
+  removeSubjectFromTeacherRepository,
 } from './teachers.repository'
 import type { CreateTeacherBody, UpdateTeacherBody } from './teachers.schema'
 
@@ -87,5 +89,17 @@ export async function changeTeacherPasswordService(schoolId: string, id: string,
   const teacher = await findTeacherByIdRepository(schoolId, id)
   if (!teacher) throw new Error('Teacher not found')
   await updateTeacherPasswordRepository(schoolId, id, hashPassword(password))
+}
+
+export async function addTeacherSubjectService(schoolId: string, teacherId: string, subjectId: string) {
+  const teacher = await findTeacherByIdRepository(schoolId, teacherId)
+  if (!teacher) throw new Error('Teacher not found')
+  return addSubjectToTeacherRepository(schoolId, teacherId, subjectId)
+}
+
+export async function removeTeacherSubjectService(schoolId: string, teacherId: string, subjectId: string) {
+  const teacher = await findTeacherByIdRepository(schoolId, teacherId)
+  if (!teacher) throw new Error('Teacher not found')
+  await removeSubjectFromTeacherRepository(teacherId, subjectId)
 }
 

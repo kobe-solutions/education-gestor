@@ -1,0 +1,122 @@
+/* Hubs feature — Pessoas hub rich panels.
+   The Acadêmico hub uses .hub-card + .grid-3 from primitives/layout. */
+
+/* ── Two-column rich panel grid ──────────────────────────────────────────── */
+.pessoas-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.pessoa-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xs);
+  padding: 22px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+
+/* Panel header (icon + title + CTAs) */
+.pessoa-panel header {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 14px;
+  align-items: start;
+}
+.pessoa-panel header h2 { margin: 0; font-size: 17px; font-weight: 700; color: var(--fg-1); letter-spacing: -0.01em; }
+.pessoa-panel header p  { margin: 3px 0 0; font-size: 12px; color: var(--fg-3); line-height: 1.45; }
+.pessoa-panel .ico-tile {
+  width: 52px; height: 52px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(24,95,165,.10); color: var(--iris-blue-700);
+}
+.pessoa-panel .ico-tile.alunos { background: rgba(24,95,165,.10);  color: var(--iris-blue-700); }
+.pessoa-panel .ico-tile.profs  { background: rgba(55,138,221,.14); color: #1F6FBD; }
+.pessoa-panel .cta-row { display: flex; gap: 6px; align-self: center; }
+
+/* Metrics row (4 chips) */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.pessoa-metric {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--iris-slate-50);
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+}
+.pessoa-metric .ico {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; color: var(--iris-blue-700);
+  flex-shrink: 0;
+}
+.pessoa-metric .v { font-size: 18px; font-weight: 800; color: var(--fg-1); letter-spacing: -0.02em; line-height: 1; }
+.pessoa-metric .l { font-size: 10px; color: var(--fg-3); margin-top: 2px; }
+.pessoa-metric.tone-success .ico { color: var(--iris-success-600); background: var(--iris-success-50); }
+.pessoa-metric.tone-info    .ico { color: var(--iris-blue-700);    background: var(--iris-blue-50); }
+.pessoa-metric.tone-warning .ico { color: var(--iris-warning-600); background: var(--iris-warning-50); }
+.pessoa-metric.tone-danger  .ico { color: var(--iris-danger-600);  background: var(--iris-danger-50); }
+
+/* Recent list */
+.recent .recent-h {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; font-weight: 700; color: var(--iris-slate-500);
+  letter-spacing: .04em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.recent .recent-h a { color: var(--iris-blue-700); font-weight: 600; text-decoration: none; cursor: pointer; letter-spacing: 0; text-transform: none; }
+.recent .recent-h a:hover { text-decoration: underline; }
+.recent-list { display: flex; flex-direction: column; gap: 4px; }
+
+.person-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background var(--duration-fast);
+}
+.person-row:hover { background: var(--iris-slate-50); }
+.person-row .info { flex: 1; min-width: 0; }
+.person-row .nm   { font-size: 13px; font-weight: 600; color: var(--fg-1); line-height: 1.25; }
+.person-row .meta { font-size: 11px; color: var(--fg-3); line-height: 1.2; }
+.person-row .meta .mono { font-family: var(--font-mono); }
+
+/* Secondary quick-access row */
+.pessoa-quick-h {
+  font-size: 11px; font-weight: 700; color: var(--iris-slate-500);
+  letter-spacing: .04em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.pessoa-quick {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.quick-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px;
+  background: #fff; border: 1px solid var(--border-1); border-radius: 10px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  text-align: left;
+  transition: border-color var(--duration-base), background var(--duration-base);
+}
+.quick-card:hover { border-color: var(--iris-blue-300); background: var(--iris-blue-50); }
+.quick-card .ico {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(24,95,165,.10); color: var(--iris-blue-700);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.quick-card .lab { font-size: 13px; font-weight: 600; color: var(--fg-1); }
+
+/* Stacks tighter on narrow viewports */
+@media (max-width: 1180px) {
+  .pessoas-grid  { grid-template-columns: 1fr; }
+  .pessoa-quick  { grid-template-columns: repeat(2, 1fr); }
+  .metrics-row   { grid-template-columns: repeat(2, 1fr); }
+}

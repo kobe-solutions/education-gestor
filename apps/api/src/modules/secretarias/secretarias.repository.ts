@@ -41,6 +41,7 @@ export async function findSecretariaByEmailRepository(email: string) {
   const [secretaria] = await db
     .select({
       id: secretarias.id,
+      name: secretarias.name,
       email: secretarias.email,
       passwordHash: secretarias.passwordHash,
       role: secretarias.role,

@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+.tbl { width:100%; border-collapse: collapse; font-family: var(--font-body); font-size: 13px; background:#fff; border: 1px solid #E5E7EB; border-radius: 10px; overflow: hidden; }
+.tbl th { text-align:left; font-weight: 600; font-size: 11px; color: #6B7280; letter-spacing:.04em; text-transform: uppercase; padding: 10px 14px; background:#F8FAFC; border-bottom: 1px solid #E5E7EB; }
+.tbl td { padding: 12px 14px; border-bottom: 1px solid #F1F5F9; color: #0B1E33; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tr.hov td { background:#F8FBFF; }
+.code { font-family: var(--font-mono); font-size: 11px; color: #6B7280; }
+.bg-b { display:inline-flex; align-items:center; padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; height: 22px; }
+.b-success { background:#DCFCE7; color:#15803D; }
+.b-warning { background:#FEF3C7; color:#B45309; }
+</style>
+</head>
+<body><div class="card" style="padding-top:16px;">
+  <table class="tbl">
+    <thead><tr><th>Aluno</th><th>Matrícula</th><th>Turma</th><th>Situação</th><th style="width:90px;text-align:right;">Mensalidade</th></tr></thead>
+    <tbody>
+      <tr class="hov"><td style="font-weight:600">Helena Vasconcellos</td><td class="code">MAT-2026-00184</td><td>9º A · Manhã</td><td><span class="bg-b b-success">Pago</span></td><td style="text-align:right">R$&nbsp;980,00</td></tr>
+      <tr><td style="font-weight:600">João Pedro Almeida</td><td class="code">MAT-2026-00211</td><td>9º B · Manhã</td><td><span class="bg-b b-warning">Pendente</span></td><td style="text-align:right">R$&nbsp;980,00</td></tr>
+      <tr><td style="font-weight:600">Marília Castro</td><td class="code">MAT-2026-00307</td><td>2º EM · Manhã</td><td><span class="bg-b b-success">Pago</span></td><td style="text-align:right">R$&nbsp;1.240,00</td></tr>
+    </tbody>
+  </table>
+</div></body></html>

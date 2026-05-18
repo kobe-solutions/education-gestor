@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+.bg-b { display:inline-flex; align-items:center; gap:6px; padding: 2px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; font-family: var(--font-display); line-height: 18px; height:22px; }
+.b-default { background:#185FA5; color:#fff; }
+.b-secondary { background:#EAF4FD; color:#185FA5; }
+.b-success { background:#DCFCE7; color:#15803D; }
+.b-warning { background:#FEF3C7; color:#B45309; }
+.b-danger  { background:#FEE2E2; color:#B91C1C; }
+.b-outline { background:#fff; color:#0B1E33; border: 1px solid #D1D5DB; }
+.b-tag     { background:#fff; color:#185FA5; border:1px solid #BFD8F0; border-radius: 9999px; padding: 2px 10px; font-size:11px; font-weight:600; height: 22px; display:inline-flex; align-items:center; gap:5px; }
+.row-x { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.label-tiny { width: 90px; }
+.line { display:flex; gap:10px; align-items:center; }
+</style>
+</head>
+<body><div class="card">
+  <div class="line">
+    <div class="label-tiny">Status</div>
+    <span class="bg-b b-success">Pago</span>
+    <span class="bg-b b-warning">Pendente</span>
+    <span class="bg-b b-danger">Atrasado</span>
+    <span class="bg-b b-secondary">Em análise</span>
+  </div>
+  <div class="line">
+    <div class="label-tiny">Identidade</div>
+    <span class="bg-b b-default">Gestor</span>
+    <span class="bg-b b-secondary">Professor</span>
+    <span class="bg-b b-outline">Secretaria</span>
+    <span class="bg-b b-outline">Inativo</span>
+  </div>
+  <div class="line">
+    <div class="label-tiny">Pill</div>
+    <span class="b-tag"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>9º A · Manhã</span>
+    <span class="b-tag">Fundamental II</span>
+    <span class="b-tag">Período 2026.1</span>
+  </div>
+</div></body></html>

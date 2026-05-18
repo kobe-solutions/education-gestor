@@ -1,0 +1,226 @@
+/* ============================================================================
+   Locação feature — drag-drop allocation surfaces shared by Aulas + Alunos.
+   ============================================================================ */
+
+.loc-shell {
+  display: flex; gap: 18px;
+  height: calc(100vh - var(--header-h) - 56px);
+}
+
+/* ── Left rail (subjects / students list) ─────────────────────────────────── */
+.loc-rail {
+  width: 296px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 12px;
+  min-height: 0;
+}
+.loc-rail .rail-head h2  { margin: 0; font-size: 15px; font-weight: 700; color: var(--fg-1); letter-spacing: -0.01em; }
+.loc-rail .rail-head .sub{ font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+.loc-rail .rail-scroll {
+  flex: 1; overflow-y: auto; min-height: 0;
+  display: flex; flex-direction: column; gap: 10px;
+  padding-right: 4px;
+}
+.loc-rail .rail-foot {
+  border-top: 1px solid var(--border-1);
+  padding-top: 10px; font-size: 11px; color: var(--fg-3);
+}
+
+/* ── Selection chip (when an item is "picked up" via click) ───────────────── */
+.loc-pick {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--iris-blue-50); border: 1px solid var(--iris-blue-300);
+  border-radius: 8px; padding: 8px 10px;
+  font-size: 12px; font-weight: 600; color: var(--iris-blue-700);
+}
+.loc-pick button { background: none; border: 0; color: var(--iris-blue-700); cursor: pointer; padding: 2px; display: flex; }
+
+/* ── Subject (collapsible parent card) ────────────────────────────────────── */
+.subj-card {
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  transition: border-color var(--duration-base), box-shadow var(--duration-base);
+}
+.subj-card.open { border-color: var(--iris-blue-300); box-shadow: var(--shadow-sm); }
+.subj-head      { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; user-select: none; }
+.subj-head:hover{ background: var(--iris-slate-50); }
+.subj-head .swatch { width: 8px; height: 30px; border-radius: 4px; flex-shrink: 0; }
+.subj-head .info   { flex: 1; min-width: 0; }
+.subj-head .nm     { font-size: 13px; font-weight: 700; color: var(--fg-1); line-height: 1.2; }
+.subj-head .ds     { font-size: 11px; color: var(--fg-3); margin-top: 1px; }
+.subj-head .caret  { color: var(--iris-slate-500); transition: transform var(--duration-base) var(--ease-out-soft); }
+.subj-card.open .subj-head .caret { transform: rotate(180deg); }
+.subj-teachers     { display: flex; flex-direction: column; gap: 6px; padding: 4px 10px 12px; }
+
+/* ── Draggable chip (teacher / student) ───────────────────────────────────── */
+.drag-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 8px;
+  cursor: grab;
+  user-select: none;
+  transition: background var(--duration-fast), border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.drag-chip:hover  { background: var(--iris-slate-50); border-color: var(--iris-slate-300); }
+.drag-chip:active { cursor: grabbing; }
+.drag-chip.selected { border-color: var(--iris-blue-700); box-shadow: 0 0 0 2px rgba(24,95,165,.25); background: var(--iris-blue-50); }
+.drag-chip .grip  { color: var(--iris-slate-300); flex-shrink: 0; display: flex; }
+.drag-chip .av {
+  width: 26px; height: 26px; border-radius: 9999px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.drag-chip .info  { flex: 1; min-width: 0; }
+.drag-chip .nm    { font-size: 12px; font-weight: 600; color: var(--fg-1); line-height: 1.25; }
+.drag-chip .meta  { font-size: 10px; color: var(--fg-3); line-height: 1.2; }
+.drag-chip .count {
+  font-size: 10px; font-weight: 700;
+  background: var(--iris-slate-100);
+  color: var(--iris-slate-700);
+  padding: 1px 6px; border-radius: 9999px;
+}
+
+/* ── Main column ──────────────────────────────────────────────────────────── */
+.loc-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.loc-main .main-head { display: flex; align-items: center; gap: 14px; }
+.loc-main .main-head h2  { margin: 0; font-size: 15px; font-weight: 700; }
+.loc-main .main-head .sub{ font-size: 11px; color: var(--fg-3); margin-top: 2px; }
+
+/* ============================================================================
+   Aulas — weekly timetable grid + lesson pill
+   ============================================================================ */
+.timetable {
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 14px;
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  flex: 1;
+  display: flex; flex-direction: column; min-height: 0;
+}
+.timetable-grid {
+  display: grid;
+  grid-template-columns: 86px repeat(5, 1fr);
+  flex: 1; overflow: auto;
+}
+.timetable-cell { border-bottom: 1px solid var(--iris-slate-100); border-right: 1px solid var(--iris-slate-100); padding: 6px; min-height: 64px; }
+.timetable-cell.head {
+  background: var(--iris-slate-50);
+  position: sticky; top: 0; z-index: 1;
+  font-size: 11px; font-weight: 700; color: var(--iris-slate-500);
+  text-transform: uppercase; letter-spacing: .04em;
+  padding: 10px 12px; min-height: auto;
+  border-bottom: 1px solid var(--border-1);
+}
+.timetable-cell.time {
+  background: var(--iris-slate-50);
+  position: sticky; left: 0; z-index: 1;
+  font-family: var(--font-mono); font-size: 11px; color: var(--iris-slate-500);
+  display: flex; align-items: center; padding: 0 12px;
+  border-right: 1px solid var(--border-1);
+}
+.timetable-cell.slot       { cursor: copy; transition: background var(--duration-fast); }
+.timetable-cell.slot.over  { background: var(--iris-blue-50); box-shadow: inset 0 0 0 2px var(--iris-blue-500); }
+.timetable-cell.slot.empty-hint { color: var(--iris-slate-300); font-size: 10px; display: flex; align-items: center; justify-content: center; }
+
+.lesson-pill {
+  display: flex; flex-direction: column; gap: 1px;
+  background: #fff;
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  height: 100%;
+  position: relative;
+}
+.lesson-pill .ln-sub      { font-weight: 700; font-size: 11px; line-height: 1.2; }
+.lesson-pill .ln-tea      { font-size: 10px; opacity: .85; display: flex; align-items: center; gap: 4px; line-height: 1.2; }
+.lesson-pill .ln-tea .dot { width: 6px; height: 6px; border-radius: 9999px; }
+.lesson-pill .rm {
+  position: absolute; top: 3px; right: 3px;
+  background: rgba(255,255,255,.6);
+  border: 0; border-radius: 4px;
+  width: 16px; height: 16px; display: none;
+  align-items: center; justify-content: center; cursor: pointer;
+  color: var(--iris-danger-600);
+}
+.lesson-pill:hover .rm { display: flex; }
+
+.class-picker {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+}
+.class-picker .pick-l    { font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+.class-picker .pick-v    { font-size: 16px; font-weight: 700; color: var(--fg-1); letter-spacing: -0.01em; }
+.class-picker .pick-meta { font-size: 12px; color: var(--fg-3); }
+
+/* ============================================================================
+   Alunos — class-capacity kanban
+   ============================================================================ */
+.kanban-row {
+  display: flex; gap: 14px;
+  overflow-x: auto; flex: 1;
+  padding-bottom: 8px;
+  align-items: flex-start;
+}
+.kanban-col {
+  flex-shrink: 0; width: 248px;
+  background: #fff;
+  border: 1.5px solid var(--border-1);
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  max-height: 100%;
+  transition: border-color var(--duration-base), background var(--duration-base), box-shadow var(--duration-base);
+}
+.kanban-col.over      { border-color: var(--iris-blue-700); background: var(--iris-blue-50); box-shadow: 0 0 0 2px rgba(24,95,165,.20); }
+.kanban-col.full      { border-color: rgba(185,28,28,.25); background: #FFFBFB; }
+.kanban-col.over.full { border-color: var(--iris-danger-600); background: #FEE2E2; }
+.kanban-col .col-head { padding: 12px 14px 10px; border-bottom: 1px solid var(--border-1); }
+.kanban-col .col-h-row{ display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.kanban-col .col-name { font-size: 13px; font-weight: 700; color: var(--fg-1); }
+.kanban-col .col-meta { display: flex; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+.kanban-col .col-cap  { display: flex; gap: 4px; align-items: center; font-size: 11px; font-weight: 700; color: var(--iris-slate-500); }
+.kanban-col.full .col-cap { color: var(--iris-danger-600); }
+.kanban-col .cap-bar      { height: 5px; border-radius: 9999px; background: var(--iris-slate-100); margin-top: 8px; overflow: hidden; }
+.kanban-col .cap-bar .fill{ height: 100%; border-radius: inherit; transition: width var(--duration-base); }
+.kanban-col .col-body {
+  padding: 10px 12px;
+  flex: 1; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px;
+  min-height: 60px;
+}
+.kanban-col .col-empty { text-align: center; font-size: 11px; color: var(--fg-3); padding: 14px 0; }
+.kanban-col .col-foot  { border-top: 1px solid var(--border-1); padding: 10px 12px; }
+.kanban-col .col-foot .quick {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; padding: 8px;
+  font-size: 11px; font-weight: 600;
+  background: transparent;
+  border: 1.5px dashed var(--iris-blue-300);
+  border-radius: 8px;
+  color: var(--iris-blue-700);
+  cursor: pointer;
+}
+.kanban-col .col-foot .quick:hover { background: var(--iris-blue-50); }
+
+.enrolled-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 8px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 12px; font-weight: 500;
+}
+.enrolled-pill .av { width: 22px; height: 22px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+.enrolled-pill .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.enrolled-pill .rm { background: none; border: 0; padding: 2px; opacity: 0; cursor: pointer; color: var(--iris-danger-600); display: flex; }
+.enrolled-pill:hover .rm { opacity: 1; }
+
+.drop-hint     { padding: 10px; margin: 8px 12px; border-radius: 10px; border: 1.5px dashed; text-align: center; font-size: 11px; font-weight: 700; }
+.drop-hint.ok  { border-color: var(--iris-blue-700); background: rgba(24,95,165,.06); color: var(--iris-blue-700); }
+.drop-hint.bad { border-color: var(--iris-danger-600); background: rgba(185,28,28,.06); color: var(--iris-danger-600); display: flex; align-items: center; justify-content: center; gap: 6px; }

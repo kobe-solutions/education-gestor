@@ -1,6 +1,6 @@
 import { eq, and, count, isNull } from 'drizzle-orm'
 import { db } from '../../db'
-import { teachers } from '../../db/schema'
+import { teachers, teacherSubjects, subjects } from '../../db/schema'
 
 type CreateTeacherInput = {
   schoolId: string
@@ -116,17 +116,30 @@ export async function findTeacherForAuthRepository(schoolId: string, email: stri
   return teacher
 }
 
+async function getTeacherSubjects(teacherId: string) {
+  return db
+    .select({ id: subjects.id, name: subjects.name, code: subjects.code })
+    .from(teacherSubjects)
+    .innerJoin(subjects, eq(teacherSubjects.subjectId, subjects.id))
+    .where(eq(teacherSubjects.teacherId, teacherId))
+}
+
 export async function findAllTeachersRepository(
   schoolId: string,
   { limit = 50, offset = 0 }: { limit?: number; offset?: number } = {},
 ) {
-  const [data, [countResult]] = await Promise.all([
+  const [rows, [countResult]] = await Promise.all([
     db.select(teacherFields).from(teachers)
       .where(and(eq(teachers.schoolId, schoolId), isNull(teachers.deletedAt)))
       .limit(limit).offset(offset),
     db.select({ total: count() }).from(teachers)
       .where(and(eq(teachers.schoolId, schoolId), isNull(teachers.deletedAt))),
   ])
+
+  const data = await Promise.all(
+    rows.map(async (t) => ({ ...t, subjects: await getTeacherSubjects(t.id) })),
+  )
+
   return { data, total: countResult.total }
 }
 
@@ -137,7 +150,24 @@ export async function findTeacherByIdRepository(schoolId: string, id: string) {
     .where(and(eq(teachers.schoolId, schoolId), eq(teachers.id, id), isNull(teachers.deletedAt)))
     .limit(1)
 
-  return teacher
+  if (!teacher) return undefined
+
+  return { ...teacher, subjects: await getTeacherSubjects(teacher.id) }
+}
+
+export async function addSubjectToTeacherRepository(schoolId: string, teacherId: string, subjectId: string) {
+  const [row] = await db
+    .insert(teacherSubjects)
+    .values({ teacherId, subjectId, schoolId })
+    .onConflictDoNothing()
+    .returning({ teacherId: teacherSubjects.teacherId, subjectId: teacherSubjects.subjectId })
+  return row
+}
+
+export async function removeSubjectFromTeacherRepository(teacherId: string, subjectId: string) {
+  await db
+    .delete(teacherSubjects)
+    .where(and(eq(teacherSubjects.teacherId, teacherId), eq(teacherSubjects.subjectId, subjectId)))
 }
 
 export async function updateTeacherRepository(schoolId: string, id: string, input: UpdateTeacherInput) {
@@ -165,6 +195,7 @@ export async function findTeachersByEmailRepository(email: string) {
   return db
     .select({
       id: teachers.id,
+      name: teachers.name,
       schoolId: teachers.schoolId,
       email: teachers.email,
       passwordHash: teachers.passwordHash,

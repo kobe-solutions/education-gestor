@@ -7,44 +7,34 @@ import {
   updateTimetableSlotRepository,
   deleteTimetableSlotRepository,
 } from './timetable.repository'
-
-type CreateInput = {
-  schoolId: string
-  classId: string
-  academicPeriodId: string
-  subjectId: string
-  teacherId: string
-  weekDay: string
-  startTime: string
-  endTime: string
-}
+import type { CreateTimetableSlotBody, UpdateTimetableSlotBody } from './timetable.schema'
 
 async function assertNoTeacherConflict(
   teacherId: string,
   weekDay: string,
-  startTime: string,
-  academicPeriodId: string,
+  classPeriodId: string,
+  academicYearId: string,
   excludeSlotId?: string,
 ) {
   const conflict = await findConflictingSlotRepository(
     teacherId,
     weekDay,
-    startTime,
-    academicPeriodId,
+    classPeriodId,
+    academicYearId,
     excludeSlotId,
   )
   if (conflict) throw new Error('Teacher already has a slot at this time')
 }
 
-export async function createTimetableSlotService(input: CreateInput) {
+export async function createTimetableSlotService(schoolId: string, body: CreateTimetableSlotBody) {
   await assertNoTeacherConflict(
-    input.teacherId,
-    input.weekDay,
-    input.startTime,
-    input.academicPeriodId,
+    body.teacherId,
+    body.weekDay,
+    body.classPeriodId,
+    body.academicYearId,
   )
 
-  return createTimetableSlotRepository(input)
+  return createTimetableSlotRepository({ schoolId, ...body })
 }
 
 export async function listTimetableSlotsService(schoolId: string, classId: string) {
@@ -61,30 +51,27 @@ export async function getTimetableSlotService(schoolId: string, id: string) {
   return slot
 }
 
-type UpdateInput = {
-  subjectId?: string
-  teacherId?: string
-  weekDay?: string
-  startTime?: string
-  endTime?: string
-}
-
-export async function updateTimetableSlotService(schoolId: string, id: string, data: UpdateInput) {
+export async function updateTimetableSlotService(
+  schoolId: string,
+  id: string,
+  data: UpdateTimetableSlotBody,
+) {
   const slot = await findTimetableSlotByIdRepository(schoolId, id)
   if (!slot) throw new Error('Timetable slot not found')
-
-  const teacherId = data.teacherId ?? slot.teacherId
-  const weekDay = data.weekDay ?? slot.weekDay
-  const startTime = data.startTime ?? slot.startTime
-  const academicPeriodId = slot.academicPeriodId
 
   const isChangingConflictKey =
     data.teacherId !== undefined ||
     data.weekDay !== undefined ||
-    data.startTime !== undefined
+    data.classPeriodId !== undefined
 
   if (isChangingConflictKey) {
-    await assertNoTeacherConflict(teacherId, weekDay, startTime, academicPeriodId, id)
+    await assertNoTeacherConflict(
+      data.teacherId ?? slot.teacherId,
+      data.weekDay ?? slot.weekDay,
+      data.classPeriodId ?? slot.classPeriodId,
+      slot.academicYearId,
+      id,
+    )
   }
 
   return updateTimetableSlotRepository(schoolId, id, data)

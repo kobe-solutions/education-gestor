@@ -4,20 +4,18 @@ export const WEEK_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'
 
 export const createTimetableSlotBodySchema = z.object({
   classId: z.string().uuid(),
-  academicPeriodId: z.string().uuid(),
+  academicYearId: z.string().uuid(),
+  classPeriodId: z.string().uuid(),
   subjectId: z.string().uuid(),
   teacherId: z.string().uuid(),
   weekDay: z.enum(WEEK_DAYS),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM'),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM'),
 })
 
 export const updateTimetableSlotBodySchema = z.object({
+  classPeriodId: z.string().uuid().optional(),
   subjectId: z.string().uuid().optional(),
   teacherId: z.string().uuid().optional(),
   weekDay: z.enum(WEEK_DAYS).optional(),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM').optional(),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM').optional(),
 })
 
 export type CreateTimetableSlotBody = z.infer<typeof createTimetableSlotBodySchema>

@@ -270,26 +270,46 @@ export function StudentFormPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-4xl">
+    <div className="space-y-5 max-w-4xl">
+      {/* Header de detalhe */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/students')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold">
-            {isEdit ? student?.name : 'Novo Aluno'}
+        <button
+          onClick={() => navigate('/students')}
+          className="flex items-center justify-center rounded-lg w-8 h-8 transition-colors shrink-0"
+          title="Voltar"
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+        >
+          <ArrowLeft size={16} style={{ color: 'var(--iris-slate-700)' }} />
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <h1
+            className="font-bold truncate"
+            style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.01em' }}
+          >
+            {isEdit ? student?.name : 'Novo aluno'}
           </h1>
           {isEdit && student && (
-            <p className="text-xs text-muted-foreground">
-              Matrícula: {student.enrollmentCode}
-              {student.internalCode && ` · Cód. interno: ${student.internalCode}`}
-              {' · '}
-              <Badge variant={student.enrollmentStatus === 'active' ? 'success' : 'secondary'} className="text-[10px] h-4 px-1.5">
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="mono text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+                {student.enrollmentCode}
+              </span>
+              {student.internalCode && (
+                <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+                  · Cód. {student.internalCode}
+                </span>
+              )}
+              <Badge
+                variant={student.enrollmentStatus === 'active' ? 'success' : student.enrollmentStatus === 'transferred' ? 'warning' : 'outline'}
+                className="text-[10px] h-4 px-1.5"
+              >
                 {ENROLLMENT_STATUS_LABELS[student.enrollmentStatus]}
               </Badge>
-            </p>
+            </div>
           )}
         </div>
+
         {isEdit && (
           <Link to={`/students/${id}/report`}>
             <Button size="sm" variant="outline">Ver boletim</Button>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_shell.css">
+<style>
+.steps { display:flex; align-items:flex-end; gap:14px; }
+.step  { display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+.bar   { background:#185FA5; height: 14px; border-radius: 3px; }
+.lab   { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); }
+.tok   { font-size: 11px; font-weight: 600; color: var(--fg-1); }
+</style>
+</head>
+<body><div class="card">
+  <div class="steps">
+    <div class="step"><div class="bar" style="width:4px"></div><div class="tok">1</div><div class="lab">4px</div></div>
+    <div class="step"><div class="bar" style="width:8px"></div><div class="tok">2</div><div class="lab">8px</div></div>
+    <div class="step"><div class="bar" style="width:12px"></div><div class="tok">3</div><div class="lab">12px</div></div>
+    <div class="step"><div class="bar" style="width:16px"></div><div class="tok">4</div><div class="lab">16px</div></div>
+    <div class="step"><div class="bar" style="width:20px"></div><div class="tok">5</div><div class="lab">20px</div></div>
+    <div class="step"><div class="bar" style="width:24px"></div><div class="tok">6</div><div class="lab">24px</div></div>
+    <div class="step"><div class="bar" style="width:32px"></div><div class="tok">8</div><div class="lab">32px</div></div>
+    <div class="step"><div class="bar" style="width:40px"></div><div class="tok">10</div><div class="lab">40px</div></div>
+    <div class="step"><div class="bar" style="width:48px"></div><div class="tok">12</div><div class="lab">48px</div></div>
+    <div class="step"><div class="bar" style="width:64px"></div><div class="tok">16</div><div class="lab">64px</div></div>
+    <div class="step"><div class="bar" style="width:80px"></div><div class="tok">20</div><div class="lab">80px</div></div>
+  </div>
+  <div class="caption" style="margin-top:6px;">4-pt baseline. Default page padding 24px; tight clusters 8/12px.</div>
+</div></body></html>

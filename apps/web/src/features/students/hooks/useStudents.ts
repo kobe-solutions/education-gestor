@@ -1,13 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../lib/api'
+import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Student, Guardian, StudentMedical, StudentDocument } from '@education-gestor/types'
 
 // ─── Alunos ────────────────────────────────────────────────────────────────────
 
 export function useStudents() {
+  const { schoolKey, enabled } = useSchoolKey()
   return useQuery({
-    queryKey: ['students'],
-    queryFn: async () => (await api.get<Student[]>('/students')).data,
+    queryKey: ['students', schoolKey],
+    queryFn: async () => {
+      const res = await api.get<{ data: Student[]; total: number } | Student[]>('/students')
+      const body = res.data
+      return Array.isArray(body) ? body : body.data
+    },
+    enabled,
   })
 }
 

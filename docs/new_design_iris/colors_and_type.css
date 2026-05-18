@@ -1,0 +1,260 @@
+/* ===========================================================================
+   IRIS Educação — Design Tokens
+   Brand: Moderna, SaaS, institucional, premium
+   Sourced from: IRIS brand guidelines (uploads/) + education-gestor codebase
+   --------------------------------------------------------------------------
+   Architecture: Tailwind / shadcn-compatible HSL CSS variables for theming,
+   plus semantic hex tokens for design tools and direct HTML use.
+   =========================================================================== */
+
+/* ---------- 1. Fonts (Google Fonts) ---------------------------------------
+   Display + body: Plus Jakarta Sans — modern, geometric, premium SaaS feel.
+   Mono: JetBrains Mono — for codes, enrollment numbers, IDs.
+   NOTE: The logo wordmark is set in Inter (per source SVG). For everything
+   else in the product we use Plus Jakarta Sans. If the brand later supplies
+   licensed fonts, drop them in /fonts/ and swap the @import below.
+*/
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+:root {
+  /* ===== 2. Brand palette — raw hex (from IRIS_Educacao_Identidade_Visual) ===== */
+  --iris-blue-900: #042C53;   /* Azul escuro — text, headings, deep accents */
+  --iris-blue-700: #185FA5;   /* Azul principal — primary brand colour */
+  --iris-blue-500: #378ADD;   /* Azul médio — hover, accents, secondary fills */
+  --iris-blue-300: #85B7EB;   /* Azul claro — light tints, badges, illustrations */
+  --iris-blue-50:  #EAF4FD;   /* Fundo claro — section bg, surface tint */
+
+  --iris-graphite: #2C2C2A;   /* Grafite — body text on light */
+  --iris-white:    #FFFFFF;
+
+  /* Derived neutrals (cool, biased toward the blue family) */
+  --iris-ink:      #0B1E33;   /* Pure deep ink (a touch darker than 900) */
+  --iris-slate-900: #1F2A37;
+  --iris-slate-700: #374151;
+  --iris-slate-500: #6B7280;
+  --iris-slate-300: #D1D5DB;
+  --iris-slate-200: #E5E7EB;
+  --iris-slate-100: #F1F5F9;
+  --iris-slate-50:  #F8FAFC;
+
+  /* Semantic state colours — institutional, not loud */
+  --iris-success-600: #15803D;
+  --iris-success-50:  #DCFCE7;
+  --iris-warning-600: #B45309;
+  --iris-warning-50:  #FEF3C7;
+  --iris-danger-600:  #B91C1C;
+  --iris-danger-50:   #FEE2E2;
+  --iris-info-600:    var(--iris-blue-700);
+  --iris-info-50:     var(--iris-blue-50);
+
+  /* ===== 3. Foreground / surface semantic tokens ===== */
+  --fg-1: var(--iris-blue-900);   /* primary text on light */
+  --fg-2: var(--iris-graphite);   /* secondary text on light */
+  --fg-3: var(--iris-slate-500);  /* muted text, captions, helper copy */
+  --fg-on-primary: var(--iris-white);
+
+  --bg-app:     var(--iris-slate-50);   /* main page background */
+  --bg-surface: var(--iris-white);      /* cards, panels, dialogs */
+  --bg-tint:    var(--iris-blue-50);    /* feature highlight, hub headers */
+  --bg-inverse: var(--iris-blue-900);   /* dark surfaces (header strip etc) */
+
+  --border-1: var(--iris-slate-200);
+  --border-2: var(--iris-slate-300);
+  --border-focus: var(--iris-blue-500);
+
+  /* ===== 4. shadcn / Tailwind HSL variables ===== */
+  /* These mirror education-gestor's variable contract so the existing
+     codebase becomes branded simply by swapping :root.                    */
+  --background: 0 0% 100%;                /* #FFFFFF */
+  --foreground: 210 86% 17%;              /* ~#042C53 */
+  --card: 0 0% 100%;
+  --card-foreground: 210 86% 17%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 86% 17%;
+
+  --primary: 210 74% 37%;                 /* #185FA5 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 207 80% 92%;               /* #EAF4FD ish */
+  --secondary-foreground: 210 86% 17%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+
+  --accent: 210 70% 95%;
+  --accent-foreground: 210 86% 17%;
+
+  --destructive: 0 72% 42%;               /* ~ #B91C1C */
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 214 32% 91%;
+  --input:  214 32% 91%;
+  --ring:   210 74% 47%;                  /* a touch lighter for focus */
+
+  --radius: 0.625rem;                     /* 10px — premium, less rounded than chunky SaaS */
+
+  /* ===== 5. Type scale ===== */
+  --font-display: "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body:    "Plus Jakarta Sans", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* T-shirt sizes */
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 14px;          /* SaaS-dense default */
+  --text-md:   15px;
+  --text-lg:   17px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  30px;
+  --text-4xl:  38px;
+  --text-5xl:  48px;
+  --text-6xl:  64px;
+
+  --leading-tight: 1.15;
+  --leading-snug:  1.3;
+  --leading-body:  1.55;
+  --leading-loose: 1.7;
+
+  --tracking-tight:  -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-caps:   0.12em;   /* used in EDUCAÇÃO wordmark */
+
+  /* ===== 6. Spacing scale (4-pt baseline) ===== */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ===== 7. Radii ===== */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;       /* matches shadcn --radius */
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+  --radius-pill: 9999px;
+
+  /* ===== 8. Elevation (soft, institutional — never dramatic) ===== */
+  --shadow-xs: 0 1px 1px rgba(4, 44, 83, 0.04);
+  --shadow-sm: 0 1px 2px rgba(4, 44, 83, 0.06), 0 1px 1px rgba(4, 44, 83, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(4, 44, 83, 0.08), 0 2px 4px -2px rgba(4, 44, 83, 0.06);
+  --shadow-lg: 0 12px 28px -6px rgba(4, 44, 83, 0.12), 0 4px 10px -2px rgba(4, 44, 83, 0.06);
+  --shadow-focus: 0 0 0 3px rgba(55, 138, 221, 0.35);
+
+  /* ===== 9. Motion ===== */
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast:    120ms;
+  --duration-base:    180ms;
+  --duration-slow:    280ms;
+
+  /* ===== 10. Layout ===== */
+  --sidebar-w: 72px;          /* icon-rail sidebar (from AppLayout.tsx) */
+  --header-h:  56px;
+  --content-pad: 24px;
+}
+
+/* ---------- 11. Element semantic styles ----------------------------------- */
+html, body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg-1);
+  background: var(--bg-app);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+}
+
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-3xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+h3, .h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  letter-spacing: -0.01em;
+  color: var(--fg-1);
+}
+h4, .h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--fg-1);
+}
+.page-title {     /* sm header used in product pages */
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--text-xl);
+  color: var(--fg-1);
+}
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--iris-blue-500);
+}
+p, .body {
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--fg-2);
+}
+.muted {
+  color: var(--fg-3);
+  font-size: var(--text-sm);
+}
+.caption {
+  font-size: var(--text-xs);
+  color: var(--fg-3);
+  line-height: var(--leading-snug);
+}
+.mono, code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+.code-inline {
+  background: var(--iris-slate-100);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-xs);
+}
+
+/* ---------- 12. Utility primitives that the UI kit relies on -------------- */
+.surface-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.surface-tint {
+  background: var(--bg-tint);
+}
+.divider {
+  height: 1px;
+  background: var(--border-1);
+  width: 100%;
+}

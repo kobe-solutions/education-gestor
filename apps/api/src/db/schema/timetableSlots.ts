@@ -1,7 +1,8 @@
 import { pgTable, uuid, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core'
 import { schools } from './schools'
 import { schoolClasses } from './schoolClasses'
-import { academicPeriods } from './academicPeriods'
+import { academicYears } from './academicYears'
+import { classPeriods } from './classPeriods'
 import { subjects } from './subjects'
 import { teachers } from './teachers'
 
@@ -15,9 +16,12 @@ export const timetableSlots = pgTable(
     classId: uuid('class_id')
       .notNull()
       .references(() => schoolClasses.id, { onDelete: 'cascade' }),
-    academicPeriodId: uuid('academic_period_id')
+    academicYearId: uuid('academic_year_id')
       .notNull()
-      .references(() => academicPeriods.id),
+      .references(() => academicYears.id),
+    classPeriodId: uuid('class_period_id')
+      .notNull()
+      .references(() => classPeriods.id),
     subjectId: uuid('subject_id')
       .notNull()
       .references(() => subjects.id),
@@ -25,17 +29,15 @@ export const timetableSlots = pgTable(
       .notNull()
       .references(() => teachers.id),
     weekDay: text('week_day').notNull(),
-    startTime: text('start_time').notNull(),
-    endTime: text('end_time').notNull(),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({
-    // impede o mesmo professor em dois slots com mesmo dia/hora/período
+    // impede o mesmo professor no mesmo horário padrão no mesmo dia e ano letivo
     uniqueTeacherSlot: uniqueIndex('timetable_teacher_slot_unique').on(
       table.teacherId,
       table.weekDay,
-      table.startTime,
-      table.academicPeriodId,
+      table.classPeriodId,
+      table.academicYearId,
     ),
   }),
 )

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
+
+  
+  <rect width="480" height="120" rx="8" fill="#042C53"></rect>
+
+  
+  <g transform="translate(8,6) scale(0.9)">
+    <path d="M60 78 L14 87 L14 66 L60 58 Z" fill="#378ADD"></path>
+    <path d="M60 78 L106 87 L106 66 L60 58 Z" fill="#378ADD"></path>
+    <line x1="22" y1="73" x2="58" y2="65" stroke="#EAF4FD" stroke-width="1.8" stroke-linecap="round"></line>
+    <line x1="22" y1="78" x2="58" y2="70" stroke="#EAF4FD" stroke-width="1.8" stroke-linecap="round"></line>
+    <line x1="22" y1="83" x2="58" y2="75" stroke="#EAF4FD" stroke-width="1.8" stroke-linecap="round"></line>
+    <line x1="98" y1="73" x2="62" y2="65" stroke="#EAF4FD" stroke-width="1.8" stroke-linecap="round"></line>
+    <line x1="98" y1="78" x2="62" y2="70" stroke="#EAF4FD" stroke-width="1.8" stroke-linecap="round"></line>
+    <line x1="98" y1="83" x2="62" y2="75" stroke="#EAF4FD" stroke-width="1.8" stroke-linecap="round"></line>
+    <ellipse cx="60" cy="46" rx="42" ry="22" fill="white"></ellipse>
+    <circle cx="60" cy="46" r="18" fill="#378ADD"></circle>
+    <circle cx="60" cy="46" r="12" fill="#185FA5"></circle>
+    <circle cx="60" cy="46" r="7" fill="#042C53"></circle>
+    <circle cx="60" cy="46" r="3.5" fill="#185FA5"></circle>
+    <circle cx="66" cy="40" r="4" fill="white" opacity="0.9"></circle>
+    <path d="M18 46 Q36 18 60 20 Q84 18 102 46" fill="none" stroke="#042C53" stroke-width="3.5" stroke-linecap="round"></path>
+    <path d="M18 46 Q36 68 60 66 Q84 68 102 46" fill="none" stroke="#378ADD" stroke-width="2.5" stroke-linecap="round"></path>
+  </g>
+
+  
+  <text x="118" y="65" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="800" font-size="52" fill="white" letter-spacing="2">IRIS</text>
+
+  
+  <text x="120" y="88" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="17" fill="#85B7EB" letter-spacing="6">EDUCAÇÃO</text>
+
+  
+  <line x1="120" y1="95" x2="295" y2="95" stroke="#378ADD" stroke-width="1.5"></line>
+
+  
+  <text x="120" y="111" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="9.5" fill="#85B7EB" opacity="0.8" letter-spacing="0.3">Visão completa da trajetória de cada aluno</text>
+</svg>
