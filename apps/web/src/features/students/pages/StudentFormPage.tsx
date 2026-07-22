@@ -270,9 +270,9 @@ export function StudentFormPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-4xl">
+    <div className="space-y-5 max-w-5xl mx-auto">
       {/* Header de detalhe */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <button
           onClick={() => navigate('/students')}
           className="flex items-center justify-center rounded-lg w-8 h-8 transition-colors shrink-0"
@@ -318,26 +318,28 @@ export function StudentFormPage() {
       </div>
 
       <Tabs defaultValue="pessoal">
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
-          <TabsTrigger value="familia" disabled={!isEdit}>Família & Responsável</TabsTrigger>
-          <TabsTrigger value="saude" disabled={!isEdit}>Ficha Médica</TabsTrigger>
-          <TabsTrigger value="documentos" disabled={!isEdit}>Documentos</TabsTrigger>
-          <TabsTrigger value="matricula" disabled={!isEdit}>Matrícula & Turmas</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+          <TabsList className="w-full justify-start min-w-max">
+            <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
+            <TabsTrigger value="familia" disabled={!isEdit}>Família & Responsável</TabsTrigger>
+            <TabsTrigger value="saude" disabled={!isEdit}>Ficha Médica</TabsTrigger>
+            <TabsTrigger value="documentos" disabled={!isEdit}>Documentos</TabsTrigger>
+            <TabsTrigger value="matricula" disabled={!isEdit}>Matrícula & Turmas</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ── Aba 1: Dados Pessoais ──────────────────────────────────────── */}
         <TabsContent value="pessoal">
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Foto */}
             <div className="flex flex-col items-center gap-3">
               <div
-                className="h-32 w-32 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary transition-colors"
+                className="h-28 w-28 md:h-32 md:w-32 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary transition-colors"
                 onClick={() => isEdit && photoInputRef.current?.click()}
               >
                 {student?.photoUrl
                   ? <img src={student.photoUrl} alt="foto" className="h-full w-full object-cover" />
-                  : <UserCircle2 className="h-16 w-16 text-muted-foreground/40" />
+                  : <UserCircle2 className="h-14 w-14 md:h-16 md:w-16 text-muted-foreground/40" />
                 }
               </div>
               {isEdit && (
@@ -353,9 +355,9 @@ export function StudentFormPage() {
             </div>
 
             {/* Formulário */}
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <form onSubmit={pessoalForm.handleSubmit(onSavePessoal)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="col-span-2 space-y-1">
                     <Label>Nome completo *</Label>
                     <Input {...pessoalForm.register('name')} />
@@ -436,7 +438,7 @@ export function StudentFormPage() {
           <form onSubmit={familiaForm.handleSubmit(onSaveFamilia)} className="space-y-4">
             <Card>
               <CardHeader><CardTitle className="text-sm">Dados familiares</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label>Nome da mãe<Opt /></Label>
                   <Input {...familiaForm.register('motherName')} />
@@ -454,7 +456,7 @@ export function StudentFormPage() {
 
             <Card>
               <CardHeader><CardTitle className="text-sm">Endereço</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-3 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label>CEP<Opt /></Label>
                   <Input placeholder="00000-000" {...familiaForm.register('addressCep')} />
@@ -507,7 +509,7 @@ export function StudentFormPage() {
               {guardianDialogOpen && (
                 <form onSubmit={guardianForm.handleSubmit(onAddGuardian)} className="border rounded-lg p-4 space-y-3 bg-muted/30">
                   <p className="text-sm font-medium">Novo responsável / autorizado</p>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="col-span-2 space-y-1">
                       <Label>Nome completo *</Label>
                       <Input {...guardianForm.register('name')} />
@@ -663,7 +665,7 @@ export function StudentFormPage() {
         <TabsContent value="matricula">
           <Card>
             <CardHeader><CardTitle className="text-sm">Dados de matrícula</CardTitle></CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { label: 'Número de matrícula', value: student?.enrollmentCode },
                 { label: 'Código interno', value: student?.internalCode ?? '—' },

@@ -19,21 +19,20 @@ type CreateSchoolClassServiceInput = {
   name: string
   shift: string
   serieId?: string
-  academicPeriodId?: string
 }
 
 type UpdateSchoolClassServiceInput = {
   name?: string
   shift?: string
   serieId?: string | null
-  academicPeriodId?: string | null
 }
 
 export async function listSchoolClassesService(schoolId: string) {
-  const classes = await findAllSchoolClassesRepository(schoolId)
-  if (classes.length === 0) return classes.map((c) => ({ ...c, studentCount: 0 }))
-  const counts = await countStudentsByClassesRepository(classes.map((c) => c.id))
-  return classes.map((c) => ({ ...c, studentCount: counts[c.id] ?? 0 }))
+  const classes = await findAllSchoolClassesRepository(schoolId) as any[]
+  if (classes.length === 0) return classes.map((c: any) => ({ ...c, studentCount: 0 }))
+  const classIds = classes.map((c: any) => c.id)
+  const counts = await countStudentsByClassesRepository(classIds)
+  return classes.map((c: any) => ({ ...c, studentCount: counts[c.id] ?? 0 }))
 }
 
 export async function getSchoolClassService(schoolId: string, id: string) {
@@ -54,7 +53,6 @@ export async function createSchoolClassService(input: CreateSchoolClassServiceIn
     name: input.name.trim(),
     shift: input.shift,
     serieId: input.serieId ?? null,
-    academicPeriodId: input.academicPeriodId ?? null,
   })
 }
 
@@ -88,7 +86,8 @@ export async function addStudentToClassService(schoolId: string, classId: string
 
   const counts = await countStudentsByClassesRepository([classId])
   const enrolled = counts[classId] ?? 0
-  if (enrolled >= schoolClass.maxStudents) throw new Error('Class is full')
+  const maxStudents = (schoolClass as any).maxStudents ?? 40
+  if (enrolled >= maxStudents) throw new Error('Class is full')
 
   return addStudentToClassRepository(classId, studentId)
 }

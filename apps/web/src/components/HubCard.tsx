@@ -14,14 +14,14 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
   if (disabled) {
     return (
       <div
-        className="flex flex-col gap-4 p-5 rounded-xl opacity-50 cursor-not-allowed"
+        className="flex flex-col gap-3 p-4 md:gap-4 md:p-5 rounded-xl opacity-50 cursor-not-allowed"
         style={{ background: '#FFFFFF', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       >
         <div
           className="flex items-center justify-center rounded-lg shrink-0"
-          style={{ width: 40, height: 40, background: 'rgba(24,95,165,0.10)' }}
+          style={{ width: 36, height: 36, background: 'rgba(24,95,165,0.10)' }}
         >
-          <Icon size={20} style={{ color: '#185FA5' }} />
+          <Icon size={18} style={{ color: '#185FA5' }} />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>{title}</h3>
@@ -35,7 +35,7 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
   return (
     <Link
       to={to}
-      className="group flex flex-col gap-4 p-5 rounded-xl transition-all duration-[180ms]"
+      className="group flex flex-col gap-3 p-4 md:gap-4 md:p-5 rounded-xl transition-all duration-180"
       style={{ background: '#FFFFFF', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement
@@ -50,9 +50,9 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
     >
       <div
         className="flex items-center justify-center rounded-lg shrink-0"
-        style={{ width: 40, height: 40, background: 'rgba(24,95,165,0.10)' }}
+        style={{ width: 36, height: 36, background: 'rgba(24,95,165,0.10)' }}
       >
-        <Icon size={20} style={{ color: '#185FA5' }} />
+        <Icon size={18} style={{ color: '#185FA5' }} />
       </div>
       <div className="flex-1">
         <h3 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>{title}</h3>
@@ -60,7 +60,7 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
       </div>
       <div className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#185FA5' }}>
         Acessar
-        <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform duration-[120ms]" />
+        <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform duration-120" />
       </div>
     </Link>
   )

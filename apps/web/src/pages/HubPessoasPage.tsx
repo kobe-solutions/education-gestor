@@ -116,8 +116,8 @@ interface QuickCardProps {
 function QuickCard({ icon: Icon, label, onClick }: QuickCardProps) {
   return (
     <button
-      className="flex flex-col items-center gap-2 p-4 rounded-xl text-center transition-all duration-[120ms]"
-      style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', flex: '1 1 0' }}
+      className="flex flex-col items-center gap-2 p-4 rounded-xl text-center transition-all duration-120"
+      style={{ background: '#fff', border: '1px solid var(--iris-slate-200)' }}
       onClick={onClick}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement
@@ -158,7 +158,7 @@ export function HubPessoasPage() {
       />
 
       {/* Dois painéis */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
         {/* Painel Alunos */}
         <section
@@ -166,7 +166,7 @@ export function HubPessoasPage() {
           style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
         >
           <div
-            className="flex items-start justify-between gap-4 p-5 pb-4"
+            className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-5 pb-4"
             style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
           >
             <div className="flex items-start gap-3">
@@ -239,7 +239,7 @@ export function HubPessoasPage() {
           style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
         >
           <div
-            className="flex items-start justify-between gap-4 p-5 pb-4"
+            className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-5 pb-4"
             style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
           >
             <div className="flex items-start gap-3">
@@ -313,7 +313,7 @@ export function HubPessoasPage() {
         >
           Atalhos rápidos
         </p>
-        <div className="flex gap-3 flex-wrap">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <QuickCard icon={Search}   label="Buscar aluno"      onClick={() => navigate('/students')} />
           <QuickCard icon={UserPlus} label="Matricular em turma" onClick={() => navigate('/locacao-alunos')} />
           <QuickCard icon={FileText} label="Importar planilha"  onClick={() => navigate('/students')} />

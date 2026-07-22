@@ -1,7 +1,6 @@
 import {
   findAllStudentsRepository,
   findStudentByIdRepository,
-  findStudentByEnrollmentCodeRepository,
   generateEnrollmentCodeRepository,
   createStudentRepository,
   updateStudentRepository,
@@ -52,11 +51,6 @@ export async function createStudentService(schoolId: string, input: CreateStuden
 export async function updateStudentService(schoolId: string, id: string, input: UpdateStudentBody) {
   const student = await findStudentByIdRepository(schoolId, id)
   if (!student) throw new Error('Student not found')
-
-  if (input.enrollmentCode && input.enrollmentCode !== student.enrollmentCode) {
-    const existing = await findStudentByEnrollmentCodeRepository(schoolId, input.enrollmentCode)
-    if (existing) throw new Error('Enrollment code already in use')
-  }
 
   const updated = await updateStudentRepository(schoolId, id, input)
   if (!updated) throw new Error('Student not found')
