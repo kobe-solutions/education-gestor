@@ -133,7 +133,7 @@ export function StudentDetailPage() {
       {/* Dados pessoais */}
       <div
         className="rounded-xl p-5"
-        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       >
         <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--iris-blue-900)' }}>
           Dados pessoais
@@ -160,7 +160,7 @@ export function StudentDetailPage() {
       {/* Responsáveis */}
       <div
         className="rounded-xl overflow-hidden"
-        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       >
         <div className="flex items-center justify-between p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
           <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
@@ -205,7 +205,7 @@ export function StudentDetailPage() {
                     className="flex items-center justify-center rounded-md w-7 h-7 transition-colors shrink-0"
                     title="Remover"
                     onClick={() => onDeleteGuardian(g.id)}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                   >
                     <Trash2 size={13} style={{ color: 'var(--iris-danger-600)' }} />
@@ -220,7 +220,7 @@ export function StudentDetailPage() {
       {/* Mensalidades */}
       <div
         className="rounded-xl overflow-hidden"
-        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       >
         <div className="p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
           <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>

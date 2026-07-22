@@ -21,7 +21,7 @@ function SkeletonCards({ count }: { count: number }) {
         <div
           key={i}
           className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl"
-          style={{ background: '#fff', border: '1px solid var(--iris-slate-200)' }}
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
         >
           <Skeleton className="h-9 w-9 md:h-10 md:w-10 rounded-lg shrink-0" />
           <div className="space-y-2 flex-1">
@@ -77,8 +77,8 @@ export function DashboardPage() {
       <div className="space-y-6">
         <PageHead title="Painel" subtitle="Visão geral da plataforma" />
         <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-xs">
-          <MetricCard icon={Building2} label="Secretarias" value={data.secretariasCount} color="#185FA5" />
-          <MetricCard icon={School}    label="Escolas"     value={data.schoolsCount}     color="#378ADD" />
+          <MetricCard icon={Building2} label="Secretarias" value={data.secretariasCount} color="#4F46E5" />
+          <MetricCard icon={School}    label="Escolas"     value={data.schoolsCount}     color="#818CF8" />
         </div>
       </div>
     )
@@ -96,12 +96,12 @@ export function DashboardPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <MetricCard icon={Users}         label="Alunos"     value={data.studentsCount}          color="#185FA5" />
-        <MetricCard icon={GraduationCap} label="Professores" value={data.teachersCount}         color="#378ADD" />
-        <MetricCard icon={BookOpen}      label="Turmas"     value={data.classesCount}            color="#042C53" />
-        <MetricCard icon={Clock}         label="Pendentes"  value={data.tuitions.pending.count}  sub={fmtBRL(data.tuitions.pending.total)}  color="#B45309" />
-        <MetricCard icon={CheckCircle2}  label="Pagas"      value={data.tuitions.paid.count}     sub={fmtBRL(data.tuitions.paid.total)}     color="#15803D" />
-        <MetricCard icon={AlertCircle}   label="Atrasadas"  value={data.tuitions.overdue.count}  sub={fmtBRL(data.tuitions.overdue.total)}  color="#B91C1C" />
+        <MetricCard icon={Users}         label="Alunos"     value={data.studentsCount}          color="#4F46E5" />
+        <MetricCard icon={GraduationCap} label="Professores" value={data.teachersCount}         color="#818CF8" />
+        <MetricCard icon={BookOpen}      label="Turmas"     value={data.classesCount}            color="#312E81" />
+        <MetricCard icon={Clock}         label="Pendentes"  value={data.tuitions.pending.count}  sub={fmtBRL(data.tuitions.pending.total)}  color="var(--iris-warning-600)" />
+        <MetricCard icon={CheckCircle2}  label="Pagas"      value={data.tuitions.paid.count}     sub={fmtBRL(data.tuitions.paid.total)}     color="var(--iris-success-600)" />
+        <MetricCard icon={AlertCircle}   label="Atrasadas"  value={data.tuitions.overdue.count}  sub={fmtBRL(data.tuitions.overdue.total)}  color="var(--iris-danger-600)" />
       </div>
 
       {/* Tabela de vencimentos próximos */}

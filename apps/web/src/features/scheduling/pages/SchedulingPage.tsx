@@ -31,16 +31,16 @@ import {
 // ─── Utilidades ───────────────────────────────────────────────────────────────
 
 const TEACHER_COLORS = [
-  { bg: 'bg-blue-500', light: 'bg-blue-50 border-blue-200 text-blue-700', ring: 'ring-blue-400' },
-  { bg: 'bg-violet-500', light: 'bg-violet-50 border-violet-200 text-violet-700', ring: 'ring-violet-400' },
-  { bg: 'bg-emerald-500', light: 'bg-emerald-50 border-emerald-200 text-emerald-700', ring: 'ring-emerald-400' },
-  { bg: 'bg-orange-500', light: 'bg-orange-50 border-orange-200 text-orange-700', ring: 'ring-orange-400' },
-  { bg: 'bg-pink-500', light: 'bg-pink-50 border-pink-200 text-pink-700', ring: 'ring-pink-400' },
-  { bg: 'bg-teal-500', light: 'bg-teal-50 border-teal-200 text-teal-700', ring: 'ring-teal-400' },
-  { bg: 'bg-red-500', light: 'bg-red-50 border-red-200 text-red-700', ring: 'ring-red-400' },
-  { bg: 'bg-indigo-500', light: 'bg-indigo-50 border-indigo-200 text-indigo-700', ring: 'ring-indigo-400' },
-  { bg: 'bg-amber-500', light: 'bg-amber-50 border-amber-200 text-amber-700', ring: 'ring-amber-400' },
-  { bg: 'bg-cyan-500', light: 'bg-cyan-50 border-cyan-200 text-cyan-700', ring: 'ring-cyan-400' },
+  { bg: 'bg-blue-500', light: 'bg-blue-500/10 border-blue-500/30 text-blue-400', ring: 'ring-blue-400' },
+  { bg: 'bg-violet-500', light: 'bg-violet-500/10 border-violet-500/30 text-violet-400', ring: 'ring-violet-400' },
+  { bg: 'bg-emerald-500', light: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400', ring: 'ring-emerald-400' },
+  { bg: 'bg-orange-500', light: 'bg-orange-500/10 border-orange-500/30 text-orange-400', ring: 'ring-orange-400' },
+  { bg: 'bg-pink-500', light: 'bg-pink-500/10 border-pink-500/30 text-pink-400', ring: 'ring-pink-400' },
+  { bg: 'bg-teal-500', light: 'bg-teal-500/10 border-teal-500/30 text-teal-400', ring: 'ring-teal-400' },
+  { bg: 'bg-red-500', light: 'bg-red-500/10 border-red-500/30 text-red-400', ring: 'ring-red-400' },
+  { bg: 'bg-indigo-500', light: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400', ring: 'ring-indigo-400' },
+  { bg: 'bg-amber-500', light: 'bg-amber-500/10 border-amber-500/30 text-amber-400', ring: 'ring-amber-400' },
+  { bg: 'bg-cyan-500', light: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400', ring: 'ring-cyan-400' },
 ]
 
 function teacherColorIndex(name: string) {
@@ -59,10 +59,10 @@ function initials(name: string) {
 }
 
 const SHIFT_LABELS: Record<string, { label: string; badge: string }> = {
-  manha: { label: 'Manhã', badge: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  tarde: { label: 'Tarde', badge: 'bg-orange-100 text-orange-700 border-orange-200' },
-  noite: { label: 'Noite', badge: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
-  integral: { label: 'Integral', badge: 'bg-green-100 text-green-700 border-green-200' },
+  manha: { label: 'Manhã', badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' },
+  tarde: { label: 'Tarde', badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30' },
+  noite: { label: 'Noite', badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
+  integral: { label: 'Integral', badge: 'bg-green-500/10 text-green-400 border-green-500/30' },
 }
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
@@ -98,8 +98,8 @@ function TeacherCard({ teacher, colorIdx, assignmentCount, isSelected, onSelect 
       className={[
         'group relative flex items-center gap-3 rounded-xl border px-3 py-2.5 cursor-grab active:cursor-grabbing transition-all duration-150 select-none',
         isSelected
-          ? `border-2 ${color.ring} ring-2 ring-offset-1 bg-white shadow-md`
-          : 'border-border bg-white hover:shadow-sm hover:border-muted-foreground/30',
+          ? `border-2 ${color.ring} ring-2 ring-offset-1 bg-card shadow-md`
+          : 'border-border bg-card hover:shadow-sm hover:border-muted-foreground/30',
       ].join(' ')}
     >
       <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
@@ -288,7 +288,7 @@ function ClassColumn({
 
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
-export function LocacaoPage() {
+export function SchedulingPage() {
   const { data: teachers = [] } = useTeachers()
   const { data: classes = [] } = useClasses()
   const { data: allSlots = [] } = useAllTimetableSlots()

@@ -206,7 +206,7 @@ export function SubjectsPage() {
                           className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
                           title="Excluir"
                           onClick={() => handleDelete(s.id)}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                         >
                           <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />

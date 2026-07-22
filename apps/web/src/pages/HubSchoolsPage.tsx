@@ -2,7 +2,7 @@ import { Home, School } from 'lucide-react'
 import { HubCard } from '../components/HubCard'
 import { PageHead } from '../components/PageHead'
 
-export function HubEscolasPage() {
+export function HubSchoolsPage() {
   return (
     <div className="space-y-6">
       <PageHead

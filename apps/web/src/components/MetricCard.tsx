@@ -8,12 +8,12 @@ interface MetricCardProps {
   color?: string
 }
 
-export function MetricCard({ icon: Icon, label, value, sub, color = '#185FA5' }: MetricCardProps) {
+export function MetricCard({ icon: Icon, label, value, sub, color = '#4F46E5' }: MetricCardProps) {
   return (
     <div
       className="flex items-center gap-3 p-3 md:gap-4 md:p-4 rounded-xl"
       style={{
-        background: '#FFFFFF',
+        background: 'var(--bg-surface)',
         border: '1px solid var(--iris-slate-200)',
         boxShadow: 'var(--shadow-sm)',
       }}

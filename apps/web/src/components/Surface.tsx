@@ -8,7 +8,7 @@ export function Surface({ children, className }: SurfaceProps) {
     <div
       className={className}
       style={{
-        background: '#FFFFFF',
+        background: 'var(--bg-surface)',
         border: '1px solid var(--iris-slate-200)',
         borderRadius: 12,
         overflow: 'hidden',

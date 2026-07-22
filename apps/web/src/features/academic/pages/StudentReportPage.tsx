@@ -52,7 +52,7 @@ export function StudentReportPage() {
       {/* Frequência */}
       <div
         className="rounded-xl p-5"
-        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       >
         <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--iris-blue-900)' }}>
           Frequência
@@ -90,7 +90,7 @@ export function StudentReportPage() {
       {/* Notas */}
       <div
         className="rounded-xl overflow-hidden"
-        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       >
         <div className="p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
           <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>

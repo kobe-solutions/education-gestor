@@ -219,7 +219,7 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
             <div
               key={p.id}
               className="flex items-center gap-3 rounded-lg px-3 py-2"
-              style={{ background: '#fff', border: '1px solid var(--iris-slate-200)' }}
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
             >
               <span className="text-xs font-medium w-4 text-center" style={{ color: 'var(--iris-slate-400)' }}>
                 {p.order}
@@ -250,7 +250,7 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
                 <button
                   className="flex items-center justify-center rounded w-6 h-6 transition-colors"
                   onClick={() => setDeleteTarget(p.id)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                 >
                   <Trash2 size={11} style={{ color: 'var(--iris-danger-600)' }} />
@@ -495,7 +495,7 @@ export function AcademicYearsPage() {
               <div
                 key={year.id}
                 className="rounded-xl overflow-hidden"
-                style={{ border: '1px solid var(--iris-slate-200)', background: '#fff', boxShadow: 'var(--shadow-sm)' }}
+                style={{ border: '1px solid var(--iris-slate-200)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-sm)' }}
               >
                 {/* Cabeçalho do ano */}
                 <div className="flex items-center gap-3 px-5 py-4">
@@ -552,7 +552,7 @@ export function AcademicYearsPage() {
                     <button
                       className="flex items-center justify-center rounded-md w-7 h-7 transition-colors"
                       onClick={() => setDeleteTarget(year.id)}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
                       <Trash2 size={13} style={{ color: 'var(--iris-danger-600)' }} />

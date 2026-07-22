@@ -112,8 +112,8 @@ export function AttendancePage() {
                         onClick={() => toggle(s.id)}
                         className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
                           attendance[s.id]
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                            : 'bg-red-100 text-red-800 hover:bg-red-200'
+                            ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                            : 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
                         }`}
                       >
                         {attendance[s.id] ? 'P' : 'F'}

@@ -12,8 +12,11 @@ import {
   CalendarDays,
   Menu,
   X,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import { SchoolSelector } from '../SchoolSelector'
 import { cn } from '../../lib/utils'
 
@@ -34,18 +37,18 @@ const navItems: NavItem[] = [
     matchPaths: ['/'],
   },
   {
-    to: '/pessoas',
+    to: '/people',
     label: 'Pessoas',
     icon: Users,
     roles: ['gestor', 'secretaria'],
-    matchPaths: ['/pessoas', '/students', '/teachers'],
+    matchPaths: ['/people', '/students', '/teachers'],
   },
   {
-    to: '/academico',
+    to: '/academic',
     label: 'Acadêmico',
     icon: BookOpen,
     roles: ['gestor', 'professor', 'secretaria'],
-    matchPaths: ['/academico', '/classes', '/estrutura', '/education-levels', '/series', '/locacao'],
+    matchPaths: ['/academic', '/classes', '/structure', '/education-levels', '/series', '/scheduling'],
   },
   {
     to: '/financial',
@@ -62,11 +65,11 @@ const navItems: NavItem[] = [
     matchPaths: ['/academic-years'],
   },
   {
-    to: '/configuracoes',
+    to: '/settings',
     label: 'Configurações',
     icon: Settings2,
     roles: ['gestor'],
-    matchPaths: ['/configuracoes', '/subjects', '/academic-periods'],
+    matchPaths: ['/settings', '/subjects', '/academic-periods'],
   },
   {
     to: '/admin',
@@ -76,11 +79,11 @@ const navItems: NavItem[] = [
     matchPaths: ['/admin', '/secretarias'],
   },
   {
-    to: '/escolas',
+    to: '/schools-hub',
     label: 'Escolas',
     icon: School,
     roles: ['secretaria'],
-    matchPaths: ['/escolas', '/schools', '/my-schools'],
+    matchPaths: ['/schools-hub', '/schools', '/my-schools'],
   },
 ]
 
@@ -108,6 +111,7 @@ const SIDEBAR_W = 220
 
 export function AppLayout() {
   const { payload, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
@@ -145,7 +149,7 @@ export function AppLayout() {
         className="hidden md:flex flex-col shrink-0"
         style={{
           width: SIDEBAR_W,
-          background: '#FFFFFF',
+          background: 'var(--bg-surface)',
           borderRight: '1px solid var(--iris-slate-200)',
         }}
       >
@@ -155,12 +159,12 @@ export function AppLayout() {
           style={{ height: 'var(--header-h)', borderBottom: '1px solid var(--iris-slate-200)' }}
         >
           <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
-            <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke="#042C53" strokeWidth="3.4" />
-            <circle cx="60" cy="60" r="18" fill="#378ADD" />
-            <circle cx="60" cy="60" r="12" fill="#185FA5" />
-            <circle cx="60" cy="60" r="7"  fill="#042C53" />
+            <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke="#312E81" strokeWidth="3.4" />
+            <circle cx="60" cy="60" r="18" fill="#818CF8" />
+            <circle cx="60" cy="60" r="12" fill="#4F46E5" />
+            <circle cx="60" cy="60" r="7"  fill="#312E81" />
           </svg>
-          <span className="font-bold text-sm truncate" style={{ color: '#042C53', letterSpacing: '0.06em' }}>
+          <span className="font-bold text-sm truncate" style={{ color: 'var(--iris-blue-900)', letterSpacing: '0.06em' }}>
             IRIS
           </span>
         </div>
@@ -178,15 +182,9 @@ export function AppLayout() {
                   'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-colors duration-120',
                   active
                     ? 'text-white'
-                    : 'text-[#6B7280] hover:text-[#042C53]',
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
                 )}
-                style={active ? { background: '#185FA5' } : undefined}
-                onMouseEnter={(e) => {
-                  if (!active) (e.currentTarget as HTMLElement).style.background = '#EAF4FD'
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) (e.currentTarget as HTMLElement).style.background = ''
-                }}
+                style={active ? { background: '#4F46E5' } : undefined}
               >
                 <Icon className="h-5 w-5 shrink-0" />
                 <span className="text-sm font-medium truncate">{item.label}</span>
@@ -200,9 +198,7 @@ export function AppLayout() {
           <button
             onClick={handleLogout}
             title="Sair"
-            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-[#6B7280] hover:text-[#042C53] transition-colors duration-120"
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#EAF4FD' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-120"
           >
             <LogOut className="h-5 w-5" />
             <span className="text-sm font-medium">Sair</span>
@@ -226,15 +222,9 @@ export function AppLayout() {
             'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-colors duration-120',
             active
               ? 'text-white'
-              : 'text-[#6B7280] hover:text-[#042C53]',
+              : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
           )}
-          style={active ? { background: '#185FA5' } : undefined}
-          onMouseEnter={(e) => {
-            if (!active) (e.currentTarget as HTMLElement).style.background = '#EAF4FD'
-          }}
-          onMouseLeave={(e) => {
-            if (!active) (e.currentTarget as HTMLElement).style.background = ''
-          }}
+          style={active ? { background: '#4F46E5' } : undefined}
         >
           <Icon className="h-5 w-5 shrink-0" />
           <span className="text-sm font-medium truncate">{item.label}</span>
@@ -263,7 +253,7 @@ export function AppLayout() {
           mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full',
         )}
         style={{
-          background: '#FFFFFF',
+          background: 'var(--bg-surface)',
           borderRight: '1px solid var(--iris-slate-200)',
         }}
       >
@@ -274,16 +264,16 @@ export function AppLayout() {
         >
           <div className="flex items-center gap-3">
             <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS">
-              <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke="#042C53" strokeWidth="3.4" />
-              <circle cx="60" cy="60" r="18" fill="#378ADD" />
-              <circle cx="60" cy="60" r="12" fill="#185FA5" />
-              <circle cx="60" cy="60" r="7"  fill="#042C53" />
+              <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke="#312E81" strokeWidth="3.4" />
+              <circle cx="60" cy="60" r="18" fill="#818CF8" />
+              <circle cx="60" cy="60" r="12" fill="#4F46E5" />
+              <circle cx="60" cy="60" r="7"  fill="#312E81" />
             </svg>
-            <span className="font-bold text-sm" style={{ color: '#042C53', letterSpacing: '0.08em' }}>IRIS</span>
+            <span className="font-bold text-sm" style={{ color: 'var(--iris-blue-900)', letterSpacing: '0.08em' }}>IRIS</span>
           </div>
           <button
             onClick={() => setMobileDrawerOpen(false)}
-            className="flex items-center justify-center w-8 h-8 rounded-lg text-[#6B7280] hover:text-[#042C53] transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
           >
             <X size={18} />
           </button>
@@ -298,7 +288,7 @@ export function AppLayout() {
         <div className="pb-4 px-3">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-[#6B7280] hover:text-[#042C53] transition-colors duration-120"
+            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-120"
           >
             <LogOut className="h-5 w-5" />
             <span className="text-sm font-medium">Sair</span>
@@ -313,14 +303,14 @@ export function AppLayout() {
           className="flex items-center px-4 md:px-6 gap-3 shrink-0"
           style={{
             height: 'var(--header-h)',
-            background: '#FFFFFF',
+            background: 'var(--bg-surface)',
             borderBottom: '1px solid var(--iris-slate-200)',
           }}
         >
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileDrawerOpen(true)}
-            className="flex items-center justify-center w-9 h-9 rounded-lg text-[#6B7280] hover:text-[#042C53] hover:bg-[#EAF4FD] transition-colors md:hidden"
+            className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors md:hidden"
             aria-label="Abrir menu"
           >
             <Menu size={20} />
@@ -336,6 +326,15 @@ export function AppLayout() {
 
           <div className="flex-1" />
 
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            aria-label={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'}
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+
           {/* Usuário + avatar */}
           <div className="flex items-center gap-2">
             {userName && (
@@ -349,7 +348,7 @@ export function AppLayout() {
                 width: 32,
                 height: 32,
                 borderRadius: 9999,
-                background: '#185FA5',
+                background: '#4F46E5',
               }}
             >
               {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
