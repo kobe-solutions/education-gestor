@@ -2,7 +2,7 @@ import { Network, CalendarRange, UserPlus, BookOpen, CheckSquare, Settings2 } fr
 import { HubCard } from '../components/HubCard'
 import { PageHead } from '../components/PageHead'
 
-export function AcademicoHubPage() {
+export function AcademicHubPage() {
   return (
     <div className="space-y-6">
       <PageHead
@@ -12,19 +12,19 @@ export function AcademicoHubPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <HubCard
-          to="/estrutura"
+          to="/structure"
           icon={Network}
           title="Estrutura Escolar"
           description="Hierarquia completa: nível de ensino → série → turma. Visualize e organize toda a árvore."
         />
         <HubCard
-          to="/locacao"
+          to="/scheduling"
           icon={CalendarRange}
           title="Locação de Aulas"
           description="Monte a grade horária — arraste o professor para o slot da turma."
         />
         <HubCard
-          to="/locacao-alunos"
+          to="/scheduling/students"
           icon={UserPlus}
           title="Matrícula em Turmas"
           description="Arraste alunos para turmas e controle o limite de vagas por turma."
@@ -44,7 +44,7 @@ export function AcademicoHubPage() {
           disabled
         />
         <HubCard
-          to="/configuracoes"
+          to="/settings"
           icon={Settings2}
           title="Disciplinas & Períodos"
           description="Catálogo de disciplinas e configuração dos períodos letivos."

@@ -39,7 +39,7 @@ export function LoginPage() {
     <div
       className="w-full max-w-sm mx-auto flex flex-col gap-5"
       style={{
-        background: '#FFFFFF',
+        background: 'var(--bg-surface)',
         border: '1px solid var(--iris-slate-200)',
         borderRadius: 16,
         padding: '24px 24px 20px',
@@ -49,21 +49,21 @@ export function LoginPage() {
       {/* Logo IRIS vertical */}
       <div className="flex flex-col items-center gap-3 mb-1">
         <svg width="48" height="48" viewBox="0 0 120 120" aria-label="IRIS">
-          <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke="#042C53" strokeWidth="3.4" />
-          <circle cx="60" cy="60" r="18" fill="#378ADD" />
-          <circle cx="60" cy="60" r="12" fill="#185FA5" />
-          <circle cx="60" cy="60" r="7"  fill="#042C53" />
+          <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke="#312E81" strokeWidth="3.4" />
+          <circle cx="60" cy="60" r="18" fill="#818CF8" />
+          <circle cx="60" cy="60" r="12" fill="#4F46E5" />
+          <circle cx="60" cy="60" r="7"  fill="#312E81" />
         </svg>
         <div className="text-center">
           <div
             className="font-bold tracking-widest"
-            style={{ fontSize: 17, color: '#042C53', letterSpacing: 3 }}
+            style={{ fontSize: 17, color: 'var(--iris-blue-900)', letterSpacing: 3 }}
           >
             IRIS
           </div>
           <div
             className="font-semibold tracking-widest"
-            style={{ fontSize: 10, color: '#378ADD', letterSpacing: 6, marginTop: 1 }}
+            style={{ fontSize: 10, color: 'var(--iris-blue-500)', letterSpacing: 6, marginTop: 1 }}
           >
             EDUCAÇÃO
           </div>
@@ -71,7 +71,7 @@ export function LoginPage() {
       </div>
 
       <div className="text-center -mt-1">
-        <h1 className="font-bold" style={{ fontSize: 18, color: '#042C53' }}>
+        <h1 className="font-bold" style={{ fontSize: 18, color: 'var(--iris-blue-900)' }}>
           Bem-vindo
         </h1>
         <p className="text-xs mt-1" style={{ color: 'var(--iris-slate-500)' }}>

@@ -19,8 +19,8 @@ function Avatar({ name, size = 32 }: { name: string; size?: number }) {
         width: size,
         height: size,
         borderRadius: 9999,
-        background: '#EAF4FD',
-        color: '#185FA5',
+        background: 'var(--iris-blue-50)',
+        color: 'var(--iris-blue-700)',
         fontSize: size * 0.34,
       }}
     >
@@ -36,11 +36,11 @@ interface MetricChipProps {
   tone?: 'primary' | 'success' | 'warning' | 'info'
 }
 
-const TONE_STYLES = {
-  primary: { bg: '#EAF4FD', color: '#185FA5' },
-  success: { bg: '#DCFCE7', color: '#15803D' },
-  warning: { bg: '#FEF3C7', color: '#B45309' },
-  info:    { bg: '#EAF4FD', color: '#378ADD' },
+const TONE_STYLES: Record<string, React.CSSProperties> = {
+  primary: { background: 'var(--iris-info-50)', color: 'var(--iris-info-600)' },
+  success: { background: 'var(--iris-success-50)', color: 'var(--iris-success-600)' },
+  warning: { background: 'var(--iris-warning-50)', color: 'var(--iris-warning-600)' },
+  info:    { background: 'var(--iris-info-50)', color: 'var(--iris-blue-500)' },
 }
 
 function MetricChip({ icon: Icon, value, label, tone = 'primary' }: MetricChipProps) {
@@ -117,22 +117,22 @@ function QuickCard({ icon: Icon, label, onClick }: QuickCardProps) {
   return (
     <button
       className="flex flex-col items-center gap-2 p-4 rounded-xl text-center transition-all duration-120"
-      style={{ background: '#fff', border: '1px solid var(--iris-slate-200)' }}
+      style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
       onClick={onClick}
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLElement
-        el.style.borderColor = '#185FA5'
-        el.style.background = '#EAF4FD'
+        el.style.borderColor = '#4F46E5'
+        el.style.background = 'var(--iris-info-50)'
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLElement
         el.style.borderColor = 'var(--iris-slate-200)'
-        el.style.background = '#fff'
+        el.style.background = 'var(--bg-surface)'
       }}
     >
       <div
         className="flex items-center justify-center rounded-lg"
-        style={{ width: 32, height: 32, background: 'rgba(24,95,165,0.10)', color: '#185FA5' }}
+        style={{ width: 32, height: 32, background: 'rgba(79,70,229,0.10)', color: '#4F46E5' }}
       >
         <Icon size={15} />
       </div>
@@ -141,7 +141,7 @@ function QuickCard({ icon: Icon, label, onClick }: QuickCardProps) {
   )
 }
 
-export function HubPessoasPage() {
+export function HubPeoplePage() {
   const navigate = useNavigate()
   const { data: students = [] } = useStudents()
   const { data: teachers = [] } = useTeachers()
@@ -163,7 +163,7 @@ export function HubPessoasPage() {
         {/* Painel Alunos */}
         <section
           className="flex flex-col gap-4 rounded-xl overflow-hidden"
-          style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
         >
           <div
             className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-5 pb-4"
@@ -172,7 +172,7 @@ export function HubPessoasPage() {
             <div className="flex items-start gap-3">
               <div
                 className="flex items-center justify-center rounded-xl shrink-0"
-                style={{ width: 44, height: 44, background: 'rgba(24,95,165,0.10)', color: '#185FA5' }}
+                style={{ width: 44, height: 44, background: 'rgba(79,70,229,0.10)', color: '#4F46E5' }}
               >
                 <Users size={22} />
               </div>
@@ -207,7 +207,7 @@ export function HubPessoasPage() {
               </span>
               <button
                 className="text-xs font-medium"
-                style={{ color: '#185FA5' }}
+                style={{ color: '#4F46E5' }}
                 onClick={() => navigate('/students')}
               >
                 Ver todos →
@@ -236,7 +236,7 @@ export function HubPessoasPage() {
         {/* Painel Professores */}
         <section
           className="flex flex-col gap-4 rounded-xl overflow-hidden"
-          style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+          style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
         >
           <div
             className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-5 pb-4"
@@ -245,7 +245,7 @@ export function HubPessoasPage() {
             <div className="flex items-start gap-3">
               <div
                 className="flex items-center justify-center rounded-xl shrink-0"
-                style={{ width: 44, height: 44, background: 'rgba(24,95,165,0.10)', color: '#185FA5' }}
+                style={{ width: 44, height: 44, background: 'rgba(79,70,229,0.10)', color: '#4F46E5' }}
               >
                 <GraduationCap size={22} />
               </div>
@@ -279,7 +279,7 @@ export function HubPessoasPage() {
               </span>
               <button
                 className="text-xs font-medium"
-                style={{ color: '#185FA5' }}
+                style={{ color: '#4F46E5' }}
                 onClick={() => navigate('/teachers')}
               >
                 Ver todos →
@@ -315,7 +315,7 @@ export function HubPessoasPage() {
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <QuickCard icon={Search}   label="Buscar aluno"      onClick={() => navigate('/students')} />
-          <QuickCard icon={UserPlus} label="Matricular em turma" onClick={() => navigate('/locacao-alunos')} />
+          <QuickCard icon={UserPlus} label="Matricular em turma" onClick={() => navigate('/scheduling/students')} />
           <QuickCard icon={FileText} label="Importar planilha"  onClick={() => navigate('/students')} />
           <QuickCard icon={BookOpen} label="Relatório de alunos" onClick={() => navigate('/students')} />
         </div>

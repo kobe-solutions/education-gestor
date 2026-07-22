@@ -110,7 +110,7 @@ export function TuitionsPage() {
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-shadow"
               style={{
                 border: '1px solid var(--iris-slate-300)',
-                background: '#fff',
+                background: 'var(--bg-surface)',
                 color: 'var(--iris-blue-900)',
               }}
               onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'var(--shadow-focus)' }}
@@ -125,7 +125,7 @@ export function TuitionsPage() {
           className="px-3 py-2.5 text-sm rounded-lg outline-none"
           style={{
             border: '1px solid var(--iris-slate-300)',
-            background: '#fff',
+            background: 'var(--bg-surface)',
             color: 'var(--iris-blue-900)',
           }}
         >

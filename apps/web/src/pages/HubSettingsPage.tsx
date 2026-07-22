@@ -2,7 +2,7 @@ import { BookMarked, Calendar } from 'lucide-react'
 import { HubCard } from '../components/HubCard'
 import { PageHead } from '../components/PageHead'
 
-export function HubConfiguracoesPage() {
+export function HubSettingsPage() {
   return (
     <div className="space-y-6">
       <PageHead

@@ -66,7 +66,7 @@ export function TeachersPage() {
             className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-shadow"
             style={{
               border: '1px solid var(--iris-slate-300)',
-              background: '#fff',
+              background: 'var(--bg-surface)',
               color: 'var(--iris-blue-900)',
             }}
             onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'var(--shadow-focus)' }}
@@ -130,7 +130,7 @@ export function TeachersPage() {
                           className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
                           title="Excluir"
                           onClick={() => setDeleteTarget(t.id)}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                         >
                           <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />

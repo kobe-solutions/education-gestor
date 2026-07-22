@@ -9,7 +9,7 @@ interface PrivateRouteProps {
 }
 
 // Rotas que não redirecionam secretaria sem escola selecionada
-const SECRETARIA_PUBLIC_PATHS = ['/', '/my-schools', '/escolas', '/secretarias']
+const SECRETARIA_PUBLIC_PATHS = ['/', '/my-schools', '/schools-hub', '/secretarias']
 
 export function PrivateRoute({ allowedRoles, requireSchool }: PrivateRouteProps) {
   const { token, payload } = useAuth()

@@ -7,7 +7,7 @@ import { Badge } from '../../../components/ui/badge'
 import { PageHead } from '../../../components/PageHead'
 import { Skeleton } from '../../../components/ui/skeleton'
 
-export function EstruturaPage() {
+export function StructurePage() {
   const navigate = useNavigate()
   const { data: levels, isLoading: loadingLevels } = useEducationLevels()
   const { data: allSeries, isLoading: loadingSeries } = useSeries()
@@ -45,19 +45,19 @@ export function EstruturaPage() {
               <div
                 key={level.id}
                 className="rounded-xl overflow-hidden"
-                style={{ border: '1px solid var(--iris-slate-200)', background: '#fff', boxShadow: 'var(--shadow-sm)' }}
+                style={{ border: '1px solid var(--iris-slate-200)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-sm)' }}
               >
                 {/* Cabeçalho do nível — fundo tint azul */}
                 <div
                   className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors"
                   style={{ background: 'var(--iris-blue-50)', borderBottom: '1px solid var(--iris-slate-200)' }}
                   onClick={() => navigate(`/education-levels/${level.id}/series`)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#dceefa' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-info-50)' }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
                 >
                   <div
                     className="flex items-center justify-center rounded-xl shrink-0"
-                    style={{ width: 36, height: 36, background: 'rgba(24,95,165,0.15)', color: '#185FA5' }}
+                    style={{ width: 36, height: 36, background: 'rgba(79,70,229,0.15)', color: '#4F46E5' }}
                   >
                     <Layers size={16} />
                   </div>
@@ -114,7 +114,7 @@ export function EstruturaPage() {
                                 className="text-sm font-semibold cursor-pointer transition-colors"
                                 style={{ color: 'var(--iris-blue-900)' }}
                                 onClick={() => navigate('/classes')}
-                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#185FA5' }}
+                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#4F46E5' }}
                                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--iris-blue-900)' }}
                               >
                                 {serie.name}
@@ -131,16 +131,16 @@ export function EstruturaPage() {
                                     key={turma.id}
                                     onClick={() => navigate(`/classes/${turma.id}`)}
                                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-                                    style={{ border: '1px solid var(--iris-slate-300)', background: '#fff', color: 'var(--iris-slate-700)' }}
+                                    style={{ border: '1px solid var(--iris-slate-300)', background: 'var(--bg-surface)', color: 'var(--iris-slate-700)' }}
                                     onMouseEnter={(e) => {
                                       const el = e.currentTarget as HTMLElement
-                                      el.style.background = '#185FA5'
-                                      el.style.borderColor = '#185FA5'
+                                      el.style.background = '#4F46E5'
+                                      el.style.borderColor = '#4F46E5'
                                       el.style.color = '#fff'
                                     }}
                                     onMouseLeave={(e) => {
                                       const el = e.currentTarget as HTMLElement
-                                      el.style.background = '#fff'
+                                      el.style.background = 'var(--bg-surface)'
                                       el.style.borderColor = 'var(--iris-slate-300)'
                                       el.style.color = 'var(--iris-slate-700)'
                                     }}
@@ -168,7 +168,7 @@ export function EstruturaPage() {
           {unlinkedClasses.length > 0 && (
             <div
               className="rounded-xl overflow-hidden"
-              style={{ border: '1px dashed var(--iris-slate-300)', background: '#fff' }}
+              style={{ border: '1px dashed var(--iris-slate-300)', background: 'var(--bg-surface)' }}
             >
               <div
                 className="flex items-center gap-3 px-5 py-4"
@@ -195,16 +195,16 @@ export function EstruturaPage() {
                     key={turma.id}
                     onClick={() => navigate(`/classes/${turma.id}`)}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-                    style={{ border: '1px solid var(--iris-slate-300)', background: '#fff', color: 'var(--iris-slate-700)' }}
+                    style={{ border: '1px solid var(--iris-slate-300)', background: 'var(--bg-surface)', color: 'var(--iris-slate-700)' }}
                     onMouseEnter={(e) => {
                       const el = e.currentTarget as HTMLElement
-                      el.style.background = '#185FA5'
-                      el.style.borderColor = '#185FA5'
+                      el.style.background = '#4F46E5'
+                      el.style.borderColor = '#4F46E5'
                       el.style.color = '#fff'
                     }}
                     onMouseLeave={(e) => {
                       const el = e.currentTarget as HTMLElement
-                      el.style.background = '#fff'
+                      el.style.background = 'var(--bg-surface)'
                       el.style.borderColor = 'var(--iris-slate-300)'
                       el.style.color = 'var(--iris-slate-700)'
                     }}
@@ -228,7 +228,7 @@ export function EstruturaPage() {
               </p>
               <button
                 className="text-sm font-medium mt-1 hover:underline"
-                style={{ color: '#185FA5' }}
+                style={{ color: '#4F46E5' }}
                 onClick={() => navigate('/education-levels')}
               >
                 Cadastrar agora

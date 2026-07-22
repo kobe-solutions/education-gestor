@@ -13,10 +13,10 @@ import { Skeleton } from '../../../components/ui/skeleton'
 // ─── Utilitários ──────────────────────────────────────────────────────────────
 
 const SHIFT_CONFIG: Record<string, { label: string; className: string }> = {
-  manha:    { label: 'Manhã',    className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  tarde:    { label: 'Tarde',    className: 'bg-orange-50 text-orange-700 border-orange-200' },
-  noite:    { label: 'Noite',    className: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
-  integral: { label: 'Integral', className: 'bg-green-50 text-green-700 border-green-200' },
+  manha:    { label: 'Manhã',    className: 'bg-amber-500/10 text-amber-400 border-amber-500/30' },
+  tarde:    { label: 'Tarde',    className: 'bg-orange-500/10 text-orange-400 border-orange-500/30' },
+  noite:    { label: 'Noite',    className: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
+  integral: { label: 'Integral', className: 'bg-green-500/10 text-green-400 border-green-500/30' },
 }
 
 const LEVEL_COLORS: Record<string, string> = {
@@ -72,7 +72,7 @@ function ClassStudentsList({ classId, search }: { classId: string; search: strin
           <button
             key={student.id}
             onClick={() => navigate(`/students/${student.id}/edit`)}
-            className="group flex items-center gap-3 rounded-lg border border-transparent bg-white px-3 py-2 text-left transition-all hover:border-border hover:shadow-sm active:scale-[0.99]"
+            className="group flex items-center gap-3 rounded-lg border border-transparent bg-card px-3 py-2 text-left transition-all hover:border-border hover:shadow-sm active:scale-[0.99]"
           >
             <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
               <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-primary">
@@ -263,7 +263,7 @@ function LevelSection({ levelName, levelType, seriesWithClasses, studentSearch }
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 
-export function EstruturaTurmasPage() {
+export function ClassStructurePage() {
   const { data: series = [] } = useSeries()
   const { data: allClasses = [], isLoading } = useClasses()
   const [studentSearch, setStudentSearch] = useState('')
