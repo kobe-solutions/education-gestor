@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+.mimocode
+*.md
+*.local
+.env
+.DS_Store
