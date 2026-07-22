@@ -7,13 +7,13 @@ import type { AxiosError } from 'axios'
 import { useSchools, useCreateSchool, useUpdateSchool, useDeleteSchool } from '../hooks/useSchools'
 import { useAuth } from '../../../contexts/AuthContext'
 import { toast } from '../../../lib/toast'
+import { PageHead } from '../../../components/PageHead'
+import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -136,84 +136,114 @@ export function SchoolsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Escolas</h1>
-        {isSecretaria && (
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4" />
-            Nova escola
-          </Button>
-        )}
+    <div className="space-y-5">
+      <PageHead
+        title="Escolas"
+        subtitle={`${filtered?.length ?? 0} escolas cadastradas`}
+        actions={
+          isSecretaria ? (
+            <Button size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Nova escola
+            </Button>
+          ) : undefined
+        }
+      />
+
+      {/* Busca */}
+      <div className="w-full max-w-sm">
+        <div className="relative">
+          <Input
+            placeholder="Buscar por nome..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div className="max-w-sm">
-        <Input
-          placeholder="Buscar por nome..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {filtered?.length ?? 0} escolas cadastradas
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-4 space-y-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Diretor</TableHead>
-                  <TableHead>Coordenador</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  {isSecretaria && <TableHead className="w-24" />}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+      {/* Tabela */}
+      {isLoading ? (
+        <Surface>
+          <div className="p-4 space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        </Surface>
+      ) : (
+        <Surface>
+          <div className="table-scroll">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th className="hidden md:table-cell">Diretor</th>
+                  <th className="hidden lg:table-cell">Coordenador</th>
+                  <th>Email</th>
+                  <th className="hidden sm:table-cell">Telefone</th>
+                  {isSecretaria && <th style={{ width: 80 }} />}
+                </tr>
+              </thead>
+              <tbody>
                 {!filtered?.length && (
-                  <TableRow>
-                    <TableCell colSpan={isSecretaria ? 6 : 5} className="text-center text-muted-foreground">
+                  <tr>
+                    <td
+                      colSpan={isSecretaria ? 6 : 5}
+                      className="text-center py-10"
+                      style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                    >
                       Nenhuma escola encontrada
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 )}
                 {filtered?.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.name}</TableCell>
-                    <TableCell>{s.director ?? '—'}</TableCell>
-                    <TableCell>{s.coordinator ?? '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.email}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.phone ?? '—'}</TableCell>
+                  <tr key={s.id}>
+                    <td>
+                      <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                        {s.name}
+                      </span>
+                    </td>
+                    <td className="hidden md:table-cell" style={{ color: 'var(--iris-slate-500)' }}>
+                      {s.director ?? '—'}
+                    </td>
+                    <td className="hidden lg:table-cell" style={{ color: 'var(--iris-slate-500)' }}>
+                      {s.coordinator ?? '—'}
+                    </td>
+                    <td style={{ color: 'var(--iris-slate-500)' }}>{s.email}</td>
+                    <td className="hidden sm:table-cell" style={{ color: 'var(--iris-slate-500)' }}>
+                      {s.phone ?? '—'}
+                    </td>
                     {isSecretaria && (
-                      <TableCell>
+                      <td>
                         <div className="flex gap-1 justify-end">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(s)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(s.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <button
+                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                            title="Editar"
+                            onClick={() => handleEdit(s)}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                          >
+                            <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                          </button>
+                          <button
+                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                            title="Excluir"
+                            onClick={() => setDeleteTarget(s.id)}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                          >
+                            <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                          </button>
                         </div>
-                      </TableCell>
+                      </td>
                     )}
-                  </TableRow>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              </tbody>
+            </table>
+          </div>
+        </Surface>
+      )}
 
       {/* Dialog criação */}
       <Dialog open={createOpen} onOpenChange={(v) => { if (!v) { setCreateOpen(false); createForm.reset() } }}>

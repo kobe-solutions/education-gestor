@@ -1,14 +1,15 @@
 import { Building2, School } from 'lucide-react'
 import { HubCard } from '../components/HubCard'
+import { PageHead } from '../components/PageHead'
 
 export function HubAdminPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold">Administração</h1>
-        <p className="text-sm text-muted-foreground mt-1">Gestão de secretarias e escolas da plataforma</p>
-      </div>
-      <div className="grid grid-cols-2 gap-4 max-w-xl">
+      <PageHead
+        title="Administração"
+        subtitle="Gestão de secretarias e escolas da plataforma"
+      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <HubCard
           to="/secretarias"
           icon={Building2}

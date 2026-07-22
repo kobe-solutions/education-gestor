@@ -16,16 +16,16 @@ function fmtBRL(v: string | number) {
 
 function SkeletonCards({ count }: { count: number }) {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 md:gap-4 sm:grid-cols-3 xl:grid-cols-6">
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-4 p-4 rounded-xl"
+          className="flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-xl"
           style={{ background: '#fff', border: '1px solid var(--iris-slate-200)' }}
         >
-          <Skeleton className="h-10 w-10 rounded-lg shrink-0" />
+          <Skeleton className="h-9 w-9 md:h-10 md:w-10 rounded-lg shrink-0" />
           <div className="space-y-2 flex-1">
-            <Skeleton className="h-6 w-12" />
+            <Skeleton className="h-5 w-12" />
             <Skeleton className="h-3 w-16" />
           </div>
         </div>
@@ -76,7 +76,7 @@ export function DashboardPage() {
     return (
       <div className="space-y-6">
         <PageHead title="Painel" subtitle="Visão geral da plataforma" />
-        <div className="grid grid-cols-2 gap-4 max-w-xs">
+        <div className="grid grid-cols-2 gap-3 md:gap-4 max-w-xs">
           <MetricCard icon={Building2} label="Secretarias" value={data.secretariasCount} color="#185FA5" />
           <MetricCard icon={School}    label="Escolas"     value={data.schoolsCount}     color="#378ADD" />
         </div>
@@ -95,7 +95,7 @@ export function DashboardPage() {
       />
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
         <MetricCard icon={Users}         label="Alunos"     value={data.studentsCount}          color="#185FA5" />
         <MetricCard icon={GraduationCap} label="Professores" value={data.teachersCount}         color="#378ADD" />
         <MetricCard icon={BookOpen}      label="Turmas"     value={data.classesCount}            color="#042C53" />
@@ -106,7 +106,7 @@ export function DashboardPage() {
 
       {/* Tabela de vencimentos próximos */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="font-bold text-base" style={{ color: 'var(--iris-blue-900)' }}>
               Mensalidades vencendo nos próximos 7 dias
@@ -115,54 +115,56 @@ export function DashboardPage() {
               Acompanhe alunos com vencimento próximo.
             </p>
           </div>
-          <Link to="/financial">
+          <Link to="/financial" className="shrink-0">
             <Button variant="outline" size="sm">Ver todas</Button>
           </Link>
         </div>
 
         <Surface>
-          <table className="tbl w-full">
-            <thead>
-              <tr>
-                <th>Aluno</th>
-                <th>Turma</th>
-                <th>Vencimento</th>
-                <th>Valor</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.upcomingTuitions.length === 0 ? (
+          <div className="table-scroll">
+            <table className="tbl">
+              <thead>
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="text-center py-8"
-                    style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
-                  >
-                    Nenhuma mensalidade vencendo nos próximos 7 dias
-                  </td>
+                  <th>Aluno</th>
+                  <th>Turma</th>
+                  <th>Vencimento</th>
+                  <th>Valor</th>
+                  <th>Status</th>
                 </tr>
-              ) : (
-                data.upcomingTuitions.map((t) => (
-                  <tr key={t.id}>
-                    <td>
-                      <Link
-                        to={`/students/${t.studentId}`}
-                        className="font-semibold hover:underline"
-                        style={{ color: 'var(--iris-blue-900)' }}
-                      >
-                        {t.studentName}
-                      </Link>
+              </thead>
+              <tbody>
+                {data.upcomingTuitions.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="text-center py-8"
+                      style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                    >
+                      Nenhuma mensalidade vencendo nos próximos 7 dias
                     </td>
-                    <td style={{ color: 'var(--iris-slate-500)' }}>—</td>
-                    <td>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
-                    <td>{fmtBRL(t.amount)}</td>
-                    <td><TuitionStatusBadge status={t.status} /></td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  data.upcomingTuitions.map((t) => (
+                    <tr key={t.id}>
+                      <td>
+                        <Link
+                          to={`/students/${t.studentId}`}
+                          className="font-semibold hover:underline"
+                          style={{ color: 'var(--iris-blue-900)' }}
+                        >
+                          {t.studentName}
+                        </Link>
+                      </td>
+                      <td style={{ color: 'var(--iris-slate-500)' }}>—</td>
+                      <td>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
+                      <td>{fmtBRL(t.amount)}</td>
+                      <td><TuitionStatusBadge status={t.status} /></td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </Surface>
       </div>
     </div>

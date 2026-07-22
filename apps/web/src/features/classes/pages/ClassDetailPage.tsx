@@ -39,24 +39,39 @@ export function ClassDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/classes')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-xl font-semibold">{schoolClass.name}</h1>
-          <p className="text-sm text-muted-foreground">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center justify-center rounded-lg w-8 h-8 transition-colors shrink-0"
+          title="Voltar"
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+        >
+          <ArrowLeft size={16} style={{ color: 'var(--iris-slate-700)' }} />
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <h1
+            className="font-bold truncate"
+            style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.01em' }}
+          >
+            {schoolClass.name}
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
             {schoolClass.serie?.name ?? '—'} · {schoolClass.shift}
             {schoolClass.academicPeriod ? ` · ${schoolClass.academicPeriod.name}` : ''}
           </p>
         </div>
+
         <Button variant="outline" size="sm" onClick={() => navigate(`/classes/${id}/timetable`)}>
-          <CalendarClock className="h-4 w-4" />
+          <CalendarClock className="h-4 w-4 mr-1" />
           Grade Horária
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Grid de informações */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-sm">

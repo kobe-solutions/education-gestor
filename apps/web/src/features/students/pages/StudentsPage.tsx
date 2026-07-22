@@ -60,7 +60,7 @@ export function StudentsPage() {
       />
 
       {/* Busca */}
-      <div style={{ maxWidth: 360 }}>
+      <div className="w-full max-w-sm">
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -72,7 +72,7 @@ export function StudentsPage() {
             placeholder="Buscar por nome ou matrícula…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg outline-none transition-shadow"
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-shadow"
             style={{
               border: '1px solid var(--iris-slate-300)',
               background: '#fff',
@@ -93,77 +93,79 @@ export function StudentsPage() {
         </Surface>
       ) : (
         <Surface>
-          <table className="tbl w-full">
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>Matrícula</th>
-                <th>Situação</th>
-                <th style={{ width: 80 }} />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 ? (
+          <div className="table-scroll">
+            <table className="tbl">
+              <thead>
                 <tr>
-                  <td
-                    colSpan={4}
-                    className="text-center py-10"
-                    style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
-                  >
-                    {search
-                      ? `Nenhum aluno encontrado para "${search}".`
-                      : 'Nenhum aluno cadastrado.'}
-                  </td>
+                  <th>Nome</th>
+                  <th>Matrícula</th>
+                  <th>Situação</th>
+                  <th style={{ width: 80 }} />
                 </tr>
-              ) : (
-                filtered.map((s) => (
-                  <tr
-                    key={s.id}
-                    className="cursor-pointer"
-                    onClick={() => navigate(`/students/${s.id}`)}
-                  >
-                    <td>
-                      <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
-                        {s.name}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="mono text-xs" style={{ color: 'var(--iris-slate-500)' }}>
-                        {s.enrollmentCode}
-                      </span>
-                    </td>
-                    <td>
-                      <Badge variant={statusVariant(s.enrollmentStatus) as any}>
-                        {STATUS_LABELS[s.enrollmentStatus] ?? s.enrollmentStatus}
-                      </Badge>
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="flex gap-1 justify-end">
-                        <button
-                          className="flex items-center justify-center rounded-md w-7 h-7 transition-colors"
-                          title="Editar"
-                          onClick={() => navigate(`/students/${s.id}`)}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
-                        >
-                          <Pencil size={13} style={{ color: 'var(--iris-slate-500)' }} />
-                        </button>
-                        <button
-                          className="flex items-center justify-center rounded-md w-7 h-7 transition-colors"
-                          title="Excluir"
-                          onClick={() => setDeleteTarget(s.id)}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
-                        >
-                          <Trash2 size={13} style={{ color: 'var(--iris-danger-600)' }} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="text-center py-10"
+                      style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                    >
+                      {search
+                        ? `Nenhum aluno encontrado para "${search}".`
+                        : 'Nenhum aluno cadastrado.'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  filtered.map((s) => (
+                    <tr
+                      key={s.id}
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/students/${s.id}`)}
+                    >
+                      <td>
+                        <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                          {s.name}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="mono text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+                          {s.enrollmentCode}
+                        </span>
+                      </td>
+                      <td>
+                        <Badge variant={statusVariant(s.enrollmentStatus) as any}>
+                          {STATUS_LABELS[s.enrollmentStatus] ?? s.enrollmentStatus}
+                        </Badge>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-1 justify-end">
+                          <button
+                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                            title="Editar"
+                            onClick={() => navigate(`/students/${s.id}`)}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                          >
+                            <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                          </button>
+                          <button
+                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                            title="Excluir"
+                            onClick={() => setDeleteTarget(s.id)}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                          >
+                            <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </Surface>
       )}
 

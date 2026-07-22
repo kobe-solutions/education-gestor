@@ -10,7 +10,7 @@ export function Surface({ children, className }: SurfaceProps) {
       style={{
         background: '#FFFFFF',
         border: '1px solid var(--iris-slate-200)',
-        borderRadius: 10,
+        borderRadius: 12,
         overflow: 'hidden',
         boxShadow: 'var(--shadow-sm)',
       }}

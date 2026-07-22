@@ -37,13 +37,12 @@ export function LoginPage() {
 
   return (
     <div
-      className="w-full flex flex-col gap-5"
+      className="w-full max-w-sm mx-auto flex flex-col gap-5"
       style={{
-        maxWidth: 380,
         background: '#FFFFFF',
         border: '1px solid var(--iris-slate-200)',
         borderRadius: 16,
-        padding: '28px 28px 24px',
+        padding: '24px 24px 20px',
         boxShadow: 'var(--shadow-lg)',
       }}
     >

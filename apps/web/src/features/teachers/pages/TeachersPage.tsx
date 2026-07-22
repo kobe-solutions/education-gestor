@@ -1,14 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import { useTeachers, useDeleteTeacher } from '../hooks/useTeachers'
 import { toast } from '../../../lib/toast'
+import { PageHead } from '../../../components/PageHead'
+import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
 import { Badge } from '../../../components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
 import {
   AlertDialog,
@@ -39,78 +38,112 @@ export function TeachersPage() {
   )
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Professores</h1>
-        <Button size="sm" onClick={() => navigate('/teachers/new')}>
-          <Plus className="h-4 w-4" />
-          Novo professor
-        </Button>
+    <div className="space-y-5">
+      <PageHead
+        title="Professores"
+        subtitle={`${filtered?.length ?? 0} professores cadastrados`}
+        actions={
+          <Button size="sm" onClick={() => navigate('/teachers/new')}>
+            <Plus className="h-4 w-4 mr-1" />
+            Novo professor
+          </Button>
+        }
+      />
+
+      {/* Busca */}
+      <div className="w-full max-w-sm">
+        <div className="relative">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            size={14}
+            style={{ color: 'var(--iris-slate-500)' }}
+          />
+          <input
+            type="text"
+            placeholder="Buscar por nome..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-shadow"
+            style={{
+              border: '1px solid var(--iris-slate-300)',
+              background: '#fff',
+              color: 'var(--iris-blue-900)',
+            }}
+            onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'var(--shadow-focus)' }}
+            onBlur={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'none' }}
+          />
+        </div>
       </div>
 
-      <div className="max-w-sm">
-        <Input
-          placeholder="Buscar por nome..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {filtered?.length ?? 0} professores cadastrados
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-4 space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Cargo</TableHead>
-                  <TableHead>Situação</TableHead>
-                  <TableHead className="w-24" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+      {/* Tabela */}
+      {isLoading ? (
+        <Surface>
+          <div className="p-4 space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+          </div>
+        </Surface>
+      ) : (
+        <Surface>
+          <div className="table-scroll">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th className="hidden sm:table-cell">Email</th>
+                  <th>Cargo</th>
+                  <th>Situação</th>
+                  <th style={{ width: 80 }} />
+                </tr>
+              </thead>
+              <tbody>
                 {filtered?.map((t) => (
-                  <TableRow key={t.id} className="cursor-pointer" onClick={() => navigate(`/teachers/${t.id}/edit`)}>
-                    <TableCell className="font-medium">{t.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{t.email}</TableCell>
-                    <TableCell className="text-muted-foreground">{t.position ?? '—'}</TableCell>
-                    <TableCell>
+                  <tr key={t.id} className="cursor-pointer" onClick={() => navigate(`/teachers/${t.id}/edit`)}>
+                    <td>
+                      <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                        {t.name}
+                      </span>
+                    </td>
+                    <td className="hidden sm:table-cell" style={{ color: 'var(--iris-slate-500)' }}>
+                      {t.email}
+                    </td>
+                    <td style={{ color: 'var(--iris-slate-500)' }}>{t.position ?? '—'}</td>
+                    <td>
                       <Badge
                         variant={t.employmentStatus === 'ativo' ? 'success' : 'secondary'}
                         className="text-[10px]"
                       >
                         {EMPLOYMENT_STATUS_LABELS[t.employmentStatus] ?? t.employmentStatus}
                       </Badge>
-                    </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon" onClick={() => navigate(`/teachers/${t.id}/edit`)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(t.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <button
+                          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                          title="Editar"
+                          onClick={() => navigate(`/teachers/${t.id}/edit`)}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                        >
+                          <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                        </button>
+                        <button
+                          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                          title="Excluir"
+                          onClick={() => setDeleteTarget(t.id)}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                        >
+                          <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                        </button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              </tbody>
+            </table>
+          </div>
+        </Surface>
+      )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
         <AlertDialogContent>

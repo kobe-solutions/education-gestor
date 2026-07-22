@@ -226,7 +226,7 @@ export function TeacherFormPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-4xl">
+    <div className="space-y-4 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate('/teachers')}>
           <ArrowLeft className="h-4 w-4" />
@@ -250,20 +250,22 @@ export function TeacherFormPage() {
       </div>
 
       <Tabs defaultValue="pessoal">
-        <TabsList className="w-full justify-start">
-          <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
-          <TabsTrigger value="endereco" disabled={!isEdit}>Endereço</TabsTrigger>
-          <TabsTrigger value="profissional" disabled={!isEdit}>Dados Profissionais</TabsTrigger>
-          <TabsTrigger value="formacao" disabled={!isEdit}>Formação</TabsTrigger>
-          <TabsTrigger value="financeiro" disabled={!isEdit}>Financeiro</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+          <TabsList className="w-full justify-start min-w-max">
+            <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
+            <TabsTrigger value="endereco" disabled={!isEdit}>Endereço</TabsTrigger>
+            <TabsTrigger value="profissional" disabled={!isEdit}>Dados Profissionais</TabsTrigger>
+            <TabsTrigger value="formacao" disabled={!isEdit}>Formação</TabsTrigger>
+            <TabsTrigger value="financeiro" disabled={!isEdit}>Financeiro</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* ── Aba 1: Dados Pessoais ──────────────────────────────────────── */}
         <TabsContent value="pessoal">
           <form onSubmit={pessoalForm.handleSubmit(onSavePessoal)} className="space-y-4">
             <Card>
               <CardHeader><CardTitle className="text-sm">Identificação pessoal</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label>Nome completo *</Label>
                   <Input {...pessoalForm.register('name')} />
@@ -310,7 +312,7 @@ export function TeacherFormPage() {
 
             <Card>
               <CardHeader><CardTitle className="text-sm">Contato & acesso</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label>Telefone<Opt /></Label>
                   <Input placeholder="(00) 00000-0000" {...pessoalForm.register('phone')} />
@@ -350,7 +352,7 @@ export function TeacherFormPage() {
           <form onSubmit={enderecoForm.handleSubmit(onSaveEndereco)} className="space-y-4">
             <Card>
               <CardHeader><CardTitle className="text-sm">Endereço</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-3 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label>CEP<Opt /></Label>
                   <Input placeholder="00000-000" {...enderecoForm.register('addressCep')} />
@@ -394,7 +396,7 @@ export function TeacherFormPage() {
           <form onSubmit={profissionalForm.handleSubmit(onSaveProfissional)} className="space-y-4">
             <Card>
               <CardHeader><CardTitle className="text-sm">Dados profissionais</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label>Cargo / Função<Opt /></Label>
                   <Input placeholder="Professor, Coordenador, Auxiliar..." {...profissionalForm.register('position')} />
@@ -460,7 +462,7 @@ export function TeacherFormPage() {
           <form onSubmit={formacaoForm.handleSubmit(onSaveFormacao)} className="space-y-4">
             <Card>
               <CardHeader><CardTitle className="text-sm">Formação acadêmica</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label>Escolaridade<Opt /></Label>
                   <Input placeholder="Superior completo, Pós-graduação..." {...formacaoForm.register('educationLevel')} />
@@ -492,7 +494,7 @@ export function TeacherFormPage() {
           <form onSubmit={financeiroForm.handleSubmit(onSaveFinanceiro)} className="space-y-4">
             <Card>
               <CardHeader><CardTitle className="text-sm">Dados bancários</CardTitle></CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label>Banco<Opt /></Label>
                   <Input placeholder="Ex: Banco do Brasil, Itaú..." {...financeiroForm.register('bank')} />

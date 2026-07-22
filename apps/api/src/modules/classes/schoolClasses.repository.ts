@@ -1,20 +1,20 @@
 import { eq, and, count, inArray } from 'drizzle-orm'
 import { db } from '../../db'
-import { schoolClasses, classStudents, students, series, academicPeriods, educationLevels } from '../../db/schema'
+import { schoolClasses, classStudents, students, series, educationLevels } from '../../db/schema'
 
 type CreateSchoolClassRepositoryInput = {
   schoolId: string
   name: string
   shift: string
   serieId?: string | null
-  academicPeriodId?: string | null
+  academicYearId?: string | null
 }
 
 type UpdateSchoolClassRepositoryInput = {
   name?: string
   shift?: string
   serieId?: string | null
-  academicPeriodId?: string | null
+  academicYearId?: string | null
 }
 
 const classFields = {
@@ -23,7 +23,6 @@ const classFields = {
   name: schoolClasses.name,
   shift: schoolClasses.shift,
   serieId: schoolClasses.serieId,
-  academicPeriodId: schoolClasses.academicPeriodId,
   maxStudents: schoolClasses.maxStudents,
   createdAt: schoolClasses.createdAt,
   updatedAt: schoolClasses.updatedAt,
@@ -42,15 +41,10 @@ export async function findAllSchoolClassesRepository(schoolId: string) {
           type: educationLevels.type,
         },
       },
-      academicPeriod: {
-        id: academicPeriods.id,
-        name: academicPeriods.name,
-      },
-    })
+    } as any)
     .from(schoolClasses)
     .leftJoin(series, eq(schoolClasses.serieId, series.id))
     .leftJoin(educationLevels, eq(series.educationLevelId, educationLevels.id))
-    .leftJoin(academicPeriods, eq(schoolClasses.academicPeriodId, academicPeriods.id))
     .where(eq(schoolClasses.schoolId, schoolId))
 }
 
@@ -67,15 +61,10 @@ export async function findSchoolClassByIdRepository(schoolId: string, id: string
           type: educationLevels.type,
         },
       },
-      academicPeriod: {
-        id: academicPeriods.id,
-        name: academicPeriods.name,
-      },
-    })
+    } as any)
     .from(schoolClasses)
     .leftJoin(series, eq(schoolClasses.serieId, series.id))
     .leftJoin(educationLevels, eq(series.educationLevelId, educationLevels.id))
-    .leftJoin(academicPeriods, eq(schoolClasses.academicPeriodId, academicPeriods.id))
     .where(and(eq(schoolClasses.schoolId, schoolId), eq(schoolClasses.id, id)))
     .limit(1)
 
@@ -90,7 +79,6 @@ export async function createSchoolClassRepository(input: CreateSchoolClassReposi
       name: input.name,
       shift: input.shift,
       serieId: input.serieId ?? null,
-      academicPeriodId: input.academicPeriodId ?? null,
     })
     .returning(classFields)
 

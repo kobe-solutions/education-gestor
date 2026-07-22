@@ -309,9 +309,9 @@ export function EstruturaTurmasPage() {
   const totalAlunos = allClasses.reduce((acc, c) => acc + (c.studentCount ?? 0), 0)
 
   return (
-    <div className="space-y-5 max-w-5xl">
+    <div className="space-y-5 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Acadêmico</h1>
           <p className="text-sm text-muted-foreground mt-0.5">

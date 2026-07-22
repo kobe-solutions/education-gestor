@@ -1,19 +1,26 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { Link } from 'react-router'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useStudent, useStudentGuardians, useAddGuardian } from '../hooks/useStudents'
+import { useStudent, useStudentGuardians, useAddGuardian, useDeleteGuardian } from '../hooks/useStudents'
 import { useStudentTuitions } from '../../financial/hooks/useFinancial'
 import { TuitionStatusBadge } from '../../financial/components/TuitionStatusBadge'
+import { toast } from '../../../lib/toast'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Badge } from '../../../components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
+
+const ENROLLMENT_STATUS_LABELS: Record<string, string> = {
+  active: 'Ativo',
+  inactive: 'Inativo',
+  transferred: 'Transferido',
+  cancelled: 'Cancelado',
+}
 
 const guardianSchema = z.object({
   name: z.string().min(2, 'Nome obrigatório'),
@@ -31,6 +38,7 @@ export function StudentDetailPage() {
   const { data: guardians } = useStudentGuardians(id!)
   const { data: tuitions } = useStudentTuitions(id!)
   const addGuardian = useAddGuardian(id!)
+  const deleteGuardian = useDeleteGuardian(id!)
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false)
 
   const {
@@ -43,133 +51,249 @@ export function StudentDetailPage() {
   function onAddGuardian(data: GuardianForm) {
     addGuardian.mutate(
       { ...data, email: data.email || null, phone: data.phone ?? null, cpf: null, profession: null, isResponsible: false, isAuthorizedPickup: false },
-      { onSuccess: () => { setGuardianDialogOpen(false); reset() } },
+      {
+        onSuccess: () => {
+          toast.success('Responsável adicionado')
+          setGuardianDialogOpen(false)
+          reset()
+        },
+      },
     )
   }
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Carregando...</p>
-  if (!student) return <p className="text-sm text-destructive">Aluno não encontrado</p>
+  function onDeleteGuardian(guardianId: string) {
+    deleteGuardian.mutate(guardianId, {
+      onSuccess: () => toast.success('Responsável removido'),
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-sm" style={{ color: 'var(--iris-slate-500)' }}>Carregando...</p>
+      </div>
+    )
+  }
+
+  if (!student) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-sm" style={{ color: 'var(--iris-danger-600)' }}>Aluno não encontrado</p>
+        <Button size="sm" variant="outline" onClick={() => navigate('/students')}>
+          Voltar para lista
+        </Button>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/students')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-xl font-semibold">{student.name}</h1>
-        <div className="ml-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <button
+          onClick={() => navigate('/students')}
+          className="flex items-center justify-center rounded-lg w-8 h-8 transition-colors shrink-0"
+          title="Voltar"
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+        >
+          <ArrowLeft size={16} style={{ color: 'var(--iris-slate-700)' }} />
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <h1
+            className="font-bold truncate"
+            style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.01em' }}
+          >
+            {student.name}
+          </h1>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <span className="mono text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+              Matrícula: {student.enrollmentCode}
+            </span>
+            <Badge
+              variant={student.enrollmentStatus === 'active' ? 'success' : student.enrollmentStatus === 'transferred' ? 'warning' : 'outline'}
+              className="text-[10px] h-4 px-1.5"
+            >
+              {ENROLLMENT_STATUS_LABELS[student.enrollmentStatus]}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
           <Link to={`/students/${id}/report`}>
             <Button size="sm" variant="outline">Ver boletim</Button>
+          </Link>
+          <Link to={`/students/${id}`}>
+            <Button size="sm">Editar aluno</Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Dados do aluno</CardTitle></CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <div><span className="text-muted-foreground">Email:</span> {student.email ?? '—'}</div>
-            <div><span className="text-muted-foreground">Nascimento:</span> {student.birthDate ?? '—'}</div>
-            <div><span className="text-muted-foreground">Matrícula:</span> <span className="font-mono">{student.enrollmentCode}</span></div>
-          </CardContent>
-        </Card>
+      {/* Dados pessoais */}
+      <div
+        className="rounded-xl p-5"
+        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--iris-blue-900)' }}>
+          Dados pessoais
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Email', value: student.email ?? '—' },
+            { label: 'Nascimento', value: student.birthDate ?? '—' },
+            { label: 'Telefone', value: student.phone ?? '—' },
+            { label: 'CPF', value: student.cpf ?? '—' },
+            { label: 'RG', value: student.rg ?? '—' },
+            { label: 'Sexo', value: student.sex === 'M' ? 'Masculino' : student.sex === 'F' ? 'Feminino' : student.sex ?? '—' },
+            { label: 'Tipo sanguíneo', value: student.bloodType ?? '—' },
+            { label: 'Naturalidade', value: student.naturalidade ?? '—' },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <p className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>{label}</p>
+              <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--iris-blue-900)' }}>{value}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-medium">Responsáveis</h2>
+      {/* Responsáveis */}
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <div className="flex items-center justify-between p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+            Responsáveis
+          </h2>
           <Button size="sm" variant="outline" onClick={() => setGuardianDialogOpen(true)}>
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5 mr-1" />
             Adicionar
           </Button>
         </div>
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Parentesco</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefone</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {guardians?.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">Nenhum responsável</TableCell>
-                  </TableRow>
-                )}
-                {guardians?.map((g) => (
-                  <TableRow key={g.id}>
-                    <TableCell>{g.name}</TableCell>
-                    <TableCell>{g.relationship}</TableCell>
-                    <TableCell>{g.email ?? '—'}</TableCell>
-                    <TableCell>{g.phone ?? '—'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+
+        <div className="p-5">
+          {!guardians || guardians.length === 0 ? (
+            <p className="text-xs text-center py-4" style={{ color: 'var(--iris-slate-500)' }}>
+              Nenhum responsável cadastrado
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {guardians.map((g) => (
+                <div
+                  key={g.id}
+                  className="flex items-start justify-between rounded-lg px-3 py-2.5"
+                  style={{ border: '1px solid var(--iris-slate-100)' }}
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium" style={{ color: 'var(--iris-blue-900)' }}>{g.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+                      {g.relationship}
+                      {g.phone ? ` · ${g.phone}` : ''}
+                      {g.email ? ` · ${g.email}` : ''}
+                    </p>
+                    <div className="flex gap-1 mt-1.5">
+                      {g.isResponsible && (
+                        <Badge variant="outline" className="text-[10px] h-4 px-1">Responsável</Badge>
+                      )}
+                      {g.isAuthorizedPickup && (
+                        <Badge variant="secondary" className="text-[10px] h-4 px-1">Autorizado a buscar</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    className="flex items-center justify-center rounded-md w-7 h-7 transition-colors shrink-0"
+                    title="Remover"
+                    onClick={() => onDeleteGuardian(g.id)}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                  >
+                    <Trash2 size={13} style={{ color: 'var(--iris-danger-600)' }} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="font-medium">Mensalidades</h2>
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {!tuitions?.length && (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">Nenhuma mensalidade</TableCell>
-                  </TableRow>
-                )}
-                {tuitions?.map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</TableCell>
-                    <TableCell>R$ {parseFloat(t.amount).toFixed(2)}</TableCell>
-                    <TableCell><TuitionStatusBadge status={t.status} /></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+      {/* Mensalidades */}
+      <div
+        className="rounded-xl overflow-hidden"
+        style={{ background: '#fff', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+      >
+        <div className="p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+          <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+            Mensalidades
+          </h2>
+        </div>
+
+        <div className="p-5">
+          {!tuitions || tuitions.length === 0 ? (
+            <p className="text-xs text-center py-4" style={{ color: 'var(--iris-slate-500)' }}>
+              Nenhuma mensalidade registrada
+            </p>
+          ) : (
+            <div className="table-scroll">
+              <table className="tbl">
+                <thead>
+                  <tr>
+                    <th>Vencimento</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tuitions.map((t) => (
+                    <tr key={t.id}>
+                      <td>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
+                      <td className="tabular-nums">
+                        {Number(t.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </td>
+                      <td><TuitionStatusBadge status={t.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
+      {/* Dialog: adicionar responsável */}
       <Dialog open={guardianDialogOpen} onOpenChange={(v) => !v && setGuardianDialogOpen(false)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Adicionar responsável</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Adicionar responsável</DialogTitle>
+          </DialogHeader>
           <form onSubmit={handleSubmit(onAddGuardian)} className="space-y-4">
-            <div className="space-y-1">
-              <Label>Nome</Label>
-              <Input {...register('name')} />
-              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+            <div className="space-y-1.5">
+              <Label>Nome *</Label>
+              <Input {...register('name')} placeholder="Nome completo" />
+              {errors.name && <p className="text-xs" style={{ color: 'var(--iris-danger-600)' }}>{errors.name.message}</p>}
             </div>
-            <div className="space-y-1">
-              <Label>Parentesco</Label>
+            <div className="space-y-1.5">
+              <Label>Parentesco *</Label>
               <Input placeholder="Ex: Mãe, Pai, Avó..." {...register('relationship')} />
-              {errors.relationship && <p className="text-xs text-destructive">{errors.relationship.message}</p>}
+              {errors.relationship && <p className="text-xs" style={{ color: 'var(--iris-danger-600)' }}>{errors.relationship.message}</p>}
             </div>
-            <div className="space-y-1">
-              <Label>Email</Label>
-              <Input type="email" {...register('email')} />
-            </div>
-            <div className="space-y-1">
-              <Label>Telefone</Label>
-              <Input {...register('phone')} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Email</Label>
+                <Input type="email" {...register('email')} placeholder="email@exemplo.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Telefone</Label>
+                <Input {...register('phone')} placeholder="(00) 00000-0000" />
+              </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setGuardianDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={addGuardian.isPending}>Salvar</Button>
+              <Button type="button" variant="outline" onClick={() => { setGuardianDialogOpen(false); reset() }}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={addGuardian.isPending}>
+                {addGuardian.isPending ? 'Salvando...' : 'Salvar'}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

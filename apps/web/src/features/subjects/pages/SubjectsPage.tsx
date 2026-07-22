@@ -3,13 +3,13 @@ import { Plus, Pencil, Trash2 } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import { useSubjects, useCreateSubject, useUpdateSubject, useDeleteSubject } from '../hooks/useSubjects'
 import { toast } from '../../../lib/toast'
+import { PageHead } from '../../../components/PageHead'
+import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -137,69 +137,89 @@ export function SubjectsPage() {
   const apiError = (activeMutation.error as AxiosError<{ message: string }>)?.response?.data?.message
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Disciplinas</h1>
-        <Button size="sm" onClick={handleCreate}>
-          <Plus className="h-4 w-4" />
-          Nova disciplina
-        </Button>
+    <div className="space-y-5">
+      <PageHead
+        title="Disciplinas"
+        subtitle={`${filtered?.length ?? 0} disciplinas cadastradas`}
+        actions={
+          <Button size="sm" onClick={handleCreate}>
+            <Plus className="h-4 w-4 mr-1" />
+            Nova disciplina
+          </Button>
+        }
+      />
+
+      {/* Busca */}
+      <div className="w-full max-w-sm">
+        <div className="relative">
+          <Input
+            placeholder="Buscar disciplina..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div className="max-w-sm">
-        <Input
-          placeholder="Buscar disciplina..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            {filtered?.length ?? 0} disciplinas cadastradas
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="p-4 space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Código</TableHead>
-                  <TableHead>Horas Semanais</TableHead>
-                  <TableHead className="w-24" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+      {/* Tabela */}
+      {isLoading ? (
+        <Surface>
+          <div className="p-4 space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+        </Surface>
+      ) : (
+        <Surface>
+          <div className="table-scroll">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Código</th>
+                  <th>Horas Semanais</th>
+                  <th style={{ width: 80 }} />
+                </tr>
+              </thead>
+              <tbody>
                 {filtered?.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.code ?? '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{s.weeklyHours}h</TableCell>
-                    <TableCell>
+                  <tr key={s.id}>
+                    <td>
+                      <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                        {s.name}
+                      </span>
+                    </td>
+                    <td style={{ color: 'var(--iris-slate-500)' }}>{s.code ?? '—'}</td>
+                    <td style={{ color: 'var(--iris-slate-500)' }}>{s.weeklyHours}h</td>
+                    <td>
                       <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(s)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(s.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <button
+                          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                          title="Editar"
+                          onClick={() => handleEdit(s)}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                        >
+                          <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                        </button>
+                        <button
+                          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                          title="Excluir"
+                          onClick={() => handleDelete(s.id)}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = '#FEE2E2' }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                        >
+                          <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                        </button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              </tbody>
+            </table>
+          </div>
+        </Surface>
+      )}
 
       <Dialog open={dialogOpen} onOpenChange={(v) => !v && handleClose()}>
         <DialogContent>
