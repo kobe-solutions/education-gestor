@@ -1,6 +1,6 @@
 # Roadmap — Correção de Débitos Técnicos
 
-> Última atualização: 2026-05-16
+> Última atualização: 2026-07-21
 > Baseado na análise arquitetural do sistema.
 
 ---
@@ -113,18 +113,11 @@
 
 ---
 
-### 2.2 🟡 Soft delete nas entidades core
+### 2.2 ✅ Soft delete nas entidades core
 
-**Problema:** Hard delete com cascade apaga aluno + responsáveis + ficha médica + documentos + notas + frequência sem possibilidade de recuperação.
+**Status:** Implementado — coluna `deletedAt` nas tabelas `students`, `teachers`, `schools`.
 
-**Tabelas:** `students`, `teachers`, `schools`
-
-**O que fazer:**
-- [ ] Adicionar coluna `deletedAt timestamp` (nullable) nas tabelas `students`, `teachers`, `schools`
-- [ ] Gerar migration
-- [ ] Em todos os repositories de listagem, adicionar `where(isNull(entity.deletedAt))`
-- [ ] Trocar `db.delete(students)` por `db.update(students).set({ deletedAt: new Date() })`
-- [ ] Garantir que `findByIdRepository` também filtra por `deletedAt IS NULL` (não retornar soft-deleted por ID)
+**O que fazer (próximos passos):**
 - [ ] Criar endpoint admin `DELETE /students/:id/permanent` (hard delete real, apenas para admin)
 - [ ] Atualizar testes unitários
 
@@ -166,15 +159,11 @@
 
 ---
 
-### 3.2 🟡 Query unificada de perfil completo do aluno
+### 3.2 ✅ Query unificada de perfil completo do aluno
 
-**Problema:** Dados do aluno estão em 4 tabelas (`students`, `guardians`, `studentMedical`, `studentDocuments`). Qualquer relatório ou exportação exige 4 queries separadas sem nenhum helper centralizado.
+**Status:** Implementado — função `findStudentProfileRepository` retorna aluno + responsáveis + ficha médica em um único resultado.
 
-**Arquivo:** `students.repository.ts`
-
-**O que fazer:**
-- [ ] Criar `findStudentProfileRepository(schoolId, studentId)` que retorna aluno + responsáveis + ficha médica em um único resultado (via LEFT JOINs ou queries paralelas com `Promise.all`)
-- [ ] Usar essa função no endpoint `GET /students/:id` (hoje ele retorna só dados básicos)
+**O que fazer (próximos passos):**
 - [ ] Criar `findStudentsExportRepository(schoolId, filters)` para futura exportação CSV
 - [ ] Documentar o tipo de retorno com interface TypeScript explícita
 
@@ -192,15 +181,11 @@
 
 ---
 
-### 3.4 🟢 Log de auditoria nas operações sensíveis
+### 3.4 ✅ Log de auditoria nas operações sensíveis
 
-**Problema:** Não há registro de quem fez o quê — deletou aluno, alterou nota, marcou mensalidade como paga. Sem isso, não é possível investigar inconsistências nem atender exigências da LGPD.
+**Status:** Implementado — tabela `audit_logs` com funções de log em `src/lib/audit.ts`.
 
-**O que fazer:**
-- [ ] Criar tabela `audit_logs` com colunas: `id`, `schoolId`, `userId`, `action`, `entity`, `entityId`, `payload`, `createdAt`
-- [ ] Gerar migration
-- [ ] Criar `src/lib/audit.ts` com função `logAudit(ctx, action, entity, entityId, payload?)`
-- [ ] Instrumentar as operações sensíveis: delete de aluno, update de nota, pagamento de mensalidade, mudança de status de matrícula
+**O que fazer (próximos passos):**
 - [ ] Criar endpoint `GET /audit-logs` (apenas gestor/admin) com filtro por entidade e período
 
 ---
@@ -223,9 +208,9 @@ Itens identificados mas sem urgência imediata. Revisar a cada ciclo de planejam
 Fase 1 (Crítico)          Fase 2 (Performance)       Fase 3 (Manutenção)
 ──────────────────         ────────────────────         ───────────────────
 1.1 Batch frequência  →    2.1 Índices de volume   →    3.1 Cross-module imports
-1.2 Transações        →    2.2 Soft delete         →    3.2 Query perfil aluno
+1.2 Transações        →    2.2 Soft delete ✅      →    3.2 Query perfil aluno ✅
 1.3 Paginação         →    2.3 Otimizar upsertGrade →   3.3 Validações no service
-1.4 Type coercion     →                                  3.4 Log de auditoria
+1.4 Type coercion     →                                  3.4 Log de auditoria ✅
 ```
 
 Cada fase só deve começar depois que a anterior estiver com testes passando e deploy validado em ambiente de desenvolvimento.

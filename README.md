@@ -10,6 +10,7 @@ Sistema de gestão escolar multi-tenant para colégios de pequeno e médio porte
 | Banco | PostgreSQL + Drizzle ORM |
 | Frontend | React + Vite + TanStack Query + shadcn/ui |
 | Monorepo | pnpm workspaces |
+| Containerização | Docker + Docker Compose |
 
 ---
 
@@ -17,7 +18,7 @@ Sistema de gestão escolar multi-tenant para colégios de pequeno e médio porte
 
 - **Node.js** >= 20
 - **pnpm** >= 9 — `npm install -g pnpm`
-- **Docker** (para o PostgreSQL local)
+- **Docker + Docker Compose**
 
 ---
 
@@ -31,29 +32,27 @@ cd education-gestor
 pnpm install
 ```
 
-### 2. Subir o banco de dados
+### 2. Configurar variáveis de ambiente
+
+Copie o arquivo de exemplo para a raiz do projeto:
+
+```bash
+cp .env.example .env
+```
+
+Edite `.env` se necessário. Os valores padrão já funcionam com o Docker local.
+
+> As variáveis de ambiente são compartilhadas entre API e Frontend via `.env` na raiz do monorepo.
+
+### 3. Subir o banco de dados
 
 ```bash
 docker compose up -d
 ```
 
-Isso sobe um PostgreSQL 16 na porta `5432` com:
-- **usuário**: `postgres`
-- **senha**: `postgres`
-- **banco**: `education_gestor`
-
-### 3. Configurar variáveis de ambiente da API
-
-Crie o arquivo `apps/api/.env` com base no exemplo abaixo:
-
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/education_gestor
-JWT_SECRET=uma-chave-secreta-longa-de-pelo-menos-32-caracteres
-PORT=3333
-NODE_ENV=development
-```
-
-> `JWT_SECRET` precisa ter no mínimo 32 caracteres.
+Isso sobe:
+- **PostgreSQL 16** na porta `5432` (produção)
+- **PostgreSQL 16** na porta `5433` (testes)
 
 ### 4. Rodar as migrations
 
@@ -82,6 +81,14 @@ Isso sobe os dois serviços em paralelo:
 | API | http://localhost:3333 |
 | Web | http://localhost:5173 |
 
+### Alternativa: Usar Docker para tudo
+
+```bash
+docker compose up --build
+```
+
+Isso sobe API + Web + Banco de dados em containers.
+
 ---
 
 ## Scripts disponíveis
@@ -107,6 +114,39 @@ Isso sobe os dois serviços em paralelo:
 | `pnpm test` | Roda os testes com Vitest |
 | `pnpm test:watch` | Testes em modo watch |
 | `pnpm test:coverage` | Relatório de cobertura |
+
+---
+
+## Docker
+
+### Serviços
+
+| Serviço | Porta | Descrição |
+|---|---|---|
+| `db` | 5432 | PostgreSQL (produção) |
+| `db-test` | 5433 | PostgreSQL (testes) |
+| `api` | 3333 | Fastify backend |
+| `web` | 5173 | Vite dev server |
+
+### Comandos Docker
+
+```bash
+# Subir todos os serviços
+docker compose up --build
+
+# Subir em background
+docker compose up --build -d
+
+# Parar serviços
+docker compose down
+
+# Parar e limpar dados
+docker compose down -v
+
+# Ver logs
+docker compose logs -f api
+docker compose logs -f web
+```
 
 ---
 
@@ -163,7 +203,7 @@ CREATE DATABASE education_gestor OWNER education_user;
 
 ### 3. Variáveis de ambiente em produção
 
-Na VPS, crie `/home/deploy/education-gestor/apps/api/.env`:
+Na VPS, crie `/home/deploy/education-gestor/.env`:
 
 ```env
 DATABASE_URL=postgresql://education_user:senha-forte-aqui@localhost:5432/education_gestor
@@ -251,8 +291,12 @@ education-gestor/
 ├── apps/
 │   ├── api/          # Fastify + Drizzle (porta 3333)
 │   └── web/          # React + Vite (porta 5173)
-└── packages/
-    └── types/        # DTOs e tipos compartilhados
+├── packages/
+│   └── types/        # DTOs e tipos compartilhados
+├── .env              # Variáveis de ambiente (compartilhadas)
+├── Dockerfile        # Multi-stage build
+├── docker-compose.yml
+└── AGENTS.md         # Documentação para agentes de IA
 ```
 
 ### Módulos da API
@@ -268,8 +312,16 @@ education-gestor/
 | `subjects` | Disciplinas |
 | `classes` | Turmas |
 | `academicPeriods` | Períodos letivos |
+| `academicYears` | Anos letivos |
 | `academic` | Notas e frequência |
 | `financial` | Mensalidades e pagamentos |
+| `dashboard` | Métricas agregadas |
+| `educationLevels` | Níveis de ensino |
+| `series` | Séries por nível |
+| `classPeriods` | Períodos de aula (horários) |
+| `timetable` | Grade horária |
+| `calendarEvents` | Eventos do calendário |
+| `audit` | Logs de auditoria |
 
 ---
 

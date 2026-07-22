@@ -94,6 +94,7 @@ Admin (plataforma)
 | Frequência (leitura) | ✅ | ✅ | ✅ | ✅ |
 | Frequência (escrita) | ✅ | ✅ | ✅ | ✅ |
 | Financeiro | ✅ | ✅ | ✅ | — |
+| Audit Logs | ✅ | — | — | — |
 
 ---
 
@@ -135,6 +136,54 @@ authenticate → injectTenant → authorizeRoles([...])
 | `authenticate` | Verifica e decodifica o JWT |
 | `injectTenant` | Valida que o payload tem `schoolId` ou `secretariaId` conforme o role |
 | `authorizeRoles` | Rejeita com 403 se o role não está na lista permitida |
+
+---
+
+## Variáveis de Ambiente
+
+O arquivo `.env` na raiz do monorepo é compartilhado entre API e Frontend.
+
+```env
+# Database
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/education_gestor
+DATABASE_URL_TEST=postgresql://postgres:postgres@localhost:5433/education_gestor_test
+
+# Auth
+JWT_SECRET=supersecretkey_change_in_production_minimum_32_chars
+
+# Server
+PORT=3333
+NODE_ENV=development
+```
+
+---
+
+## Docker
+
+### Serviços
+
+| Serviço | Porta | Descrição |
+|---|---|---|
+| `db` | 5432 | PostgreSQL (produção) |
+| `db-test` | 5433 | PostgreSQL (testes) |
+| `api` | 3333 | Fastify backend |
+| `web` | 5173 | Vite dev server |
+
+### Comandos
+
+```bash
+# Subir todos os serviços
+docker compose up --build
+
+# Subir em background
+docker compose up --build -d
+
+# Parar serviços
+docker compose down
+
+# Parar e limpar dados
+docker compose down -v
+```
 
 ---
 

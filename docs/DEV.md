@@ -16,13 +16,17 @@
 pnpm install
 ```
 
-### 2. Configure as variáveis de ambiente da API
+### 2. Configure as variáveis de ambiente
+
+Copie o arquivo de exemplo para a raiz do projeto:
 
 ```bash
-cp apps/api/.env.example apps/api/.env
+cp .env.example .env
 ```
 
-Edite `apps/api/.env` se necessário. Os valores padrão já funcionam com o Docker local.
+Edite `.env` se necessário. Os valores padrão já funcionam com o Docker local.
+
+> As variáveis de ambiente são compartilhadas entre API e Frontend via `.env` na raiz do monorepo.
 
 ### 3. Suba o banco de dados
 
@@ -30,7 +34,9 @@ Edite `apps/api/.env` se necessário. Os valores padrão já funcionam com o Doc
 docker compose up -d
 ```
 
-Isso inicia o PostgreSQL na porta `5432`.
+Isso inicia:
+- PostgreSQL na porta `5432` (produção)
+- PostgreSQL na porta `5433` (testes)
 
 ### 4. Gere e rode as migrations
 
@@ -54,6 +60,14 @@ pnpm dev
 | Web (Vite) | http://localhost:5173 |
 | Health check | http://localhost:3333/health |
 
+### Alternativa: Usar Docker para tudo
+
+```bash
+docker compose up --build
+```
+
+Isso sobe API + Web + Banco de dados em containers.
+
 ---
 
 ## Comandos úteis
@@ -76,6 +90,12 @@ pnpm db:generate
 
 # Aplicar migrations pendentes
 pnpm db:migrate
+
+# Popular dados de teste
+pnpm db:seed
+
+# Limpar dados
+pnpm db:clear
 ```
 
 ## Documentação da API
@@ -108,7 +128,7 @@ education-gestor/
 │   │   │   ├── app.ts           # Configura o Fastify
 │   │   │   └── server.ts        # Entry point
 │   │   ├── drizzle.config.ts
-│   │   └── .env                 # Não commitado
+│   │   └── .env.example         # Exemplo de variáveis
 │   │
 │   └── web/                     # React + Vite
 │       └── src/
@@ -118,9 +138,14 @@ education-gestor/
 │           │   └── api.ts       # Cliente axios com JWT
 │           └── App.tsx
 │
-└── packages/
-    └── types/                   # DTOs e tipos compartilhados
-        └── src/index.ts
+├── packages/
+│   └── types/                   # DTOs e tipos compartilhados
+│       └── src/index.ts
+│
+├── .env                         # Variáveis de ambiente (compartilhadas)
+├── Dockerfile                   # Multi-stage build
+├── docker-compose.yml           # Serviços: db, db-test, api, web
+└── AGENTS.md                    # Documentação para agentes de IA
 ```
 
 ---
@@ -183,6 +208,39 @@ Boas práticas:
 - execute somente em ambiente controlado (bootstrap, CI/CD, ou shell restrito);
 - não compartilhe senha em histórico de terminal;
 - prefira injeção de secrets pela plataforma de deploy.
+
+---
+
+## Docker
+
+### Serviços
+
+| Serviço | Porta | Descrição |
+|---|---|---|
+| `db` | 5432 | PostgreSQL (produção) |
+| `db-test` | 5433 | PostgreSQL (testes) |
+| `api` | 3333 | Fastify backend |
+| `web` | 5173 | Vite dev server |
+
+### Comandos Docker
+
+```bash
+# Subir todos os serviços
+docker compose up --build
+
+# Subir em background
+docker compose up --build -d
+
+# Parar serviços
+docker compose down
+
+# Parar e limpar dados
+docker compose down -v
+
+# Ver logs
+docker compose logs -f api
+docker compose logs -f web
+```
 
 ---
 

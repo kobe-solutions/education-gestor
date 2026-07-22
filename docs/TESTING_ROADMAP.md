@@ -18,54 +18,31 @@ pnpm install
 
 ---
 
-## Etapa 2 — Criar o `docker-compose.yml`
+## Etapa 2 — Subir o banco de dados
 
-Na raiz do projeto, crie o arquivo:
+O `docker-compose.yml` já existe na raiz do projeto com 4 serviços: `db` (5432), `db-test` (5433), `api` (3333), `web` (5173).
 
-```yaml
-# docker-compose.yml
-services:
-  postgres:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: education_gestor
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-volumes:
-  postgres_data:
-```
-
-Suba o banco:
 ```bash
-docker compose up -d
+docker compose up -d db
 ```
 
 Confirme que está rodando:
 ```bash
 docker compose ps
-# postgres deve aparecer como "running"
+# db deve aparecer como "running"
 ```
 
 ---
 
-## Etapa 3 — Criar o arquivo `.env`
+## Etapa 3 — Configurar variáveis de ambiente
+
+O `.env` na raiz do monorepo é compartilhado entre API e Frontend. Copie o exemplo:
 
 ```bash
-cp apps/api/.env.example apps/api/.env
+cp .env.example .env
 ```
 
-Se não existir `.env.example`, crie `apps/api/.env` com:
-```
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/education_gestor
-JWT_SECRET=supersecretkey_change_in_production_minimum_32_chars
-PORT=3333
-NODE_ENV=development
-```
+Os valores padrão já funcionam com o Docker local.
 
 ---
 
@@ -75,14 +52,16 @@ NODE_ENV=development
 pnpm db:migrate
 ```
 
-Esperado: 10 migrations aplicadas (0000 a 0009), sem erros.
+Esperado: migrations aplicadas sem erros.
 
 Verifique no banco:
 ```bash
-docker exec -it $(docker compose ps -q postgres) psql -U postgres -d education_gestor -c "\dt"
-# Deve listar: admins, schools, secretarias, secretaria_schools, teachers,
-#              students, guardians, school_classes, class_teachers, class_students,
-#              subjects, academic_periods, grades, attendances, tuitions
+docker exec -it $(docker compose ps -q db) psql -U postgres -d education_gestor -c "\dt"
+# Deve listar todas as tabelas: admins, schools, secretarias, secretaria_schools,
+# teachers, students, guardians, school_classes, class_teachers, class_students,
+# subjects, academic_periods, grades, attendances, tuitions, education_levels,
+# series, timetable_slots, class_periods, academic_years, calendar_events,
+# student_documents, student_medical, teacher_subjects, audit_logs
 ```
 
 ---

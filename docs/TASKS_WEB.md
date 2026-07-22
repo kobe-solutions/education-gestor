@@ -3,7 +3,7 @@
 Cada fase do frontend só começa após a fase correspondente da API estar pronta.
 As tarefas dentro de uma fase podem ser feitas em paralelo.
 
-**Status atual:** Apenas scaffold inicial existe (`App.tsx`, `main.tsx`, `lib/api.ts`). Nenhuma fase implementada.
+**Status atual:** Todas as 8 fases implementadas. Backend com 19 módulos, frontend com 16 features.
 
 ---
 
