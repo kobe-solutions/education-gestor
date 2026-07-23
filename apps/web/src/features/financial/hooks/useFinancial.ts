@@ -3,14 +3,17 @@ import { api } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Tuition } from '@education-gestor/types'
 
-export function useTuitions() {
+export function useTuitions(params?: { page?: number; limit?: number }) {
   const { schoolKey, enabled } = useSchoolKey()
+  const page = params?.page ?? 1
+  const limit = params?.limit ?? 50
   return useQuery({
-    queryKey: ['tuitions', schoolKey],
+    queryKey: ['tuitions', schoolKey, { page, limit }],
     queryFn: async () => {
-      const res = await api.get<{ data: Tuition[]; total: number } | Tuition[]>('/tuitions')
-      const body = res.data
-      return Array.isArray(body) ? body : body.data
+      const res = await api.get<{ data: Tuition[]; total: number }>('/tuitions', {
+        params: { page, limit },
+      })
+      return { data: res.data.data, total: res.data.total }
     },
     enabled,
   })
