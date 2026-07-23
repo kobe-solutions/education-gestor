@@ -14,7 +14,7 @@ import {
   User,
 } from 'lucide-react'
 import { useStudents } from '../features/students/hooks/useStudents'
-import { useTeachers } from '../features/teachers/hooks/useTeachers'
+import { useAllTeachers } from '../features/teachers/hooks/useTeachers'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import type { Student, Teacher } from '@education-gestor/types'
@@ -321,7 +321,7 @@ export function HubPeoplePage() {
   const navigate = useNavigate()
   const { data: studentsData } = useStudents()
   const students = studentsData?.data ?? []
-  const { data: teachers = [] } = useTeachers()
+  const { data: teachers = [] } = useAllTeachers()
 
   const activeStudents = students.filter((s) => s.enrollmentStatus === 'active').length
   const transferredStudents = students.filter((s) => s.enrollmentStatus === 'transferred').length

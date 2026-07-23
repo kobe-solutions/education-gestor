@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import { useTeachers, useDeleteTeacher } from '../hooks/useTeachers'
 import { toast } from '../../../lib/toast'
@@ -26,22 +26,28 @@ const EMPLOYMENT_STATUS_LABELS: Record<string, string> = {
   licenca: 'Licença',
 }
 
+const PAGE_SIZE = 15
+
 export function TeachersPage() {
   const navigate = useNavigate()
-  const { data: teachers, isLoading } = useTeachers()
+  const [page, setPage] = useState(1)
+  const { data, isLoading } = useTeachers({ page, limit: PAGE_SIZE })
+  const teachers = data?.data
+  const total = data?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const deleteMutation = useDeleteTeacher()
   const [search, setSearch] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const filtered = teachers?.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase()),
-  )
+  ) ?? []
 
   return (
     <div className="space-y-5">
       <PageHead
         title="Professores"
-        subtitle={`${filtered?.length ?? 0} professores cadastrados`}
+        subtitle={`${total} professor${total !== 1 ? 'es' : ''} cadastrado${total !== 1 ? 's' : ''}`}
         actions={
           <Button size="sm" onClick={() => navigate('/teachers/new')}>
             <Plus className="h-4 w-4 mr-1" />
@@ -96,49 +102,90 @@ export function TeachersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered?.map((t) => (
-                  <tr key={t.id} className="cursor-pointer" onClick={() => navigate(`/teachers/${t.id}/edit`)}>
-                    <td>
-                      <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
-                        {t.name}
-                      </span>
-                    </td>
-                    <td className="hidden sm:table-cell" style={{ color: 'var(--iris-slate-500)' }}>
-                      {t.email}
-                    </td>
-                    <td style={{ color: 'var(--iris-slate-500)' }}>{t.position ?? '—'}</td>
-                    <td>
-                      <Badge
-                        variant={t.employmentStatus === 'ativo' ? 'success' : 'secondary'}
-                        className="text-[10px]"
-                      >
-                        {EMPLOYMENT_STATUS_LABELS[t.employmentStatus] ?? t.employmentStatus}
-                      </Badge>
-                    </td>
-                    <td onClick={(e) => e.stopPropagation()}>
-                      <div className="flex gap-1 justify-end">
-                        <button
-                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
-                          title="Editar"
-                          onClick={() => navigate(`/teachers/${t.id}/edit`)}
-                        >
-                          <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
-                        </button>
-                        <button
-                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
-                          title="Excluir"
-                          onClick={() => setDeleteTarget(t.id)}
-                        >
-                          <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
-                        </button>
-                      </div>
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="text-center py-10"
+                      style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                    >
+                      {search
+                        ? `Nenhum professor encontrado para "${search}".`
+                        : 'Nenhum professor cadastrado.'}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filtered.map((t) => (
+                    <tr key={t.id} className="cursor-pointer" onClick={() => navigate(`/teachers/${t.id}/edit`)}>
+                      <td>
+                        <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                          {t.name}
+                        </span>
+                      </td>
+                      <td className="hidden sm:table-cell" style={{ color: 'var(--iris-slate-500)' }}>
+                        {t.email}
+                      </td>
+                      <td style={{ color: 'var(--iris-slate-500)' }}>{t.position ?? '—'}</td>
+                      <td>
+                        <Badge
+                          variant={t.employmentStatus === 'ativo' ? 'success' : 'secondary'}
+                          className="text-[10px]"
+                        >
+                          {EMPLOYMENT_STATUS_LABELS[t.employmentStatus] ?? t.employmentStatus}
+                        </Badge>
+                      </td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-1 justify-end">
+                          <button
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
+                            title="Editar"
+                            onClick={() => navigate(`/teachers/${t.id}/edit`)}
+                          >
+                            <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                          </button>
+                          <button
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
+                            title="Excluir"
+                            onClick={() => setDeleteTarget(t.id)}
+                          >
+                            <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </Surface>
+      )}
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+            Página {page} de {totalPages}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>

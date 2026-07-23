@@ -3,7 +3,7 @@ import { GripVertical, Plus, X, ChevronDown, ChevronUp, Search, Zap, ArrowLeft }
 import { useNavigate } from 'react-router'
 import { PageHead } from '../../../components/PageHead'
 import type { AxiosError } from 'axios'
-import { useTeachers } from '../../teachers/hooks/useTeachers'
+import { useAllTeachers } from '../../teachers/hooks/useTeachers'
 import { useClasses, useAcademicPeriods } from '../../classes/hooks/useClasses'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
 import {
@@ -289,7 +289,7 @@ function ClassColumn({
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
 export function SchedulingPage() {
-  const { data: teachers = [] } = useTeachers()
+  const { data: teachers = [] } = useAllTeachers()
   const { data: classes = [] } = useClasses()
   const { data: allSlots = [] } = useAllTimetableSlots()
   const { data: periods = [] } = useAcademicPeriods()
