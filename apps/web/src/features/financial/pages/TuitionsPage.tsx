@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Search } from 'lucide-react'
+import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router'
 import type { AxiosError } from 'axios'
 import { useTuitions, useCreateTuition, useRegisterPayment } from '../hooks/useFinancial'
@@ -28,8 +28,14 @@ const tuitionSchema = z.object({
 
 type TuitionForm = z.infer<typeof tuitionSchema>
 
+const PAGE_SIZE = 15
+
 export function TuitionsPage() {
-  const { data: tuitions, isLoading } = useTuitions()
+  const [page, setPage] = useState(1)
+  const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE })
+  const tuitions = tuitionsData?.data
+  const total = tuitionsData?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const { data: studentsData } = useStudents()
   const students = studentsData?.data
   const createMutation = useCreateTuition()
@@ -197,6 +203,33 @@ export function TuitionsPage() {
             </table>
           </div>
         </Surface>
+      )}
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+            Página {page} de {totalPages}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Dialog: nova mensalidade */}
