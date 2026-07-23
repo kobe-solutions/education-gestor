@@ -20,7 +20,8 @@ export function ClassDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: schoolClass, isLoading } = useClass(id!)
-  const { data: allStudents } = useStudents()
+  const { data: studentsData } = useStudents()
+  const allStudents = studentsData?.data
   const addStudent = useAddStudentToClass(id!)
   const removeStudent = useRemoveStudentFromClass(id!)
 

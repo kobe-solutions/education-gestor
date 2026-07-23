@@ -272,7 +272,8 @@ function ClassColumn({
 
 export function StudentSchedulingPage() {
   const queryClient = useQueryClient()
-  const { data: students = [] } = useStudents()
+  const { data: studentsData } = useStudents()
+  const students = studentsData?.data ?? []
   const { data: classes = [] } = useClasses()
 
   const [studentSearch, setStudentSearch] = useState('')

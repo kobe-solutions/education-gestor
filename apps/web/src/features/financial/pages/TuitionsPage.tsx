@@ -30,7 +30,8 @@ type TuitionForm = z.infer<typeof tuitionSchema>
 
 export function TuitionsPage() {
   const { data: tuitions, isLoading } = useTuitions()
-  const { data: students } = useStudents()
+  const { data: studentsData } = useStudents()
+  const students = studentsData?.data
   const createMutation = useCreateTuition()
   const payMutation = useRegisterPayment()
   const [dialogOpen, setDialogOpen] = useState(false)

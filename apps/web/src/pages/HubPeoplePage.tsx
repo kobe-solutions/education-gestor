@@ -319,7 +319,8 @@ function QuickAction({ icon: Icon, label, description, onClick }: QuickActionPro
 
 export function HubPeoplePage() {
   const navigate = useNavigate()
-  const { data: students = [] } = useStudents()
+  const { data: studentsData } = useStudents()
+  const students = studentsData?.data ?? []
   const { data: teachers = [] } = useTeachers()
 
   const activeStudents = students.filter((s) => s.enrollmentStatus === 'active').length
