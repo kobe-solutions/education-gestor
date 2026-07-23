@@ -65,9 +65,16 @@ export async function studentsRoutes(app: FastifyInstance) {
   })
 
   app.post('/students', { preHandler }, async (request, reply) => {
-    const body = createStudentBodySchema.parse(request.body)
-    const student = await createStudentService(getSchoolId(request), body)
-    return reply.status(201).send(student)
+    try {
+      const body = createStudentBodySchema.parse(request.body)
+      const student = await createStudentService(getSchoolId(request), body)
+      return reply.status(201).send(student)
+    } catch (e) {
+      if (e instanceof Error && e.message === 'Enrollment code already in use') {
+        return reply.status(409).send({ message: e.message })
+      }
+      throw e
+    }
   })
 
   app.put('/students/:id', { preHandler }, async (request, reply) => {

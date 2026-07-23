@@ -27,7 +27,7 @@ const mockSubject = {
   name: 'Matemática',
   code: 'MAT',
   weeklyHours: 5,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 beforeAll(async () => {
@@ -57,7 +57,7 @@ describe('GET /subjects', () => {
   })
 
   it('retorna 200 para gestor', async () => {
-    vi.mocked(subjectsService.listSubjectsService).mockResolvedValue([mockSubject])
+    vi.mocked(subjectsService.listSubjectsService).mockResolvedValue([mockSubject] as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -72,7 +72,7 @@ describe('GET /subjects', () => {
 
 describe('GET /subjects/:id', () => {
   it('retorna 200 quando disciplina existe', async () => {
-    vi.mocked(subjectsService.getSubjectService).mockResolvedValue(mockSubject)
+    vi.mocked(subjectsService.getSubjectService).mockResolvedValue(mockSubject as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -109,7 +109,7 @@ describe('POST /subjects', () => {
   })
 
   it('retorna 201 para gestor com dados válidos', async () => {
-    vi.mocked(subjectsService.createSubjectService).mockResolvedValue(mockSubject)
+    vi.mocked(subjectsService.createSubjectService).mockResolvedValue(mockSubject as any)
 
     const res = await app.inject({
       method: 'POST',

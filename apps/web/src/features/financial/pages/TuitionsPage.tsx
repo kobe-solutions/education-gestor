@@ -8,6 +8,7 @@ import type { AxiosError } from 'axios'
 import { useTuitions, useCreateTuition, useRegisterPayment } from '../hooks/useFinancial'
 import { useStudents } from '../../students/hooks/useStudents'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
+import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { toast } from '../../../lib/toast'
 import { PageHead } from '../../../components/PageHead'
 import { Surface } from '../../../components/Surface'
@@ -26,10 +27,6 @@ const tuitionSchema = z.object({
 })
 
 type TuitionForm = z.infer<typeof tuitionSchema>
-
-function fmtBRL(v: string | number) {
-  return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
 
 export function TuitionsPage() {
   const { data: tuitions, isLoading } = useTuitions()
@@ -181,7 +178,7 @@ export function TuitionsPage() {
                             {student?.name ?? t.studentId}
                           </Link>
                         </td>
-                        <td>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
+                        <td>{formatDateBR(t.dueDate)}</td>
                         <td className="tabular-nums">{fmtBRL(t.amount)}</td>
                         <td><TuitionStatusBadge status={t.status} /></td>
                         <td>

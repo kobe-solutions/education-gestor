@@ -23,6 +23,7 @@ describe('POST /sessions', () => {
     vi.mocked(authService.authenticateService).mockResolvedValue({
       userId: 'gestor-id',
       schoolId: 'school-id',
+      name: 'Escola Teste',
       role: 'gestor',
     })
 

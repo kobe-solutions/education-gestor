@@ -46,19 +46,22 @@ const mockClass = {
   academicPeriod: { id: IDS.period, name: '2025' },
   teachers: [],
   students: [],
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 const mockPeriod = {
   id: IDS.period,
   schoolId: 'school-id',
-  name: '2025',
+  academicYearId: IDS.period,
+  name: '1º Bimestre',
+  type: 'bimestre',
+  order: 1,
   startDate: '2025-02-01',
-  endDate: '2025-12-15',
-  active: true,
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  endDate: '2025-04-30',
+  gradeClosingDate: null as string | null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 beforeAll(async () => {
@@ -73,7 +76,7 @@ afterAll(async () => {
 
 describe('GET /school-classes', () => {
   it('retorna 200 para gestor', async () => {
-    vi.mocked(classesService.listSchoolClassesService).mockResolvedValue([mockClass])
+    vi.mocked(classesService.listSchoolClassesService).mockResolvedValue([mockClass] as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -102,7 +105,7 @@ describe('GET /school-classes', () => {
 
 describe('GET /school-classes/:id', () => {
   it('retorna 200 com dados da turma + membros', async () => {
-    vi.mocked(classesService.getSchoolClassService).mockResolvedValue(mockClass)
+    vi.mocked(classesService.getSchoolClassService).mockResolvedValue(mockClass as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -130,7 +133,7 @@ describe('GET /school-classes/:id', () => {
 
 describe('POST /school-classes', () => {
   it('retorna 201 ao criar turma com shift', async () => {
-    vi.mocked(classesService.createSchoolClassService).mockResolvedValue(mockClass)
+    vi.mocked(classesService.createSchoolClassService).mockResolvedValue(mockClass as any)
 
     const response = await app.inject({
       method: 'POST',
@@ -143,7 +146,7 @@ describe('POST /school-classes', () => {
   })
 
   it('retorna 201 ao criar turma com serie e período', async () => {
-    vi.mocked(classesService.createSchoolClassService).mockResolvedValue(mockClass)
+    vi.mocked(classesService.createSchoolClassService).mockResolvedValue(mockClass as any)
 
     const response = await app.inject({
       method: 'POST',
@@ -201,13 +204,13 @@ describe('DELETE /school-classes/:classId/students/:studentId', () => {
   })
 })
 
-describe('GET /academic-periods', () => {
+describe('GET /academic-years/:yearId/periods', () => {
   it('retorna 200 para gestor', async () => {
-    vi.mocked(periodsService.listAcademicPeriodsService).mockResolvedValue([mockPeriod])
+    vi.mocked(periodsService.listAcademicPeriodsService).mockResolvedValue([mockPeriod] as any)
 
     const response = await app.inject({
       method: 'GET',
-      url: '/academic-periods',
+      url: `/academic-years/${IDS.period}/periods`,
       headers: { authorization: `Bearer ${gestorToken}` },
     })
 
@@ -216,15 +219,15 @@ describe('GET /academic-periods', () => {
   })
 })
 
-describe('POST /academic-periods', () => {
+describe('POST /academic-years/:yearId/periods', () => {
   it('retorna 201 ao criar período letivo', async () => {
-    vi.mocked(periodsService.createAcademicPeriodService).mockResolvedValue(mockPeriod)
+    vi.mocked(periodsService.createAcademicPeriodService).mockResolvedValue(mockPeriod as any)
 
     const response = await app.inject({
       method: 'POST',
-      url: '/academic-periods',
+      url: `/academic-years/${IDS.period}/periods`,
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { name: '2025', startDate: '2025-02-01', endDate: '2025-12-15' },
+      body: { name: '1º Bimestre', type: 'bimestre', order: 1, startDate: '2025-02-01', endDate: '2025-04-30' },
     })
 
     expect(response.statusCode).toBe(201)
@@ -233,9 +236,9 @@ describe('POST /academic-periods', () => {
   it('retorna 400 com datas inválidas', async () => {
     const response = await app.inject({
       method: 'POST',
-      url: '/academic-periods',
+      url: `/academic-years/${IDS.period}/periods`,
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { name: '2025', startDate: 'nao-data', endDate: '2025-12-15' },
+      body: { name: '1º Bimestre', type: 'bimestre', order: 1, startDate: 'nao-data', endDate: '2025-04-30' },
     })
 
     expect(response.statusCode).toBe(400)

@@ -1,95 +1,46 @@
+import React from 'react'
 import { useNavigate } from 'react-router'
-import { Users, GraduationCap, Search, UserPlus, FileText, BookOpen, Plus, CheckCircle2, AlertCircle } from 'lucide-react'
+import {
+  Users,
+  GraduationCap,
+  Search,
+  UserPlus,
+  FileText,
+  BookOpen,
+  Plus,
+  CheckCircle2,
+  AlertCircle,
+  ArrowRight,
+  User,
+} from 'lucide-react'
 import { useStudents } from '../features/students/hooks/useStudents'
 import { useTeachers } from '../features/teachers/hooks/useTeachers'
-import { PageHead } from '../components/PageHead'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import type { Student, Teacher } from '@education-gestor/types'
 
 function getInitials(name: string) {
-  return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('')
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('')
 }
 
 function Avatar({ name, size = 32 }: { name: string; size?: number }) {
   return (
     <div
-      className="flex items-center justify-center shrink-0 font-semibold"
+      className="flex items-center justify-center shrink-0 rounded-full font-semibold"
       style={{
         width: size,
         height: size,
-        borderRadius: 9999,
-        background: 'var(--iris-blue-50)',
-        color: 'var(--iris-blue-700)',
+        background: 'var(--iris-info-50)',
+        color: 'var(--iris-info-600)',
         fontSize: size * 0.34,
       }}
     >
       {getInitials(name)}
-    </div>
-  )
-}
-
-interface MetricChipProps {
-  icon: React.ElementType
-  value: number | string
-  label: string
-  tone?: 'primary' | 'success' | 'warning' | 'info'
-}
-
-const TONE_STYLES: Record<string, React.CSSProperties> = {
-  primary: { background: 'var(--iris-info-50)', color: 'var(--iris-info-600)' },
-  success: { background: 'var(--iris-success-50)', color: 'var(--iris-success-600)' },
-  warning: { background: 'var(--iris-warning-50)', color: 'var(--iris-warning-600)' },
-  info:    { background: 'var(--iris-info-50)', color: 'var(--iris-blue-500)' },
-}
-
-function MetricChip({ icon: Icon, value, label, tone = 'primary' }: MetricChipProps) {
-  const s = TONE_STYLES[tone]
-  return (
-    <div
-      className="flex items-center gap-2 px-3 py-2 rounded-lg"
-      style={{ background: s.bg }}
-    >
-      <div
-        className="flex items-center justify-center rounded"
-        style={{ width: 22, height: 22, color: s.color }}
-      >
-        <Icon size={13} />
-      </div>
-      <div>
-        <div className="font-bold tabular-nums leading-tight" style={{ fontSize: 16, color: s.color }}>
-          {value}
-        </div>
-        <div className="text-xs leading-tight" style={{ color: s.color, opacity: 0.75 }}>
-          {label}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-interface PersonRowProps {
-  name: string
-  meta: React.ReactNode
-  badge?: React.ReactNode
-  onClick?: () => void
-}
-
-function PersonRow({ name, meta, badge, onClick }: PersonRowProps) {
-  return (
-    <div
-      className="flex items-center gap-3 py-2 px-3 rounded-lg transition-colors duration-[120ms] cursor-pointer"
-      style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
-      onClick={onClick}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-slate-50)' }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
-    >
-      <Avatar name={name} size={28} />
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold truncate" style={{ color: 'var(--iris-blue-900)' }}>{name}</div>
-        <div className="text-xs truncate" style={{ color: 'var(--iris-slate-500)' }}>{meta}</div>
-      </div>
-      {badge}
     </div>
   )
 }
@@ -107,39 +58,264 @@ function studentBadge(status: Student['enrollmentStatus']) {
   return <Badge variant="outline">{STATUS_LABEL[status ?? ''] ?? status}</Badge>
 }
 
-interface QuickCardProps {
+// ── Metric card ──────────────────────────────────────────────────────────────
+
+interface MetricProps {
   icon: React.ElementType
+  value: number | string
   label: string
-  onClick: () => void
+  tone?: 'primary' | 'success' | 'warning'
 }
 
-function QuickCard({ icon: Icon, label, onClick }: QuickCardProps) {
+const TONE_MAP = {
+  primary: {
+    accent: 'var(--iris-info-600)',
+    iconBg: 'var(--iris-info-50)',
+    iconColor: 'var(--iris-info-600)',
+    glow: 'rgba(79, 70, 229, 0.08)',
+  },
+  success: {
+    accent: 'var(--iris-success-600)',
+    iconBg: 'var(--iris-success-50)',
+    iconColor: 'var(--iris-success-600)',
+    glow: 'rgba(21, 128, 61, 0.08)',
+  },
+  warning: {
+    accent: 'var(--iris-warning-600)',
+    iconBg: 'var(--iris-warning-50)',
+    iconColor: 'var(--iris-warning-600)',
+    glow: 'rgba(180, 83, 9, 0.08)',
+  },
+} as const
+
+function Metric({ icon: Icon, value, label, tone = 'primary' }: MetricProps) {
+  const t = TONE_MAP[tone]
   return (
-    <button
-      className="flex flex-col items-center gap-2 p-4 rounded-xl text-center transition-all duration-120"
-      style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
-      onClick={onClick}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = '#4F46E5'
-        el.style.background = 'var(--iris-info-50)'
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'var(--iris-slate-200)'
-        el.style.background = 'var(--bg-surface)'
+    <div
+      className="flex items-center gap-3.5 px-4 py-3 rounded-xl min-w-[130px] transition-all duration-200
+        hover:shadow-[var(--shadow-sm)]"
+      style={{
+        background: t.glow,
+        border: '1px solid transparent',
       }}
     >
       <div
-        className="flex items-center justify-center rounded-lg"
-        style={{ width: 32, height: 32, background: 'rgba(79,70,229,0.10)', color: '#4F46E5' }}
+        className="flex items-center justify-center rounded-lg shrink-0"
+        style={{ width: 38, height: 38, background: t.iconBg, color: t.iconColor }}
       >
-        <Icon size={15} />
+        <Icon size={18} strokeWidth={2.2} />
       </div>
-      <span className="text-xs font-medium" style={{ color: 'var(--iris-blue-900)' }}>{label}</span>
+      <div className="min-w-0">
+        <div
+          className="text-xl font-extrabold tabular-nums leading-none tracking-tight"
+          style={{ color: t.accent }}
+        >
+          {value}
+        </div>
+        <div className="text-[11px] font-medium mt-1 uppercase tracking-wider" style={{ color: 'var(--fg-3)' }}>
+          {label}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Person row ───────────────────────────────────────────────────────────────
+
+interface PersonRowProps {
+  name: string
+  meta: React.ReactNode
+  badge?: React.ReactNode
+  onClick?: () => void
+}
+
+function PersonRow({ name, meta, badge, onClick }: PersonRowProps) {
+  return (
+    <button
+      type="button"
+      className="flex items-center gap-3 w-full py-2.5 px-3 -mx-3 rounded-lg transition-colors duration-150 text-left hover:bg-[var(--iris-slate-50)]"
+      onClick={onClick}
+    >
+      <Avatar name={name} size={32} />
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-semibold truncate" style={{ color: 'var(--fg-1)' }}>
+          {name}
+        </div>
+        <div className="text-xs truncate" style={{ color: 'var(--fg-3)' }}>
+          {meta}
+        </div>
+      </div>
+      {badge && <div className="shrink-0">{badge}</div>}
     </button>
   )
 }
+
+// ── Section panel ────────────────────────────────────────────────────────────
+
+interface SectionPanelProps {
+  icon: React.ElementType
+  title: string
+  description: string
+  metrics: React.ReactNode
+  headerActions?: React.ReactNode
+  sectionLabel: string
+  viewAllLabel?: string
+  viewAllOnClick?: () => void
+  children: React.ReactNode
+  emptyIcon?: React.ElementType
+  emptyMessage?: string
+}
+
+function SectionPanel({
+  icon: Icon,
+  title,
+  description,
+  metrics,
+  headerActions,
+  sectionLabel,
+  viewAllLabel = 'Ver todos',
+  viewAllOnClick,
+  children,
+  emptyIcon: EmptyIcon = User,
+  emptyMessage,
+}: SectionPanelProps) {
+  const hasItems = React.Children.count(children) > 0
+
+  return (
+    <section
+      className="flex flex-col rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-[var(--shadow-md)]"
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--iris-slate-200)',
+        boxShadow: 'var(--shadow-sm)',
+      }}
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-5 pb-4">
+        <div className="flex items-start gap-3.5">
+          <div
+            className="flex items-center justify-center rounded-xl shrink-0"
+            style={{ width: 44, height: 44, background: 'var(--iris-info-50)', color: 'var(--iris-info-600)' }}
+          >
+            <Icon size={22} />
+          </div>
+          <div>
+            <h2 className="font-bold text-base" style={{ color: 'var(--fg-1)' }}>
+              {title}
+            </h2>
+            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--fg-3)' }}>
+              {description}
+            </p>
+          </div>
+        </div>
+        {headerActions}
+      </div>
+
+      {/* Metrics */}
+      <div className="px-5 pb-4">
+        <div className="flex gap-3 flex-wrap">
+          {metrics}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="mx-5" style={{ borderBottom: '1px solid var(--iris-slate-100)' }} />
+
+      {/* List */}
+      <div className="px-2 pt-3 pb-4">
+        <div className="flex items-center justify-between px-3 mb-2">
+          <span
+            className="text-[11px] font-semibold uppercase tracking-wider"
+            style={{ color: 'var(--fg-3)' }}
+          >
+            {sectionLabel}
+          </span>
+          {hasItems && viewAllOnClick && (
+            <button
+              className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 hover:opacity-80"
+              style={{ color: 'var(--iris-info-600)' }}
+              onClick={viewAllOnClick}
+            >
+              {viewAllLabel}
+              <ArrowRight size={12} />
+            </button>
+          )}
+        </div>
+
+        {hasItems ? (
+          <div className="space-y-0.5">{children}</div>
+        ) : emptyMessage ? (
+          <div className="flex flex-col items-center gap-2.5 py-10 text-center">
+            <div
+              className="flex items-center justify-center rounded-full"
+              style={{ width: 44, height: 44, background: 'var(--iris-slate-50)', color: 'var(--fg-3)' }}
+            >
+              <EmptyIcon size={20} />
+            </div>
+            <div>
+              <p className="text-sm font-medium" style={{ color: 'var(--fg-2)' }}>
+                {emptyMessage}
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'var(--fg-3)' }}>
+                Comece adicionando o primeiro registro
+              </p>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  )
+}
+
+// ── Quick action card ────────────────────────────────────────────────────────
+
+interface QuickActionProps {
+  icon: React.ElementType
+  label: string
+  description?: string
+  onClick: () => void
+}
+
+function QuickAction({ icon: Icon, label, description, onClick }: QuickActionProps) {
+  return (
+    <button
+      type="button"
+      className="flex items-center gap-3.5 p-4 rounded-xl text-left transition-all duration-200 group
+        border hover:border-[var(--iris-info-600)] hover:shadow-[var(--shadow-sm)]
+        hover:bg-[var(--iris-info-50)]"
+      style={{
+        background: 'var(--bg-surface)',
+        borderColor: 'var(--iris-slate-200)',
+      }}
+      onClick={onClick}
+    >
+      <div
+        className="flex items-center justify-center rounded-lg shrink-0 transition-colors duration-200
+          group-hover:bg-[var(--iris-info-600)] group-hover:text-white"
+        style={{
+          width: 36,
+          height: 36,
+          background: 'var(--iris-info-50)',
+          color: 'var(--iris-info-600)',
+        }}
+      >
+        <Icon size={17} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm font-semibold" style={{ color: 'var(--fg-1)' }}>
+          {label}
+        </div>
+        {description && (
+          <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--fg-3)' }}>
+            {description}
+          </div>
+        )}
+      </div>
+    </button>
+  )
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
 
 export function HubPeoplePage() {
   const navigate = useNavigate()
@@ -147,44 +323,37 @@ export function HubPeoplePage() {
   const { data: teachers = [] } = useTeachers()
 
   const activeStudents = students.filter((s) => s.enrollmentStatus === 'active').length
-  const recentStudents = students.slice(0, 4)
-  const recentTeachers = teachers.slice(0, 4)
+  const transferredStudents = students.filter((s) => s.enrollmentStatus === 'transferred').length
+  const activeTeachers = teachers.filter((t: Teacher) => t.employmentStatus === 'ativo').length
+
+  const recentStudents = students.slice(0, 5)
+  const recentTeachers = teachers.slice(0, 5)
 
   return (
     <div className="space-y-6">
-      <PageHead
-        title="Pessoas"
-        subtitle="Alunos, professores e responsáveis — tudo num só lugar"
-      />
-
-      {/* Dois painéis */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-        {/* Painel Alunos */}
-        <section
-          className="flex flex-col gap-4 rounded-xl overflow-hidden"
-          style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+      {/* Page header */}
+      <div>
+        <h1
+          className="font-bold leading-tight"
+          style={{ fontSize: 22, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}
         >
-          <div
-            className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-5 pb-4"
-            style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className="flex items-center justify-center rounded-xl shrink-0"
-                style={{ width: 44, height: 44, background: 'rgba(79,70,229,0.10)', color: '#4F46E5' }}
-              >
-                <Users size={22} />
-              </div>
-              <div>
-                <h2 className="font-bold text-base" style={{ color: 'var(--iris-blue-900)' }}>Alunos</h2>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
-                  Cadastro, matrículas e dados completos. Acesse boletim e histórico individual.
-                </p>
-              </div>
-            </div>
+          Pessoas
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--fg-3)' }}>
+          Alunos, professores e responsáveis — tudo num só lugar
+        </p>
+      </div>
+
+      {/* Main panels */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Students panel */}
+        <SectionPanel
+          icon={Users}
+          title="Alunos"
+          description="Cadastro, matrículas e dados completos. Acesse boletim e histórico."
+          headerActions={
             <div className="flex gap-2 shrink-0">
-              <Button size="sm" onClick={() => navigate('/students')}>
+              <Button size="sm" onClick={() => navigate('/students/new')}>
                 <Plus size={14} className="mr-1" />
                 Novo aluno
               </Button>
@@ -192,70 +361,36 @@ export function HubPeoplePage() {
                 Ver todos
               </Button>
             </div>
-          </div>
-
-          <div className="flex gap-3 px-5 flex-wrap">
-            <MetricChip icon={Users}        value={students.length}  label="Cadastrados" tone="primary" />
-            <MetricChip icon={CheckCircle2} value={activeStudents}   label="Ativos"      tone="success" />
-            <MetricChip icon={AlertCircle}  value={students.filter((s) => s.enrollmentStatus === 'transferred').length} label="Transferidos" tone="warning" />
-          </div>
-
-          <div className="px-5 pb-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--iris-slate-500)', letterSpacing: '0.08em' }}>
-                Recentes
-              </span>
-              <button
-                className="text-xs font-medium"
-                style={{ color: '#4F46E5' }}
-                onClick={() => navigate('/students')}
-              >
-                Ver todos →
-              </button>
-            </div>
-            <div>
-              {recentStudents.length === 0 ? (
-                <p className="text-xs text-center py-4" style={{ color: 'var(--iris-slate-500)' }}>
-                  Nenhum aluno cadastrado
-                </p>
-              ) : (
-                recentStudents.map((s) => (
-                  <PersonRow
-                    key={s.id}
-                    name={s.name}
-                    meta={<><span className="font-mono">{s.enrollmentCode}</span></>}
-                    badge={studentBadge(s.enrollmentStatus)}
-                    onClick={() => navigate(`/students/${s.id}`)}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Painel Professores */}
-        <section
-          className="flex flex-col gap-4 rounded-xl overflow-hidden"
-          style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+          }
+          metrics={
+            <>
+              <Metric icon={Users} value={students.length} label="Cadastrados" tone="primary" />
+              <Metric icon={CheckCircle2} value={activeStudents} label="Ativos" tone="success" />
+              <Metric icon={AlertCircle} value={transferredStudents} label="Transferidos" tone="warning" />
+            </>
+          }
+          sectionLabel="Recentes"
+          viewAllOnClick={() => navigate('/students')}
+          emptyIcon={Users}
+          emptyMessage="Nenhum aluno cadastrado"
         >
-          <div
-            className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 p-5 pb-4"
-            style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className="flex items-center justify-center rounded-xl shrink-0"
-                style={{ width: 44, height: 44, background: 'rgba(79,70,229,0.10)', color: '#4F46E5' }}
-              >
-                <GraduationCap size={22} />
-              </div>
-              <div>
-                <h2 className="font-bold text-base" style={{ color: 'var(--iris-blue-900)' }}>Professores</h2>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
-                  Cadastro, disciplinas vinculadas e quadro de aulas.
-                </p>
-              </div>
-            </div>
+          {recentStudents.map((s) => (
+            <PersonRow
+              key={s.id}
+              name={s.name}
+              meta={<span className="font-mono text-[11px]">{s.enrollmentCode}</span>}
+              badge={studentBadge(s.enrollmentStatus)}
+              onClick={() => navigate(`/students/${s.id}`)}
+            />
+          ))}
+        </SectionPanel>
+
+        {/* Teachers panel */}
+        <SectionPanel
+          icon={GraduationCap}
+          title="Professores"
+          description="Cadastro, disciplinas vinculadas e quadro de aulas."
+          headerActions={
             <div className="flex gap-2 shrink-0">
               <Button size="sm" onClick={() => navigate('/teachers/new')}>
                 <Plus size={14} className="mr-1" />
@@ -265,59 +400,62 @@ export function HubPeoplePage() {
                 Ver todos
               </Button>
             </div>
-          </div>
-
-          <div className="flex gap-3 px-5 flex-wrap">
-            <MetricChip icon={GraduationCap} value={teachers.length} label="Cadastrados" tone="primary" />
-            <MetricChip icon={CheckCircle2}  value={teachers.filter((t: Teacher) => t.employmentStatus === 'ativo').length} label="Ativos" tone="success" />
-          </div>
-
-          <div className="px-5 pb-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--iris-slate-500)', letterSpacing: '0.08em' }}>
-                Quadro docente
-              </span>
-              <button
-                className="text-xs font-medium"
-                style={{ color: '#4F46E5' }}
-                onClick={() => navigate('/teachers')}
-              >
-                Ver todos →
-              </button>
-            </div>
-            <div>
-              {recentTeachers.length === 0 ? (
-                <p className="text-xs text-center py-4" style={{ color: 'var(--iris-slate-500)' }}>
-                  Nenhum professor cadastrado
-                </p>
-              ) : (
-                recentTeachers.map((t) => (
-                  <PersonRow
-                    key={t.id}
-                    name={t.name}
-                    meta={t.position ?? 'Professor(a)'}
-                    onClick={() => navigate(`/teachers/${t.id}/edit`)}
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </section>
+          }
+          metrics={
+            <>
+              <Metric icon={GraduationCap} value={teachers.length} label="Cadastrados" tone="primary" />
+              <Metric icon={CheckCircle2} value={activeTeachers} label="Ativos" tone="success" />
+            </>
+          }
+          sectionLabel="Quadro docente"
+          viewAllOnClick={() => navigate('/teachers')}
+          emptyIcon={GraduationCap}
+          emptyMessage="Nenhum professor cadastrado"
+        >
+          {recentTeachers.map((t) => (
+            <PersonRow
+              key={t.id}
+              name={t.name}
+              meta={t.position ?? 'Professor(a)'}
+              onClick={() => navigate(`/teachers/${t.id}/edit`)}
+            />
+          ))}
+        </SectionPanel>
       </div>
 
-      {/* Atalhos rápidos */}
+      {/* Quick actions */}
       <div>
-        <p
-          className="text-xs font-semibold uppercase mb-3"
-          style={{ color: 'var(--iris-slate-500)', letterSpacing: '0.08em' }}
+        <h2
+          className="text-[11px] font-semibold uppercase tracking-wider mb-3"
+          style={{ color: 'var(--fg-3)' }}
         >
           Atalhos rápidos
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <QuickCard icon={Search}   label="Buscar aluno"      onClick={() => navigate('/students')} />
-          <QuickCard icon={UserPlus} label="Matricular em turma" onClick={() => navigate('/scheduling/students')} />
-          <QuickCard icon={FileText} label="Importar planilha"  onClick={() => navigate('/students')} />
-          <QuickCard icon={BookOpen} label="Relatório de alunos" onClick={() => navigate('/students')} />
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <QuickAction
+            icon={Search}
+            label="Buscar aluno"
+            description="Encontrar por nome ou matrícula"
+            onClick={() => navigate('/students')}
+          />
+          <QuickAction
+            icon={UserPlus}
+            label="Matricular em turma"
+            description="Alocar aluno em uma turma"
+            onClick={() => navigate('/scheduling/students')}
+          />
+          <QuickAction
+            icon={FileText}
+            label="Importar planilha"
+            description="Cadastro em lote via planilha"
+            onClick={() => navigate('/students')}
+          />
+          <QuickAction
+            icon={BookOpen}
+            label="Relatório de alunos"
+            description="Boletins e relatórios gerais"
+            onClick={() => navigate('/students')}
+          />
         </div>
       </div>
     </div>

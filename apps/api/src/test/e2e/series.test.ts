@@ -22,7 +22,7 @@ const mockSerie = {
   educationLevelId: '00000000-0000-0000-0000-000000000001',
   name: '1º ano',
   order: 1,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
   educationLevel: { id: '00000000-0000-0000-0000-000000000001', name: 'Ensino Fundamental 1', type: 'fundamental_1' },
 }
 
@@ -54,7 +54,7 @@ describe('GET /series', () => {
   })
 
   it('retorna 200 para gestor', async () => {
-    vi.mocked(service.listSeriesService).mockResolvedValue([mockSerie])
+    vi.mocked(service.listSeriesService).mockResolvedValue([mockSerie] as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -67,7 +67,7 @@ describe('GET /series', () => {
   })
 
   it('filtra por educationLevelId via query param', async () => {
-    vi.mocked(service.listSeriesService).mockResolvedValue([mockSerie])
+    vi.mocked(service.listSeriesService).mockResolvedValue([mockSerie] as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -82,7 +82,7 @@ describe('GET /series', () => {
 
 describe('GET /series/:id', () => {
   it('retorna 200 quando existe', async () => {
-    vi.mocked(service.getSerieService).mockResolvedValue(mockSerie)
+    vi.mocked(service.getSerieService).mockResolvedValue(mockSerie as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -109,7 +109,7 @@ describe('GET /series/:id', () => {
 
 describe('POST /series', () => {
   it('retorna 201 com dados válidos', async () => {
-    vi.mocked(service.createSerieService).mockResolvedValue(mockSerie)
+    vi.mocked(service.createSerieService).mockResolvedValue(mockSerie as any)
 
     const res = await app.inject({
       method: 'POST',

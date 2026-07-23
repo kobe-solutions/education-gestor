@@ -16,20 +16,24 @@ const mockSchool = {
   name: 'Escola Teste',
   slug: 'escola-teste',
   email: 'gestor@escola.com',
-  director: null,
-  coordinator: null,
-  phone: null,
-  address: null,
+  passwordHash: '$2b$10$abcdefghijklmnopqrstuu',
+  role: 'gestor',
+  director: null as string | null,
+  coordinator: null as string | null,
+  phone: null as string | null,
+  address: null as string | null,
   createdAt: new Date(),
+  updatedAt: new Date(),
+  deletedAt: null as Date | null,
 }
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('createSchoolService', () => {
   it('cria escola e linka à secretaria quando dados são válidos', async () => {
-    vi.mocked(repo.findSchoolBySlugOrEmailRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSchoolBySlugOrEmailRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSchoolRepository).mockResolvedValue(mockSchool)
-    vi.mocked(repo.linkSchoolToSecretariaRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.linkSchoolToSecretariaRepository).mockResolvedValue(undefined as any)
 
     const result = await createSchoolService({
       name: '  Escola Teste  ',
@@ -68,9 +72,9 @@ describe('createSchoolService', () => {
   })
 
   it('normaliza nome, slug e email', async () => {
-    vi.mocked(repo.findSchoolBySlugOrEmailRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSchoolBySlugOrEmailRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSchoolRepository).mockResolvedValue(mockSchool)
-    vi.mocked(repo.linkSchoolToSecretariaRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.linkSchoolToSecretariaRepository).mockResolvedValue(undefined as any)
 
     await createSchoolService({
       name: '  Escola ABC  ',
@@ -86,9 +90,9 @@ describe('createSchoolService', () => {
   })
 
   it('armazena campos opcionais quando fornecidos', async () => {
-    vi.mocked(repo.findSchoolBySlugOrEmailRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSchoolBySlugOrEmailRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSchoolRepository).mockResolvedValue(mockSchool)
-    vi.mocked(repo.linkSchoolToSecretariaRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.linkSchoolToSecretariaRepository).mockResolvedValue(undefined as any)
 
     await createSchoolService({
       name: 'Escola',
@@ -138,7 +142,7 @@ describe('getSchoolService', () => {
   })
 
   it('lança erro quando escola não existe', async () => {
-    vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(getSchoolService('nao-existe')).rejects.toThrow('School not found')
   })
@@ -180,7 +184,7 @@ describe('updateSchoolService', () => {
   })
 
   it('lança erro quando escola não existe', async () => {
-    vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(
       updateSchoolService('nao-existe', { name: 'X' }, { role: 'admin' }),
@@ -209,7 +213,7 @@ describe('updateSchoolService', () => {
 describe('deleteSchoolService', () => {
   it('deleta escola quando admin solicita', async () => {
     vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(mockSchool)
-    vi.mocked(repo.deleteSchoolRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.deleteSchoolRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteSchoolService('school-id', { role: 'admin' })).resolves.not.toThrow()
     expect(repo.deleteSchoolRepository).toHaveBeenCalledWith('school-id')
@@ -227,7 +231,7 @@ describe('deleteSchoolService', () => {
   })
 
   it('lança erro quando escola não existe', async () => {
-    vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteSchoolService('nao-existe', { role: 'admin' })).rejects.toThrow('School not found')
   })
@@ -236,7 +240,7 @@ describe('deleteSchoolService', () => {
 describe('changeSchoolPasswordService', () => {
   it('altera senha quando admin solicita', async () => {
     vi.mocked(repo.findSchoolByIdRepository).mockResolvedValue(mockSchool)
-    vi.mocked(repo.updateSchoolPasswordRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.updateSchoolPasswordRepository).mockResolvedValue(undefined as any)
 
     await expect(
       changeSchoolPasswordService('school-id', 'novasenha123', { role: 'admin' }),

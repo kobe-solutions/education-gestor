@@ -107,6 +107,23 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
+function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-colors duration-120',
+        active
+          ? 'bg-[#4F46E5] text-white'
+          : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+      )}
+    >
+      <Icon className="h-5 w-5 shrink-0" />
+      <span className="text-sm font-medium truncate">{label}</span>
+    </Link>
+  )
+}
+
 const SIDEBAR_W = 220
 
 export function AppLayout() {
@@ -171,26 +188,15 @@ export function AppLayout() {
 
         {/* Nav items */}
         <nav className="flex-1 flex flex-col gap-1 py-3 px-3">
-          {visibleItems.map((item) => {
-            const Icon = item.icon
-            const active = isActive(item, location.pathname)
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-colors duration-120',
-                  active
-                    ? 'text-white'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-                )}
-                style={active ? { background: '#4F46E5' } : undefined}
-              >
-                <Icon className="h-5 w-5 shrink-0" />
-                <span className="text-sm font-medium truncate">{item.label}</span>
-              </Link>
-            )
-          })}
+          {visibleItems.map((item) => (
+            <SidebarLink
+              key={item.to}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+              active={isActive(item, location.pathname)}
+            />
+          ))}
         </nav>
 
         {/* Sair */}
@@ -211,26 +217,15 @@ export function AppLayout() {
   // ── Mobile drawer nav items ───────────────────────────────────────────────
 
   function renderMobileNavItems() {
-    return visibleItems.map((item) => {
-      const Icon = item.icon
-      const active = isActive(item, location.pathname)
-      return (
-        <Link
-          key={item.to}
-          to={item.to}
-          className={cn(
-            'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-colors duration-120',
-            active
-              ? 'text-white'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
-          )}
-          style={active ? { background: '#4F46E5' } : undefined}
-        >
-          <Icon className="h-5 w-5 shrink-0" />
-          <span className="text-sm font-medium truncate">{item.label}</span>
-        </Link>
-      )
-    })
+    return visibleItems.map((item) => (
+      <SidebarLink
+        key={item.to}
+        to={item.to}
+        icon={item.icon}
+        label={item.label}
+        active={isActive(item, location.pathname)}
+      />
+    ))
   }
 
   return (

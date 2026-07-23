@@ -24,7 +24,7 @@ const mockLevel = {
   modality: null,
   name: 'Ensino Fundamental 1',
   active: true,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 beforeAll(async () => {
@@ -56,7 +56,7 @@ describe('GET /education-levels', () => {
   })
 
   it('retorna 200 para gestor', async () => {
-    vi.mocked(service.listEducationLevelsService).mockResolvedValue([mockLevel])
+    vi.mocked(service.listEducationLevelsService).mockResolvedValue([mockLevel] as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -71,7 +71,7 @@ describe('GET /education-levels', () => {
 
 describe('GET /education-levels/:id', () => {
   it('retorna 200 quando existe', async () => {
-    vi.mocked(service.getEducationLevelService).mockResolvedValue(mockLevel)
+    vi.mocked(service.getEducationLevelService).mockResolvedValue(mockLevel as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -110,7 +110,7 @@ describe('POST /education-levels', () => {
   })
 
   it('retorna 201 para gestor com dados válidos', async () => {
-    vi.mocked(service.createEducationLevelService).mockResolvedValue(mockLevel)
+    vi.mocked(service.createEducationLevelService).mockResolvedValue(mockLevel as any)
 
     const res = await app.inject({
       method: 'POST',

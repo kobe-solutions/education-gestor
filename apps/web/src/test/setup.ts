@@ -15,13 +15,13 @@ vi.mock('../lib/api', () => ({
 // Mock do react-router para não precisar de BrowserRouter nos testes unitários
 vi.mock('react-router', async () => {
   const actual = await vi.importActual<typeof import('react-router')>('react-router')
+  const React = await vi.importActual<typeof import('react')>('react')
   return {
     ...actual,
     useNavigate: () => vi.fn(),
     useParams: () => ({}),
     useLocation: () => ({ pathname: '/', search: '', hash: '', state: null, key: 'default' }),
     Link: ({ children, to }: { children: React.ReactNode; to: string }) =>
-      // biome-ignore lint: necessário para mock simples
-      require('react').createElement('a', { href: to }, children),
+      React.createElement('a', { href: to }, children),
   }
 })

@@ -37,7 +37,7 @@ const mockGrade = {
   value: '8.5',
   subject: { id: IDS.subject, name: 'Matemática' },
   academicPeriod: { id: IDS.period, name: '1º Bimestre' },
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 const mockAttendance = {
@@ -46,7 +46,7 @@ const mockAttendance = {
   studentId: IDS.student,
   date: '2025-04-01',
   present: true,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 beforeAll(async () => {

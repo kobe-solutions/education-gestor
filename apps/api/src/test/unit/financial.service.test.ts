@@ -41,11 +41,34 @@ const mockStudent = {
   id: 'student-id',
   schoolId: 'school-id',
   name: 'João',
-  email: null,
-  birthDate: null,
+  email: null as string | null,
+  cpf: null as string | null,
+  rg: null as string | null,
+  birthDate: null as string | null,
+  sex: null as string | null,
+  bloodType: null as string | null,
+  naturalidade: null as string | null,
+  photoUrl: null as string | null,
+  phone: null as string | null,
+  motherName: null as string | null,
+  fatherName: null as string | null,
+  motherPhone: null as string | null,
+  addressCep: null as string | null,
+  addressStreet: null as string | null,
+  addressNumber: null as string | null,
+  addressComplement: null as string | null,
+  addressNeighborhood: null as string | null,
+  addressCity: null as string | null,
+  addressState: null as string | null,
+  comorbidities: null as string | null,
+  observations: null as string | null,
   enrollmentCode: 'MAT001',
+  internalCode: null as string | null,
+  enrollmentStatus: 'active',
+  enrollmentDate: null as string | null,
   createdAt: new Date(),
   updatedAt: new Date(),
+  deletedAt: null as Date | null,
 }
 
 const mockTuition = {
@@ -128,8 +151,8 @@ describe('registerPaymentService', () => {
   })
 
   it('lança erro se mensalidade não existe', async () => {
-    const { db } = await import('../../db')
-    vi.mocked(db.transaction).mockImplementationOnce(async (fn) => {
+    const { db } = await import('../../db/index.js') as any
+    vi.mocked(db.transaction).mockImplementationOnce(async (fn: any) => {
       const mockTx = {
         select: vi.fn().mockReturnThis(),
         from: vi.fn().mockReturnThis(),
@@ -146,8 +169,8 @@ describe('registerPaymentService', () => {
   })
 
   it('lança erro se mensalidade já foi paga', async () => {
-    const { db } = await import('../../db')
-    vi.mocked(db.transaction).mockImplementationOnce(async (fn) => {
+    const { db } = await import('../../db/index.js') as any
+    vi.mocked(db.transaction).mockImplementationOnce(async (fn: any) => {
       const mockTx = {
         select: vi.fn().mockReturnThis(),
         from: vi.fn().mockReturnThis(),
