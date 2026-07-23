@@ -5,14 +5,18 @@ import type { Student, Guardian, StudentMedical, StudentDocument } from '@educat
 
 // ─── Alunos ────────────────────────────────────────────────────────────────────
 
-export function useStudents() {
+export function useStudents(params?: { page?: number; limit?: number }) {
   const { schoolKey, enabled } = useSchoolKey()
+  const page = params?.page ?? 1
+  const limit = params?.limit ?? 50
   return useQuery({
-    queryKey: ['students', schoolKey],
+    queryKey: ['students', schoolKey, { page, limit }],
     queryFn: async () => {
-      const res = await api.get<{ data: Student[]; total: number } | Student[]>('/students')
+      const res = await api.get<{ data: Student[]; total: number }>('/students', {
+        params: { page, limit },
+      })
       const body = res.data
-      return Array.isArray(body) ? body : body.data
+      return { data: body.data, total: body.total }
     },
     enabled,
   })

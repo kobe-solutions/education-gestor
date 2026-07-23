@@ -18,7 +18,8 @@ export function AttendancePage() {
 
   const { data: classes } = useClasses()
   const { data: existingAttendances } = useClassAttendance(selectedClassId, date)
-  const { data: allStudents } = useStudents()
+  const { data: studentsData } = useStudents()
+  const allStudents = studentsData?.data
   const bulkMutation = useRegisterBulkAttendance()
 
   const selectedClass = classes?.find((c) => c.id === selectedClassId)

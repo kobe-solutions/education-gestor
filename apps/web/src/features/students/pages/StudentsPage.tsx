@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus, Search, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { AxiosError } from 'axios'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
 import { toast } from '../../../lib/toast'
@@ -34,9 +34,15 @@ function statusVariant(status: string) {
   return 'outline'
 }
 
+const PAGE_SIZE = 15
+
 export function StudentsPage() {
   const navigate = useNavigate()
-  const { data: students, isLoading } = useStudents()
+  const [page, setPage] = useState(1)
+  const { data, isLoading } = useStudents({ page, limit: PAGE_SIZE })
+  const students = data?.data
+  const total = data?.total ?? 0
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const deleteMutation = useDeleteStudent()
   const [search, setSearch] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
@@ -50,7 +56,7 @@ export function StudentsPage() {
     <div className="space-y-5">
       <PageHead
         title="Alunos"
-        subtitle={`${students?.length ?? 0} alunos cadastrados`}
+        subtitle={`${total} aluno${total !== 1 ? 's' : ''} cadastrado${total !== 1 ? 's' : ''}`}
         actions={
           <Button size="sm" onClick={() => navigate('/students/new')}>
             <Plus className="h-4 w-4 mr-1" />
@@ -163,6 +169,33 @@ export function StudentsPage() {
             </table>
           </div>
         </Surface>
+      )}
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+            Página {page} de {totalPages}
+          </span>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       )}
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>

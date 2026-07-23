@@ -737,7 +737,6 @@ async function main() {
   console.log('  Escola:      gestor@colegiosaopaulo.com')
   console.log('  Escola:      gestor@colegionobre.com')
   console.log('  Escola:      gestor@institutofuturo.com')
-
   process.exit(0)
 }
 
