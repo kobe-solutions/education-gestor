@@ -19,7 +19,7 @@ export function MetricCard({ icon: Icon, label, value, sub, color = '#4F46E5' }:
       }}
     >
       <div
-        className="flex items-center justify-center shrink-0 rounded-lg"
+        className="flex items-center justify-center shrink-0 rounded-md"
         style={{
           width: 36,
           height: 36,

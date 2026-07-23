@@ -18,7 +18,20 @@ const mockSchoolMetrics = {
 
 const mockAdminMetrics = {
   secretariasCount: 3,
+  secretariasActive: 2,
   schoolsCount: 12,
+  studentsCount: 500,
+  studentsByStatus: { active: 450, inactive: 30, transferred: 10, cancelled: 10 },
+  teachersCount: 40,
+  teachersByStatus: { ativo: 35, inativo: 3, licenca: 2 },
+  classesCount: 25,
+  tuitions: {
+    pending: { count: 80, total: '40000' },
+    paid: { count: 400, total: '200000' },
+    overdue: { count: 20, total: '10000' },
+  },
+  topSchools: [],
+  recentActivity: [],
 }
 
 beforeEach(() => vi.clearAllMocks())

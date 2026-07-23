@@ -1,6 +1,135 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-iris-50: #eef2ff;
+  --color-iris-300: #a5b4fc;
+  --color-iris-500: #818cf8;
+  --color-iris-700: #4f46e5;
+  --color-iris-900: #312e81;
+
+  --font-sans:
+    'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
+
+  --shadow-iris-sm:
+    0 1px 2px rgba(4, 44, 83, 0.06), 0 1px 1px rgba(4, 44, 83, 0.04);
+  --shadow-iris-md:
+    0 4px 12px -2px rgba(4, 44, 83, 0.08), 0 2px 4px -2px rgba(4, 44, 83, 0.06);
+  --shadow-iris-lg:
+    0 12px 28px -6px rgba(4, 44, 83, 0.12),
+    0 4px 10px -2px rgba(4, 44, 83, 0.06);
+  --shadow-iris-focus: 0 0 0 3px rgba(79, 70, 229, 0.35);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility tbl {
+  /* Tabela padrão IRIS — use .tbl nas páginas */
+  @apply w-full border-collapse;
+  & th {
+    @apply px-4 py-3 text-left text-xs font-medium uppercase border-b border-border;
+    background: var(--iris-slate-50);
+    color: var(--iris-slate-500);
+    letter-spacing: 0.06em;
+  }
+  & td {
+    @apply px-4 py-3 text-sm border-b;
+    border-color: var(--iris-slate-100);
+  }
+  & tbody tr:hover td {
+    background: var(--iris-slate-50);
+  }
+  & tbody tr:last-child td {
+    @apply border-b-0;
+  }
+}
+
+@utility iris-table {
+  @apply w-full border-collapse;
+  & th {
+    @apply px-4 py-3 text-left text-xs font-medium uppercase border-b border-border;
+    background: var(--iris-slate-50);
+    color: var(--iris-slate-500);
+    letter-spacing: 0.06em;
+  }
+  & td {
+    @apply px-4 py-3 text-sm border-b;
+    border-color: var(--iris-slate-100);
+  }
+  & tbody tr:hover td {
+    background: var(--iris-slate-50);
+  }
+  & tbody tr:last-child td {
+    @apply border-b-0;
+  }
+}
+
+@utility touch-target {
+  /* Touch targets — iOS/Android minimum 44px */
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@utility table-scroll {
+  /* Table responsive wrapper */
+  @apply overflow-x-auto -mx-4 md:mx-0;
+  & > * {
+    @apply min-w-[600px] px-4 md:px-0;
+  }
+}
 
 @layer base {
   :root {
@@ -164,48 +293,6 @@
   }
 }
 
-@layer utilities {
-  /* Tabela padrão IRIS — use .tbl nas páginas */
-  .tbl,
-  .iris-table {
-    @apply w-full border-collapse;
-  }
-  .tbl th,
-  .iris-table th {
-    @apply px-4 py-3 text-left text-xs font-medium uppercase border-b border-border;
-    background: var(--iris-slate-50);
-    color: var(--iris-slate-500);
-    letter-spacing: 0.06em;
-  }
-  .tbl td,
-  .iris-table td {
-    @apply px-4 py-3 text-sm border-b;
-    border-color: var(--iris-slate-100);
-  }
-  .tbl tbody tr:hover td,
-  .iris-table tbody tr:hover td {
-    background: var(--iris-slate-50);
-  }
-  .tbl tbody tr:last-child td,
-  .iris-table tbody tr:last-child td {
-    @apply border-b-0;
-  }
-
-  /* Touch targets — iOS/Android minimum 44px */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Table responsive wrapper */
-  .table-scroll {
-    @apply overflow-x-auto -mx-4 md:mx-0;
-  }
-  .table-scroll > * {
-    @apply min-w-[600px] px-4 md:px-0;
-  }
-}
-
 /* Sidebar drawer transitions */
 .sidebar-drawer-enter {
   transform: translateX(-100%);
@@ -220,6 +307,27 @@
 .sidebar-drawer-exit-active {
   transform: translateX(-100%);
   transition: transform 150ms ease-in;
+}
+
+/* Autofill — override browser default to match theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px hsl(220 13% 91%) inset !important;
+  -webkit-text-fill-color: hsl(228 56% 16%) !important;
+  caret-color: hsl(228 56% 16%) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px hsl(230 20% 18%) inset !important;
+  -webkit-text-fill-color: hsl(228 40% 92%) !important;
+  caret-color: hsl(228 40% 92%) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* Reduced motion */

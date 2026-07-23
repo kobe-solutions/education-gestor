@@ -38,6 +38,7 @@ import { HubPeoplePage } from './pages/HubPeoplePage'
 import { AcademicHubPage } from './pages/AcademicHubPage'
 import { HubSettingsPage } from './pages/HubSettingsPage'
 import { HubAdminPage } from './pages/HubAdminPage'
+import { AdminActivityPage } from './features/admin/pages/AdminActivityPage'
 import { HubSchoolsPage } from './pages/HubSchoolsPage'
 
 export function App() {
@@ -99,6 +100,7 @@ export function App() {
                 {/* Admin */}
                 <Route element={<PrivateRoute allowedRoles={['admin']} />}>
                   <Route path="/admin" element={<HubAdminPage />} />
+                  <Route path="/admin/activity" element={<AdminActivityPage />} />
                   <Route path="/secretarias" element={<SecretariasPage />} />
                 </Route>
 

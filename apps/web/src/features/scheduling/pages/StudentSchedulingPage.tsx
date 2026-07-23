@@ -109,7 +109,7 @@ function EnrolledPill({
 }) {
   const color = STUDENT_COLORS[colorIndex]
   return (
-    <div className={`group flex items-center gap-1.5 rounded-lg border px-2 py-1.5 text-xs font-medium ${color.light}`}>
+    <div className={`group flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-medium ${color.light}`}>
       <div className={`h-5 w-5 rounded-full ${color.bg} flex items-center justify-center shrink-0`}>
         <span className="text-[9px] font-bold text-white">{initials(student.name)}</span>
       </div>
@@ -351,7 +351,7 @@ export function StudentSchedulingPage() {
         </div>
 
         {selectedStudent && (
-          <div className="flex items-center justify-between rounded-lg bg-primary/10 border border-primary/30 px-3 py-1.5">
+          <div className="flex items-center justify-between rounded-md bg-primary/10 border border-primary/30 px-3 py-1.5">
             <span className="text-xs font-medium text-primary">
               {selectedStudent.name.split(' ')[0]} selecionado
             </span>

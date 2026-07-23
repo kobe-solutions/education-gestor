@@ -43,7 +43,7 @@ export function ClassDetailPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center justify-center rounded-lg w-8 h-8 transition-colors shrink-0"
+          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
           title="Voltar"
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}

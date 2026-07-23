@@ -218,7 +218,7 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
           {sorted.map((p) => (
             <div
               key={p.id}
-              className="flex items-center gap-3 rounded-lg px-3 py-2"
+              className="flex items-center gap-3 rounded-md px-3 py-2"
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
             >
               <span className="text-xs font-medium w-4 text-center" style={{ color: 'var(--iris-slate-400)' }}>
@@ -530,7 +530,7 @@ export function AcademicYearsPage() {
                     {year.status !== 'closed' && (
                       <button
                         title={year.status === 'planning' ? 'Ativar' : 'Encerrar'}
-                        className="flex items-center justify-center rounded-md px-2 h-7 text-xs font-medium gap-1 transition-colors"
+                        className="flex items-center justify-center rounded-sm px-2 h-7 text-xs font-medium gap-1 transition-colors"
                         style={{ border: '1px solid var(--iris-slate-300)', color: 'var(--iris-slate-600)' }}
                         onClick={() => handleNextStatus(year)}
                         disabled={statusMutation.isPending}
@@ -542,7 +542,7 @@ export function AcademicYearsPage() {
                       </button>
                     )}
                     <button
-                      className="flex items-center justify-center rounded-md w-7 h-7 transition-colors"
+                      className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors"
                       onClick={() => { setEditingYear(year); setYearDialog(true) }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
@@ -550,7 +550,7 @@ export function AcademicYearsPage() {
                       <Pencil size={13} style={{ color: 'var(--iris-slate-500)' }} />
                     </button>
                     <button
-                      className="flex items-center justify-center rounded-md w-7 h-7 transition-colors"
+                      className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors"
                       onClick={() => setDeleteTarget(year.id)}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}

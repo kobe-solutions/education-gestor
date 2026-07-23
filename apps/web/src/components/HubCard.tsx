@@ -18,7 +18,7 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
         style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
       >
         <div
-          className="flex items-center justify-center rounded-lg shrink-0"
+          className="flex items-center justify-center rounded-md shrink-0"
           style={{ width: 36, height: 36, background: 'rgba(79,70,229,0.10)' }}
         >
           <Icon size={18} style={{ color: '#4F46E5' }} />
@@ -49,7 +49,7 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
       }}
     >
       <div
-        className="flex items-center justify-center rounded-lg shrink-0"
+        className="flex items-center justify-center rounded-md shrink-0"
         style={{ width: 36, height: 36, background: 'rgba(79,70,229,0.10)' }}
       >
         <Icon size={18} style={{ color: '#4F46E5' }} />

@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { db } from '../db'
 import { admins } from '../db/schema/admins'
 import { schools } from '../db/schema/schools'
+import { secretarias, secretariaSchools } from '../db/schema/secretarias'
 import { academicPeriods } from '../db/schema/academicPeriods'
 import { academicYears } from '../db/schema/academicYears'
 import { classPeriods } from '../db/schema/classPeriods'
@@ -124,6 +125,46 @@ async function main() {
   }
 
   // -------------------------------------------------------------------------
+  // Secretarias de Educação
+  // -------------------------------------------------------------------------
+  console.log('  → Secretarias de Educação')
+
+  const secretariasData = [
+    {
+      name: 'Secretaria Municipal de Educação de São Paulo',
+      email: 'contato@educacao-saopaulo.sp.gov.br',
+      passwordHash: senhaHash,
+      role: 'secretaria',
+      phone: '(11) 3113-0001',
+      address: 'Praça da Sé, 108 - Sé, São Paulo - SP',
+      responsible: 'Maria Helena de Souza',
+      active: true,
+    },
+    {
+      name: 'Secretaria Municipal de Educação de Campinas',
+      email: 'contato@educacao-campinas.sp.gov.br',
+      passwordHash: senhaHash,
+      role: 'secretaria',
+      phone: '(19) 3296-1000',
+      address: 'Rua José Paulino, 330 - Centro, Campinas - SP',
+      responsible: 'João Pedro Ferreira',
+      active: true,
+    },
+  ]
+
+  const secretariasInseridas = await db
+    .insert(secretarias)
+    .values(secretariasData)
+    .onConflictDoNothing()
+    .returning()
+
+  if (secretariasInseridas.length === 0) {
+    console.log('    Secretarias já existem, pulando.')
+  } else {
+    console.log(`    ${secretariasInseridas.length} secretarias criadas`)
+  }
+
+  // -------------------------------------------------------------------------
   // Escolas
   // -------------------------------------------------------------------------
   console.log('  → Escolas')
@@ -173,6 +214,34 @@ async function main() {
   }
 
   console.log(`    ${escolasInseridas.length} escolas criadas`)
+
+  // -------------------------------------------------------------------------
+  // Vínculo Secretaria ↔ Escolas
+  // -------------------------------------------------------------------------
+  if (secretariasInseridas.length > 0 && escolasInseridas.length > 0) {
+    const vinculosData: (typeof secretariaSchools.$inferInsert)[] = []
+
+    // Secretaria de São Paulo → todas as escolas
+    const secSP = secretariasInseridas[0]
+    if (secSP) {
+      for (const escola of escolasInseridas) {
+        vinculosData.push({ secretariaId: secSP.id, schoolId: escola.id })
+      }
+    }
+
+    // Secretaria de Campinas → Colégio Nobre e Instituto Futuro
+    const secCampinas = secretariasInseridas[1]
+    if (secCampinas) {
+      for (const escola of escolasInseridas) {
+        if (escola.slug === 'colegio-nobre' || escola.slug === 'instituto-futuro') {
+          vinculosData.push({ secretariaId: secCampinas.id, schoolId: escola.id })
+        }
+      }
+    }
+
+    await db.insert(secretariaSchools).values(vinculosData).onConflictDoNothing()
+    console.log(`    → ${vinculosData.length} vínculos secretaria-escola`)
+  }
 
   // -------------------------------------------------------------------------
   // Para cada escola: períodos, níveis, séries, disciplinas, professores,
@@ -662,10 +731,12 @@ async function main() {
 
   console.log('\n✅ Seed concluído com sucesso!')
   console.log('\nCredenciais de acesso (senha: senha123):')
-  console.log('  Admin:  admin@educationgestor.com')
-  console.log('  Escola: gestor@colegiosaopaulo.com')
-  console.log('  Escola: gestor@colegionobre.com')
-  console.log('  Escola: gestor@institutofuturo.com')
+  console.log('  Admin:       admin@educationgestor.com')
+  console.log('  Secretaria:  contato@educacao-saopaulo.sp.gov.br')
+  console.log('  Secretaria:  contato@educacao-campinas.sp.gov.br')
+  console.log('  Escola:      gestor@colegiosaopaulo.com')
+  console.log('  Escola:      gestor@colegionobre.com')
+  console.log('  Escola:      gestor@institutofuturo.com')
 
   process.exit(0)
 }

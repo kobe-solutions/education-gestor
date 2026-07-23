@@ -28,9 +28,38 @@ export interface SchoolDashboard {
   upcomingTuitions: UpcomingTuition[]
 }
 
+export interface TopSchool {
+  id: string
+  name: string
+  studentCount: number
+}
+
+export interface ActivityEntry {
+  id: string
+  userId: string
+  userRole: string
+  action: string
+  entity: string
+  entityId: string
+  createdAt: string
+}
+
 export interface AdminDashboard {
   secretariasCount: number
+  secretariasActive: number
   schoolsCount: number
+  studentsCount: number
+  studentsByStatus: { active: number; inactive: number; transferred: number; cancelled: number }
+  teachersCount: number
+  teachersByStatus: { ativo: number; inativo: number; licenca: number }
+  classesCount: number
+  tuitions: {
+    pending: TuitionStat
+    paid: TuitionStat
+    overdue: TuitionStat
+  }
+  topSchools: TopSchool[]
+  recentActivity: ActivityEntry[]
 }
 
 export type DashboardData = SchoolDashboard | AdminDashboard
@@ -48,5 +77,5 @@ export function useDashboard() {
 }
 
 export function isAdminDashboard(data: DashboardData): data is AdminDashboard {
-  return 'secretariasCount' in data
+  return 'secretariasActive' in data
 }

@@ -135,7 +135,7 @@ interface SlotPillProps {
 function SlotPill({ slot, colorIdx, onRemove }: SlotPillProps) {
   const color = TEACHER_COLORS[colorIdx]
   return (
-    <div className={`group relative flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs font-medium ${color.light}`}>
+    <div className={`group relative flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium ${color.light}`}>
       <div className={`h-5 w-5 rounded-full ${color.bg} flex items-center justify-center shrink-0`}>
         <span className="text-[9px] font-bold text-white">{initials(slot.teacher.name)}</span>
       </div>
@@ -409,7 +409,7 @@ export function SchedulingPage() {
         </div>
 
         {selectedTeacher && (
-          <div className="flex items-center justify-between rounded-lg bg-primary/10 border border-primary/30 px-3 py-1.5">
+          <div className="flex items-center justify-between rounded-md bg-primary/10 border border-primary/30 px-3 py-1.5">
             <div className="flex items-center gap-2">
               <Zap className="h-3.5 w-3.5 text-primary" />
               <span className="text-xs font-medium text-primary">

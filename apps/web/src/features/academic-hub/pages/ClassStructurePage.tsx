@@ -47,7 +47,7 @@ function ClassStudentsList({ classId, search }: { classId: string; search: strin
   if (isLoading) {
     return (
       <div className="space-y-1.5 px-4 pb-3">
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-9 w-full rounded-lg" />)}
+        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-9 w-full rounded-md" />)}
       </div>
     )
   }
@@ -72,7 +72,7 @@ function ClassStudentsList({ classId, search }: { classId: string; search: strin
           <button
             key={student.id}
             onClick={() => navigate(`/students/${student.id}/edit`)}
-            className="group flex items-center gap-3 rounded-lg border border-transparent bg-card px-3 py-2 text-left transition-all hover:border-border hover:shadow-sm active:scale-[0.99]"
+            className="group flex items-center gap-3 rounded-md border border-transparent bg-card px-3 py-2 text-left transition-all hover:border-border hover:shadow-sm active:scale-[0.99]"
           >
             <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
               <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-primary">
@@ -168,7 +168,7 @@ function SerieGroup({ serieName, classes, studentSearch, defaultOpen = false }: 
     <div className="space-y-2">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 py-1.5 px-1 rounded-lg hover:bg-muted/50 transition-colors"
+        className="w-full flex items-center gap-2 py-1.5 px-1 rounded-md hover:bg-muted/50 transition-colors"
       >
         {open
           ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
