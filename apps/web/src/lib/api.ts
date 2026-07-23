@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { queryClient } from './queryClient'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -9,7 +10,6 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
-  // Injeta schoolId ativo para secretaria
   const activeSchoolId = sessionStorage.getItem('activeSchoolId')
   if (activeSchoolId) {
     config.headers['X-School-Id'] = activeSchoolId
@@ -22,6 +22,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
+      sessionStorage.clear()
+      queryClient.clear()
       window.location.href = '/login'
     }
     return Promise.reject(error)

@@ -10,13 +10,20 @@ import * as repo from '../../modules/academicPeriods/academicPeriods.repository'
 
 vi.mock('../../modules/academicPeriods/academicPeriods.repository')
 
+const SCHOOL_ID = 'school-id'
+const YEAR_ID = 'year-id'
+const PERIOD_ID = 'period-id'
+
 const mockPeriod = {
-  id: 'period-id',
-  schoolId: 'school-id',
-  name: '2025',
+  id: PERIOD_ID,
+  schoolId: SCHOOL_ID,
+  academicYearId: YEAR_ID,
+  name: '1º Bimestre',
+  type: 'bimestre',
+  order: 1,
   startDate: '2025-02-01',
-  endDate: '2025-12-15',
-  active: false,
+  endDate: '2025-04-30',
+  gradeClosingDate: null as string | null,
   createdAt: new Date(),
   updatedAt: new Date(),
 }
@@ -27,16 +34,16 @@ describe('listAcademicPeriodsService', () => {
   it('retorna períodos da escola', async () => {
     vi.mocked(repo.findAllAcademicPeriodsRepository).mockResolvedValue([mockPeriod])
 
-    const result = await listAcademicPeriodsService('school-id')
+    const result = await listAcademicPeriodsService(SCHOOL_ID, YEAR_ID)
 
     expect(result).toHaveLength(1)
-    expect(repo.findAllAcademicPeriodsRepository).toHaveBeenCalledWith('school-id')
+    expect(repo.findAllAcademicPeriodsRepository).toHaveBeenCalledWith(SCHOOL_ID, YEAR_ID)
   })
 
   it('retorna lista vazia quando não há períodos', async () => {
     vi.mocked(repo.findAllAcademicPeriodsRepository).mockResolvedValue([])
 
-    const result = await listAcademicPeriodsService('school-id')
+    const result = await listAcademicPeriodsService(SCHOOL_ID, YEAR_ID)
 
     expect(result).toHaveLength(0)
   })
@@ -46,15 +53,15 @@ describe('getAcademicPeriodService', () => {
   it('retorna período quando existe', async () => {
     vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(mockPeriod)
 
-    const result = await getAcademicPeriodService('school-id', 'period-id')
+    const result = await getAcademicPeriodService(SCHOOL_ID, YEAR_ID, PERIOD_ID)
 
     expect(result).toEqual(mockPeriod)
   })
 
   it('lança erro quando período não existe', async () => {
-    vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(undefined as any)
 
-    await expect(getAcademicPeriodService('school-id', 'nao-existe')).rejects.toThrow(
+    await expect(getAcademicPeriodService(SCHOOL_ID, YEAR_ID, 'nao-existe')).rejects.toThrow(
       'Academic period not found',
     )
   })
@@ -64,36 +71,37 @@ describe('createAcademicPeriodService', () => {
   it('cria período com nome normalizado', async () => {
     vi.mocked(repo.createAcademicPeriodRepository).mockResolvedValue(mockPeriod)
 
-    const result = await createAcademicPeriodService({
-      schoolId: 'school-id',
-      name: '  2025  ',
+    const result = await createAcademicPeriodService(SCHOOL_ID, YEAR_ID, {
+      name: '  1º Bimestre  ',
+      type: 'bimestre',
+      order: 1,
       startDate: '2025-02-01',
-      endDate: '2025-12-15',
+      endDate: '2025-04-30',
     })
 
     expect(result).toEqual(mockPeriod)
     expect(repo.createAcademicPeriodRepository).toHaveBeenCalledWith(
-      expect.objectContaining({ name: '2025', schoolId: 'school-id' }),
+      expect.objectContaining({ name: '1º Bimestre', schoolId: SCHOOL_ID, academicYearId: YEAR_ID }),
     )
   })
 })
 
 describe('updateAcademicPeriodService', () => {
   it('atualiza período quando existe', async () => {
-    const updated = { ...mockPeriod, active: true }
+    const updated = { ...mockPeriod, name: '2º Bimestre' }
     vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(mockPeriod)
     vi.mocked(repo.updateAcademicPeriodRepository).mockResolvedValue(updated)
 
-    const result = await updateAcademicPeriodService('school-id', 'period-id', { active: true })
+    const result = await updateAcademicPeriodService(SCHOOL_ID, YEAR_ID, PERIOD_ID, { name: '2º Bimestre' })
 
-    expect(result.active).toBe(true)
+    expect(result.name).toBe('2º Bimestre')
   })
 
   it('lança erro na busca quando período não existe', async () => {
-    vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(
-      updateAcademicPeriodService('school-id', 'nao-existe', { active: true }),
+      updateAcademicPeriodService(SCHOOL_ID, YEAR_ID, 'nao-existe', { name: 'X' }),
     ).rejects.toThrow('Academic period not found')
 
     expect(repo.updateAcademicPeriodRepository).not.toHaveBeenCalled()
@@ -101,28 +109,29 @@ describe('updateAcademicPeriodService', () => {
 
   it('lança erro no update quando repositório retorna undefined', async () => {
     vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(mockPeriod)
-    vi.mocked(repo.updateAcademicPeriodRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.updateAcademicPeriodRepository).mockResolvedValue(undefined as any)
 
     await expect(
-      updateAcademicPeriodService('school-id', 'period-id', { name: 'X' }),
+      updateAcademicPeriodService(SCHOOL_ID, YEAR_ID, PERIOD_ID, { name: 'X' }),
     ).rejects.toThrow('Academic period not found')
   })
 
-  it('atualiza nome, startDate e endDate individualmente', async () => {
-    const updated = { ...mockPeriod, name: '2026', startDate: '2026-02-01' }
+  it('atualiza nome e datas individualmente', async () => {
+    const updated = { ...mockPeriod, name: '2º Bimestre', startDate: '2025-05-01' }
     vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(mockPeriod)
     vi.mocked(repo.updateAcademicPeriodRepository).mockResolvedValue(updated)
 
-    const result = await updateAcademicPeriodService('school-id', 'period-id', {
-      name: '2026',
-      startDate: '2026-02-01',
+    const result = await updateAcademicPeriodService(SCHOOL_ID, YEAR_ID, PERIOD_ID, {
+      name: '2º Bimestre',
+      startDate: '2025-05-01',
     })
 
-    expect(result.name).toBe('2026')
+    expect(result.name).toBe('2º Bimestre')
     expect(repo.updateAcademicPeriodRepository).toHaveBeenCalledWith(
-      'school-id',
-      'period-id',
-      expect.objectContaining({ name: '2026', startDate: '2026-02-01' }),
+      SCHOOL_ID,
+      YEAR_ID,
+      PERIOD_ID,
+      expect.objectContaining({ name: '2º Bimestre', startDate: '2025-05-01' }),
     )
   })
 })
@@ -130,16 +139,16 @@ describe('updateAcademicPeriodService', () => {
 describe('deleteAcademicPeriodService', () => {
   it('deleta período quando existe', async () => {
     vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(mockPeriod)
-    vi.mocked(repo.deleteAcademicPeriodRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.deleteAcademicPeriodRepository).mockResolvedValue(undefined as any)
 
-    await expect(deleteAcademicPeriodService('school-id', 'period-id')).resolves.not.toThrow()
-    expect(repo.deleteAcademicPeriodRepository).toHaveBeenCalledWith('school-id', 'period-id')
+    await expect(deleteAcademicPeriodService(SCHOOL_ID, YEAR_ID, PERIOD_ID)).resolves.not.toThrow()
+    expect(repo.deleteAcademicPeriodRepository).toHaveBeenCalledWith(SCHOOL_ID, YEAR_ID, PERIOD_ID)
   })
 
   it('lança erro quando período não existe', async () => {
-    vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(undefined as any)
 
-    await expect(deleteAcademicPeriodService('school-id', 'nao-existe')).rejects.toThrow(
+    await expect(deleteAcademicPeriodService(SCHOOL_ID, YEAR_ID, 'nao-existe')).rejects.toThrow(
       'Academic period not found',
     )
     expect(repo.deleteAcademicPeriodRepository).not.toHaveBeenCalled()

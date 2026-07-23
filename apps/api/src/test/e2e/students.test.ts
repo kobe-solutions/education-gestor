@@ -25,8 +25,8 @@ const mockStudent = {
   email: 'joao@test.com',
   birthDate: '2005-03-15',
   enrollmentCode: 'MAT001',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 const mockGuardian = {
@@ -35,7 +35,7 @@ const mockGuardian = {
   name: 'Maria Silva',
   phone: '11999999999',
   relationship: 'mãe',
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 beforeAll(async () => {
@@ -50,7 +50,7 @@ afterAll(async () => {
 
 describe('GET /students', () => {
   it('retorna 200 com lista para gestor', async () => {
-    vi.mocked(studentsService.listStudentsService).mockResolvedValue([mockStudent])
+    vi.mocked(studentsService.listStudentsService).mockResolvedValue([mockStudent] as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -79,7 +79,7 @@ describe('GET /students', () => {
 
 describe('GET /students/:id', () => {
   it('retorna 200 quando aluno existe', async () => {
-    vi.mocked(studentsService.getStudentService).mockResolvedValue(mockStudent)
+    vi.mocked(studentsService.getStudentService).mockResolvedValue(mockStudent as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -106,7 +106,7 @@ describe('GET /students/:id', () => {
 
 describe('POST /students', () => {
   it('retorna 201 ao criar aluno', async () => {
-    vi.mocked(studentsService.createStudentService).mockResolvedValue(mockStudent)
+    vi.mocked(studentsService.createStudentService).mockResolvedValue(mockStudent as any)
 
     const response = await app.inject({
       method: 'POST',
@@ -150,7 +150,7 @@ describe('PUT /students/:id', () => {
     vi.mocked(studentsService.updateStudentService).mockResolvedValue({
       ...mockStudent,
       name: 'João Atualizado',
-    })
+    } as any)
 
     const response = await app.inject({
       method: 'PUT',
@@ -192,7 +192,7 @@ describe('DELETE /students/:id', () => {
 
 describe('GET /students/:id/guardians', () => {
   it('retorna 200 com responsáveis do aluno', async () => {
-    vi.mocked(studentsService.listGuardiansService).mockResolvedValue([mockGuardian])
+    vi.mocked(studentsService.listGuardiansService).mockResolvedValue([mockGuardian] as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -207,7 +207,7 @@ describe('GET /students/:id/guardians', () => {
 
 describe('POST /students/:id/guardians', () => {
   it('retorna 201 ao adicionar responsável', async () => {
-    vi.mocked(studentsService.addGuardianService).mockResolvedValue(mockGuardian)
+    vi.mocked(studentsService.addGuardianService).mockResolvedValue(mockGuardian as any)
 
     const response = await app.inject({
       method: 'POST',

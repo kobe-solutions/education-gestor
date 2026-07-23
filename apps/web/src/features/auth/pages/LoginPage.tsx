@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useLogin } from '../hooks/useLogin'
 import { useAuth } from '../../../contexts/AuthContext'
+import { extractErrorMessage } from '../../../lib/errors'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -28,7 +29,10 @@ export function LoginPage() {
   } = useForm<FormData>({ resolver: zodResolver(schema) })
 
   useEffect(() => {
-    if (token && payload) navigate('/', { replace: true })
+    if (token && payload) {
+      sessionStorage.clear()
+      navigate('/', { replace: true })
+    }
   }, [token, payload, navigate])
 
   function onSubmit(data: FormData) {
@@ -113,7 +117,7 @@ export function LoginPage() {
 
         {error && (
           <p className="text-xs text-center" style={{ color: 'var(--iris-danger-600)' }}>
-            Email ou senha incorretos
+            {extractErrorMessage(error, 'Email ou senha incorretos')}
           </p>
         )}
 

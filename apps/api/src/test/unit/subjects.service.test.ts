@@ -17,14 +17,15 @@ const mockSubject = {
   code: 'MAT',
   weeklyHours: 5,
   createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('createSubjectService', () => {
   it('cria disciplina quando nome e código são únicos', async () => {
-    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined)
-    vi.mocked(repo.findSubjectByCodeRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined as any)
+    vi.mocked(repo.findSubjectByCodeRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSubjectRepository).mockResolvedValue(mockSubject)
 
     const result = await createSubjectService({
@@ -51,7 +52,7 @@ describe('createSubjectService', () => {
   })
 
   it('lança erro se código já existe na escola', async () => {
-    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.findSubjectByCodeRepository).mockResolvedValue({ id: 'outro-id' })
 
     await expect(
@@ -62,7 +63,7 @@ describe('createSubjectService', () => {
   })
 
   it('não verifica código se não fornecido', async () => {
-    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSubjectRepository).mockResolvedValue({ ...mockSubject, code: null })
 
     await createSubjectService({ schoolId: 'school-id', name: 'Artes', weeklyHours: 2 })
@@ -71,7 +72,7 @@ describe('createSubjectService', () => {
   })
 
   it('normaliza código vazio para null', async () => {
-    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSubjectRepository).mockResolvedValue({ ...mockSubject, code: null })
 
     await createSubjectService({ schoolId: 'school-id', name: 'Artes', code: '  ', weeklyHours: 2 })
@@ -103,7 +104,7 @@ describe('getSubjectService', () => {
   })
 
   it('lança erro quando disciplina não existe', async () => {
-    vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(getSubjectService('school-id', 'nao-existe')).rejects.toThrow('Subject not found')
   })
@@ -113,7 +114,7 @@ describe('updateSubjectService', () => {
   it('atualiza disciplina quando existe', async () => {
     const updated = { ...mockSubject, name: 'Matemática Avançada' }
     vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(mockSubject)
-    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByNameRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.updateSubjectRepository).mockResolvedValue(updated)
 
     const result = await updateSubjectService('school-id', 'subject-id', { name: 'Matemática Avançada' })
@@ -122,7 +123,7 @@ describe('updateSubjectService', () => {
   })
 
   it('lança erro quando disciplina não existe', async () => {
-    vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(
       updateSubjectService('school-id', 'nao-existe', { name: 'X' }),
@@ -153,14 +154,14 @@ describe('updateSubjectService', () => {
 describe('deleteSubjectService', () => {
   it('deleta disciplina quando existe', async () => {
     vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(mockSubject)
-    vi.mocked(repo.deleteSubjectRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.deleteSubjectRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteSubjectService('school-id', 'subject-id')).resolves.not.toThrow()
     expect(repo.deleteSubjectRepository).toHaveBeenCalledWith('school-id', 'subject-id')
   })
 
   it('lança erro quando disciplina não existe', async () => {
-    vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSubjectByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteSubjectService('school-id', 'nao-existe')).rejects.toThrow('Subject not found')
     expect(repo.deleteSubjectRepository).not.toHaveBeenCalled()

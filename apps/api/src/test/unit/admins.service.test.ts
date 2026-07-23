@@ -17,7 +17,7 @@ beforeEach(() => vi.clearAllMocks())
 
 describe('createAdminService', () => {
   it('cria admin quando email é único', async () => {
-    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createAdminRepository).mockResolvedValue(mockAdmin)
 
     const result = await createAdminService({ name: 'Admin Master', email: 'admin@test.com', password: 'senha123!' })
@@ -29,7 +29,7 @@ describe('createAdminService', () => {
   })
 
   it('lança erro se email já existe', async () => {
-    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue({ id: 'existing' })
+    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue({ id: 'existing', name: 'Existing', email: 'admin@test.com', passwordHash: 'hash', role: 'admin' } as any)
 
     await expect(
       createAdminService({ name: 'Novo', email: 'admin@test.com', password: 'senha123!' }),
@@ -39,7 +39,7 @@ describe('createAdminService', () => {
   })
 
   it('normaliza email para minúsculas', async () => {
-    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createAdminRepository).mockResolvedValue(mockAdmin)
 
     await createAdminService({ name: 'Admin', email: '  ADMIN@TEST.COM  ', password: 'senha123!' })
@@ -51,7 +51,7 @@ describe('createAdminService', () => {
   })
 
   it('remove espaços do nome', async () => {
-    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createAdminRepository).mockResolvedValue(mockAdmin)
 
     await createAdminService({ name: '  Admin Master  ', email: 'admin@test.com', password: 'senha123!' })
@@ -62,7 +62,7 @@ describe('createAdminService', () => {
   })
 
   it('senha é armazenada como hash, não em texto puro', async () => {
-    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findAdminByEmailRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createAdminRepository).mockResolvedValue(mockAdmin)
 
     await createAdminService({ name: 'Admin', email: 'admin@test.com', password: 'senha123!' })

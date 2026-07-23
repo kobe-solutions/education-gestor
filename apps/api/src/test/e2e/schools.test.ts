@@ -34,7 +34,7 @@ const mockSchool = {
   coordinator: null,
   phone: null,
   address: null,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 const validBody = {
@@ -138,7 +138,7 @@ describe('GET /schools', () => {
   })
 
   it('retorna 200 para admin com todas as escolas', async () => {
-    vi.mocked(schoolsService.listSchoolsService).mockResolvedValue([mockSchool])
+    vi.mocked(schoolsService.listSchoolsService).mockResolvedValue([mockSchool] as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -152,7 +152,7 @@ describe('GET /schools', () => {
   })
 
   it('retorna 200 para secretaria com escolas filtradas', async () => {
-    vi.mocked(schoolsService.listSchoolsService).mockResolvedValue([mockSchool])
+    vi.mocked(schoolsService.listSchoolsService).mockResolvedValue([mockSchool] as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -167,7 +167,7 @@ describe('GET /schools', () => {
 
 describe('GET /schools/:id', () => {
   it('retorna 200 para admin', async () => {
-    vi.mocked(schoolsService.getSchoolService).mockResolvedValue(mockSchool)
+    vi.mocked(schoolsService.getSchoolService).mockResolvedValue(mockSchool as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -206,7 +206,7 @@ describe('PUT /schools/:id', () => {
   })
 
   it('retorna 200 quando secretaria é dona', async () => {
-    vi.mocked(schoolsService.updateSchoolService).mockResolvedValue(mockSchool)
+    vi.mocked(schoolsService.updateSchoolService).mockResolvedValue(mockSchool as any)
 
     const res = await app.inject({
       method: 'PUT',
@@ -219,7 +219,7 @@ describe('PUT /schools/:id', () => {
   })
 
   it('retorna 200 quando admin edita qualquer escola', async () => {
-    vi.mocked(schoolsService.updateSchoolService).mockResolvedValue(mockSchool)
+    vi.mocked(schoolsService.updateSchoolService).mockResolvedValue(mockSchool as any)
 
     const res = await app.inject({
       method: 'PUT',

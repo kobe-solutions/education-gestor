@@ -28,8 +28,8 @@ const mockTuition = {
   dueDate: '2025-05-10',
   paidAt: null,
   status: 'pending',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 beforeAll(async () => {
@@ -44,7 +44,7 @@ afterAll(async () => {
 
 describe('GET /tuitions', () => {
   it('retorna 200 com lista para gestor', async () => {
-    vi.mocked(financialService.listTuitionsService).mockResolvedValue([mockTuition])
+    vi.mocked(financialService.listTuitionsService).mockResolvedValue([mockTuition] as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -73,7 +73,7 @@ describe('GET /tuitions', () => {
 
 describe('GET /students/:id/tuitions', () => {
   it('retorna 200 com mensalidades do aluno', async () => {
-    vi.mocked(financialService.listStudentTuitionsService).mockResolvedValue([mockTuition])
+    vi.mocked(financialService.listStudentTuitionsService).mockResolvedValue([mockTuition] as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -102,7 +102,7 @@ describe('GET /students/:id/tuitions', () => {
 
 describe('POST /tuitions', () => {
   it('retorna 201 ao criar mensalidade', async () => {
-    vi.mocked(financialService.createTuitionService).mockResolvedValue(mockTuition)
+    vi.mocked(financialService.createTuitionService).mockResolvedValue(mockTuition as any)
 
     const response = await app.inject({
       method: 'POST',
@@ -152,8 +152,8 @@ describe('POST /tuitions', () => {
 
 describe('PATCH /tuitions/:id/pay', () => {
   it('retorna 200 ao registrar pagamento', async () => {
-    const paidTuition = { ...mockTuition, status: 'paid', paidAt: new Date().toISOString() }
-    vi.mocked(financialService.registerPaymentService).mockResolvedValue(paidTuition)
+    const paidTuition = { ...mockTuition, status: 'paid', paidAt: new Date() }
+    vi.mocked(financialService.registerPaymentService).mockResolvedValue(paidTuition as any)
 
     const response = await app.inject({
       method: 'PATCH',

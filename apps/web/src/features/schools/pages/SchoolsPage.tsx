@@ -217,20 +217,16 @@ export function SchoolsPage() {
                       <td>
                         <div className="flex gap-1 justify-end">
                           <button
-                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
                             title="Editar"
                             onClick={() => handleEdit(s)}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                           >
                             <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
                           </button>
                           <button
-                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors"
+                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
                             title="Excluir"
                             onClick={() => setDeleteTarget(s.id)}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                           >
                             <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
                           </button>

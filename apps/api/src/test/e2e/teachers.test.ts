@@ -23,8 +23,8 @@ const mockTeacher = {
   name: 'Prof. Ana',
   email: 'ana@escola.com',
   role: 'professor',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 beforeAll(async () => {
@@ -40,7 +40,7 @@ afterAll(async () => {
 
 describe('GET /teachers', () => {
   it('retorna 200 para gestor', async () => {
-    vi.mocked(teachersService.listTeachersService).mockResolvedValue([mockTeacher])
+    vi.mocked(teachersService.listTeachersService).mockResolvedValue([mockTeacher] as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -69,7 +69,7 @@ describe('GET /teachers', () => {
 
 describe('GET /teachers/:id', () => {
   it('retorna 200 quando professor existe', async () => {
-    vi.mocked(teachersService.getTeacherService).mockResolvedValue(mockTeacher)
+    vi.mocked(teachersService.getTeacherService).mockResolvedValue(mockTeacher as any)
 
     const response = await app.inject({
       method: 'GET',
@@ -96,7 +96,7 @@ describe('GET /teachers/:id', () => {
 
 describe('POST /teachers', () => {
   it('retorna 201 ao criar professor', async () => {
-    vi.mocked(teachersService.createTeacherService).mockResolvedValue(mockTeacher)
+    vi.mocked(teachersService.createTeacherService).mockResolvedValue(mockTeacher as any)
 
     const response = await app.inject({
       method: 'POST',
@@ -149,7 +149,7 @@ describe('PUT /teachers/:id', () => {
     vi.mocked(teachersService.updateTeacherService).mockResolvedValue({
       ...mockTeacher,
       name: 'Prof. Ana Maria',
-    })
+    } as any)
 
     const response = await app.inject({
       method: 'PUT',

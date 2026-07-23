@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Skeleton } from '../../../components/ui/skeleton'
-import { Tooltip, TooltipProvider } from '../../../components/ui/tooltip'
+import { Tooltip } from '../../../components/ui/tooltip'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -218,11 +218,9 @@ export function SeriesPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-1">
                 <Label>Posição na sequência</Label>
-                <TooltipProvider>
-                  <Tooltip content="Define a ordem de exibição das séries dentro do nível. Ex: 1º ano = 1, 2º ano = 2, 3º ano = 3.">
-                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-default" />
-                  </Tooltip>
-                </TooltipProvider>
+                <Tooltip content="Define a ordem de exibição das séries dentro do nível. Ex: 1º ano = 1, 2º ano = 2, 3º ano = 3.">
+                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-default" />
+                </Tooltip>
               </div>
               <Input type="number" min={0} placeholder="Ex: 1" {...register('order')} />
               {errors.order && <p className="text-xs text-destructive">{errors.order.message}</p>}

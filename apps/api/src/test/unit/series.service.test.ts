@@ -16,10 +16,11 @@ const mockLevel = {
   id: 'level-id',
   schoolId: 'school-id',
   type: 'fundamental_1',
-  modality: null,
+  modality: null as string | null,
   name: 'Ensino Fundamental 1',
   active: true,
   createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 const mockSerie = {
@@ -29,6 +30,7 @@ const mockSerie = {
   name: '1º ano',
   order: 1,
   createdAt: new Date(),
+  updatedAt: new Date(),
   educationLevel: { id: 'level-id', name: 'Ensino Fundamental 1', type: 'fundamental_1' },
 }
 
@@ -37,7 +39,7 @@ beforeEach(() => vi.clearAllMocks())
 describe('createSerieService', () => {
   it('cria série quando nível existe e nome é único no nível', async () => {
     vi.mocked(levelRepo.findEducationLevelByIdRepository).mockResolvedValue(mockLevel)
-    vi.mocked(repo.findSerieByNameInLevelRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSerieByNameInLevelRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSerieRepository).mockResolvedValue(mockSerie)
 
     const result = await createSerieService({
@@ -54,7 +56,7 @@ describe('createSerieService', () => {
   })
 
   it('lança erro se nível de ensino não existe', async () => {
-    vi.mocked(levelRepo.findEducationLevelByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(levelRepo.findEducationLevelByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(
       createSerieService({ schoolId: 'school-id', educationLevelId: 'nao-existe', name: '1º ano' }),
@@ -76,7 +78,7 @@ describe('createSerieService', () => {
 
   it('permite mesmo nome em níveis diferentes', async () => {
     vi.mocked(levelRepo.findEducationLevelByIdRepository).mockResolvedValue(mockLevel)
-    vi.mocked(repo.findSerieByNameInLevelRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSerieByNameInLevelRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createSerieRepository).mockResolvedValue(mockSerie)
 
     await createSerieService({ schoolId: 'school-id', educationLevelId: 'level-id-2', name: '1º ano' })
@@ -114,7 +116,7 @@ describe('getSerieService', () => {
   })
 
   it('lança erro quando série não existe', async () => {
-    vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(getSerieService('school-id', 'nao-existe')).rejects.toThrow('Serie not found')
   })
@@ -124,7 +126,7 @@ describe('updateSerieService', () => {
   it('atualiza quando existe', async () => {
     const updated = { ...mockSerie, name: '1º ano (atualizado)' }
     vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(mockSerie)
-    vi.mocked(repo.findSerieByNameInLevelRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSerieByNameInLevelRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.updateSerieRepository).mockResolvedValue(updated)
 
     const result = await updateSerieService('school-id', 'serie-id', { name: '1º ano (atualizado)' })
@@ -133,7 +135,7 @@ describe('updateSerieService', () => {
   })
 
   it('lança erro quando não existe', async () => {
-    vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(updateSerieService('school-id', 'nao-existe', { name: 'X' })).rejects.toThrow(
       'Serie not found',
@@ -155,14 +157,14 @@ describe('updateSerieService', () => {
 describe('deleteSerieService', () => {
   it('deleta quando existe', async () => {
     vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(mockSerie)
-    vi.mocked(repo.deleteSerieRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.deleteSerieRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteSerieService('school-id', 'serie-id')).resolves.not.toThrow()
     expect(repo.deleteSerieRepository).toHaveBeenCalledWith('school-id', 'serie-id')
   })
 
   it('lança erro quando não existe', async () => {
-    vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findSerieByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteSerieService('school-id', 'nao-existe')).rejects.toThrow('Serie not found')
     expect(repo.deleteSerieRepository).not.toHaveBeenCalled()

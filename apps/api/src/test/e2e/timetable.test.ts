@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify'
 
 vi.mock('../../modules/timetable/timetable.service', () => ({
   listTimetableSlotsService: vi.fn(),
+  listAllTimetableSlotsService: vi.fn(),
   getTimetableSlotService: vi.fn(),
   createTimetableSlotService: vi.fn(),
   updateTimetableSlotService: vi.fn(),
@@ -19,25 +20,25 @@ let professorToken: string
 const IDS = {
   slot: '00000000-0000-0000-0000-000000000001',
   class: '00000000-0000-0000-0000-000000000002',
-  period: '00000000-0000-0000-0000-000000000003',
-  subject: '00000000-0000-0000-0000-000000000004',
-  teacher: '00000000-0000-0000-0000-000000000005',
+  academicYear: '00000000-0000-0000-0000-000000000003',
+  classPeriod: '00000000-0000-0000-0000-000000000004',
+  subject: '00000000-0000-0000-0000-000000000005',
+  teacher: '00000000-0000-0000-0000-000000000006',
 }
 
 const mockSlot = {
   id: IDS.slot,
   schoolId: 'school-id',
   classId: IDS.class,
-  academicPeriodId: IDS.period,
+  academicYearId: IDS.academicYear,
+  classPeriodId: IDS.classPeriod,
   subjectId: IDS.subject,
   teacherId: IDS.teacher,
   weekDay: 'monday',
-  startTime: '07:30',
-  endTime: '08:20',
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
   subject: { id: IDS.subject, name: 'Matemática' },
   teacher: { id: IDS.teacher, name: 'Prof. João' },
-  academicPeriod: { id: IDS.period, name: '2025' },
+  classPeriod: { id: IDS.classPeriod, name: '1º Horário', startTime: '08:00', endTime: '08:50', order: 1 },
 }
 
 beforeAll(async () => {
@@ -53,13 +54,15 @@ afterAll(async () => {
 beforeEach(() => vi.clearAllMocks())
 
 describe('GET /timetable-slots', () => {
-  it('retorna 400 sem classId', async () => {
+  it('retorna 200 sem classId (lista todos)', async () => {
+    vi.mocked(service.listAllTimetableSlotsService).mockResolvedValue([mockSlot] as any)
+
     const res = await app.inject({
       method: 'GET',
       url: '/timetable-slots',
       headers: { authorization: `Bearer ${gestorToken}` },
     })
-    expect(res.statusCode).toBe(400)
+    expect(res.statusCode).toBe(200)
   })
 
   it('retorna 403 para professor', async () => {
@@ -72,7 +75,7 @@ describe('GET /timetable-slots', () => {
   })
 
   it('retorna 200 com slots da turma', async () => {
-    vi.mocked(service.listTimetableSlotsService).mockResolvedValue([mockSlot])
+    vi.mocked(service.listTimetableSlotsService).mockResolvedValue([mockSlot] as any)
 
     const res = await app.inject({
       method: 'GET',
@@ -89,16 +92,15 @@ describe('GET /timetable-slots', () => {
 describe('POST /timetable-slots', () => {
   const validBody = {
     classId: IDS.class,
-    academicPeriodId: IDS.period,
+    academicYearId: IDS.academicYear,
+    classPeriodId: IDS.classPeriod,
     subjectId: IDS.subject,
     teacherId: IDS.teacher,
     weekDay: 'monday',
-    startTime: '07:30',
-    endTime: '08:20',
   }
 
   it('retorna 201 com dados válidos', async () => {
-    vi.mocked(service.createTimetableSlotService).mockResolvedValue(mockSlot)
+    vi.mocked(service.createTimetableSlotService).mockResolvedValue(mockSlot as any)
 
     const res = await app.inject({
       method: 'POST',
@@ -117,16 +119,6 @@ describe('POST /timetable-slots', () => {
       url: '/timetable-slots',
       headers: { authorization: `Bearer ${gestorToken}` },
       body: { ...validBody, weekDay: 'domingo' },
-    })
-    expect(res.statusCode).toBe(400)
-  })
-
-  it('retorna 400 com startTime em formato inválido', async () => {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/timetable-slots',
-      headers: { authorization: `Bearer ${gestorToken}` },
-      body: { ...validBody, startTime: '7h30' },
     })
     expect(res.statusCode).toBe(400)
   })
@@ -159,18 +151,19 @@ describe('POST /timetable-slots', () => {
 
 describe('PUT /timetable-slots/:id', () => {
   it('retorna 200 ao atualizar', async () => {
-    const updated = { ...mockSlot, startTime: '08:30' }
-    vi.mocked(service.updateTimetableSlotService).mockResolvedValue(updated)
+    const newPeriodId = '00000000-0000-0000-0000-000000000099'
+    const updated = { ...mockSlot, classPeriodId: newPeriodId }
+    vi.mocked(service.updateTimetableSlotService).mockResolvedValue(updated as any)
 
     const res = await app.inject({
       method: 'PUT',
       url: `/timetable-slots/${IDS.slot}`,
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { startTime: '08:30' },
+      body: { classPeriodId: newPeriodId },
     })
 
     expect(res.statusCode).toBe(200)
-    expect(res.json().startTime).toBe('08:30')
+    expect(res.json().classPeriodId).toBe(newPeriodId)
   })
 
   it('retorna 404 quando slot não existe', async () => {
@@ -182,7 +175,7 @@ describe('PUT /timetable-slots/:id', () => {
       method: 'PUT',
       url: '/timetable-slots/nao-existe',
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { endTime: '09:00' },
+      body: { classPeriodId: IDS.classPeriod },
     })
 
     expect(res.statusCode).toBe(404)
@@ -197,7 +190,7 @@ describe('PUT /timetable-slots/:id', () => {
       method: 'PUT',
       url: `/timetable-slots/${IDS.slot}`,
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { startTime: '09:00' },
+      body: { teacherId: IDS.teacher },
     })
 
     expect(res.statusCode).toBe(409)

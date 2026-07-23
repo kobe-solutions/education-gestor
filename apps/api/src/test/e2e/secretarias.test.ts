@@ -27,14 +27,14 @@ const mockSecretaria = {
   name: 'Rede ABC',
   email: 'rede@abc.com',
   role: 'secretaria',
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 const mockLink = {
   id: 'link-id',
   secretariaId: IDS.secretaria,
   schoolId: IDS.school,
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 const mockSchool = {
@@ -42,7 +42,7 @@ const mockSchool = {
   name: 'Escola X',
   slug: 'escola-x',
   email: 'escola@x.com',
-  createdAt: new Date().toISOString(),
+  createdAt: new Date(),
 }
 
 beforeAll(async () => {

@@ -14,17 +14,18 @@ const mockLevel = {
   id: 'level-id',
   schoolId: 'school-id',
   type: 'fundamental_1',
-  modality: null,
+  modality: null as string | null,
   name: 'Ensino Fundamental 1',
   active: true,
   createdAt: new Date(),
+  updatedAt: new Date(),
 }
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('createEducationLevelService', () => {
   it('cria nível quando nome é único', async () => {
-    vi.mocked(repo.findEducationLevelByNameRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findEducationLevelByNameRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createEducationLevelRepository).mockResolvedValue(mockLevel)
 
     const result = await createEducationLevelService({
@@ -50,7 +51,7 @@ describe('createEducationLevelService', () => {
   })
 
   it('cria com modalidade opcional', async () => {
-    vi.mocked(repo.findEducationLevelByNameRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findEducationLevelByNameRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.createEducationLevelRepository).mockResolvedValue({ ...mockLevel, modality: 'integral' })
 
     await createEducationLevelService({
@@ -87,7 +88,7 @@ describe('getEducationLevelService', () => {
   })
 
   it('lança erro quando nível não existe', async () => {
-    vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(getEducationLevelService('school-id', 'nao-existe')).rejects.toThrow(
       'Education level not found',
@@ -99,7 +100,7 @@ describe('updateEducationLevelService', () => {
   it('atualiza quando existe', async () => {
     const updated = { ...mockLevel, name: 'Fund. 1 Atualizado' }
     vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(mockLevel)
-    vi.mocked(repo.findEducationLevelByNameRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findEducationLevelByNameRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.updateEducationLevelRepository).mockResolvedValue(updated)
 
     const result = await updateEducationLevelService('school-id', 'level-id', { name: 'Fund. 1 Atualizado' })
@@ -108,7 +109,7 @@ describe('updateEducationLevelService', () => {
   })
 
   it('lança erro quando não existe', async () => {
-    vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(
       updateEducationLevelService('school-id', 'nao-existe', { name: 'X' }),
@@ -139,14 +140,14 @@ describe('updateEducationLevelService', () => {
 describe('deleteEducationLevelService', () => {
   it('deleta quando existe', async () => {
     vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(mockLevel)
-    vi.mocked(repo.deleteEducationLevelRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.deleteEducationLevelRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteEducationLevelService('school-id', 'level-id')).resolves.not.toThrow()
     expect(repo.deleteEducationLevelRepository).toHaveBeenCalledWith('school-id', 'level-id')
   })
 
   it('lança erro quando não existe', async () => {
-    vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(undefined)
+    vi.mocked(repo.findEducationLevelByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(deleteEducationLevelService('school-id', 'nao-existe')).rejects.toThrow(
       'Education level not found',

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { useStudent, useStudentGuardians, useAddGuardian, useDeleteGuardian } from '../hooks/useStudents'
 import { useStudentTuitions } from '../../financial/hooks/useFinancial'
 import { TuitionStatusBadge } from '../../financial/components/TuitionStatusBadge'
+import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { toast } from '../../../lib/toast'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -246,10 +247,8 @@ export function StudentDetailPage() {
                 <tbody>
                   {tuitions.map((t) => (
                     <tr key={t.id}>
-                      <td>{new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
-                      <td className="tabular-nums">
-                        {Number(t.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                      </td>
+                      <td>{formatDateBR(t.dueDate)}</td>
+                      <td className="tabular-nums">{fmtBRL(t.amount)}</td>
                       <td><TuitionStatusBadge status={t.status} /></td>
                     </tr>
                   ))}
