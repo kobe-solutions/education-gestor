@@ -72,7 +72,7 @@ export function StudentsPage() {
             placeholder="Buscar por nome ou matrícula…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-shadow"
+            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
             style={{
               border: '1px solid var(--iris-slate-300)',
               background: 'var(--bg-surface)',
@@ -141,14 +141,14 @@ export function StudentsPage() {
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-1 justify-end">
                           <button
-                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
                             title="Editar"
                             onClick={() => navigate(`/students/${s.id}`)}
                           >
                             <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
                           </button>
                           <button
-                            className="flex items-center justify-center rounded-md w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
                             title="Excluir"
                             onClick={() => setDeleteTarget(s.id)}
                           >

@@ -100,7 +100,7 @@ function Metric({ icon: Icon, value, label, tone = 'primary' }: MetricProps) {
       }}
     >
       <div
-        className="flex items-center justify-center rounded-lg shrink-0"
+        className="flex items-center justify-center rounded-md shrink-0"
         style={{ width: 38, height: 38, background: t.iconBg, color: t.iconColor }}
       >
         <Icon size={18} strokeWidth={2.2} />
@@ -133,7 +133,7 @@ function PersonRow({ name, meta, badge, onClick }: PersonRowProps) {
   return (
     <button
       type="button"
-      className="flex items-center gap-3 w-full py-2.5 px-3 -mx-3 rounded-lg transition-colors duration-150 text-left hover:bg-[var(--iris-slate-50)]"
+      className="flex items-center gap-3 w-full py-2.5 px-3 -mx-3 rounded-md transition-colors duration-150 text-left hover:bg-[var(--iris-slate-50)]"
       onClick={onClick}
     >
       <Avatar name={name} size={32} />
@@ -290,7 +290,7 @@ function QuickAction({ icon: Icon, label, description, onClick }: QuickActionPro
       onClick={onClick}
     >
       <div
-        className="flex items-center justify-center rounded-lg shrink-0 transition-colors duration-200
+        className="flex items-center justify-center rounded-md shrink-0 transition-colors duration-200
           group-hover:bg-[var(--iris-info-600)] group-hover:text-white"
         style={{
           width: 36,

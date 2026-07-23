@@ -93,7 +93,7 @@ export function StudentDetailPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <button
           onClick={() => navigate('/students')}
-          className="flex items-center justify-center rounded-lg w-8 h-8 transition-colors shrink-0"
+          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
           title="Voltar"
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
@@ -183,7 +183,7 @@ export function StudentDetailPage() {
               {guardians.map((g) => (
                 <div
                   key={g.id}
-                  className="flex items-start justify-between rounded-lg px-3 py-2.5"
+                  className="flex items-start justify-between rounded-md px-3 py-2.5"
                   style={{ border: '1px solid var(--iris-slate-100)' }}
                 >
                   <div className="min-w-0">
@@ -203,7 +203,7 @@ export function StudentDetailPage() {
                     </div>
                   </div>
                   <button
-                    className="flex items-center justify-center rounded-md w-7 h-7 transition-colors shrink-0"
+                    className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors shrink-0"
                     title="Remover"
                     onClick={() => onDeleteGuardian(g.id)}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}

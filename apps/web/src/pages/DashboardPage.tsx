@@ -10,6 +10,11 @@ import {
   School,
   CalendarClock,
   ArrowRight,
+  Activity,
+  UserCheck,
+  UserX,
+  ShieldCheck,
+  TrendingUp,
 } from 'lucide-react'
 import { useDashboard, isAdminDashboard } from '../features/dashboard/hooks/useDashboard'
 import { useAuth } from '../contexts/AuthContext'
@@ -25,8 +30,8 @@ function DashboardSkeleton({ cardCount }: { cardCount: number }) {
   return (
     <div className="space-y-6">
       <div>
-        <Skeleton className="h-7 w-28 mb-2 rounded-lg" />
-        <Skeleton className="h-4 w-48 rounded-md" />
+        <Skeleton className="h-7 w-28 mb-2 rounded-md" />
+        <Skeleton className="h-4 w-48 rounded-sm" />
       </div>
       <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
         {Array.from({ length: cardCount }).map((_, i) => (
@@ -35,9 +40,9 @@ function DashboardSkeleton({ cardCount }: { cardCount: number }) {
             className="rounded-xl p-4 space-y-3"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
           >
-            <Skeleton className="h-8 w-8 rounded-lg" />
-            <Skeleton className="h-7 w-14 rounded-md" />
-            <Skeleton className="h-3 w-16 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-7 w-14 rounded-sm" />
+            <Skeleton className="h-3 w-16 rounded-sm" />
           </div>
         ))}
       </div>
@@ -45,9 +50,9 @@ function DashboardSkeleton({ cardCount }: { cardCount: number }) {
         className="rounded-xl p-5 space-y-4"
         style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
       >
-        <Skeleton className="h-5 w-64 rounded-md" />
+        <Skeleton className="h-5 w-64 rounded-sm" />
         {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full rounded-lg" />
+          <Skeleton key={i} className="h-12 w-full rounded-md" />
         ))}
       </div>
     </div>
@@ -116,7 +121,7 @@ function DashMetric({ icon: Icon, value, label, sub, tone }: DashMetricProps) {
       }}
     >
       <div
-        className="flex items-center justify-center rounded-lg shrink-0"
+        className="flex items-center justify-center rounded-md shrink-0"
         style={{ width: 36, height: 36, background: t.iconBg, color: t.iconColor }}
       >
         <Icon size={18} strokeWidth={2.2} />
@@ -192,24 +197,275 @@ function TableEmpty({ icon: Icon, message }: { icon: React.ElementType; message:
 
 // ── Admin dashboard ──────────────────────────────────────────────────────────
 
-function AdminDashboard({ data }: { data: { secretariasCount: number; schoolsCount: number } }) {
+const ACTION_LABELS: Record<string, string> = {
+  CREATE: 'Criou',
+  UPDATE: 'Atualizou',
+  DELETE: 'Excluiu',
+  PAY: 'Pagou',
+}
+
+const ENTITY_LABELS: Record<string, string> = {
+  student: 'Aluno',
+  teacher: 'Professor',
+  school: 'Escola',
+  secretaria: 'Secretaria',
+  schoolClass: 'Turma',
+  tuition: 'Mensalidade',
+  subject: 'Disciplina',
+  academicYear: 'Ano Letivo',
+  grade: 'Nota',
+  attendance: 'Presença',
+}
+
+function ActionBadge({ action }: { action: string }) {
+  const colors: Record<string, { bg: string; fg: string }> = {
+    CREATE: { bg: 'var(--iris-success-50)', fg: 'var(--iris-success-600)' },
+    UPDATE: { bg: 'var(--iris-info-50)', fg: 'var(--iris-info-600)' },
+    DELETE: { bg: 'var(--iris-danger-50)', fg: 'var(--iris-danger-600)' },
+    PAY: { bg: 'var(--iris-warning-50)', fg: 'var(--iris-warning-600)' },
+  }
+  const c = colors[action] ?? { bg: 'var(--iris-slate-100)', fg: 'var(--fg-3)' }
   return (
-    <div className="space-y-6">
+    <span
+      className="inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold"
+      style={{ background: c.bg, color: c.fg }}
+    >
+      {ACTION_LABELS[action] ?? action}
+    </span>
+  )
+}
+
+function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/useDashboard').AdminDashboard }) {
+  const totalStudents = data.studentsByStatus.active + data.studentsByStatus.inactive + data.studentsByStatus.transferred + data.studentsByStatus.cancelled
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
       <div>
         <h1
           className="font-bold leading-tight"
           style={{ fontSize: 22, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}
         >
-          Painel
+          Painel Administrativo
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'var(--fg-3)' }}>
-          Visão geral da plataforma
+          Visão geral da plataforma — {new Date().getFullYear()}
         </p>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-sm">
-        <DashMetric icon={Building2} value={data.secretariasCount} label="Secretarias" tone="indigo" />
-        <DashMetric icon={School} value={data.schoolsCount} label="Escolas" tone="violet" />
-      </div>
+
+      {/* ── KPIs ───────────────────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader title="Indicadores da plataforma" />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
+          <DashMetric
+            icon={Building2}
+            value={data.secretariasCount}
+            label="Secretarias"
+            sub={`${data.secretariasActive} ativas`}
+            tone="indigo"
+          />
+          <DashMetric
+            icon={School}
+            value={data.schoolsCount}
+            label="Escolas"
+            tone="violet"
+          />
+          <DashMetric
+            icon={Users}
+            value={data.studentsCount}
+            label="Alunos"
+            sub={`${data.studentsByStatus.active} ativos`}
+            tone="emerald"
+          />
+          <DashMetric
+            icon={GraduationCap}
+            value={data.teachersCount}
+            label="Professores"
+            sub={`${data.teachersByStatus.ativo} ativos`}
+            tone="slate"
+          />
+          <DashMetric
+            icon={BookOpen}
+            value={data.classesCount}
+            label="Turmas"
+            tone="indigo"
+          />
+          <DashMetric
+            icon={TrendingUp}
+            value={fmtBRL(data.tuitions.paid.total)}
+            label="Receita total"
+            sub={`${data.tuitions.paid.count} pagas`}
+            tone="emerald"
+          />
+        </div>
+      </section>
+
+      {/* ── Financeiro ─────────────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader title="Financeiro" subtitle="Mensalidades de todas as escolas" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <DashMetric
+            icon={Clock}
+            value={data.tuitions.pending.count}
+            label="Pendentes"
+            sub={fmtBRL(data.tuitions.pending.total)}
+            tone="amber"
+          />
+          <DashMetric
+            icon={CheckCircle2}
+            value={data.tuitions.paid.count}
+            label="Pagas"
+            sub={fmtBRL(data.tuitions.paid.total)}
+            tone="emerald"
+          />
+          <DashMetric
+            icon={AlertCircle}
+            value={data.tuitions.overdue.count}
+            label="Atrasadas"
+            sub={fmtBRL(data.tuitions.overdue.total)}
+            tone="red"
+          />
+        </div>
+      </section>
+
+      {/* ── Escolas com mais alunos ────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Escolas com mais alunos"
+          action={
+            <Link to="/schools" className="shrink-0">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                Ver todas
+                <ArrowRight size={13} />
+              </Button>
+            </Link>
+          }
+        />
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--iris-slate-200)',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          {data.topSchools.length === 0 ? (
+            <TableEmpty icon={School} message="Nenhuma escola cadastrada" />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+                    {['Escola', 'Alunos'].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                        style={{ color: 'var(--fg-3)' }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.topSchools.map((s) => (
+                    <tr
+                      key={s.id}
+                      className="transition-colors duration-150 hover:bg-[var(--iris-slate-50)]"
+                      style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
+                    >
+                      <td className="px-5 py-3">
+                        <span className="font-semibold" style={{ color: 'var(--fg-1)' }}>
+                          {s.name}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 tabular-nums font-semibold" style={{ color: 'var(--fg-1)' }}>
+                        {s.studentCount}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Atividade recente ──────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Atividade recente"
+          subtitle="Últimas ações realizadas na plataforma"
+          action={
+            <Link to="/admin/activity" className="shrink-0">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                Ver tudo
+                <ArrowRight size={13} />
+              </Button>
+            </Link>
+          }
+        />
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--iris-slate-200)',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          {data.recentActivity.length === 0 ? (
+            <TableEmpty icon={Activity} message="Nenhuma atividade registrada" />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+                    {['Data', 'Usuário', 'Ação', 'Entidade'].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                        style={{ color: 'var(--fg-3)' }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recentActivity.map((a) => (
+                    <tr
+                      key={a.id}
+                      className="transition-colors duration-150 hover:bg-[var(--iris-slate-50)]"
+                      style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
+                    >
+                      <td className="px-5 py-3 tabular-nums text-xs" style={{ color: 'var(--fg-3)' }}>
+                        {new Date(a.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span className="font-medium" style={{ color: 'var(--fg-1)' }}>
+                          {a.userId.slice(0, 8)}…
+                        </span>
+                        <span
+                          className="ml-2 inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-semibold"
+                          style={{ background: 'var(--iris-slate-100)', color: 'var(--fg-3)' }}
+                        >
+                          {a.userRole}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3">
+                        <ActionBadge action={a.action} />
+                      </td>
+                      <td className="px-5 py-3 text-xs" style={{ color: 'var(--fg-3)' }}>
+                        {ENTITY_LABELS[a.entity] ?? a.entity}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   )
 }
@@ -392,7 +648,7 @@ export function DashboardPage() {
   const isSecretariaWithoutSchool = payload?.role === 'secretaria' && !activeSchoolId
 
   if (isSecretariaWithoutSchool) return <NoSchoolView />
-  if (isLoading) return <DashboardSkeleton cardCount={payload?.role === 'admin' ? 2 : 6} />
+  if (isLoading) return <DashboardSkeleton cardCount={payload?.role === 'admin' ? 6 : 6} />
   if (!data) return null
 
   if (isAdminDashboard(data)) return <AdminDashboard data={data} />

@@ -1,4 +1,4 @@
-import { Building2, School } from 'lucide-react'
+import { Building2, School, Activity } from 'lucide-react'
 import { HubCard } from '../components/HubCard'
 import { PageHead } from '../components/PageHead'
 
@@ -21,6 +21,12 @@ export function HubAdminPage() {
           icon={School}
           title="Escolas"
           description="Visualize e gerencie as escolas vinculadas a cada secretaria."
+        />
+        <HubCard
+          to="/admin/activity"
+          icon={Activity}
+          title="Atividade"
+          description="Visualize o histórico de ações realizadas por todos os usuários da plataforma."
         />
       </div>
     </div>

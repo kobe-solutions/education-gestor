@@ -104,7 +104,7 @@ export function TuitionsPage() {
               placeholder="Buscar aluno…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg outline-none transition-shadow"
+              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
               style={{
                 border: '1px solid var(--iris-slate-300)',
                 background: 'var(--bg-surface)',
@@ -119,7 +119,7 @@ export function TuitionsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2.5 text-sm rounded-lg outline-none"
+          className="px-3 py-2.5 text-sm rounded-md outline-hidden"
           style={{
             border: '1px solid var(--iris-slate-300)',
             background: 'var(--bg-surface)',

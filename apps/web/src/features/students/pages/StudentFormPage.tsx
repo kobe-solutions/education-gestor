@@ -275,7 +275,7 @@ export function StudentFormPage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <button
           onClick={() => navigate('/students')}
-          className="flex items-center justify-center rounded-lg w-8 h-8 transition-colors shrink-0"
+          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
           title="Voltar"
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
@@ -417,7 +417,7 @@ export function StudentFormPage() {
                   <div className="col-span-2 space-y-1">
                     <Label>Observações<Opt /></Label>
                     <textarea
-                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                      className="flex min-h-[80px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-none"
                       placeholder="Observações gerais sobre o aluno..."
                       {...pessoalForm.register('observations')}
                     />
@@ -507,7 +507,7 @@ export function StudentFormPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               {guardianDialogOpen && (
-                <form onSubmit={guardianForm.handleSubmit(onAddGuardian)} className="border rounded-lg p-4 space-y-3 bg-muted/30">
+                <form onSubmit={guardianForm.handleSubmit(onAddGuardian)} className="border rounded-md p-4 space-y-3 bg-muted/30">
                   <p className="text-sm font-medium">Novo responsável / autorizado</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="col-span-2 space-y-1">
@@ -556,7 +556,7 @@ export function StudentFormPage() {
               )}
 
               {guardians?.map((g) => (
-                <div key={g.id} className="flex items-start justify-between border rounded-md px-3 py-2">
+                <div key={g.id} className="flex items-start justify-between border rounded-sm px-3 py-2">
                   <div>
                     <p className="text-sm font-medium">{g.name}</p>
                     <p className="text-xs text-muted-foreground">{g.relationship}{g.phone ? ` · ${g.phone}` : ''}{g.cpf ? ` · CPF: ${g.cpf}` : ''}</p>
@@ -590,7 +590,7 @@ export function StudentFormPage() {
                   <div key={field} className="space-y-1">
                     <Label>{label}<Opt /></Label>
                     <textarea
-                      className="flex min-h-[72px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                      className="flex min-h-[72px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-none"
                       placeholder={placeholder}
                       {...medicalForm.register(field)}
                     />
@@ -636,7 +636,7 @@ export function StudentFormPage() {
                 <p className="text-xs text-muted-foreground text-center py-8">Nenhum documento anexado</p>
               )}
               {documents?.map((doc) => (
-                <div key={doc.id} className="flex items-center justify-between border rounded-md px-3 py-2">
+                <div key={doc.id} className="flex items-center justify-between border rounded-sm px-3 py-2">
                   <div className="flex items-center gap-3">
                     <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                     <div>
@@ -714,7 +714,7 @@ export function StudentFormPage() {
                 </p>
               )}
               {studentClasses.map((sc) => (
-                <div key={sc.id} className="flex items-center justify-between border rounded-md px-3 py-2">
+                <div key={sc.id} className="flex items-center justify-between border rounded-sm px-3 py-2">
                   <div className="flex items-center gap-2">
                     <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
                     <span className="text-sm font-medium">{sc.name}</span>

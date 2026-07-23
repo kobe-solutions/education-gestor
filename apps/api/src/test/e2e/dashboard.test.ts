@@ -34,7 +34,20 @@ const mockSchoolMetrics = {
 
 const mockAdminMetrics = {
   secretariasCount: 3,
+  secretariasActive: 2,
   schoolsCount: 7,
+  studentsCount: 200,
+  studentsByStatus: { active: 180, inactive: 15, transferred: 3, cancelled: 2 },
+  teachersCount: 20,
+  teachersByStatus: { ativo: 18, inativo: 1, licenca: 1 },
+  classesCount: 12,
+  tuitions: {
+    pending: { count: 40, total: '20000' },
+    paid: { count: 150, total: '75000' },
+    overdue: { count: 10, total: '5000' },
+  },
+  topSchools: [],
+  recentActivity: [],
 }
 
 beforeAll(async () => {
@@ -70,7 +83,8 @@ describe('GET /dashboard', () => {
     const body = res.json()
     expect(body).toHaveProperty('secretariasCount', 3)
     expect(body).toHaveProperty('schoolsCount', 7)
-    expect(body).not.toHaveProperty('studentsCount')
+    expect(body).toHaveProperty('studentsCount', 200)
+    expect(body).toHaveProperty('secretariasActive', 2)
     expect(dashboardRepo.getAdminMetricsRepository).toHaveBeenCalled()
     expect(dashboardRepo.getSchoolMetricsRepository).not.toHaveBeenCalled()
   })
