@@ -16,7 +16,7 @@ import {
 import type { TimetableSlot } from '../hooks/useTimetable'
 import { useClass, useAcademicPeriods } from '../../classes/hooks/useClasses'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
-import { useTeachers } from '../../teachers/hooks/useTeachers'
+import { useAllTeachers } from '../../teachers/hooks/useTeachers'
 import { toast } from '../../../lib/toast'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -57,7 +57,7 @@ export function TimetablePage() {
   const { data: slots, isLoading } = useTimetableSlots(classId!)
   const { data: periods } = useAcademicPeriods()
   const { data: subjects } = useSubjects()
-  const { data: teachers } = useTeachers()
+  const { data: teachers } = useAllTeachers()
   const createMutation = useCreateTimetableSlot()
   const updateMutation = useUpdateTimetableSlot(classId!)
   const deleteMutation = useDeleteTimetableSlot(classId!)

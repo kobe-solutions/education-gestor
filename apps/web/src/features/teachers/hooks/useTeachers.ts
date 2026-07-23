@@ -17,7 +17,23 @@ export type TeacherUpdateInput = Partial<Omit<TeacherCreateInput, 'password'>> &
   employmentStatus?: Teacher['employmentStatus']
 }
 
-export function useTeachers() {
+export function useTeachers(params?: { page?: number; limit?: number }) {
+  const { schoolKey, enabled } = useSchoolKey()
+  const page = params?.page ?? 1
+  const limit = params?.limit ?? 50
+  return useQuery({
+    queryKey: ['teachers', schoolKey, { page, limit }],
+    queryFn: async () => {
+      const res = await api.get<{ data: Teacher[]; total: number }>('/teachers', {
+        params: { page, limit },
+      })
+      return { data: res.data.data, total: res.data.total }
+    },
+    enabled,
+  })
+}
+
+export function useAllTeachers() {
   const { schoolKey, enabled } = useSchoolKey()
   return useQuery({
     queryKey: ['teachers', schoolKey],
