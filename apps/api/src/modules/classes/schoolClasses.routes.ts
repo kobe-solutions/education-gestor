@@ -90,6 +90,9 @@ export async function schoolClassesRoutes(app: FastifyInstance) {
         if (error.message === 'Student already in class' || error.message === 'Class is full') {
           return reply.status(409).send({ message: error.message })
         }
+        if (error.message.startsWith('Student already enrolled in class')) {
+          return reply.status(409).send({ message: error.message })
+        }
       }
       throw error
     }

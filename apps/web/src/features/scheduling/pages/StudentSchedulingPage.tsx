@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { GripVertical, X, Users, AlertTriangle } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { useStudents } from '../../students/hooks/useStudents'
-import { useClasses, useClass } from '../../classes/hooks/useClasses'
+import { useClasses, useClass, useUnenrollStudent } from '../../classes/hooks/useClasses'
 import { api } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
 import { SearchInput } from '../../../components/SearchInput'
@@ -273,12 +273,21 @@ export function StudentSchedulingPage() {
   const { data: studentsData } = useStudents()
   const students = studentsData?.data ?? []
   const { data: classes = [] } = useClasses()
+  const unenrollMutation = useUnenrollStudent()
 
   const [studentSearch, setStudentSearch] = useState('')
   const [classSearch, setClassSearch] = useState('')
   const [selectedStudent, setSelectedStudent] = useState<{ id: string; name: string } | null>(null)
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null)
   const [enrolling, setEnrolling] = useState(false)
+  const [enrollmentConflict, setEnrollmentConflict] = useState<{
+    studentId: string
+    studentName: string
+    currentClassName: string
+    currentClassId: string
+    targetClassId: string
+    targetClassName: string
+  } | null>(null)
 
   const studentColorMap: Record<string, number> = Object.fromEntries(
     students.map((s) => [s.id, getColorIdx(s.name)])
@@ -322,10 +331,43 @@ export function StudentSchedulingPage() {
       const msg = extractErrorMessage(err)
       if (msg === 'Class is full') toast.error('Turma lotada — limite máximo atingido')
       else if (msg === 'Student already in class') toast.error('Aluno já está nesta turma')
-      else toast.error(msg)
+      else if (msg.startsWith('Student already enrolled in class')) {
+        const classNameMatch = msg.match(/Student already enrolled in class (.+)/)
+        const currentClassName = classNameMatch ? classNameMatch[1] : 'outra turma'
+        const currentClass = classes.find((c) => c.name === currentClassName)
+        setEnrollmentConflict({
+          studentId: confirmTarget.studentId,
+          studentName: confirmTarget.studentName,
+          currentClassName,
+          currentClassId: currentClass?.id ?? '',
+          targetClassId: confirmTarget.classId,
+          targetClassName: confirmTarget.className,
+        })
+      } else {
+        toast.error(msg)
+      }
     } finally {
       setEnrolling(false)
       setConfirmTarget(null)
+    }
+  }
+
+  async function handleUnenrollAndReenroll() {
+    if (!enrollmentConflict) return
+    const { currentClassId, currentClassName, targetClassId, targetClassName, studentId, studentName } = enrollmentConflict
+    try {
+      await unenrollMutation.mutateAsync({ classId: currentClassId, studentId })
+      toast.success(`${studentName} desmatriculado de ${currentClassName}`)
+      await api.post(`/school-classes/${targetClassId}/students`, { id: studentId })
+      toast.success(`${studentName} matriculado em ${targetClassName}`)
+      queryClient.invalidateQueries({ queryKey: ['classes', targetClassId] })
+      queryClient.invalidateQueries({ queryKey: ['classes', currentClassId] })
+      queryClient.invalidateQueries({ queryKey: ['classes'] })
+      setSelectedStudent(null)
+    } catch {
+      toast.error('Erro ao desmatricular e matricular aluno')
+    } finally {
+      setEnrollmentConflict(null)
     }
   }
 
@@ -440,6 +482,43 @@ export function StudentSchedulingPage() {
             <Button variant="outline" onClick={() => setConfirmTarget(null)}>Cancelar</Button>
             <Button onClick={confirmEnroll} disabled={enrolling}>
               {enrolling ? 'Matriculando...' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Dialog: Conflito de matrícula ─────────────────────────────────── */}
+      <Dialog open={!!enrollmentConflict} onOpenChange={(v) => !v && setEnrollmentConflict(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500" />
+              Aluno já matriculado
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              O aluno{' '}
+              <span className="font-medium text-foreground">{enrollmentConflict?.studentName}</span>
+              {' '}já está matriculado na turma{' '}
+              <span className="font-medium text-foreground">{enrollmentConflict?.currentClassName}</span>.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Para matriculá-lo na turma{' '}
+              <span className="font-medium text-foreground">{enrollmentConflict?.targetClassName}</span>,
+              {' '}é necessário desvinculá-lo da turma atual primeiro.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEnrollmentConflict(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleUnenrollAndReenroll}
+              disabled={unenrollMutation.isPending}
+            >
+              {unenrollMutation.isPending ? 'Processando...' : 'Desvincular e Matricular'}
             </Button>
           </DialogFooter>
         </DialogContent>

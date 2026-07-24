@@ -10,6 +10,7 @@ import {
   findStudentsByClassRepository,
   countStudentsByClassesRepository,
   findClassesByStudentRepository,
+  findStudentCurrentClassRepository,
 } from './schoolClasses.repository'
 import { findDistinctTeachersByClassRepository } from '../timetable/timetable.repository'
 import { findStudentByIdRepository } from '../students/students.repository'
@@ -83,6 +84,11 @@ export async function addStudentToClassService(schoolId: string, classId: string
 
   const alreadyLinked = await findClassStudentLinkRepository(classId, studentId)
   if (alreadyLinked) throw new Error('Student already in class')
+
+  const currentClass = await findStudentCurrentClassRepository(studentId)
+  if (currentClass && currentClass.classId !== classId) {
+    throw new Error(`Student already enrolled in class ${currentClass.className}`)
+  }
 
   const counts = await countStudentsByClassesRepository([classId])
   const enrolled = counts[classId] ?? 0

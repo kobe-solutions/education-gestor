@@ -180,3 +180,17 @@ export function useDeleteAcademicPeriod() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['academic-periods'] }),
   })
 }
+
+export function useUnenrollStudent() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ classId, studentId }: { classId: string; studentId: string }) => {
+      await api.delete(`/school-classes/${classId}/students/${studentId}`)
+    },
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['classes', variables.classId] })
+      qc.invalidateQueries({ queryKey: ['student-classes', variables.studentId] })
+      qc.invalidateQueries({ queryKey: ['classes'] })
+    },
+  })
+}
