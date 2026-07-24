@@ -578,7 +578,7 @@ async function main() {
     console.log(`    → ${matriculasData.length} matrículas em turmas`)
 
     // -----------------------------------------------------------------------
-    // Grade horária (timetable) — seg a sex, min 5 aulas/dia por professor
+    // Grade horária (timetable) — seg a sex, com diversidade de professores
     // -----------------------------------------------------------------------
     const DIAS_SEMANA = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
     const timetableSlotsData: (typeof timetableSlots.$inferInsert)[] = []
@@ -601,43 +601,85 @@ async function main() {
       return true
     }
 
-    // Fase 1: Garantir min 5 aulas por professor por dia
-    for (const prof of professoresInseridos) {
+    // Mapear disciplinas → professores qualificados (via teacherSubjects)
+    const subjectTeachersMap = new Map<string, string[]>()
+    for (const ts of teacherSubjectsData) {
+      const list = subjectTeachersMap.get(ts.subjectId!) ?? []
+      list.push(ts.teacherId!)
+      subjectTeachersMap.set(ts.subjectId!, list)
+    }
+
+    // Helper: pegar professor aleatório que ensina a disciplina
+    function pickTeacherForSubject(subjectId: string): string | null {
+      const teachers = subjectTeachersMap.get(subjectId)
+      if (!teachers || teachers.length === 0) return null
+      return pick(teachers)
+    }
+
+    // Fase 1: Para cada turma, distribuir disciplinas entre diferentes professores
+    for (const turma of turmasInseridas) {
       for (const dia of DIAS_SEMANA) {
-        let aulasNesseDia = 0
-        // Tentar colocar o professor em até 5 períodos diferentes
         const periodosEmbaralhados = [...periodsInseridos].sort(() => Math.random() - 0.5)
+        const usadosNoDia = new Set<string>() // professores usados nesse dia nessa turma
+
         for (const periodo of periodosEmbaralhados) {
-          if (aulasNesseDia >= 5) break
-          // Escolher uma turma aleatória e disciplina
-          const turma = pick(turmasInseridas)
-          const disc = pick(disciplinasInseridas)
-          if (tryAddSlot(prof.id, turma.id, dia, periodo.id, disc.id)) {
-            aulasNesseDia++
+          // Filtrar disciplinas que ainda não foram dadas nesse dia nessa turma
+          const discJaDadas = new Set(
+            timetableSlotsData
+              .filter((s) => s.classId === turma.id && s.weekDay === dia)
+              .map((s) => s.subjectId),
+          )
+          const discsDisponiveis = disciplinasInseridas.filter((d) => !discJaDadas.has(d.id))
+
+          if (discsDisponiveis.length === 0) break
+
+          // Tentar achar um professor que não está ocupado nesse período
+          // e que ainda não deu aula nessa turma nesse dia (para diversidade)
+          let placed = false
+          const discsEmbaralhadas = [...discsDisponiveis].sort(() => Math.random() - 0.5)
+
+          for (const disc of discsEmbaralhadas) {
+            const profId = pickTeacherForSubject(disc.id)
+            if (!profId) continue
+
+            const k = `${profId}-${dia}-${periodo.id}`
+            if (usedTeacherSlots.has(k)) continue
+
+            // Priorizar professor que ainda não deu aula nessa turma hoje
+            if (!usadosNoDia.has(profId) || usadosNoDia.size >= professoresInseridos.length - 1) {
+              usadosNoDia.add(profId)
+              tryAddSlot(profId, turma.id, dia, periodo.id, disc.id)
+              placed = true
+              break
+            }
+          }
+
+          // Se não conseguiu com professor diverso, tentar qualquer um disponível
+          if (!placed) {
+            for (const disc of discsEmbaralhadas) {
+              const profId = pickTeacherForSubject(disc.id)
+              if (!profId) continue
+              if (tryAddSlot(profId, turma.id, dia, periodo.id, disc.id)) break
+            }
           }
         }
       }
     }
 
-    // Fase 2: Preencher slots restantes para completar a grade das turmas
+    // Fase 2: Preencher slots vazios restantes
     for (const turma of turmasInseridas) {
       for (const dia of DIAS_SEMANA) {
         for (const periodo of periodsInseridos) {
-          const key = `*-${dia}-${periodo.id}`
-          // Verificar se já tem alguém nesse horário nessa turma
           const temAlguem = timetableSlotsData.some(
             (s) => s.classId === turma.id && s.weekDay === dia && s.classPeriodId === periodo.id,
           )
           if (temAlguem) continue
 
           const disc = pick(disciplinasInseridas)
-          const candidatos = professoresInseridos.filter((p) => {
-            const k = `${p.id}-${dia}-${periodo.id}`
-            return !usedTeacherSlots.has(k)
-          })
-          if (candidatos.length === 0) continue
-          const prof = pick(candidatos)
-          tryAddSlot(prof.id, turma.id, dia, periodo.id, disc.id)
+          const profId = pickTeacherForSubject(disc.id)
+          if (profId) {
+            tryAddSlot(profId, turma.id, dia, periodo.id, disc.id)
+          }
         }
       }
     }

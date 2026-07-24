@@ -255,6 +255,16 @@
   --destructive: 0 70% 50%;
   --destructive-foreground: 0 0% 100%;
 
+  /* Badge colors (dark mode) */
+  --badge-success-fg: hsl(142 76% 56%);
+  --badge-success-bg: hsl(142 76% 18%);
+  --badge-warning-fg: hsl(48 96% 60%);
+  --badge-warning-bg: hsl(32 95% 18%);
+  --badge-danger-fg: hsl(0 84% 70%);
+  --badge-danger-bg: hsl(0 84% 18%);
+  --badge-info-fg: hsl(217 91% 65%);
+  --badge-info-bg: hsl(217 91% 18%);
+
   --gradient-hero: linear-gradient(180deg, hsl(230, 25%, 10%) 0%, hsl(230, 25%, 8%) 100%);
   --gradient-card: linear-gradient(145deg, hsl(230, 25%, 15%) 0%, hsl(230, 25%, 12%) 100%);
 

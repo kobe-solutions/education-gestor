@@ -1,8 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
-import { authorizeRoles } from '../../middlewares/authorize'
+import { authorizeRoles, type TenantPayload } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { logAudit } from '../../lib/audit'
 import { createTeacherBodySchema, updateTeacherBodySchema, changePasswordBodySchema } from './teachers.schema'
 import {
   createTeacherService,
@@ -42,6 +43,8 @@ export async function teachersRoutes(app: FastifyInstance) {
     try {
       const body = createTeacherBodySchema.parse(request.body)
       const teacher = await createTeacherService(getSchoolId(request), body)
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'CREATE', 'teacher', teacher.id)
       return reply.status(201).send(teacher)
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher already exists with this email') {
@@ -55,7 +58,10 @@ export async function teachersRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       const body = updateTeacherBodySchema.parse(request.body)
-      return reply.send(await updateTeacherService(getSchoolId(request), id, body))
+      const result = await updateTeacherService(getSchoolId(request), id, body)
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'UPDATE', 'teacher', id)
+      return reply.send(result)
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher not found') {
         return reply.status(404).send({ message: error.message })
@@ -68,6 +74,8 @@ export async function teachersRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       await deleteTeacherService(getSchoolId(request), id)
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'DELETE', 'teacher', id)
       return reply.status(204).send()
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher not found') {

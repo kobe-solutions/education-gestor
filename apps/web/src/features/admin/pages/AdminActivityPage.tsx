@@ -27,10 +27,10 @@ const ENTITY_LABELS: Record<string, string> = {
 
 function ActionBadge({ action }: { action: string }) {
   const colors: Record<string, { bg: string; fg: string }> = {
-    CREATE: { bg: 'hsl(142 76% 96%)', fg: 'hsl(142 76% 36%)' },
-    UPDATE: { bg: 'hsl(217 91% 95%)', fg: 'hsl(217 91% 40%)' },
-    DELETE: { bg: 'hsl(0 86% 97%)', fg: 'hsl(var(--destructive))' },
-    PAY: { bg: 'hsl(48 96% 95%)', fg: 'hsl(32 95% 44%)' },
+    CREATE: { bg: 'hsl(var(--badge-success-bg))', fg: 'hsl(var(--badge-success-fg))' },
+    UPDATE: { bg: 'hsl(var(--primary) / 0.1)', fg: 'hsl(var(--primary))' },
+    DELETE: { bg: 'hsl(var(--badge-danger-bg))', fg: 'hsl(var(--badge-danger-fg))' },
+    PAY: { bg: 'hsl(var(--badge-warning-bg))', fg: 'hsl(var(--badge-warning-fg))' },
   }
   const c = colors[action] ?? { bg: 'hsl(var(--border))', fg: 'hsl(var(--muted-foreground))' }
   return (

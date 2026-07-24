@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
-import { authorizeRoles } from '../../middlewares/authorize'
-import type { JwtPayload } from '../../middlewares/authorize'
+import { authorizeRoles, type JwtPayload } from '../../middlewares/authorize'
+import { logAudit } from '../../lib/audit'
 import { createSecretariaBodySchema, updateSecretariaBodySchema, addSchoolBodySchema } from './secretarias.schema'
 import {
   createSecretariaService,
@@ -32,6 +32,8 @@ export async function secretariasRoutes(app: FastifyInstance) {
       try {
         const body = createSecretariaBodySchema.parse(request.body)
         const secretaria = await createSecretariaService(body)
+        const user = request.user as JwtPayload
+        await logAudit({ userId: user.userId, userRole: user.role }, 'CREATE', 'secretaria', secretaria.id)
         return reply.status(201).send(secretaria)
       } catch (error) {
         if (error instanceof Error && error.message === 'Secretaria already exists with this email') {
@@ -49,7 +51,10 @@ export async function secretariasRoutes(app: FastifyInstance) {
       try {
         const { id } = request.params as { id: string }
         const body = updateSecretariaBodySchema.parse(request.body)
-        return reply.send(await updateSecretariaService(id, body))
+        const result = await updateSecretariaService(id, body)
+        const user = request.user as JwtPayload
+        await logAudit({ userId: user.userId, userRole: user.role }, 'UPDATE', 'secretaria', id)
+        return reply.send(result)
       } catch (error) {
         if (error instanceof Error) {
           if (error.message === 'Secretaria not found') return reply.status(404).send({ message: error.message })
@@ -85,6 +90,8 @@ export async function secretariasRoutes(app: FastifyInstance) {
       try {
         const { id } = request.params as { id: string }
         await deleteSecretariaService(id)
+        const user = request.user as JwtPayload
+        await logAudit({ userId: user.userId, userRole: user.role }, 'DELETE', 'secretaria', id)
         return reply.status(204).send()
       } catch (error) {
         if (error instanceof Error && error.message === 'Secretaria not found') {

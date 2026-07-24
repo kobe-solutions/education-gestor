@@ -33,22 +33,22 @@ interface MetricProps {
 
 const TONE_MAP = {
   primary: {
-    accent: 'hsl(217 91% 40%)',
-    iconBg: 'hsl(217 91% 95%)',
-    iconColor: 'hsl(217 91% 40%)',
-    glow: 'rgba(79, 70, 229, 0.08)',
+    accent: 'hsl(var(--primary))',
+    iconBg: 'hsl(var(--primary) / 0.1)',
+    iconColor: 'hsl(var(--primary))',
+    glow: 'hsl(var(--primary) / 0.08)',
   },
   success: {
-    accent: 'hsl(142 76% 36%)',
-    iconBg: 'hsl(142 76% 96%)',
-    iconColor: 'hsl(142 76% 36%)',
-    glow: 'rgba(21, 128, 61, 0.08)',
+    accent: 'hsl(var(--badge-success-fg))',
+    iconBg: 'hsl(var(--badge-success-bg))',
+    iconColor: 'hsl(var(--badge-success-fg))',
+    glow: 'hsl(142 76% 36% / 0.08)',
   },
   warning: {
-    accent: 'hsl(32 95% 44%)',
-    iconBg: 'hsl(48 96% 95%)',
-    iconColor: 'hsl(32 95% 44%)',
-    glow: 'rgba(180, 83, 9, 0.08)',
+    accent: 'hsl(var(--badge-warning-fg))',
+    iconBg: 'hsl(var(--badge-warning-bg))',
+    iconColor: 'hsl(var(--badge-warning-fg))',
+    glow: 'hsl(32 95% 44% / 0.08)',
   },
 } as const
 
@@ -160,7 +160,7 @@ function SectionPanel({
         <div className="flex items-start gap-3.5">
           <div
             className="flex items-center justify-center rounded-xl shrink-0"
-            style={{ width: 44, height: 44, background: 'hsl(217 91% 95%)', color: 'hsl(217 91% 40%)' }}
+            style={{ width: 44, height: 44, background: 'hsl(var(--primary) / 0.1)', color: 'hsl(var(--primary))' }}
           >
             <Icon size={22} />
           </div>
@@ -200,7 +200,7 @@ function SectionPanel({
               variant="ghost"
               size="sm"
               className="gap-1 text-xs font-medium h-auto"
-              style={{ color: 'hsl(217 91% 40%)' }}
+              style={{ color: 'hsl(var(--primary))' }}
               onClick={viewAllOnClick}
             >
               {viewAllLabel}
@@ -249,8 +249,8 @@ function QuickAction({ icon: Icon, label, description, onClick }: QuickActionPro
       variant="ghost"
       size="sm"
       className="flex items-center gap-3.5 p-4 rounded-xl text-left h-auto justify-start
-        border hover:border-[hsl(217 91% 40%)] hover:shadow-[var(--shadow-sm)]
-        hover:bg-[hsl(217 91% 95%)]"
+        border hover:border-primary hover:shadow-[var(--shadow-sm)]
+        hover:bg-primary/5"
       style={{
         background: 'hsl(var(--card))',
         borderColor: 'hsl(var(--border))',
@@ -259,12 +259,12 @@ function QuickAction({ icon: Icon, label, description, onClick }: QuickActionPro
     >
       <div
         className="flex items-center justify-center rounded-md shrink-0 transition-colors duration-200
-          group-hover:bg-[hsl(217 91% 40%)] group-hover:text-white"
+          group-hover:bg-primary group-hover:text-primary-foreground"
         style={{
           width: 36,
           height: 36,
-          background: 'hsl(217 91% 95%)',
-          color: 'hsl(217 91% 40%)',
+          background: 'hsl(var(--primary) / 0.1)',
+          color: 'hsl(var(--primary))',
         }}
       >
         <Icon size={17} />

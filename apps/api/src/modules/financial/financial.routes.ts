@@ -40,6 +40,8 @@ export async function financialRoutes(app: FastifyInstance) {
     try {
       const body = createTuitionBodySchema.parse(request.body)
       const tuition = await createTuitionService({ schoolId: getSchoolId(request), ...body })
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'CREATE', 'tuition', tuition.id)
       return reply.status(201).send(tuition)
     } catch (error) {
       if (error instanceof Error && error.message === 'Student not found') {
