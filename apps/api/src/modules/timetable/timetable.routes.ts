@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate } from '../../middlewares/auth'
 import { authorizeRoles } from '../../middlewares/authorize'
+import type { JwtPayload, TenantPayload } from '../../middlewares/authorize'
 import { injectTenant } from '../../middlewares/tenant'
 import { getSchoolId } from '../../lib/routeHelpers'
 import { createTimetableSlotBodySchema, updateTimetableSlotBodySchema } from './timetable.schema'
@@ -12,17 +13,27 @@ import {
   updateTimetableSlotService,
   deleteTimetableSlotService,
 } from './timetable.service'
+import { listTimetableSlotsByTeacherRepository } from './timetable.repository'
 
-const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor'])]
+const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor', 'professor'])]
+const writePreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor', 'professor'])]
 
 export async function timetableRoutes(app: FastifyInstance) {
-  app.get('/timetable-slots', { preHandler }, async (request, reply) => {
+  app.get('/timetable-slots', { preHandler: readPreHandler }, async (request, reply) => {
     const { classId } = request.query as { classId?: string }
-    if (!classId) return reply.send(await listAllTimetableSlotsService(getSchoolId(request)))
-    return reply.send(await listTimetableSlotsService(getSchoolId(request), classId))
+    const user = request.user as JwtPayload
+    const schoolId = getSchoolId(request)
+
+    if (user.role === 'professor') {
+      const teacherId = (user as TenantPayload).userId
+      return reply.send(await listTimetableSlotsByTeacherRepository(schoolId, teacherId))
+    }
+
+    if (!classId) return reply.send(await listAllTimetableSlotsService(schoolId))
+    return reply.send(await listTimetableSlotsService(schoolId, classId))
   })
 
-  app.get('/timetable-slots/:id', { preHandler }, async (request, reply) => {
+  app.get('/timetable-slots/:id', { preHandler: readPreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       return reply.send(await getTimetableSlotService(getSchoolId(request), id))
@@ -34,7 +45,7 @@ export async function timetableRoutes(app: FastifyInstance) {
     }
   })
 
-  app.post('/timetable-slots', { preHandler }, async (request, reply) => {
+  app.post('/timetable-slots', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const body = createTimetableSlotBodySchema.parse(request.body)
       const slot = await createTimetableSlotService(getSchoolId(request), body)
@@ -47,7 +58,7 @@ export async function timetableRoutes(app: FastifyInstance) {
     }
   })
 
-  app.put('/timetable-slots/:id', { preHandler }, async (request, reply) => {
+  app.put('/timetable-slots/:id', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       const body = updateTimetableSlotBodySchema.parse(request.body)
@@ -61,7 +72,7 @@ export async function timetableRoutes(app: FastifyInstance) {
     }
   })
 
-  app.delete('/timetable-slots/:id', { preHandler }, async (request, reply) => {
+  app.delete('/timetable-slots/:id', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       await deleteTimetableSlotService(getSchoolId(request), id)

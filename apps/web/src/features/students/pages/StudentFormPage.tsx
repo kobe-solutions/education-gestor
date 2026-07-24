@@ -277,26 +277,26 @@ export function StudentFormPage() {
           onClick={() => navigate('/students')}
           className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
           title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
         >
-          <ArrowLeft size={16} style={{ color: 'var(--iris-slate-700)' }} />
+          <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </button>
 
         <div className="flex-1 min-w-0">
           <h1
             className="font-bold truncate"
-            style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.01em' }}
+            style={{ fontSize: 20, color: 'hsl(var(--primary))', letterSpacing: '-0.01em' }}
           >
             {isEdit ? student?.name : 'Novo aluno'}
           </h1>
           {isEdit && student && (
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span className="mono text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+              <span className="mono text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 {student.enrollmentCode}
               </span>
               {student.internalCode && (
-                <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+                <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                   · Cód. {student.internalCode}
                 </span>
               )}

@@ -190,9 +190,9 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
   const sorted = [...(periods ?? [])].sort((a, b) => a.order - b.order)
 
   return (
-    <div style={{ borderTop: '1px solid var(--iris-slate-100)', background: 'var(--iris-slate-50)' }}>
+    <div style={{ borderTop: '1px solid hsl(var(--border))', background: 'hsl(var(--accent))' }}>
       <div className="px-5 py-3 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--iris-slate-500)' }}>
+        <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'hsl(var(--muted-foreground))' }}>
           Períodos letivos
         </span>
         <Button
@@ -210,7 +210,7 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
           {Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
         </div>
       ) : sorted.length === 0 ? (
-        <p className="px-5 pb-4 text-xs italic" style={{ color: 'var(--iris-slate-400)' }}>
+        <p className="px-5 pb-4 text-xs italic" style={{ color: 'hsl(var(--muted-foreground) / 0.5)' }}>
           Nenhum período cadastrado.
         </p>
       ) : (
@@ -219,22 +219,22 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
             <div
               key={p.id}
               className="flex items-center gap-3 rounded-md px-3 py-2"
-              style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
+              style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
             >
-              <span className="text-xs font-medium w-4 text-center" style={{ color: 'var(--iris-slate-400)' }}>
+              <span className="text-xs font-medium w-4 text-center" style={{ color: 'hsl(var(--muted-foreground) / 0.5)' }}>
                 {p.order}
               </span>
-              <span className="text-sm font-medium flex-1" style={{ color: 'var(--iris-blue-900)' }}>
+              <span className="text-sm font-medium flex-1" style={{ color: 'hsl(var(--primary))' }}>
                 {p.name}
               </span>
               <Badge variant="outline" className="text-[10px] h-4 px-1.5">
                 {PERIOD_TYPE_LABEL[p.type]}
               </Badge>
-              <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+              <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 {fmtDate(p.startDate)} – {fmtDate(p.endDate)}
               </span>
               {p.gradeClosingDate && (
-                <span className="text-xs" style={{ color: 'var(--iris-slate-400)' }}>
+                <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground) / 0.5)' }}>
                   Fechamento: {fmtDate(p.gradeClosingDate)}
                 </span>
               )}
@@ -242,18 +242,18 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
                 <button
                   className="flex items-center justify-center rounded w-6 h-6 transition-colors"
                   onClick={() => { setEditingPeriod(p); setDialogOpen(true) }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                 >
-                  <Pencil size={11} style={{ color: 'var(--iris-slate-500)' }} />
+                  <Pencil size={11} style={{ color: 'hsl(var(--muted-foreground))' }} />
                 </button>
                 <button
                   className="flex items-center justify-center rounded w-6 h-6 transition-colors"
                   onClick={() => setDeleteTarget(p.id)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(0 86% 97%)' }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                 >
-                  <Trash2 size={11} style={{ color: 'var(--iris-danger-600)' }} />
+                  <Trash2 size={11} style={{ color: 'hsl(var(--destructive))' }} />
                 </button>
               </div>
             </div>
@@ -484,7 +484,7 @@ export function AcademicYearsPage() {
       ) : sorted.length === 0 ? (
         <Surface>
           <div className="py-12 text-center">
-            <p className="text-sm" style={{ color: 'var(--iris-slate-500)' }}>Nenhum ano letivo cadastrado.</p>
+            <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Nenhum ano letivo cadastrado.</p>
           </div>
         </Surface>
       ) : (
@@ -495,7 +495,7 @@ export function AcademicYearsPage() {
               <div
                 key={year.id}
                 className="rounded-xl overflow-hidden"
-                style={{ border: '1px solid var(--iris-slate-200)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-sm)' }}
+                style={{ border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', boxShadow: 'var(--shadow-sm)' }}
               >
                 {/* Cabeçalho do ano */}
                 <div className="flex items-center gap-3 px-5 py-4">
@@ -503,22 +503,22 @@ export function AcademicYearsPage() {
                     className="flex items-center justify-center rounded transition-colors shrink-0"
                     style={{ width: 28, height: 28 }}
                     onClick={() => toggleExpand(year.id)}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                   >
                     {isOpen
-                      ? <ChevronDown size={16} style={{ color: 'var(--iris-slate-500)' }} />
-                      : <ChevronRight size={16} style={{ color: 'var(--iris-slate-500)' }} />}
+                      ? <ChevronDown size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
+                      : <ChevronRight size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />}
                   </button>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+                      <span className="font-bold text-sm" style={{ color: 'hsl(var(--primary))' }}>
                         {year.name}
                       </span>
                       <Badge variant={STATUS_VARIANT[year.status]}>{STATUS_LABEL[year.status]}</Badge>
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
                       {fmtDate(year.startDate)} – {fmtDate(year.endDate)}
                       {year.registrationStart && (
                         <span className="ml-2">· Matrículas: {fmtDate(year.registrationStart)} – {year.registrationEnd ? fmtDate(year.registrationEnd) : '?'}</span>
@@ -531,10 +531,10 @@ export function AcademicYearsPage() {
                       <button
                         title={year.status === 'planning' ? 'Ativar' : 'Encerrar'}
                         className="flex items-center justify-center rounded-sm px-2 h-7 text-xs font-medium gap-1 transition-colors"
-                        style={{ border: '1px solid var(--iris-slate-300)', color: 'var(--iris-slate-600)' }}
+                        style={{ border: '1px solid hsl(var(--muted-foreground) / 0.3)', color: 'hsl(var(--foreground) / 0.7)' }}
                         onClick={() => handleNextStatus(year)}
                         disabled={statusMutation.isPending}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
                         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                       >
                         <RefreshCw size={11} />
@@ -544,18 +544,18 @@ export function AcademicYearsPage() {
                     <button
                       className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors"
                       onClick={() => { setEditingYear(year); setYearDialog(true) }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
-                      <Pencil size={13} style={{ color: 'var(--iris-slate-500)' }} />
+                      <Pencil size={13} style={{ color: 'hsl(var(--muted-foreground))' }} />
                     </button>
                     <button
                       className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors"
                       onClick={() => setDeleteTarget(year.id)}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(0 86% 97%)' }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
-                      <Trash2 size={13} style={{ color: 'var(--iris-danger-600)' }} />
+                      <Trash2 size={13} style={{ color: 'hsl(var(--destructive))' }} />
                     </button>
                   </div>
                 </div>

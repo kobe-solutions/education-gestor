@@ -108,6 +108,27 @@ export function useAcademicPeriods() {
   })
 }
 
+export interface ClassPeriod {
+  id: string
+  schoolId: string
+  name: string
+  startTime: string
+  endTime: string
+  order: number
+}
+
+export function useClassPeriods() {
+  const { schoolKey, enabled } = useSchoolKey()
+  return useQuery({
+    queryKey: ['class-periods', schoolKey],
+    queryFn: async () => {
+      const res = await api.get<ClassPeriod[]>('/class-periods')
+      return res.data
+    },
+    enabled,
+  })
+}
+
 export function useCreateAcademicPeriod() {
   const qc = useQueryClient()
   return useMutation({

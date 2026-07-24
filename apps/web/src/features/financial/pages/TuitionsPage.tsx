@@ -104,7 +104,7 @@ export function TuitionsPage() {
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
               size={14}
-              style={{ color: 'var(--iris-slate-500)' }}
+              style={{ color: 'hsl(var(--muted-foreground))' }}
             />
             <input
               type="text"
@@ -113,11 +113,11 @@ export function TuitionsPage() {
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
               style={{
-                border: '1px solid var(--iris-slate-300)',
-                background: 'var(--bg-surface)',
-                color: 'var(--iris-blue-900)',
+                border: '1px solid hsl(var(--muted-foreground) / 0.3)',
+                background: 'hsl(var(--card))',
+                color: 'hsl(var(--primary))',
               }}
-              onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'var(--shadow-focus)' }}
+              onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px hsl(var(--ring) / 0.3)' }}
               onBlur={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'none' }}
             />
           </div>
@@ -128,9 +128,9 @@ export function TuitionsPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-3 py-2.5 text-sm rounded-md outline-hidden"
           style={{
-            border: '1px solid var(--iris-slate-300)',
-            background: 'var(--bg-surface)',
-            color: 'var(--iris-blue-900)',
+            border: '1px solid hsl(var(--muted-foreground) / 0.3)',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--primary))',
           }}
         >
           <option value="all">Todos</option>
@@ -166,7 +166,7 @@ export function TuitionsPage() {
                     <td
                       colSpan={5}
                       className="text-center py-10"
-                      style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                      style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}
                     >
                       Nenhuma mensalidade encontrada
                     </td>
@@ -180,7 +180,7 @@ export function TuitionsPage() {
                           <Link
                             to={`/students/${t.studentId}`}
                             className="font-semibold hover:underline"
-                            style={{ color: 'var(--iris-blue-900)' }}
+                            style={{ color: 'hsl(var(--primary))' }}
                           >
                             {student?.name ?? t.studentId}
                           </Link>
@@ -247,17 +247,17 @@ export function TuitionsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {errors.studentId && <p className="text-xs" style={{ color: 'var(--iris-danger-600)' }}>{errors.studentId.message}</p>}
+              {errors.studentId && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.studentId.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Valor (R$)</Label>
               <Input type="number" step="0.01" placeholder="500.00" {...register('amount')} />
-              {errors.amount && <p className="text-xs" style={{ color: 'var(--iris-danger-600)' }}>{errors.amount.message}</p>}
+              {errors.amount && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.amount.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Vencimento</Label>
               <Input type="date" {...register('dueDate')} />
-              {errors.dueDate && <p className="text-xs" style={{ color: 'var(--iris-danger-600)' }}>{errors.dueDate.message}</p>}
+              {errors.dueDate && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.dueDate.message}</p>}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
@@ -271,9 +271,9 @@ export function TuitionsPage() {
       <Dialog open={!!confirmPay} onOpenChange={(v) => !v && setConfirmPay(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Confirmar pagamento</DialogTitle></DialogHeader>
-          <p className="text-sm" style={{ color: 'var(--iris-slate-500)' }}>
+          <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Registrar pagamento de{' '}
-            <strong style={{ color: 'var(--iris-blue-900)' }}>
+            <strong style={{ color: 'hsl(var(--primary))' }}>
               {confirmPay ? fmtBRL(confirmPay.amount) : ''}
             </strong>?{' '}
             Esta ação não pode ser desfeita.

@@ -11,7 +11,12 @@ vi.mock('../../modules/timetable/timetable.service', () => ({
   deleteTimetableSlotService: vi.fn(),
 }))
 
+vi.mock('../../modules/timetable/timetable.repository', () => ({
+  listTimetableSlotsByTeacherRepository: vi.fn(),
+}))
+
 import * as service from '../../modules/timetable/timetable.service'
+import * as repository from '../../modules/timetable/timetable.repository'
 
 let app: FastifyInstance
 let gestorToken: string
@@ -65,13 +70,16 @@ describe('GET /timetable-slots', () => {
     expect(res.statusCode).toBe(200)
   })
 
-  it('retorna 403 para professor', async () => {
+  it('retorna 200 para professor (apenas seus slots)', async () => {
+    vi.mocked(repository.listTimetableSlotsByTeacherRepository).mockResolvedValue([mockSlot] as any)
+
     const res = await app.inject({
       method: 'GET',
-      url: `/timetable-slots?classId=${IDS.class}`,
+      url: '/timetable-slots',
       headers: { authorization: `Bearer ${professorToken}` },
     })
-    expect(res.statusCode).toBe(403)
+    expect(res.statusCode).toBe(200)
+    expect(repository.listTimetableSlotsByTeacherRepository).toHaveBeenCalledWith('school-id', 'professor-id')
   })
 
   it('retorna 200 com slots da turma', async () => {
@@ -138,14 +146,16 @@ describe('POST /timetable-slots', () => {
     expect(res.statusCode).toBe(409)
   })
 
-  it('retorna 403 para professor', async () => {
+  it('retorna 201 para professor (cria horário)', async () => {
+    vi.mocked(service.createTimetableSlotService).mockResolvedValue(mockSlot as any)
+
     const res = await app.inject({
       method: 'POST',
       url: '/timetable-slots',
       headers: { authorization: `Bearer ${professorToken}` },
       body: validBody,
     })
-    expect(res.statusCode).toBe(403)
+    expect(res.statusCode).toBe(201)
   })
 })
 

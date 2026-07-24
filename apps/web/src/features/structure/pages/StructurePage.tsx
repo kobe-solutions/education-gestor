@@ -45,15 +45,15 @@ export function StructurePage() {
               <div
                 key={level.id}
                 className="rounded-xl overflow-hidden"
-                style={{ border: '1px solid var(--iris-slate-200)', background: 'var(--bg-surface)', boxShadow: 'var(--shadow-sm)' }}
+                style={{ border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', boxShadow: 'var(--shadow-sm)' }}
               >
                 {/* Cabeçalho do nível — fundo tint azul */}
                 <div
                   className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors"
-                  style={{ background: 'var(--iris-blue-50)', borderBottom: '1px solid var(--iris-slate-200)' }}
+                  style={{ background: 'hsl(var(--primary) / 0.1)', borderBottom: '1px solid hsl(var(--border))' }}
                   onClick={() => navigate(`/education-levels/${level.id}/series`)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-info-50)' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
                 >
                   <div
                     className="flex items-center justify-center rounded-xl shrink-0"
@@ -63,7 +63,7 @@ export function StructurePage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+                      <span className="font-bold text-sm" style={{ color: 'hsl(var(--primary))' }}>
                         {level.name}
                       </span>
                       <Badge variant="info" className="text-[10px] h-4 px-1.5">
@@ -73,16 +73,16 @@ export function StructurePage() {
                         <Badge variant="outline" className="text-[10px] h-4 px-1.5">Inativo</Badge>
                       )}
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
                       {levelSeries.length} {levelSeries.length === 1 ? 'série' : 'séries'} · {levelClassCount} {levelClassCount === 1 ? 'turma' : 'turmas'}
                     </p>
                   </div>
-                  <ChevronRight size={16} style={{ color: 'var(--iris-slate-500)' }} />
+                  <ChevronRight size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                 </div>
 
                 {/* Séries */}
                 {levelSeries.length === 0 ? (
-                  <div className="px-5 py-3 text-xs italic" style={{ color: 'var(--iris-slate-500)' }}>
+                  <div className="px-5 py-3 text-xs italic" style={{ color: 'hsl(var(--muted-foreground))' }}>
                     Nenhuma série cadastrada neste nível.
                   </div>
                 ) : (
@@ -95,31 +95,31 @@ export function StructurePage() {
                         <div
                           key={serie.id}
                           className="flex items-start gap-0"
-                          style={!isLast ? { borderBottom: '1px solid var(--iris-slate-100)' } : undefined}
+                          style={!isLast ? { borderBottom: '1px solid hsl(var(--border))' } : undefined}
                         >
                           {/* Linha de indentação */}
                           <div className="flex justify-center pt-4 shrink-0" style={{ width: 40 }}>
-                            <div style={{ width: 1, height: '100%', background: 'var(--iris-slate-200)' }} />
+                            <div style={{ width: 1, height: '100%', background: 'hsl(var(--border))' }} />
                           </div>
 
                           <div className="flex-1 py-3 pr-5">
                             <div className="flex items-center gap-2 mb-2">
                               <div
                                 className="flex items-center justify-center rounded shrink-0"
-                                style={{ width: 22, height: 22, background: 'var(--iris-slate-100)', color: 'var(--iris-slate-500)' }}
+                                style={{ width: 22, height: 22, background: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }}
                               >
                                 <GraduationCap size={12} />
                               </div>
                               <span
                                 className="text-sm font-semibold cursor-pointer transition-colors"
-                                style={{ color: 'var(--iris-blue-900)' }}
+                                style={{ color: 'hsl(var(--primary))' }}
                                 onClick={() => navigate('/classes')}
                                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#4F46E5' }}
-                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--iris-blue-900)' }}
+                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'hsl(var(--primary))' }}
                               >
                                 {serie.name}
                               </span>
-                              <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+                              <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                                 {serieClasses.length} {serieClasses.length === 1 ? 'turma' : 'turmas'}
                               </span>
                             </div>
@@ -131,7 +131,7 @@ export function StructurePage() {
                                     key={turma.id}
                                     onClick={() => navigate(`/classes/${turma.id}`)}
                                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-                                    style={{ border: '1px solid var(--iris-slate-300)', background: 'var(--bg-surface)', color: 'var(--iris-slate-700)' }}
+                                    style={{ border: '1px solid hsl(var(--muted-foreground) / 0.3)', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
                                     onMouseEnter={(e) => {
                                       const el = e.currentTarget as HTMLElement
                                       el.style.background = '#4F46E5'
@@ -140,9 +140,9 @@ export function StructurePage() {
                                     }}
                                     onMouseLeave={(e) => {
                                       const el = e.currentTarget as HTMLElement
-                                      el.style.background = 'var(--bg-surface)'
-                                      el.style.borderColor = 'var(--iris-slate-300)'
-                                      el.style.color = 'var(--iris-slate-700)'
+                                      el.style.background = 'hsl(var(--card))'
+                                      el.style.borderColor = 'hsl(var(--muted-foreground) / 0.3)'
+                                      el.style.color = 'hsl(var(--foreground))'
                                     }}
                                   >
                                     <BookOpen size={11} />
@@ -168,23 +168,23 @@ export function StructurePage() {
           {unlinkedClasses.length > 0 && (
             <div
               className="rounded-xl overflow-hidden"
-              style={{ border: '1px dashed var(--iris-slate-300)', background: 'var(--bg-surface)' }}
+              style={{ border: '1px dashed hsl(var(--muted-foreground) / 0.3)', background: 'hsl(var(--card))' }}
             >
               <div
                 className="flex items-center gap-3 px-5 py-4"
-                style={{ background: 'var(--iris-slate-50)', borderBottom: '1px dashed var(--iris-slate-200)' }}
+                style={{ background: 'hsl(var(--accent))', borderBottom: '1px dashed hsl(var(--border))' }}
               >
                 <div
                   className="flex items-center justify-center rounded-xl shrink-0"
-                  style={{ width: 36, height: 36, background: 'var(--iris-slate-100)', color: 'var(--iris-slate-500)' }}
+                  style={{ width: 36, height: 36, background: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }}
                 >
                   <BookOpen size={16} />
                 </div>
                 <div>
-                  <span className="font-semibold text-sm" style={{ color: 'var(--iris-slate-700)' }}>
+                  <span className="font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>
                     Sem série atribuída
                   </span>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+                  <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
                     {unlinkedClasses.length} {unlinkedClasses.length === 1 ? 'turma' : 'turmas'} sem vínculo com uma série
                   </p>
                 </div>
@@ -195,7 +195,7 @@ export function StructurePage() {
                     key={turma.id}
                     onClick={() => navigate(`/classes/${turma.id}`)}
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-                    style={{ border: '1px solid var(--iris-slate-300)', background: 'var(--bg-surface)', color: 'var(--iris-slate-700)' }}
+                    style={{ border: '1px solid hsl(var(--muted-foreground) / 0.3)', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
                     onMouseEnter={(e) => {
                       const el = e.currentTarget as HTMLElement
                       el.style.background = '#4F46E5'
@@ -204,9 +204,9 @@ export function StructurePage() {
                     }}
                     onMouseLeave={(e) => {
                       const el = e.currentTarget as HTMLElement
-                      el.style.background = 'var(--bg-surface)'
-                      el.style.borderColor = 'var(--iris-slate-300)'
-                      el.style.color = 'var(--iris-slate-700)'
+                      el.style.background = 'hsl(var(--card))'
+                      el.style.borderColor = 'hsl(var(--muted-foreground) / 0.3)'
+                      el.style.color = 'hsl(var(--foreground))'
                     }}
                   >
                     <BookOpen size={11} />
@@ -220,10 +220,10 @@ export function StructurePage() {
           {(!levels || levels.length === 0) && (
             <div
               className="text-center py-12 rounded-xl"
-              style={{ border: '1px dashed var(--iris-slate-300)' }}
+              style={{ border: '1px dashed hsl(var(--muted-foreground) / 0.3)' }}
             >
-              <GraduationCap size={32} className="mx-auto mb-3" style={{ color: 'var(--iris-slate-300)' }} />
-              <p className="text-sm" style={{ color: 'var(--iris-slate-500)' }}>
+              <GraduationCap size={32} className="mx-auto mb-3" style={{ color: 'hsl(var(--muted-foreground) / 0.3)' }} />
+              <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Nenhum nível de ensino cadastrado ainda.
               </p>
               <button

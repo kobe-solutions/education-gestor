@@ -71,7 +71,7 @@ export function StudentDetailPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-sm" style={{ color: 'var(--iris-slate-500)' }}>Carregando...</p>
+        <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Carregando...</p>
       </div>
     )
   }
@@ -79,7 +79,7 @@ export function StudentDetailPage() {
   if (!student) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-sm" style={{ color: 'var(--iris-danger-600)' }}>Aluno não encontrado</p>
+        <p className="text-sm" style={{ color: 'hsl(var(--destructive))' }}>Aluno não encontrado</p>
         <Button size="sm" variant="outline" onClick={() => navigate('/students')}>
           Voltar para lista
         </Button>
@@ -95,21 +95,21 @@ export function StudentDetailPage() {
           onClick={() => navigate('/students')}
           className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
           title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
         >
-          <ArrowLeft size={16} style={{ color: 'var(--iris-slate-700)' }} />
+          <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </button>
 
         <div className="flex-1 min-w-0">
           <h1
             className="font-bold truncate"
-            style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.01em' }}
+            style={{ fontSize: 20, color: 'hsl(var(--primary))', letterSpacing: '-0.01em' }}
           >
             {student.name}
           </h1>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <span className="mono text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+            <span className="mono text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
               Matrícula: {student.enrollmentCode}
             </span>
             <Badge
@@ -134,9 +134,9 @@ export function StudentDetailPage() {
       {/* Dados pessoais */}
       <div
         className="rounded-xl p-5"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
       >
-        <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--iris-blue-900)' }}>
+        <h2 className="font-semibold text-sm mb-4" style={{ color: 'hsl(var(--primary))' }}>
           Dados pessoais
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -151,8 +151,8 @@ export function StudentDetailPage() {
             { label: 'Naturalidade', value: student.naturalidade ?? '—' },
           ].map(({ label, value }) => (
             <div key={label}>
-              <p className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>{label}</p>
-              <p className="text-sm font-medium mt-0.5" style={{ color: 'var(--iris-blue-900)' }}>{value}</p>
+              <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>{label}</p>
+              <p className="text-sm font-medium mt-0.5" style={{ color: 'hsl(var(--primary))' }}>{value}</p>
             </div>
           ))}
         </div>
@@ -161,10 +161,10 @@ export function StudentDetailPage() {
       {/* Responsáveis */}
       <div
         className="rounded-xl overflow-hidden"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
       >
-        <div className="flex items-center justify-between p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
-          <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+        <div className="flex items-center justify-between p-5 pb-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <h2 className="font-semibold text-sm" style={{ color: 'hsl(var(--primary))' }}>
             Responsáveis
           </h2>
           <Button size="sm" variant="outline" onClick={() => setGuardianDialogOpen(true)}>
@@ -175,7 +175,7 @@ export function StudentDetailPage() {
 
         <div className="p-5">
           {!guardians || guardians.length === 0 ? (
-            <p className="text-xs text-center py-4" style={{ color: 'var(--iris-slate-500)' }}>
+            <p className="text-xs text-center py-4" style={{ color: 'hsl(var(--muted-foreground))' }}>
               Nenhum responsável cadastrado
             </p>
           ) : (
@@ -184,11 +184,11 @@ export function StudentDetailPage() {
                 <div
                   key={g.id}
                   className="flex items-start justify-between rounded-md px-3 py-2.5"
-                  style={{ border: '1px solid var(--iris-slate-100)' }}
+                  style={{ border: '1px solid hsl(var(--border))' }}
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium" style={{ color: 'var(--iris-blue-900)' }}>{g.name}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+                    <p className="text-sm font-medium" style={{ color: 'hsl(var(--primary))' }}>{g.name}</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
                       {g.relationship}
                       {g.phone ? ` · ${g.phone}` : ''}
                       {g.email ? ` · ${g.email}` : ''}
@@ -206,10 +206,10 @@ export function StudentDetailPage() {
                     className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors shrink-0"
                     title="Remover"
                     onClick={() => onDeleteGuardian(g.id)}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-danger-50)' }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(0 86% 97%)' }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                   >
-                    <Trash2 size={13} style={{ color: 'var(--iris-danger-600)' }} />
+                    <Trash2 size={13} style={{ color: 'hsl(var(--destructive))' }} />
                   </button>
                 </div>
               ))}
@@ -221,17 +221,17 @@ export function StudentDetailPage() {
       {/* Mensalidades */}
       <div
         className="rounded-xl overflow-hidden"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
       >
-        <div className="p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
-          <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+        <div className="p-5 pb-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <h2 className="font-semibold text-sm" style={{ color: 'hsl(var(--primary))' }}>
             Mensalidades
           </h2>
         </div>
 
         <div className="p-5">
           {!tuitions || tuitions.length === 0 ? (
-            <p className="text-xs text-center py-4" style={{ color: 'var(--iris-slate-500)' }}>
+            <p className="text-xs text-center py-4" style={{ color: 'hsl(var(--muted-foreground))' }}>
               Nenhuma mensalidade registrada
             </p>
           ) : (
@@ -269,12 +269,12 @@ export function StudentDetailPage() {
             <div className="space-y-1.5">
               <Label>Nome *</Label>
               <Input {...register('name')} placeholder="Nome completo" />
-              {errors.name && <p className="text-xs" style={{ color: 'var(--iris-danger-600)' }}>{errors.name.message}</p>}
+              {errors.name && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.name.message}</p>}
             </div>
             <div className="space-y-1.5">
               <Label>Parentesco *</Label>
               <Input placeholder="Ex: Mãe, Pai, Avó..." {...register('relationship')} />
-              {errors.relationship && <p className="text-xs" style={{ color: 'var(--iris-danger-600)' }}>{errors.relationship.message}</p>}
+              {errors.relationship && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.relationship.message}</p>}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">

@@ -93,13 +93,15 @@ describe('GET /school-classes', () => {
     expect(response.statusCode).toBe(401)
   })
 
-  it('retorna 403 para professor', async () => {
+  it('retorna 200 para professor (lista turmas)', async () => {
+    vi.mocked(classesService.listSchoolClassesService).mockResolvedValue([mockClass] as any)
+
     const response = await app.inject({
       method: 'GET',
       url: '/school-classes',
       headers: { authorization: `Bearer ${professorToken}` },
     })
-    expect(response.statusCode).toBe(403)
+    expect(response.statusCode).toBe(200)
   })
 })
 

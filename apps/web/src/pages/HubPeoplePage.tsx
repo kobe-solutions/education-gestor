@@ -35,8 +35,8 @@ function Avatar({ name, size = 32 }: { name: string; size?: number }) {
       style={{
         width: size,
         height: size,
-        background: 'var(--iris-info-50)',
-        color: 'var(--iris-info-600)',
+        background: 'hsl(217 91% 95%)',
+        color: 'hsl(217 91% 40%)',
         fontSize: size * 0.34,
       }}
     >
@@ -69,21 +69,21 @@ interface MetricProps {
 
 const TONE_MAP = {
   primary: {
-    accent: 'var(--iris-info-600)',
-    iconBg: 'var(--iris-info-50)',
-    iconColor: 'var(--iris-info-600)',
+    accent: 'hsl(217 91% 40%)',
+    iconBg: 'hsl(217 91% 95%)',
+    iconColor: 'hsl(217 91% 40%)',
     glow: 'rgba(79, 70, 229, 0.08)',
   },
   success: {
-    accent: 'var(--iris-success-600)',
-    iconBg: 'var(--iris-success-50)',
-    iconColor: 'var(--iris-success-600)',
+    accent: 'hsl(142 76% 36%)',
+    iconBg: 'hsl(142 76% 96%)',
+    iconColor: 'hsl(142 76% 36%)',
     glow: 'rgba(21, 128, 61, 0.08)',
   },
   warning: {
-    accent: 'var(--iris-warning-600)',
-    iconBg: 'var(--iris-warning-50)',
-    iconColor: 'var(--iris-warning-600)',
+    accent: 'hsl(32 95% 44%)',
+    iconBg: 'hsl(48 96% 95%)',
+    iconColor: 'hsl(32 95% 44%)',
     glow: 'rgba(180, 83, 9, 0.08)',
   },
 } as const
@@ -112,7 +112,7 @@ function Metric({ icon: Icon, value, label, tone = 'primary' }: MetricProps) {
         >
           {value}
         </div>
-        <div className="text-[11px] font-medium mt-1 uppercase tracking-wider" style={{ color: 'var(--fg-3)' }}>
+        <div className="text-[11px] font-medium mt-1 uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
           {label}
         </div>
       </div>
@@ -133,15 +133,15 @@ function PersonRow({ name, meta, badge, onClick }: PersonRowProps) {
   return (
     <button
       type="button"
-      className="flex items-center gap-3 w-full py-2.5 px-3 -mx-3 rounded-md transition-colors duration-150 text-left hover:bg-[var(--iris-slate-50)]"
+      className="flex items-center gap-3 w-full py-2.5 px-3 -mx-3 rounded-md transition-colors duration-150 text-left hover:bg-accent"
       onClick={onClick}
     >
       <Avatar name={name} size={32} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold truncate" style={{ color: 'var(--fg-1)' }}>
+        <div className="text-sm font-semibold truncate" style={{ color: 'hsl(var(--foreground))' }}>
           {name}
         </div>
-        <div className="text-xs truncate" style={{ color: 'var(--fg-3)' }}>
+        <div className="text-xs truncate" style={{ color: 'hsl(var(--muted-foreground))' }}>
           {meta}
         </div>
       </div>
@@ -185,8 +185,8 @@ function SectionPanel({
     <section
       className="flex flex-col rounded-xl overflow-hidden transition-shadow duration-200 hover:shadow-[var(--shadow-md)]"
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--iris-slate-200)',
+        background: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
         boxShadow: 'var(--shadow-sm)',
       }}
     >
@@ -195,15 +195,15 @@ function SectionPanel({
         <div className="flex items-start gap-3.5">
           <div
             className="flex items-center justify-center rounded-xl shrink-0"
-            style={{ width: 44, height: 44, background: 'var(--iris-info-50)', color: 'var(--iris-info-600)' }}
+            style={{ width: 44, height: 44, background: 'hsl(217 91% 95%)', color: 'hsl(217 91% 40%)' }}
           >
             <Icon size={22} />
           </div>
           <div>
-            <h2 className="font-bold text-base" style={{ color: 'var(--fg-1)' }}>
+            <h2 className="font-bold text-base" style={{ color: 'hsl(var(--foreground))' }}>
               {title}
             </h2>
-            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'var(--fg-3)' }}>
+            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>
               {description}
             </p>
           </div>
@@ -219,21 +219,21 @@ function SectionPanel({
       </div>
 
       {/* Divider */}
-      <div className="mx-5" style={{ borderBottom: '1px solid var(--iris-slate-100)' }} />
+      <div className="mx-5" style={{ borderBottom: '1px solid hsl(var(--border))' }} />
 
       {/* List */}
       <div className="px-2 pt-3 pb-4">
         <div className="flex items-center justify-between px-3 mb-2">
           <span
             className="text-[11px] font-semibold uppercase tracking-wider"
-            style={{ color: 'var(--fg-3)' }}
+            style={{ color: 'hsl(var(--muted-foreground))' }}
           >
             {sectionLabel}
           </span>
           {hasItems && viewAllOnClick && (
             <button
               className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 hover:opacity-80"
-              style={{ color: 'var(--iris-info-600)' }}
+              style={{ color: 'hsl(217 91% 40%)' }}
               onClick={viewAllOnClick}
             >
               {viewAllLabel}
@@ -248,15 +248,15 @@ function SectionPanel({
           <div className="flex flex-col items-center gap-2.5 py-10 text-center">
             <div
               className="flex items-center justify-center rounded-full"
-              style={{ width: 44, height: 44, background: 'var(--iris-slate-50)', color: 'var(--fg-3)' }}
+              style={{ width: 44, height: 44, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
             >
               <EmptyIcon size={20} />
             </div>
             <div>
-              <p className="text-sm font-medium" style={{ color: 'var(--fg-2)' }}>
+              <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                 {emptyMessage}
               </p>
-              <p className="text-xs mt-1" style={{ color: 'var(--fg-3)' }}>
+              <p className="text-xs mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Comece adicionando o primeiro registro
               </p>
             </div>
@@ -281,32 +281,32 @@ function QuickAction({ icon: Icon, label, description, onClick }: QuickActionPro
     <button
       type="button"
       className="flex items-center gap-3.5 p-4 rounded-xl text-left transition-all duration-200 group
-        border hover:border-[var(--iris-info-600)] hover:shadow-[var(--shadow-sm)]
-        hover:bg-[var(--iris-info-50)]"
+        border hover:border-[hsl(217 91% 40%)] hover:shadow-[var(--shadow-sm)]
+        hover:bg-[hsl(217 91% 95%)]"
       style={{
-        background: 'var(--bg-surface)',
-        borderColor: 'var(--iris-slate-200)',
+        background: 'hsl(var(--card))',
+        borderColor: 'hsl(var(--border))',
       }}
       onClick={onClick}
     >
       <div
         className="flex items-center justify-center rounded-md shrink-0 transition-colors duration-200
-          group-hover:bg-[var(--iris-info-600)] group-hover:text-white"
+          group-hover:bg-[hsl(217 91% 40%)] group-hover:text-white"
         style={{
           width: 36,
           height: 36,
-          background: 'var(--iris-info-50)',
-          color: 'var(--iris-info-600)',
+          background: 'hsl(217 91% 95%)',
+          color: 'hsl(217 91% 40%)',
         }}
       >
         <Icon size={17} />
       </div>
       <div className="min-w-0">
-        <div className="text-sm font-semibold" style={{ color: 'var(--fg-1)' }}>
+        <div className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
           {label}
         </div>
         {description && (
-          <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--fg-3)' }}>
+          <div className="text-xs mt-0.5 truncate" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {description}
           </div>
         )}
@@ -336,11 +336,11 @@ export function HubPeoplePage() {
       <div>
         <h1
           className="font-bold leading-tight"
-          style={{ fontSize: 22, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}
+          style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
         >
           Pessoas
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--fg-3)' }}>
+        <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
           Alunos, professores e responsáveis — tudo num só lugar
         </p>
       </div>
@@ -428,7 +428,7 @@ export function HubPeoplePage() {
       <div>
         <h2
           className="text-[11px] font-semibold uppercase tracking-wider mb-3"
-          style={{ color: 'var(--fg-3)' }}
+          style={{ color: 'hsl(var(--muted-foreground))' }}
         >
           Atalhos rápidos
         </h2>

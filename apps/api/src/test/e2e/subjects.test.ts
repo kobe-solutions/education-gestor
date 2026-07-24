@@ -47,13 +47,15 @@ describe('GET /subjects', () => {
     expect(res.statusCode).toBe(401)
   })
 
-  it('retorna 403 para professor', async () => {
+  it('retorna 200 para professor (lista disciplinas)', async () => {
+    vi.mocked(subjectsService.listSubjectsService).mockResolvedValue([mockSubject] as any)
+
     const res = await app.inject({
       method: 'GET',
       url: '/subjects',
       headers: { authorization: `Bearer ${professorToken}` },
     })
-    expect(res.statusCode).toBe(403)
+    expect(res.statusCode).toBe(200)
   })
 
   it('retorna 200 para gestor', async () => {

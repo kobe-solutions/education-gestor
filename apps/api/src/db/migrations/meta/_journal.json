@@ -155,6 +155,13 @@
       "when": 1747623600000,
       "tag": "0021_teacher_subjects",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1784847281416,
+      "tag": "0022_square_betty_ross",
+      "breakpoints": true
     }
   ]
 }

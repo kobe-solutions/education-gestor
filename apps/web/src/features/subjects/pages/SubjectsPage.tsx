@@ -185,27 +185,27 @@ export function SubjectsPage() {
                 {filtered?.map((s) => (
                   <tr key={s.id}>
                     <td>
-                      <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                      <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
                         {s.name}
                       </span>
                     </td>
-                    <td style={{ color: 'var(--iris-slate-500)' }}>{s.code ?? '—'}</td>
-                    <td style={{ color: 'var(--iris-slate-500)' }}>{s.weeklyHours}h</td>
+                    <td style={{ color: 'hsl(var(--muted-foreground))' }}>{s.code ?? '—'}</td>
+                    <td style={{ color: 'hsl(var(--muted-foreground))' }}>{s.weeklyHours}h</td>
                     <td>
                       <div className="flex gap-1 justify-end">
                         <button
-                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
+                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-primary/10"
                           title="Editar"
                           onClick={() => handleEdit(s)}
                         >
-                          <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                          <Pencil size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
                         </button>
                         <button
-                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
+                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-destructive/10"
                           title="Excluir"
                           onClick={() => handleDelete(s.id)}
                         >
-                          <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                          <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
                         </button>
                       </div>
                     </td>
