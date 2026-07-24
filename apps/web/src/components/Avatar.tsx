@@ -22,8 +22,8 @@ export function Avatar({ name, size = 32, className }: AvatarProps) {
       style={{
         width: size,
         height: size,
-        background: 'hsl(217 91% 95%)',
-        color: 'hsl(217 91% 40%)',
+        background: 'hsl(var(--primary) / 0.1)',
+        color: 'hsl(var(--primary))',
         fontSize: size * 0.34,
       }}
     >

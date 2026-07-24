@@ -2,8 +2,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
 import { ZodError } from 'zod'
 import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
-import { authorizeRoles } from '../../middlewares/authorize'
-import type { JwtPayload, SecretariaPayload } from '../../middlewares/authorize'
+import { authorizeRoles, type JwtPayload, type SecretariaPayload } from '../../middlewares/authorize'
+import { logAudit } from '../../lib/audit'
 import {
   createSchoolService,
   listSchoolsService,
@@ -23,6 +23,7 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const user = request.user as SecretariaPayload
       const body = createSchoolBodySchema.parse(request.body)
       const school = await createSchoolService({ ...body, secretariaId: user.secretariaId })
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: school.id }, 'CREATE', 'school', school.id)
       return reply.status(201).send(school)
     } catch (error) {
       if (error instanceof ZodError) {
@@ -59,7 +60,9 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const user = request.user as JwtPayload
       const secretariaId = user.role === 'secretaria' ? (user as SecretariaPayload).secretariaId : undefined
       const body = updateSchoolBodySchema.parse(request.body)
-      return reply.send(await updateSchoolService(id, body, { role: user.role, secretariaId }))
+      const result = await updateSchoolService(id, body, { role: user.role, secretariaId })
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'UPDATE', 'school', id)
+      return reply.send(result)
     } catch (error) {
       if (error instanceof ZodError) {
         return reply.status(400).send({ message: 'Validation error', issues: error.issues })
@@ -99,6 +102,7 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const user = request.user as JwtPayload
       const secretariaId = user.role === 'secretaria' ? (user as SecretariaPayload).secretariaId : undefined
       await deleteSchoolService(id, { role: user.role, secretariaId })
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'DELETE', 'school', id)
       return reply.status(204).send()
     } catch (error) {
       if (error instanceof Error) {

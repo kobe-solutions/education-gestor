@@ -57,11 +57,11 @@ export function StudentReportPage() {
           <div className="flex items-center gap-4 flex-wrap">
             <div
               className="flex items-center justify-center rounded-xl"
-              style={{ width: 64, height: 64, background: attendanceRate >= 75 ? 'hsl(142 76% 96%)' : 'hsl(0 86% 97%)' }}
+              style={{ width: 64, height: 64, background: attendanceRate >= 75 ? 'hsl(var(--badge-success-bg))' : 'hsl(var(--badge-danger-bg))' }}
             >
               <span
                 className="text-xl font-bold tabular-nums"
-                style={{ color: attendanceRate >= 75 ? 'hsl(142 71% 45%)' : 'hsl(var(--destructive))' }}
+                style={{ color: attendanceRate >= 75 ? 'hsl(var(--badge-success-fg))' : 'hsl(var(--badge-danger-fg))' }}
               >
                 {attendanceRate}%
               </span>

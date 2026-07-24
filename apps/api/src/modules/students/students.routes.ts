@@ -68,6 +68,8 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const body = createStudentBodySchema.parse(request.body)
       const student = await createStudentService(getSchoolId(request), body)
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'CREATE', 'student', student.id)
       return reply.status(201).send(student)
     } catch (e) {
       if (e instanceof Error && e.message === 'Enrollment code already in use') {
@@ -81,7 +83,10 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       const body = updateStudentBodySchema.parse(request.body)
-      return reply.send(await updateStudentService(getSchoolId(request), id, body))
+      const result = await updateStudentService(getSchoolId(request), id, body)
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'UPDATE', 'student', id)
+      return reply.send(result)
     } catch (e) {
       if (e instanceof Error) {
         if (e.message === 'Student not found') return reply.status(404).send({ message: e.message })

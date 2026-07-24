@@ -1,42 +1,50 @@
-import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { ArrowLeft, Plus, Trash2, CalendarClock } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useClass, useAddStudentToClass, useRemoveStudentFromClass } from '../hooks/useClasses'
-import { useStudents } from '../../students/hooks/useStudents'
+import { ArrowLeft, CalendarClock } from 'lucide-react'
+import { useClass } from '../hooks/useClasses'
+import { useTimetableSlots, WEEK_DAY_LABELS, WEEK_DAYS_ORDER } from '../../timetable/hooks/useTimetable'
+import { useClassPeriods } from '../hooks/useClasses'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
-import { Label } from '../../../components/ui/label'
+import { Skeleton } from '../../../components/ui/skeleton'
+import { cn } from '../../../lib/utils'
 
-const memberSchema = z.object({ id: z.string().min(1, 'Selecione um item') })
-type MemberForm = z.infer<typeof memberSchema>
+const WEEK_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 
 export function ClassDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: schoolClass, isLoading } = useClass(id!)
-  const { data: studentsData } = useStudents()
-  const allStudents = studentsData?.data
-  const addStudent = useAddStudentToClass(id!)
-  const removeStudent = useRemoveStudentFromClass(id!)
+  const { data: slots = [], isLoading: slotsLoading } = useTimetableSlots(id!)
+  const { data: classPeriods = [] } = useClassPeriods()
 
-  const [studentDialogOpen, setStudentDialogOpen] = useState(false)
-  const studentForm = useForm<MemberForm>({ resolver: zodResolver(memberSchema) })
+  const sortedPeriods = [...classPeriods].sort((a, b) => a.order - b.order)
 
-  function onAddStudent(data: MemberForm) {
-    addStudent.mutate(data.id, { onSuccess: () => { setStudentDialogOpen(false); studentForm.reset() } })
+  const slotMap = new Map<string, (typeof slots)[number]>()
+  for (const s of slots) {
+    slotMap.set(`${s.weekDay}-${s.classPeriodId}`, s)
   }
 
-  const enrolledStudentIds = new Set(schoolClass?.students.map((s) => s.id))
-  const availableStudents = allStudents?.filter((s) => !enrolledStudentIds.has(s.id))
+  const jsDay = new Date().getDay()
+  const todayWeekDay = jsDay >= 1 && jsDay <= 6 ? WEEK_DAYS_ORDER[jsDay - 1] : null
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Carregando...</p>
-  if (!schoolClass) return <p className="text-sm text-destructive">Turma não encontrada</p>
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
+
+  if (!schoolClass) {
+    return <p className="text-sm text-destructive">Turma não encontrada</p>
+  }
 
   return (
     <div className="space-y-6">
@@ -65,99 +73,96 @@ export function ClassDetailPage() {
         </Button>
       </div>
 
-      {/* Grid de informações */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">
-              Professores ({schoolClass.teachers.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableBody>
-                {schoolClass.teachers.length === 0 ? (
-                  <TableRow>
-                    <TableCell className="text-muted-foreground text-center text-sm py-4">
-                      Nenhum professor alocado na grade
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  schoolClass.teachers.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell>{t.name}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{t.email}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm">Alunos ({schoolClass.students.length})</CardTitle>
-              <Button size="sm" variant="outline" onClick={() => setStudentDialogOpen(true)}>
-                <Plus className="h-4 w-4" />
-              </Button>
+      {/* Calendário Semanal */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Grade Horária Semanal</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {slotsLoading ? (
+            <div className="p-4 space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {schoolClass.students.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-muted-foreground text-center text-sm py-4">
-                      Nenhum aluno matriculado
-                    </TableCell>
-                  </TableRow>
-                )}
-                {schoolClass.students.map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell>{s.name}</TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => removeStudent.mutate(s.id)}>
-                        <Trash2 className="h-3 w-3 text-destructive" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Dialog open={studentDialogOpen} onOpenChange={(v) => !v && setStudentDialogOpen(false)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Adicionar aluno</DialogTitle></DialogHeader>
-          <form onSubmit={studentForm.handleSubmit(onAddStudent)} className="space-y-4">
-            <div className="space-y-1">
-              <Label>Aluno</Label>
-              <Select onValueChange={(v) => studentForm.setValue('id', v)}>
-                <SelectTrigger><SelectValue placeholder="Selecione um aluno" /></SelectTrigger>
-                <SelectContent>
-                  {availableStudents?.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+          ) : slots.length === 0 ? (
+            <div className="py-12 text-center text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Nenhum horário cadastrado na grade.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr>
+                    <th
+                      className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider border-b whitespace-nowrap"
+                      style={{ color: 'hsl(var(--muted-foreground))', width: 100 }}
+                    >
+                      Horário
+                    </th>
+                    {WEEK_DAYS.map((day) => (
+                      <th
+                        key={day}
+                        className={cn(
+                          'px-3 py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider border-b',
+                          day === todayWeekDay
+                            ? 'text-primary bg-primary/5'
+                            : 'text-muted-foreground',
+                        )}
+                      >
+                        {WEEK_DAY_LABELS[day]}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedPeriods.map((period) => (
+                    <tr key={period.id}>
+                      <td
+                        className="px-3 py-3 text-xs font-mono border-b whitespace-nowrap"
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
+                      >
+                        {period.startTime} – {period.endTime}
+                      </td>
+                      {WEEK_DAYS.map((day) => {
+                        const slot = slotMap.get(`${day}-${period.id}`)
+                        return (
+                          <td
+                            key={day}
+                            className={cn(
+                              'px-3 py-3 border-b text-center',
+                              day === todayWeekDay && 'bg-primary/5',
+                            )}
+                          >
+                            {slot ? (
+                              <div>
+                                <p
+                                  className="text-xs font-semibold"
+                                  style={{ color: 'hsl(var(--primary))' }}
+                                >
+                                  {slot.subject.name}
+                                </p>
+                                <p
+                                  className="text-[11px] mt-0.5"
+                                  style={{ color: 'hsl(var(--muted-foreground))' }}
+                                >
+                                  {slot.teacher.name}
+                                </p>
+                              </div>
+                            ) : (
+                              <span style={{ color: 'hsl(var(--muted-foreground) / 0.3)' }}>—</span>
+                            )}
+                          </td>
+                        )
+                      })}
+                    </tr>
                   ))}
-                </SelectContent>
-              </Select>
+                </tbody>
+              </table>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setStudentDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={addStudent.isPending}>Adicionar</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

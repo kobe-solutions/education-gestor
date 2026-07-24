@@ -268,9 +268,10 @@ export function AppLayout() {
         <div className="px-3 pb-3 flex flex-col gap-2">
           {/* Theme toggle */}
           <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-3"
+            variant="outline"
+            size="default"
+            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
+            style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={toggleTheme}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -279,9 +280,10 @@ export function AppLayout() {
 
           {/* Logout */}
           <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-3"
+            variant="outline"
+            size="default"
+            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
+            style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={handleLogout}
           >
             <LogOut size={18} />
@@ -381,9 +383,10 @@ export function AppLayout() {
 
         <div className="px-3 pb-3 flex flex-col gap-2">
           <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-3"
+            variant="outline"
+            size="default"
+            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
+            style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={toggleTheme}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
@@ -391,9 +394,10 @@ export function AppLayout() {
           </Button>
 
           <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-3"
+            variant="outline"
+            size="default"
+            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
+            style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={handleLogout}
           >
             <LogOut size={18} />
