@@ -1,7 +1,7 @@
-# Roadmap — Correção de Débitos Técnicos
+# Roadmap — Débitos Técnicos
 
-> Última atualização: 2026-07-21
-> Baseado na análise arquitetural do sistema.
+> Última atualização: 2026-07-24
+> Baseado em análise direta do código atual do repositório.
 
 ---
 
@@ -12,181 +12,181 @@
 | 🔴 | Bloqueia evolução ou causa bug em produção |
 | 🟡 | Degrada performance ou aumenta custo de manutenção |
 | 🟢 | Melhoria de qualidade e segurança futura |
-| ✅ | Concluído |
+| ✅ | Concluído (verificar com testes passando e código em produção) |
 
 ---
 
-## Fase 1 — Correções Críticas
-> **Meta:** Eliminar os débitos que chegam como bug de usuário antes de aparecer no monitoramento.
-> **Prazo sugerido:** 2–3 semanas
+## Estado atual — débitos já resolvidos
+
+Os itens abaixo foram concluídos em ciclos anteriores e estão refletidos no código atual. Mantidos aqui apenas como histórico — não precisam de ação.
+
+- ✅ **1.1 Batch insert na frequência** — frequência em lote usa `db.insert(...).values(...).onConflictDoUpdate` (single statement) com chunking de 500.
+- ✅ **1.2 Transações em `registerPaymentService`** — `financial.service.ts:66` envolve SELECT+UPDATE em `db.transaction(async (tx) => { ... })`.
+- ✅ **1.3 Paginação nas listagens de volume** — `findAllStudentsRepository`, `findAllTeachersRepository` e `findAllTuitionsRepository` aceitam `{ limit, offset }` (defaults `50/50/100`). Frontend consome o formato `{ data, total, page, limit }` retornado pelas rotas.
+- ✅ **1.4 Type coercion `number → string`** — services não usam mais `.toString()` para `value`/`amount`; o cast ocorre uma única vez no repository ao persistir. Ajustes no frontend refletem o tipo `number`.
+- ✅ **2.1 Índices explícitos** — schema declara:
+  - `attendances`: `att_class_date_idx (classId, date)`, `att_student_idx (studentId)`
+  - `grades`: `grades_student_period_idx (studentId, academicPeriodId)`, `grades_class_idx (classId)`
+  - `tuitions`: `tuitions_school_status_idx (schoolId, status)`, `tuitions_due_date_idx (dueDate)`
+- ✅ **2.2 Soft delete nas entidades core** — `deletedAt` em `students`, `guardians`, `teachers`, `schools`; todas as listagens filtram com `isNull(deletedAt)` e `DELETE` vira `update({ deletedAt: new Date() })`.
+- ✅ **2.3 Otimizar `upsertGradeRepository`** — usa `.onConflictDoUpdate({ target: ..., set: { value } })` em uma única operação (constraint `UNIQUE` está no schema).
+- ✅ **3.2 Query unificada de perfil do aluno** — `findStudentProfileRepository` retorna aluno + responsáveis + ficha médica em um único resultado.
+- ✅ **3.4 Log de auditoria** — `GET /audit-logs?entity=&page=&limit=` exposto em `modules/audit/audit.routes.ts` para roles `gestor` e `admin`.
 
 ---
 
-### 1.1 🔴 Batch insert na frequência em lote
+## Fase 1 — Resilência e concorrência
 
-**Problema:** `registerBulkAttendanceService` executa `2 × N` roundtrips ao banco (SELECT + INSERT/UPDATE por aluno). Para 40 alunos = 80 queries por chamada.
+> **Meta:** Eliminar race conditions remanescentes e adicionar garantias transacionais onde ainda faltam.
+> **Prazo sugerido:** 1–2 semanas
 
-**Arquivo:** `apps/api/src/modules/academic/academic.service.ts:73–88` e `academic.repository.ts:110–145`
+---
+
+### 1.1 🔴 Transação em `registerBulkAttendanceService`
+
+**Problema:** O fluxo de frequência em lote (chamada por turma) já não faz 2N roundtrips (resolvido em 1.1 histórico), porém ainda **não está envolto em transação**. Falha parcial pode deixar notas/presenças pela metade.
+
+**Arquivo:** `apps/api/src/modules/academic/academic.service.ts` (`registerBulkAttendanceService`)
 
 **O que fazer:**
-- [ ] Criar `upsertBulkAttendanceRepository(rows[])` que usa `INSERT ... ON CONFLICT DO UPDATE` em um único statement
-- [ ] Substituir o `Promise.all(map(...))` no service pela nova função batch
-- [ ] Atualizar o teste unitário de `academic.service`
-- [ ] Validar que o comportamento de upsert (não duplicar registro do mesmo aluno na mesma data) é mantido
+- [ ] Envolver o fluxo em `db.transaction(async (tx) => { ... })` para garantir atomicidade
+- [ ] Tratar rollback explícito em caso de violação de unique constraint
+- [ ] Adicionar teste de integração que cubra o caminho de rollback
 
 ---
 
-### 1.2 🔴 Transações nas operações multi-step
+### 1.2 🔴 Transação em `addStudentToClassService` (race de capacidade)
 
-**Problema:** `registerPaymentService` e `registerBulkAttendanceService` têm race condition — dois requests simultâneos podem passar pela verificação de estado antes de qualquer um escrever.
+**Problema:** Check de capacidade + insert da matrícula roda em queries separadas. Dois requests simultâneos podem ambos passar pelo check antes de qualquer `INSERT`, excedendo `maxStudents` da turma.
 
-**Arquivos:** `financial.service.ts:55–62`, `academic.service.ts:73–88`
+**Arquivo:** `apps/api/src/modules/classes/schoolClasses.service.ts`
 
 **O que fazer:**
-- [ ] Envolver `registerPaymentService` em `db.transaction(async (tx) => { ... })` — SELECT + UPDATE dentro da mesma transação
-- [ ] Envolver `registerBulkAttendanceService` em transação para garantir rollback parcial
-- [ ] Verificar se `addStudentToClassService` (check de capacidade + insert) também precisa de transação
-- [ ] Adicionar testes que cobrem o caminho de rollback
+- [ ] Mover check + insert para `db.transaction(async (tx) => { ... })`
+- [ ] Considerar `SELECT ... FOR UPDATE` no `schoolClasses` para lockar a linha durante a transação
+- [ ] Adicionar teste concorrente (Promise.all) que dispare o limite de capacidade
 
 ---
 
-### 1.3 🔴 Paginação nas listagens de volume
+### 1.3 🟡 Validação de overlap de datas em `POST /academic-periods`
 
-**Problema:** `findAllStudentsRepository`, `findAllTuitionsRepository` e `findAllTeachersRepository` retornam todas as linhas sem limite.
+**Problema:** Não há checagem de sobreposição entre períodos letivos do mesmo ano (`1º bimestre 01/02–30/04` e `2º bimestre 15/04–30/06` passam). Gera dados incoerentes.
 
-**Arquivos:** `students.repository.ts:130`, `financial.repository.ts`, `teachers.repository.ts`
+**Arquivo:** `apps/api/src/modules/academicPeriods/academicPeriods.service.ts`
 
 **O que fazer:**
-- [ ] Adicionar parâmetros `{ limit: number, offset: number }` com defaults (ex: `limit=50, offset=0`) nas três funções de repository
-- [ ] Propagar os parâmetros pelos services correspondentes
-- [ ] Adicionar query params `?page=` e `?limit=` nas routes
-- [ ] Retornar `{ data: [], total: number }` no payload para o frontend saber o total de páginas
-- [ ] Atualizar hooks do frontend (`useStudents`, `useTeachers`, `useTuitions`) para consumir o novo formato
-- [ ] Atualizar testes unitários
+- [ ] Adicionar validação de overlap no service (não apenas no schema Zod) usando helpers de intervalo
+- [ ] Reutilizar helper em `src/lib/validators.ts`
+- [ ] Adicionar teste unitário cobrindo todos os tipos de overlap (fronteira, parcial, total)
 
 ---
 
-### 1.4 🔴 Corrigir type coercion `number → string`
+## Fase 2 — Segurança e operação
 
-**Problema:** `value: input.value.toString()` e `amount: input.amount.toString()` criam assimetria de tipos entre service (number) e repository (string), causando bugs sutis em soma e ordenação.
+> **Meta:** Endurecer autenticação, observabilidade e ciclo de vida de mensalidades.
+> **Prazo sugerido:** 2–3 semanas após Fase 1
 
-**Arquivos:** `academic.service.ts:46`, `financial.service.ts:35`, `financial.service.ts:50`
+---
+
+### 2.1 🔴 Rate-limit em `POST /sessions`
+
+**Problema:** Login não tem rate-limit. Brute-force trivial.
+
+**Arquivo:** `apps/api/src/modules/auth/auth.routes.ts`, `apps/api/src/app.ts`
 
 **O que fazer:**
-- [ ] No schema Drizzle (`academic.ts`, `financial.ts`), adicionar `.$type<number>()` nos campos `numeric` para que o ORM retorne `number` em vez de `string`
-- [ ] Remover os `.toString()` nos services
-- [ ] Remover os type casts de volta nos repositories
-- [ ] Verificar e corrigir qualquer lugar no frontend que faça `parseFloat()` manualmente sobre esses campos
-- [ ] Rodar os testes para garantir que nenhum snapshot quebrou
+- [ ] Adicionar `@fastify/rate-limit` ao projeto (dependência ainda não instalada)
+- [ ] Configurar limite em `POST /sessions` (ex: 10 req/min por IP)
+- [ ] Adicionar teste e2e que valide o retorno 429 após o limite
+- [ ] Documentar em `apps/api/docs/openapi.yaml` o header `Retry-After`
 
 ---
 
-## Fase 2 — Performance e Segurança de Dados
-> **Meta:** Garantir que o sistema aguenta crescimento de dados sem degradar.
-> **Prazo sugerido:** 3–4 semanas após Fase 1
+### 2.2 🟡 Job de `overdue` para mensalidades
 
----
+**Problema:** `tuitions.status` depende de job externo. Sem ele, mensalidades vencidas ficam com `status='pending'` para sempre.
 
-### 2.1 🟡 Índices explícitos nas tabelas de volume
-
-**Problema:** `grades`, `attendances` e `tuitions` crescem sem limite. Queries de listagem por `classId + date`, `studentId + academicPeriodId` e `schoolId + status` não têm índices explícitos.
-
-**Arquivo:** `apps/api/src/db/schema/academic.ts`, `financial.ts`
+**Arquivo:** `apps/api/src/modules/financial/financial.repository.ts` e novo `financial.jobs.ts`
 
 **O que fazer:**
-- [ ] Adicionar no schema:
-  ```ts
-  // attendances
-  index('att_class_date_idx').on(attendances.classId, attendances.date)
-  index('att_student_idx').on(attendances.studentId)
-
-  // grades
-  index('grades_student_period_idx').on(grades.studentId, grades.academicPeriodId)
-  index('grades_class_idx').on(grades.classId)
-
-  // tuitions
-  index('tuitions_school_status_idx').on(tuitions.schoolId, tuitions.status)
-  index('tuitions_due_date_idx').on(tuitions.dueDate)
-  ```
-- [ ] Gerar e aplicar a migration (`pnpm db:generate && pnpm db:migrate`)
-- [ ] Validar com `EXPLAIN ANALYZE` nas queries mais frequentes
+- [ ] Criar `markOverdueTuitionsJob()` que executa `UPDATE tuitions SET status='overdue' WHERE status='pending' AND dueDate < NOW()`
+- [ ] Registrar scheduler no boot (`app.ts` ou script standalone `src/scripts/overdue.ts`)
+- [ ] Configurar frequência (diária, próximo do início do dia)
+- [ ] Adicionar teste que valide a transição de status
 
 ---
 
-### 2.2 ✅ Soft delete nas entidades core
+### 2.3 🟡 Hard delete real para admin (LGPD)
 
-**Status:** Implementado — coluna `deletedAt` nas tabelas `students`, `teachers`, `schools`.
+**Problema:** Soft delete cobre o fluxo operacional, mas admin não tem como remover um registro permanentemente — necessário para conformidade com LGPD.
 
-**O que fazer (próximos passos):**
-- [ ] Criar endpoint admin `DELETE /students/:id/permanent` (hard delete real, apenas para admin)
-- [ ] Atualizar testes unitários
-
----
-
-### 2.3 🟡 Otimizar `upsertGradeRepository` — 3 queries → 1
-
-**Problema:** Cada upsert de nota faz SELECT + (UPDATE ou INSERT) + SELECT com JOIN = 3 roundtrips.
-
-**Arquivo:** `academic.repository.ts:38–90`
+**Arquivo:** `apps/api/src/modules/students/students.routes.ts` (e equivalente para `teachers`, `schools`)
 
 **O que fazer:**
-- [ ] Refatorar para usar `INSERT ... ON CONFLICT (schoolId, classId, studentId, subjectId, academicPeriodId) DO UPDATE SET value = excluded.value RETURNING *`
-- [ ] Fazer o JOIN na query de retorno dentro do mesmo statement usando CTE ou subquery
-- [ ] Adicionar constraint `UNIQUE` no schema para o conjunto de colunas acima (necessário para o ON CONFLICT funcionar)
-- [ ] Gerar migration para a unique constraint
-- [ ] Atualizar testes
+- [ ] Criar endpoint admin `DELETE /students/:id/permanent` (e `/teachers/:id/permanent`, `/schools/:id/permanent`)
+- [ ] Garantir `authorizeRoles(['admin'])` apenas
+- [ ] Cascade explícito das dependências (responsáveis, ficha médica, documentos, notas, mensalidades)
+- [ ] Adicionar log de auditoria com flag `permanent: true` para diferenciar de soft delete
+- [ ] Testes e2e cobrindo 403 (não-admin) e sucesso (admin)
 
 ---
 
-## Fase 3 — Qualidade de Manutenção
-> **Meta:** Reduzir o custo de cada nova feature nos módulos core.
-> **Prazo sugerido:** 4–6 semanas após Fase 2
+## Fase 3 — Qualidade de manutenção e DX
+
+> **Meta:** Reduzir custo de cada nova feature nos módulos core.
+> **Prazo sugerido:** 3–4 semanas após Fase 2
 
 ---
 
 ### 3.1 🟡 Eliminar cross-module imports diretos no repository
 
-**Problema:** `academic.service` importa de `students.repository` e `classes.repository`. `financial.service` importa de `students.repository`. Mudanças de assinatura em qualquer um desses repositories vai quebrar os outros módulos silenciosamente.
+**Problema:** Services ainda podem importar `repository` de outros módulos em alguns pontos (ex: `academic.service` ↔ `students.repository`). Mudança de assinatura em um repository quebra silenciosamente o módulo vizinho.
 
-**Arquivos:** `academic.service.ts:9–10`, `financial.service.ts:9`
+**Arquivos:** `apps/api/src/modules/academic/academic.service.ts`, `apps/api/src/modules/financial/financial.service.ts`
 
 **O que fazer:**
-- [ ] Substituir `findStudentByIdRepository(schoolId, id)` em `academic.service` pela chamada `getStudentService(schoolId, id)` — que já tem o erro encapsulado
-- [ ] Substituir `findSchoolClassByIdRepository(schoolId, id)` em `academic.service` por `getSchoolClassService(schoolId, id)`
-- [ ] Substituir `findStudentByIdRepository(schoolId, id)` em `financial.service` por `getStudentService(schoolId, id)`
-- [ ] Remover os imports de repository nos modules não-donos
-- [ ] Atualizar mocks nos testes unitários correspondentes
+- [ ] Auditar imports cruzados (grep `from .*\.repository` em services de outros módulos)
+- [ ] Substituir por chamadas ao service correspondente (`getStudentService(schoolId, id)` em vez de `findStudentByIdRepository(schoolId, id)`)
+- [ ] Atualizar mocks nos testes unitários
 
 ---
 
-### 3.2 ✅ Query unificada de perfil completo do aluno
+### 3.2 🟡 Validações de domínio no service layer
 
-**Status:** Implementado — função `findStudentProfileRepository` retorna aluno + responsáveis + ficha médica em um único resultado.
+**Problema:** Validações estão concentradas nas routes (Zod). Se o service for chamado diretamente (testes, scripts, jobs), dados inválidos chegam ao banco.
 
-**O que fazer (próximos passos):**
-- [ ] Criar `findStudentsExportRepository(schoolId, filters)` para futura exportação CSV
+**O que fazer:**
+- [ ] Adicionar validação de range em `registerGradeService`: `0 <= value <= 10`
+- [ ] Adicionar validação em `createTuitionService`: `amount > 0`
+- [ ] Adicionar validação de formato ISO em campos de data recebidos como string
+- [ ] Mover/criar helpers de validação em `src/lib/validators.ts` para reutilizar entre modules
+- [ ] Cobrir com testes unitários
+
+---
+
+### 3.3 🟢 Endpoint de exportação CSV de alunos
+
+**Problema:** Operadores escolares pedem planilha de alunos para conferência manual. Hoje é necessário abrir o Drizzle Studio.
+
+**Arquivo:** `apps/api/src/modules/students/students.repository.ts`, `students.routes.ts`
+
+**O que fazer:**
+- [ ] Criar `findStudentsExportRepository(schoolId, filters)` retornando colunas planas
+- [ ] Adicionar rota `GET /students/export.csv` (gestor, secretaria) com `Content-Type: text/csv`
+- [ ] Gerar CSV em streaming para não carregar tudo em memória
 - [ ] Documentar o tipo de retorno com interface TypeScript explícita
 
 ---
 
-### 3.3 🟢 Validações de domínio nos services
+### 3.4 🟢 CI — typecheck + build em todo PR
 
-**Problema:** Validações estão apenas nas routes (Zod). Se o service for chamado diretamente (testes, scripts, outros módulos), dados inválidos chegam ao banco.
+**Problema:** Não há workflow de GitHub Actions executando `pnpm typecheck` e `pnpm build` em PRs. Builds quebrados só são descobertos no deploy.
 
 **O que fazer:**
-- [ ] Adicionar validação de range em `registerGradeService`: nota entre 0 e 10
-- [ ] Adicionar validação em `createTuitionService`: `amount > 0`
-- [ ] Adicionar validação de formato ISO em campos de data recebidos como string
-- [ ] Criar helpers de validação em `src/lib/validators.ts` para reutilizar entre modules
-
----
-
-### 3.4 ✅ Log de auditoria nas operações sensíveis
-
-**Status:** Implementado — tabela `audit_logs` com funções de log em `src/lib/audit.ts`.
-
-**O que fazer (próximos passos):**
-- [ ] Criar endpoint `GET /audit-logs` (apenas gestor/admin) com filtro por entidade e período
+- [ ] Criar `.github/workflows/ci.yml` rodando em `pull_request` e `push` na `main`
+- [ ] Steps: `pnpm install`, `pnpm --filter api build`, `pnpm --filter web build`, `pnpm test`
+- [ ] Cache de `~/.local/share/pnpm/store` para acelerar
+- [ ] Bloquear merge se a pipeline falhar (branch protection rule)
 
 ---
 
@@ -195,22 +195,34 @@
 Itens identificados mas sem urgência imediata. Revisar a cada ciclo de planejamento.
 
 - [ ] **Cache Redis no dashboard** — métricas do dashboard são computadas a cada request; com Redis, uma TTL de 60s já elimina 95% das queries redundantes
-- [ ] **Importação de notas e frequência via planilha** — depende do item 1.1 (batch insert) estar resolvido antes
+- [ ] **Importação de notas e frequência via planilha** — depende de UI dedicada de upload + parser CSV
 - [ ] **Evento de matrícula → geração automática de mensalidades** — hoje as mensalidades são criadas manualmente; quando um aluno for matriculado, gerar automaticamente os 12 registros do ano
-- [ ] **Exportação de boletim em PDF** — depende do item 3.2 (query unificada de perfil) estar resolvido
+- [ ] **Exportação de boletim em PDF** — depende da query unificada de perfil (3.2 histórico, já concluído)
 - [ ] **Histórico de transferências** — tabela `student_transfers` para rastrear movimentações entre escolas sem perder o vínculo com dados anteriores
+- [ ] **Frontend — code splitting por rota** — usar `React.lazy` + `Suspense` para reduzir o bundle inicial
+- [ ] **Frontend — verificação de expiração do JWT (`exp`)** — logout automático no `AuthContext` sem depender apenas do interceptor 401
+- [ ] **Frontend — testes unit de componentes e hooks** — atualmente há 1 arquivo de teste; expandir para schemas Zod, hooks e pages principais
+- [ ] **Frontend — testes E2E com Playwright** — fluxos críticos: login, matrícula, lançamento de nota, pagamento
 
 ---
 
 ## Visão geral das fases
 
 ```
-Fase 1 (Crítico)          Fase 2 (Performance)       Fase 3 (Manutenção)
-──────────────────         ────────────────────         ───────────────────
-1.1 Batch frequência  →    2.1 Índices de volume   →    3.1 Cross-module imports
-1.2 Transações        →    2.2 Soft delete ✅      →    3.2 Query perfil aluno ✅
-1.3 Paginação         →    2.3 Otimizar upsertGrade →   3.3 Validações no service
-1.4 Type coercion     →                                  3.4 Log de auditoria ✅
+Débitos já resolvidos (histórico)        Em aberto
+─────────────────────────────             ───────────────────────────
+1.1 Batch frequência  ✅                 1.1 Transação em bulk attendance
+1.2 Paginação         ✅                 1.2 Transação em addStudentToClass
+1.3 Transação pagamento ✅               1.3 Overlap de academic periods
+1.4 Type coercion     ✅
+2.1 Índices           ✅                 2.1 Rate-limit em /sessions
+2.2 Soft delete       ✅                 2.2 Job de overdue
+2.3 Upsert grade      ✅                 2.3 Hard delete admin (LGPD)
+3.2 Perfil aluno      ✅
+3.4 Audit log         ✅                 3.1 Cross-module imports
+                                          3.2 Validações no service
+                                          3.3 Exportação CSV
+                                          3.4 CI — typecheck + build
 ```
 
 Cada fase só deve começar depois que a anterior estiver com testes passando e deploy validado em ambiente de desenvolvimento.
