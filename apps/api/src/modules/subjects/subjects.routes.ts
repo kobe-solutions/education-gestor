@@ -12,14 +12,15 @@ import {
   deleteSubjectService,
 } from './subjects.service'
 
-const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor'])]
+const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor', 'professor'])]
+const writePreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor'])]
 
 export async function subjectsRoutes(app: FastifyInstance) {
-  app.get('/subjects', { preHandler }, async (request, reply) => {
+  app.get('/subjects', { preHandler: readPreHandler }, async (request, reply) => {
     return reply.send(await listSubjectsService(getSchoolId(request)))
   })
 
-  app.get('/subjects/:id', { preHandler }, async (request, reply) => {
+  app.get('/subjects/:id', { preHandler: readPreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       return reply.send(await getSubjectService(getSchoolId(request), id))
@@ -31,7 +32,7 @@ export async function subjectsRoutes(app: FastifyInstance) {
     }
   })
 
-  app.post('/subjects', { preHandler }, async (request, reply) => {
+  app.post('/subjects', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const body = createSubjectBodySchema.parse(request.body)
       const subject = await createSubjectService({ schoolId: getSchoolId(request), ...body })
@@ -49,7 +50,7 @@ export async function subjectsRoutes(app: FastifyInstance) {
     }
   })
 
-  app.put('/subjects/:id', { preHandler }, async (request, reply) => {
+  app.put('/subjects/:id', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       const body = updateSubjectBodySchema.parse(request.body)
@@ -63,7 +64,7 @@ export async function subjectsRoutes(app: FastifyInstance) {
     }
   })
 
-  app.delete('/subjects/:id', { preHandler }, async (request, reply) => {
+  app.delete('/subjects/:id', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       await deleteSubjectService(getSchoolId(request), id)

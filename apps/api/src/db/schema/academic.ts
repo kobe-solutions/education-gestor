@@ -52,4 +52,5 @@ export const attendances = pgTable('attendances', {
 }, (table) => ({
   classDateIdx: index('att_class_date_idx').on(table.classId, table.date),
   studentIdx: index('att_student_idx').on(table.studentId),
+  uniqueAttendance: uniqueIndex('attendance_unique_idx').on(table.schoolId, table.classId, table.studentId, table.date),
 }))

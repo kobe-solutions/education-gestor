@@ -5,16 +5,15 @@ export interface TimetableSlot {
   id: string
   schoolId: string
   classId: string
-  academicPeriodId: string
+  academicYearId: string
+  classPeriodId: string
   subjectId: string
   teacherId: string
   weekDay: string
-  startTime: string
-  endTime: string
   createdAt: string
   subject: { id: string; name: string }
   teacher: { id: string; name: string }
-  academicPeriod: { id: string; name: string }
+  classPeriod: { id: string; name: string; startTime: string; endTime: string; order: number }
 }
 
 export const WEEK_DAY_LABELS: Record<string, string> = {
@@ -30,12 +29,11 @@ export const WEEK_DAYS_ORDER = ['monday', 'tuesday', 'wednesday', 'thursday', 'f
 
 interface CreateInput {
   classId: string
-  academicPeriodId: string
+  academicYearId: string
+  classPeriodId: string
   subjectId: string
   teacherId: string
   weekDay: string
-  startTime: string
-  endTime: string
 }
 
 interface UpdateInput {

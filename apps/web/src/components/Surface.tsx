@@ -8,8 +8,8 @@ export function Surface({ children, className }: SurfaceProps) {
     <div
       className={className}
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--iris-slate-200)',
+        background: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
         borderRadius: 12,
         overflow: 'hidden',
         boxShadow: 'var(--shadow-sm)',

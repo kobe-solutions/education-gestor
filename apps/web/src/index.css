@@ -1,10 +1,22 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
+::selection {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
 
-@custom-variant dark (&:is(.dark *));
+@theme {
+  /* Fonts */
+  --font-outfit: "Outfit", sans-serif;
 
-@theme inline {
+  /* Border Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+
+  /* Colors */
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
@@ -13,9 +25,11 @@
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-glow: hsl(var(--primary-glow));
 
   --color-secondary: hsl(var(--secondary));
   --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-glow: hsl(var(--secondary-glow));
 
   --color-destructive: hsl(var(--destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
@@ -26,314 +40,303 @@
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
 
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
 
-  --color-iris-50: #eef2ff;
-  --color-iris-300: #a5b4fc;
-  --color-iris-500: #818cf8;
-  --color-iris-700: #4f46e5;
-  --color-iris-900: #312e81;
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-elevated: hsl(var(--card-elevated));
 
-  --font-sans:
-    'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-xl: 14px;
-  --radius-2xl: 20px;
+  /* Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-up: fade-up 0.6s ease-out forwards;
+  --animate-fade-in: fade-in 0.5s ease-out forwards;
+  --animate-scale-in: scale-in 0.4s ease-out forwards;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
 
-  --shadow-iris-sm:
-    0 1px 2px rgba(4, 44, 83, 0.06), 0 1px 1px rgba(4, 44, 83, 0.04);
-  --shadow-iris-md:
-    0 4px 12px -2px rgba(4, 44, 83, 0.08), 0 2px 4px -2px rgba(4, 44, 83, 0.06);
-  --shadow-iris-lg:
-    0 12px 28px -6px rgba(4, 44, 83, 0.12),
-    0 4px 10px -2px rgba(4, 44, 83, 0.06);
-  --shadow-iris-focus: 0 0 0 3px rgba(79, 70, 229, 0.35);
-}
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
 
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes fade-up {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scale-in {
+    0% {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pulse-soft {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.7;
+    }
   }
 }
 
-@utility tbl {
-  /* Tabela padrão IRIS — use .tbl nas páginas */
-  @apply w-full border-collapse;
-  & th {
-    @apply px-4 py-3 text-left text-xs font-medium uppercase border-b border-border;
-    background: var(--iris-slate-50);
-    color: var(--iris-slate-500);
-    letter-spacing: 0.06em;
-  }
-  & td {
-    @apply px-4 py-3 text-sm border-b;
-    border-color: var(--iris-slate-100);
-  }
-  & tbody tr:hover td {
-    background: var(--iris-slate-50);
-  }
-  & tbody tr:last-child td {
-    @apply border-b-0;
-  }
+:root {
+  /* Primary - Indigo */
+  --primary: 245 58% 51%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 245 58% 61%;
+
+  /* Secondary - Indigo (tom mais claro para contraste) */
+  --secondary: 230 93% 82%;
+  --secondary-foreground: 228 56% 16%;
+  --secondary-glow: 230 100% 88%;
+
+  /* Backgrounds */
+  --background: 0 0% 100%;
+  --foreground: 228 56% 16%;
+
+  /* Cards & Surfaces */
+  --card: 0 0% 100%;
+  --card-foreground: 228 56% 16%;
+  --card-elevated: 230 67% 98%;
+
+  /* Muted */
+  --muted: 230 20% 96%;
+  --muted-foreground: 220 10% 45%;
+
+  /* Accent */
+  --accent: 230 67% 95%;
+  --accent-foreground: 245 58% 35%;
+
+  /* Borders */
+  --border: 230 20% 90%;
+  --input: 230 20% 90%;
+  --ring: 245 58% 51%;
+
+  /* Popover */
+  --popover: 0 0% 100%;
+  --popover-foreground: 228 56% 16%;
+
+  /* Destructive */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+
+  --radius: 0.75rem;
+
+  /* Layout */
+  --header-h: 60px;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, hsl(245, 58%, 51%) 0%, hsl(245, 58%, 61%) 100%);
+  --gradient-secondary: linear-gradient(135deg, hsl(230, 93%, 82%) 0%, hsl(230, 100%, 88%) 100%);
+  --gradient-hero: linear-gradient(180deg, hsl(230, 67%, 98%) 0%, hsl(0, 0%, 100%) 100%);
+  --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%) 0%, hsl(230, 67%, 98%) 100%);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px -2px hsl(245 58% 51% / 0.1);
+  --shadow-md: 0 8px 24px -8px hsl(245 58% 51% / 0.15);
+  --shadow-lg: 0 16px 48px -16px hsl(245 58% 51% / 0.2);
+  --shadow-glow: 0 0 40px hsl(245 58% 61% / 0.3);
+  --shadow-orange-glow: 0 0 40px hsl(230 93% 82% / 0.3);
+
+  /* Sidebar */
+  --sidebar-background: 230 67% 98%;
+  --sidebar-foreground: 228 56% 16%;
+  --sidebar-primary: 245 58% 51%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 230 67% 95%;
+  --sidebar-accent-foreground: 245 58% 35%;
+  --sidebar-border: 230 20% 90%;
+  --sidebar-ring: 245 58% 51%;
 }
 
-@utility iris-table {
-  @apply w-full border-collapse;
-  & th {
-    @apply px-4 py-3 text-left text-xs font-medium uppercase border-b border-border;
-    background: var(--iris-slate-50);
-    color: var(--iris-slate-500);
-    letter-spacing: 0.06em;
-  }
-  & td {
-    @apply px-4 py-3 text-sm border-b;
-    border-color: var(--iris-slate-100);
-  }
-  & tbody tr:hover td {
-    background: var(--iris-slate-50);
-  }
-  & tbody tr:last-child td {
-    @apply border-b-0;
-  }
+.dark {
+  --primary: 245 58% 61%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 245 58% 71%;
+
+  --secondary: 230 25% 15%;
+  --secondary-foreground: 228 40% 92%;
+
+  --background: 230 25% 8%;
+  --foreground: 0 0% 98%;
+
+  --card: 230 25% 12%;
+  --card-foreground: 0 0% 98%;
+  --card-elevated: 230 25% 15%;
+
+  --muted: 230 25% 18%;
+  --muted-foreground: 220 10% 60%;
+
+  --accent: 245 30% 15%;
+  --accent-foreground: 245 58% 71%;
+
+  --border: 230 25% 20%;
+  --input: 230 25% 20%;
+  --ring: 245 58% 61%;
+
+  --popover: 230 25% 12%;
+  --popover-foreground: 0 0% 98%;
+
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --gradient-hero: linear-gradient(180deg, hsl(230, 25%, 10%) 0%, hsl(230, 25%, 8%) 100%);
+  --gradient-card: linear-gradient(145deg, hsl(230, 25%, 15%) 0%, hsl(230, 25%, 12%) 100%);
+
+  --sidebar-background: 230 25% 10%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 245 58% 66%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 245 30% 15%;
+  --sidebar-accent-foreground: 245 58% 71%;
+  --sidebar-border: 230 25% 20%;
+  --sidebar-ring: 245 58% 66%;
 }
 
-@utility touch-target {
-  /* Touch targets — iOS/Android minimum 44px */
-  min-height: 44px;
-  min-width: 44px;
+* {
+  border-color: hsl(var(--border));
 }
 
-@utility table-scroll {
-  /* Table responsive wrapper */
-  @apply overflow-x-auto -mx-4 md:mx-0;
-  & > * {
-    @apply min-w-[600px] px-4 md:px-0;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
-@layer base {
-  :root {
-    /* shadcn / Tailwind HSL contract — mapeado para paleta IRIS Indigo */
-    --background: 210 40% 98%;          /* #F8FAFC */
-    --foreground: 228 56% 16%;          /* #312E81 */
-    --card: 0 0% 100%;
-    --card-foreground: 228 56% 16%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 228 56% 16%;
-    --primary: 245 58% 51%;             /* #4F46E5 */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 230 67% 95%;           /* #EEF2FF */
-    --secondary-foreground: 228 56% 16%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;    /* #6B7280 */
-    --accent: 230 67% 97%;
-    --accent-foreground: 228 56% 16%;
-    --destructive: 0 72% 42%;           /* #B91C1C */
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%;              /* #E5E7EB */
-    --input: 220 13% 91%;
-    --ring: 245 58% 61%;
-    --radius: 0.625rem;                 /* 10px */
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-outfit);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    /* Tokens IRIS — hex diretos para uso fora do Tailwind */
-    --iris-blue-900: #312E81;
-    --iris-blue-700: #4F46E5;
-    --iris-blue-500: #818CF8;
-    --iris-blue-300: #A5B4FC;
-    --iris-blue-50:  #EEF2FF;
-    --iris-graphite: #2C2C2A;
-    --iris-ink:      #0B1E33;
-    --iris-slate-900: #1F2A37;
-    --iris-slate-700: #374151;
-    --iris-slate-500: #6B7280;
-    --iris-slate-300: #D1D5DB;
-    --iris-slate-200: #E5E7EB;
-    --iris-slate-100: #F1F5F9;
-    --iris-slate-50:  #F8FAFC;
+@utility text-gradient-primary {
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
-    /* Semânticos de estado */
-    --iris-success-600: #15803D;
-    --iris-success-50:  #DCFCE7;
-    --iris-warning-600: #B45309;
-    --iris-warning-50:  #FEF3C7;
-    --iris-danger-600:  #B91C1C;
-    --iris-danger-50:   #FEE2E2;
-    --iris-info-600:    #4F46E5;
-    --iris-info-50:     #EEF2FF;
+@utility text-gradient-secondary {
+  background: linear-gradient(to right, hsl(var(--secondary)), hsl(var(--secondary-glow)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
-    /* Semânticos de foreground/surface */
-    --fg-1: var(--iris-blue-900);
-    --fg-2: var(--iris-graphite);
-    --fg-3: var(--iris-slate-500);
-    --bg-app:     var(--iris-slate-50);
-    --bg-surface: #FFFFFF;
-    --bg-tint:    var(--iris-blue-50);
+@utility bg-gradient-primary {
+  background: var(--gradient-primary);
+}
 
-    /* Tipografia */
-    --font-body:  "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-mono:  "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+@utility bg-gradient-secondary {
+  background: var(--gradient-secondary);
+}
 
-    /* Elevação (sombras com tint indigo) */
-    --shadow-xs: 0 1px 1px rgba(49,46,129,.04);
-    --shadow-sm: 0 1px 2px rgba(49,46,129,.06), 0 1px 1px rgba(49,46,129,.04);
-    --shadow-md: 0 4px 12px -2px rgba(49,46,129,.08), 0 2px 4px -2px rgba(49,46,129,.06);
-    --shadow-lg: 0 12px 28px -6px rgba(49,46,129,.12), 0 4px 10px -2px rgba(49,46,129,.06);
-    --shadow-focus: 0 0 0 3px rgba(79,70,229,.35);
+@utility bg-gradient-hero {
+  background: var(--gradient-hero);
+}
 
-    /* Layout */
-    --sidebar-w: 72px;
-    --sidebar-expanded-w: 220px;
-    --header-h:  56px;
+@utility bg-gradient-card {
+  background: var(--gradient-card);
+}
+
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+@utility shadow-orange-glow {
+  box-shadow: var(--shadow-orange-glow);
+}
+
+@utility glass {
+  background-color: hsl(var(--card) / 0.8);
+  backdrop-filter: blur(24px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+@utility custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
 
-  /* ── Dark mode ──────────────────────────────────────────────────────── */
-  .dark {
-    /* shadcn HSL tokens */
-    --background: 230 25% 8%;           /* #0B1120 */
-    --foreground: 228 40% 92%;          /* #E0E7FF */
-    --card: 230 25% 12%;               /* #151D2E */
-    --card-foreground: 228 40% 92%;
-    --popover: 230 25% 12%;
-    --popover-foreground: 228 40% 92%;
-    --primary: 245 58% 61%;            /* #818CF8 — indigo vibrante */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 230 25% 15%;
-    --secondary-foreground: 228 40% 92%;
-    --muted: 230 25% 15%;
-    --muted-foreground: 220 14% 60%;
-    --accent: 230 25% 18%;
-    --accent-foreground: 228 40% 92%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 230 20% 18%;
-    --input: 230 20% 18%;
-    --ring: 245 58% 71%;
-
-    /* IRIS brand hex tokens */
-    --iris-blue-900: #C7D2FE;
-    --iris-blue-700: #818CF8;
-    --iris-blue-500: #A5B4FC;
-    --iris-blue-300: #C7D2FE;
-    --iris-blue-50:  #1E1B4B;
-
-    --iris-graphite: #E5E7EB;
-    --iris-ink:      #F1F5F9;
-
-    --iris-slate-900: #F1F5F9;
-    --iris-slate-700: #CBD5E1;
-    --iris-slate-500: #94A3B8;
-    --iris-slate-300: #475569;
-    --iris-slate-200: #334155;
-    --iris-slate-100: #151D2E;
-    --iris-slate-50:  #0B1120;
-
-    /* Semantic surfaces */
-    --fg-1: var(--iris-blue-900);
-    --fg-2: var(--iris-graphite);
-    --fg-3: var(--iris-slate-500);
-    --bg-app:     #0B1120;
-    --bg-surface: #151D2E;
-    --bg-tint:    #1E2742;
-
-    /* State semantic tokens — darker backgrounds for dark mode */
-    --iris-success-600: #22C55E;
-    --iris-success-50:  #052E16;
-    --iris-warning-600: #F59E0B;
-    --iris-warning-50:  #422006;
-    --iris-danger-600:  #EF4444;
-    --iris-danger-50:   #450A0A;
-    --iris-info-600:    #818CF8;
-    --iris-info-50:     #1E1B4B;
-
-    /* Shadows — stronger for dark backgrounds */
-    --shadow-xs: 0 1px 1px rgba(0,0,0,.30);
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.36), 0 1px 1px rgba(0,0,0,.24);
-    --shadow-md: 0 4px 12px -2px rgba(0,0,0,.44), 0 2px 4px -2px rgba(0,0,0,.30);
-    --shadow-lg: 0 12px 28px -6px rgba(0,0,0,.56), 0 4px 10px -2px rgba(0,0,0,.30);
-    --shadow-focus: 0 0 0 3px rgba(79,70,229,.50);
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
-}
 
-@layer base {
-  * {
-    @apply border-border;
+  &::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
   }
-  html {
-    font-size: 14px;
-  }
-  body {
-    @apply bg-background text-foreground;
-    font-family: var(--font-body);
-    -webkit-font-smoothing: antialiased;
-    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
-  }
-  .mono, code, kbd, samp {
-    font-family: var(--font-mono);
-    font-size: 0.9em;
-  }
-}
 
-/* Sidebar drawer transitions */
-.sidebar-drawer-enter {
-  transform: translateX(-100%);
-}
-.sidebar-drawer-enter-active {
-  transform: translateX(0);
-  transition: transform 200ms ease-out;
-}
-.sidebar-drawer-exit {
-  transform: translateX(0);
-}
-.sidebar-drawer-exit-active {
-  transform: translateX(-100%);
-  transition: transform 150ms ease-in;
-}
-
-/* Autofill — override browser default to match theme */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px hsl(220 13% 91%) inset !important;
-  -webkit-text-fill-color: hsl(228 56% 16%) !important;
-  caret-color: hsl(228 56% 16%) !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
-.dark input:-webkit-autofill,
-.dark input:-webkit-autofill:hover,
-.dark input:-webkit-autofill:focus,
-.dark input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px hsl(230 20% 18%) inset !important;
-  -webkit-text-fill-color: hsl(228 40% 92%) !important;
-  caret-color: hsl(228 40% 92%) !important;
-  transition: background-color 5000s ease-in-out 0s;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .sidebar-drawer-enter-active,
-  .sidebar-drawer-exit-active {
-    transition: none;
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.4);
   }
 }

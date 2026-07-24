@@ -164,7 +164,7 @@ function ClassColumn({
   return (
     <div
       className={[
-        'flex flex-col rounded-2xl border-2 transition-all duration-150 shrink-0 w-64',
+        'flex flex-col rounded-2xl border-2 transition-all duration-150 shrink-0 w-64 h-full',
         dragOver && !isFull
           ? 'border-primary bg-primary/5 shadow-lg shadow-primary/20 scale-[1.02]'
           : isFull
@@ -238,7 +238,7 @@ function ClassColumn({
       )}
 
       {/* Alunos matriculados */}
-      <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-1 max-h-[380px]">
+      <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-1 min-h-0">
         {enrolled.length === 0 ? (
           <p className="text-[11px] text-muted-foreground text-center py-4">Nenhum aluno matriculado</p>
         ) : (
@@ -332,7 +332,7 @@ export function StudentSchedulingPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] gap-4 overflow-hidden">
+    <div className="flex h-[calc(100vh-5rem)] gap-4 overflow-hidden min-w-0">
 
       {/* ── Sidebar: Alunos ──────────────────────────────────────────────── */}
       <aside className="flex flex-col gap-3 w-72 shrink-0">
@@ -413,7 +413,7 @@ export function StudentSchedulingPage() {
             <p className="text-sm text-muted-foreground">Nenhuma turma cadastrada</p>
           </div>
         ) : (
-          <div className="flex-1 flex gap-4 overflow-x-auto pb-4">
+          <div className="flex-1 flex gap-4 overflow-auto pb-4 items-stretch">
             {filteredClasses.map((schoolClass) => (
               <ClassColumn
                 key={schoolClass.id}

@@ -1,8 +1,11 @@
 import type { FastifyInstance } from 'fastify'
+import { eq } from 'drizzle-orm'
 import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { db } from '../../db'
+import { academicPeriods } from '../../db/schema'
 import { createAcademicPeriodBodySchema, updateAcademicPeriodBodySchema } from './academicPeriods.schema'
 import {
   listAcademicPeriodsService,
@@ -16,6 +19,31 @@ const writeHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secr
 const readHandler = [authenticate, injectTenant]
 
 export async function academicPeriodsRoutes(app: FastifyInstance) {
+  app.get(
+    '/academic-periods',
+    { preHandler: readHandler },
+    async (request, reply) => {
+      const schoolId = getSchoolId(request)
+      const periods = await db
+        .select({
+          id: academicPeriods.id,
+          schoolId: academicPeriods.schoolId,
+          academicYearId: academicPeriods.academicYearId,
+          name: academicPeriods.name,
+          type: academicPeriods.type,
+          order: academicPeriods.order,
+          startDate: academicPeriods.startDate,
+          endDate: academicPeriods.endDate,
+          gradeClosingDate: academicPeriods.gradeClosingDate,
+          createdAt: academicPeriods.createdAt,
+          updatedAt: academicPeriods.updatedAt,
+        })
+        .from(academicPeriods)
+        .where(eq(academicPeriods.schoolId, schoolId))
+      return reply.send(periods)
+    },
+  )
+
   app.get(
     '/academic-years/:yearId/periods',
     { preHandler: readHandler },

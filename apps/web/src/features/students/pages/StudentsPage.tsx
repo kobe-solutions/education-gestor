@@ -71,7 +71,7 @@ export function StudentsPage() {
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             size={14}
-            style={{ color: 'var(--iris-slate-500)' }}
+            style={{ color: 'hsl(var(--muted-foreground))' }}
           />
           <input
             type="text"
@@ -80,11 +80,11 @@ export function StudentsPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
             style={{
-              border: '1px solid var(--iris-slate-300)',
-              background: 'var(--bg-surface)',
-              color: 'var(--iris-blue-900)',
+              border: '1px solid hsl(var(--muted-foreground) / 0.3)',
+              background: 'hsl(var(--card))',
+              color: 'hsl(var(--primary))',
             }}
-            onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'var(--shadow-focus)' }}
+            onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px hsl(var(--ring) / 0.3)' }}
             onBlur={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'none' }}
           />
         </div>
@@ -115,7 +115,7 @@ export function StudentsPage() {
                     <td
                       colSpan={4}
                       className="text-center py-10"
-                      style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                      style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}
                     >
                       {search
                         ? `Nenhum aluno encontrado para "${search}".`
@@ -130,12 +130,12 @@ export function StudentsPage() {
                       onClick={() => navigate(`/students/${s.id}`)}
                     >
                       <td>
-                        <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                        <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
                           {s.name}
                         </span>
                       </td>
                       <td>
-                        <span className="mono text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+                        <span className="mono text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                           {s.enrollmentCode}
                         </span>
                       </td>
@@ -147,18 +147,18 @@ export function StudentsPage() {
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-1 justify-end">
                           <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-primary/10"
                             title="Editar"
                             onClick={() => navigate(`/students/${s.id}`)}
                           >
-                            <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                            <Pencil size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
                           </button>
                           <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-destructive/10"
                             title="Excluir"
                             onClick={() => setDeleteTarget(s.id)}
                           >
-                            <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                            <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
                           </button>
                         </div>
                       </td>

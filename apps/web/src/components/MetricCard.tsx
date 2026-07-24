@@ -13,8 +13,8 @@ export function MetricCard({ icon: Icon, label, value, sub, color = '#4F46E5' }:
     <div
       className="flex items-center gap-3 p-3 md:gap-4 md:p-4 rounded-xl"
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--iris-slate-200)',
+        background: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
         boxShadow: 'var(--shadow-sm)',
       }}
     >
@@ -31,15 +31,15 @@ export function MetricCard({ icon: Icon, label, value, sub, color = '#4F46E5' }:
       <div className="min-w-0">
         <div
           className="font-bold leading-tight tabular-nums"
-          style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.02em' }}
+          style={{ fontSize: 20, color: 'hsl(var(--primary))', letterSpacing: '-0.02em' }}
         >
           {value}
         </div>
-        <div className="text-xs font-medium mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+        <div className="text-xs font-medium mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
           {label}
         </div>
         {sub && (
-          <div className="text-[11px] mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+          <div className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {sub}
           </div>
         )}

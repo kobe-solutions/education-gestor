@@ -40,6 +40,10 @@ import { HubSettingsPage } from './pages/HubSettingsPage'
 import { HubAdminPage } from './pages/HubAdminPage'
 import { AdminActivityPage } from './features/admin/pages/AdminActivityPage'
 import { HubSchoolsPage } from './pages/HubSchoolsPage'
+import { ProfessorDashboardPage } from './features/teacher-dashboard/pages/ProfessorDashboardPage'
+import { ClassPerformancePage } from './features/teacher-dashboard/pages/ClassPerformancePage'
+import { AttendancePage } from './features/teacher-dashboard/pages/AttendancePage'
+import { MyClassesPage } from './features/teacher-dashboard/pages/MyClassesPage'
 
 export function App() {
   return (
@@ -89,6 +93,14 @@ export function App() {
                   <Route path="/academic" element={<AcademicHubPage />} />
                   <Route path="/classes/:id" element={<ClassDetailPage />} />
                   <Route path="/classes/:id/timetable" element={<TimetablePage />} />
+                </Route>
+
+                {/* Professor Dashboard */}
+                <Route element={<PrivateRoute allowedRoles={['professor']} />}>
+                  <Route path="/professor" element={<ProfessorDashboardPage />} />
+                  <Route path="/professor/classes" element={<MyClassesPage />} />
+                  <Route path="/professor/performance" element={<ClassPerformancePage />} />
+                  <Route path="/professor/attendance" element={<AttendancePage />} />
                 </Route>
 
                 {/* Secretaria */}

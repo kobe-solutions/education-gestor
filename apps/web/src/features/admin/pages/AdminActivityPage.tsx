@@ -27,12 +27,12 @@ const ENTITY_LABELS: Record<string, string> = {
 
 function ActionBadge({ action }: { action: string }) {
   const colors: Record<string, { bg: string; fg: string }> = {
-    CREATE: { bg: 'var(--iris-success-50)', fg: 'var(--iris-success-600)' },
-    UPDATE: { bg: 'var(--iris-info-50)', fg: 'var(--iris-info-600)' },
-    DELETE: { bg: 'var(--iris-danger-50)', fg: 'var(--iris-danger-600)' },
-    PAY: { bg: 'var(--iris-warning-50)', fg: 'var(--iris-warning-600)' },
+    CREATE: { bg: 'hsl(142 76% 96%)', fg: 'hsl(142 76% 36%)' },
+    UPDATE: { bg: 'hsl(217 91% 95%)', fg: 'hsl(217 91% 40%)' },
+    DELETE: { bg: 'hsl(0 86% 97%)', fg: 'hsl(var(--destructive))' },
+    PAY: { bg: 'hsl(48 96% 95%)', fg: 'hsl(32 95% 44%)' },
   }
-  const c = colors[action] ?? { bg: 'var(--iris-slate-100)', fg: 'var(--fg-3)' }
+  const c = colors[action] ?? { bg: 'hsl(var(--border))', fg: 'hsl(var(--muted-foreground))' }
   return (
     <span
       className="inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold"
@@ -47,7 +47,7 @@ function RoleBadge({ role }: { role: string }) {
   return (
     <span
       className="inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-semibold"
-      style={{ background: 'var(--iris-slate-100)', color: 'var(--fg-3)' }}
+      style={{ background: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }}
     >
       {role}
     </span>
@@ -80,7 +80,7 @@ export function AdminActivityPage() {
       {/* Filtros */}
       <div className="flex flex-wrap gap-3">
         <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--fg-3)' }}>
+          <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Ação
           </label>
           <select
@@ -88,9 +88,9 @@ export function AdminActivityPage() {
             onChange={(e) => { setActionFilter(e.target.value); setPage(0) }}
             className="h-9 rounded-sm border px-3 text-sm"
             style={{
-              background: 'var(--bg-surface)',
-              borderColor: 'var(--iris-slate-200)',
-              color: 'var(--fg-1)',
+              background: 'hsl(var(--card))',
+              borderColor: 'hsl(var(--border))',
+              color: 'hsl(var(--foreground))',
             }}
           >
             <option value="">Todas</option>
@@ -101,7 +101,7 @@ export function AdminActivityPage() {
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--fg-3)' }}>
+          <label className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Entidade
           </label>
           <select
@@ -109,9 +109,9 @@ export function AdminActivityPage() {
             onChange={(e) => { setEntityFilter(e.target.value); setPage(0) }}
             className="h-9 rounded-sm border px-3 text-sm"
             style={{
-              background: 'var(--bg-surface)',
-              borderColor: 'var(--iris-slate-200)',
-              color: 'var(--fg-1)',
+              background: 'hsl(var(--card))',
+              borderColor: 'hsl(var(--border))',
+              color: 'hsl(var(--foreground))',
             }}
           >
             <option value="">Todas</option>
@@ -130,8 +130,8 @@ export function AdminActivityPage() {
       <div
         className="rounded-xl overflow-hidden"
         style={{
-          background: 'var(--bg-surface)',
-          border: '1px solid var(--iris-slate-200)',
+          background: 'hsl(var(--card))',
+          border: '1px solid hsl(var(--border))',
           boxShadow: 'var(--shadow-sm)',
         }}
       >
@@ -145,11 +145,11 @@ export function AdminActivityPage() {
           <div className="flex flex-col items-center gap-3 py-12 text-center">
             <div
               className="flex items-center justify-center rounded-full"
-              style={{ width: 48, height: 48, background: 'var(--iris-slate-50)', color: 'var(--fg-3)' }}
+              style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
             >
               <Activity size={22} />
             </div>
-            <p className="text-sm font-medium" style={{ color: 'var(--fg-2)' }}>
+            <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
               Nenhum registro encontrado
             </p>
           </div>
@@ -157,12 +157,12 @@ export function AdminActivityPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+                <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                   {['Data / Hora', 'Usuário', 'Ação', 'Entidade'].map((h) => (
                     <th
                       key={h}
                       className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                      style={{ color: 'var(--fg-3)' }}
+                      style={{ color: 'hsl(var(--muted-foreground))' }}
                     >
                       {h}
                     </th>
@@ -173,10 +173,10 @@ export function AdminActivityPage() {
                 {data.items.map((a) => (
                   <tr
                     key={a.id}
-                    className="transition-colors duration-150 hover:bg-[var(--iris-slate-50)]"
-                    style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
+                    className="transition-colors duration-150 hover:bg-accent"
+                    style={{ borderBottom: '1px solid hsl(var(--border))' }}
                   >
-                    <td className="px-5 py-3 tabular-nums text-xs" style={{ color: 'var(--fg-3)' }}>
+                    <td className="px-5 py-3 tabular-nums text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                       {new Date(a.createdAt).toLocaleDateString('pt-BR', {
                         day: '2-digit',
                         month: '2-digit',
@@ -186,7 +186,7 @@ export function AdminActivityPage() {
                       })}
                     </td>
                     <td className="px-5 py-3">
-                      <span className="font-medium text-xs" style={{ color: 'var(--fg-1)' }}>
+                      <span className="font-medium text-xs" style={{ color: 'hsl(var(--foreground))' }}>
                         {a.userId.slice(0, 8)}…
                       </span>
                       <span className="ml-2">
@@ -196,7 +196,7 @@ export function AdminActivityPage() {
                     <td className="px-5 py-3">
                       <ActionBadge action={a.action} />
                     </td>
-                    <td className="px-5 py-3 text-xs" style={{ color: 'var(--fg-3)' }}>
+                    <td className="px-5 py-3 text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                       {ENTITY_LABELS[a.entity] ?? a.entity}
                     </td>
                   </tr>
@@ -210,9 +210,9 @@ export function AdminActivityPage() {
         {data && data.total > PAGE_SIZE && (
           <div
             className="flex items-center justify-between px-5 py-3"
-            style={{ borderTop: '1px solid var(--iris-slate-100)' }}
+            style={{ borderTop: '1px solid hsl(var(--border))' }}
           >
-            <span className="text-xs" style={{ color: 'var(--fg-3)' }}>
+            <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
               Página {page + 1} de {totalPages}
             </span>
             <div className="flex gap-2">

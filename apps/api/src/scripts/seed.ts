@@ -104,6 +104,7 @@ async function main() {
   console.log('🌱 Iniciando seed...')
 
   const senhaHash = hashPassword('senha123')
+  const professoresLog: { escola: string; email: string }[] = []
 
   // -------------------------------------------------------------------------
   // Admin global
@@ -422,6 +423,10 @@ async function main() {
     const professoresInseridos = await db.insert(teachers).values(professoresData).returning()
     console.log(`    → ${professoresInseridos.length} professores`)
 
+    for (const prof of professoresInseridos) {
+      professoresLog.push({ escola: escola.name, email: prof.email })
+    }
+
     // -----------------------------------------------------------------------
     // Vínculo professor ↔ disciplina (2-3 por professor)
     // -----------------------------------------------------------------------
@@ -477,13 +482,15 @@ async function main() {
     console.log(`    → ${turmasInseridas.length} turmas`)
 
     // -----------------------------------------------------------------------
-    // Alunos (60 por escola — 5 por turma)
+    // Alunos (30-35 por turma)
     // -----------------------------------------------------------------------
-    const ALUNOS_POR_TURMA = 5
     const alunosData: (typeof students.$inferInsert)[] = []
+    const alunosPorTurma: number[] = []
 
     for (const turma of turmasInseridas) {
-      for (let i = 0; i < ALUNOS_POR_TURMA; i++) {
+      const alunosNaTurma = 30 + Math.floor(Math.random() * 6) // 30 a 35
+      alunosPorTurma.push(alunosNaTurma)
+      for (let i = 0; i < alunosNaTurma; i++) {
         const { nome, sex } = nomeAleatório()
         const idx = alunosData.length + 1
         alunosData.push({
@@ -558,8 +565,10 @@ async function main() {
     const matriculasData: (typeof classStudents.$inferInsert)[] = []
     let alunoIdx = 0
 
-    for (const turma of turmasInseridas) {
-      for (let i = 0; i < ALUNOS_POR_TURMA; i++) {
+    for (let t = 0; t < turmasInseridas.length; t++) {
+      const turma = turmasInseridas[t]
+      const qtd = alunosPorTurma[t]
+      for (let i = 0; i < qtd; i++) {
         const aluno = alunosInseridos[alunoIdx++]
         matriculasData.push({ classId: turma.id, studentId: aluno.id })
       }
@@ -569,34 +578,66 @@ async function main() {
     console.log(`    → ${matriculasData.length} matrículas em turmas`)
 
     // -----------------------------------------------------------------------
-    // Grade horária (timetable) — seg a sex, 6 períodos por turma
+    // Grade horária (timetable) — seg a sex, min 5 aulas/dia por professor
     // -----------------------------------------------------------------------
-    const DIAS_SEMANA = ['mon', 'tue', 'wed', 'thu', 'fri']
+    const DIAS_SEMANA = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
     const timetableSlotsData: (typeof timetableSlots.$inferInsert)[] = []
     const usedTeacherSlots = new Set<string>()
 
+    // Helper: adicionar slot se não houver conflito
+    function tryAddSlot(teacherId: string, classId: string, dia: string, periodoId: string, subjectId: string) {
+      const key = `${teacherId}-${dia}-${periodoId}`
+      if (usedTeacherSlots.has(key)) return false
+      usedTeacherSlots.add(key)
+      timetableSlotsData.push({
+        schoolId: escola.id,
+        classId,
+        academicYearId: anoLetivo.id,
+        classPeriodId: periodoId,
+        subjectId,
+        teacherId,
+        weekDay: dia,
+      })
+      return true
+    }
+
+    // Fase 1: Garantir min 5 aulas por professor por dia
+    for (const prof of professoresInseridos) {
+      for (const dia of DIAS_SEMANA) {
+        let aulasNesseDia = 0
+        // Tentar colocar o professor em até 5 períodos diferentes
+        const periodosEmbaralhados = [...periodsInseridos].sort(() => Math.random() - 0.5)
+        for (const periodo of periodosEmbaralhados) {
+          if (aulasNesseDia >= 5) break
+          // Escolher uma turma aleatória e disciplina
+          const turma = pick(turmasInseridas)
+          const disc = pick(disciplinasInseridas)
+          if (tryAddSlot(prof.id, turma.id, dia, periodo.id, disc.id)) {
+            aulasNesseDia++
+          }
+        }
+      }
+    }
+
+    // Fase 2: Preencher slots restantes para completar a grade das turmas
     for (const turma of turmasInseridas) {
       for (const dia of DIAS_SEMANA) {
         for (const periodo of periodsInseridos) {
+          const key = `*-${dia}-${periodo.id}`
+          // Verificar se já tem alguém nesse horário nessa turma
+          const temAlguem = timetableSlotsData.some(
+            (s) => s.classId === turma.id && s.weekDay === dia && s.classPeriodId === periodo.id,
+          )
+          if (temAlguem) continue
+
           const disc = pick(disciplinasInseridas)
-          // Encontrar professor vinculado à disciplina, sem conflito no mesmo dia+período+ano
           const candidatos = professoresInseridos.filter((p) => {
-            const key = `${p.id}-${dia}-${periodo.id}`
-            return !usedTeacherSlots.has(key)
+            const k = `${p.id}-${dia}-${periodo.id}`
+            return !usedTeacherSlots.has(k)
           })
           if (candidatos.length === 0) continue
           const prof = pick(candidatos)
-          const key = `${prof.id}-${dia}-${periodo.id}`
-          usedTeacherSlots.add(key)
-          timetableSlotsData.push({
-            schoolId: escola.id,
-            classId: turma.id,
-            academicYearId: anoLetivo.id,
-            classPeriodId: periodo.id,
-            subjectId: disc.id,
-            teacherId: prof.id,
-            weekDay: dia,
-          })
+          tryAddSlot(prof.id, turma.id, dia, periodo.id, disc.id)
         }
       }
     }
@@ -639,8 +680,10 @@ async function main() {
 
     for (const periodo of periodosInseridos) {
       let alunoBase = 0
-      for (const turma of turmasInseridas) {
-        for (let i = 0; i < ALUNOS_POR_TURMA; i++) {
+      for (let t = 0; t < turmasInseridas.length; t++) {
+        const turma = turmasInseridas[t]
+        const qtd = alunosPorTurma[t]
+        for (let i = 0; i < qtd; i++) {
           const aluno = alunosInseridos[alunoBase + i]
           for (const disciplina of disciplinasInseridas) {
             const professor = pick(professoresInseridos)
@@ -655,7 +698,7 @@ async function main() {
             })
           }
         }
-        alunoBase += ALUNOS_POR_TURMA
+        alunoBase += qtd
       }
     }
 
@@ -681,8 +724,10 @@ async function main() {
     }
 
     let alunoBase = 0
-    for (const turma of turmasInseridas) {
-      for (let i = 0; i < ALUNOS_POR_TURMA; i++) {
+    for (let t = 0; t < turmasInseridas.length; t++) {
+      const turma = turmasInseridas[t]
+      const qtd = alunosPorTurma[t]
+      for (let i = 0; i < qtd; i++) {
         const aluno = alunosInseridos[alunoBase + i]
         for (const dia of diasLetivos) {
           frequenciasData.push({
@@ -694,7 +739,7 @@ async function main() {
           })
         }
       }
-      alunoBase += ALUNOS_POR_TURMA
+      alunoBase += qtd
     }
 
     // Inserir em lotes de 500
@@ -737,6 +782,11 @@ async function main() {
   console.log('  Escola:      gestor@colegiosaopaulo.com')
   console.log('  Escola:      gestor@colegionobre.com')
   console.log('  Escola:      gestor@institutofuturo.com')
+  console.log('\nProfessores:')
+  for (const p of professoresLog) {
+    console.log(`  ${p.escola}: ${p.email}`)
+  }
+
   process.exit(0)
 }
 

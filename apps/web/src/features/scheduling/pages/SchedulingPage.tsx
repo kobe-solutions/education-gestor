@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router'
 import { PageHead } from '../../../components/PageHead'
 import type { AxiosError } from 'axios'
 import { useAllTeachers } from '../../teachers/hooks/useTeachers'
-import { useClasses, useAcademicPeriods } from '../../classes/hooks/useClasses'
+import { useClasses, useClassPeriods } from '../../classes/hooks/useClasses'
+import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
 import {
   useAllTimetableSlots,
@@ -141,7 +142,7 @@ function SlotPill({ slot, colorIdx, onRemove }: SlotPillProps) {
       </div>
       <div className="min-w-0">
         <p className="truncate leading-tight" style={{ maxWidth: 100 }}>{slot.subject.name}</p>
-        <p className="text-[10px] opacity-70 font-normal">{slot.startTime}–{slot.endTime}</p>
+        <p className="text-[10px] opacity-70 font-normal">{slot.classPeriod.startTime}–{slot.classPeriod.endTime}</p>
       </div>
       <button
         onClick={onRemove}
@@ -292,8 +293,11 @@ export function SchedulingPage() {
   const { data: teachers = [] } = useAllTeachers()
   const { data: classes = [] } = useClasses()
   const { data: allSlots = [] } = useAllTimetableSlots()
-  const { data: periods = [] } = useAcademicPeriods()
+  const { data: academicYears = [] } = useAcademicYears()
+  const { data: classPeriods = [] } = useClassPeriods()
   const { data: subjects = [] } = useSubjects()
+
+  const activeYear = academicYears.find((y) => y.status === 'active')
 
   const createSlot = useCreateTimetableSlot()
   const deleteSlotMutation = useDeleteTimetableSlot('')
@@ -305,10 +309,8 @@ export function SchedulingPage() {
 
   // Form state
   const [formDay, setFormDay] = useState('monday')
-  const [formStart, setFormStart] = useState('')
-  const [formEnd, setFormEnd] = useState('')
+  const [formClassPeriodId, setFormClassPeriodId] = useState('')
   const [formSubject, setFormSubject] = useState('')
-  const [formPeriod, setFormPeriod] = useState('')
   const [formTeacher, setFormTeacher] = useState('')
 
   // Build color map (teacher id → color index)
@@ -330,13 +332,10 @@ export function SchedulingPage() {
   )
 
   function openAssignForm(classId: string, teacherId?: string, teacherName?: string) {
-    const schoolClass = classes.find((c) => c.id === classId)
     setAssignTarget({ classId, teacherId, teacherName })
     setFormTeacher(teacherId ?? selectedTeacher?.id ?? '')
-    setFormPeriod(schoolClass?.academicPeriodId ?? periods[0]?.id ?? '')
+    setFormClassPeriodId(classPeriods[0]?.id ?? '')
     setFormDay('monday')
-    setFormStart('')
-    setFormEnd('')
     setFormSubject('')
   }
 
@@ -345,7 +344,7 @@ export function SchedulingPage() {
   }
 
   async function handleAssign() {
-    if (!assignTarget || !formTeacher || !formSubject || !formPeriod || !formDay || !formStart || !formEnd) {
+    if (!assignTarget || !formTeacher || !formSubject || !formClassPeriodId || !formDay || !activeYear) {
       toast.error('Preencha todos os campos')
       return
     }
@@ -355,10 +354,9 @@ export function SchedulingPage() {
         classId: assignTarget.classId,
         teacherId: formTeacher,
         subjectId: formSubject,
-        academicPeriodId: formPeriod,
+        academicYearId: activeYear.id,
+        classPeriodId: formClassPeriodId,
         weekDay: formDay,
-        startTime: formStart,
-        endTime: formEnd,
       },
       {
         onSuccess: () => {
@@ -392,8 +390,8 @@ export function SchedulingPage() {
       {/* ── Sidebar: Professores ──────────────────────────────────────────── */}
       <aside className="flex flex-col gap-3 w-72 shrink-0">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--iris-slate-500)', letterSpacing: '0.06em' }}>Professores</p>
-          <p className="text-[11px] mt-0.5" style={{ color: 'var(--iris-slate-400)' }}>
+          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'hsl(var(--muted-foreground))', letterSpacing: '0.06em' }}>Professores</p>
+          <p className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
             Arraste ou clique para selecionar
           </p>
         </div>
@@ -454,8 +452,8 @@ export function SchedulingPage() {
       <div className="flex flex-col flex-1 min-w-0 gap-3 overflow-hidden">
         <div className="flex items-center gap-3 shrink-0">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--iris-slate-500)', letterSpacing: '0.06em' }}>Turmas</p>
-            <p className="text-[11px] mt-0.5" style={{ color: 'var(--iris-slate-400)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'hsl(var(--muted-foreground))', letterSpacing: '0.06em' }}>Turmas</p>
+            <p className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
               Arraste um professor até a turma para alocar
             </p>
           </div>
@@ -560,26 +558,15 @@ export function SchedulingPage() {
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Período letivo *</Label>
-                <Select value={formPeriod} onValueChange={setFormPeriod}>
-                  <SelectTrigger><SelectValue placeholder="Período" /></SelectTrigger>
+                <Label>Horário *</Label>
+                <Select value={formClassPeriodId} onValueChange={setFormClassPeriodId}>
+                  <SelectTrigger><SelectValue placeholder="Selecionar horário" /></SelectTrigger>
                   <SelectContent>
-                    {periods.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    {classPeriods.map((cp) => (
+                      <SelectItem key={cp.id} value={cp.id}>{cp.name} ({cp.startTime}–{cp.endTime})</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Início *</Label>
-                <Input type="time" value={formStart} onChange={(e) => setFormStart(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label>Fim *</Label>
-                <Input type="time" value={formEnd} onChange={(e) => setFormEnd(e.target.value)} />
               </div>
             </div>
           </div>

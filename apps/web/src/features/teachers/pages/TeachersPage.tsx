@@ -62,7 +62,7 @@ export function TeachersPage() {
           <Search
             className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
             size={14}
-            style={{ color: 'var(--iris-slate-500)' }}
+            style={{ color: 'hsl(var(--muted-foreground))' }}
           />
           <input
             type="text"
@@ -71,11 +71,11 @@ export function TeachersPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
             style={{
-              border: '1px solid var(--iris-slate-300)',
-              background: 'var(--bg-surface)',
-              color: 'var(--iris-blue-900)',
+              border: '1px solid hsl(var(--muted-foreground) / 0.3)',
+              background: 'hsl(var(--card))',
+              color: 'hsl(var(--primary))',
             }}
-            onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'var(--shadow-focus)' }}
+            onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px hsl(var(--ring) / 0.3)' }}
             onBlur={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'none' }}
           />
         </div>
@@ -107,7 +107,7 @@ export function TeachersPage() {
                     <td
                       colSpan={5}
                       className="text-center py-10"
-                      style={{ color: 'var(--iris-slate-500)', fontSize: 13 }}
+                      style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}
                     >
                       {search
                         ? `Nenhum professor encontrado para "${search}".`
@@ -118,14 +118,14 @@ export function TeachersPage() {
                   filtered.map((t) => (
                     <tr key={t.id} className="cursor-pointer" onClick={() => navigate(`/teachers/${t.id}/edit`)}>
                       <td>
-                        <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                        <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
                           {t.name}
                         </span>
                       </td>
-                      <td className="hidden sm:table-cell" style={{ color: 'var(--iris-slate-500)' }}>
+                      <td className="hidden sm:table-cell" style={{ color: 'hsl(var(--muted-foreground))' }}>
                         {t.email}
                       </td>
-                      <td style={{ color: 'var(--iris-slate-500)' }}>{t.position ?? '—'}</td>
+                      <td style={{ color: 'hsl(var(--muted-foreground))' }}>{t.position ?? '—'}</td>
                       <td>
                         <Badge
                           variant={t.employmentStatus === 'ativo' ? 'success' : 'secondary'}
@@ -137,18 +137,18 @@ export function TeachersPage() {
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-1 justify-end">
                           <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-blue-50)]"
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-primary/10"
                             title="Editar"
                             onClick={() => navigate(`/teachers/${t.id}/edit`)}
                           >
-                            <Pencil size={14} style={{ color: 'var(--iris-slate-500)' }} />
+                            <Pencil size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
                           </button>
                           <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-[var(--iris-danger-50)]"
+                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-destructive/10"
                             title="Excluir"
                             onClick={() => setDeleteTarget(t.id)}
                           >
-                            <Trash2 size={14} style={{ color: 'var(--iris-danger-600)' }} />
+                            <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
                           </button>
                         </div>
                       </td>
@@ -164,7 +164,7 @@ export function TeachersPage() {
       {/* Paginação */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+          <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Página {page} de {totalPages}
           </span>
           <div className="flex gap-1">

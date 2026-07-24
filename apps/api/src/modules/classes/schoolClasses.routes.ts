@@ -19,19 +19,20 @@ import {
   listStudentClassesService,
 } from './schoolClasses.service'
 
-const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
+const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
+const writePreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
 
 export async function schoolClassesRoutes(app: FastifyInstance) {
-  app.get('/school-classes', { preHandler }, async (request, reply) => {
+  app.get('/school-classes', { preHandler: readPreHandler }, async (request, reply) => {
     return reply.send(await listSchoolClassesService(getSchoolId(request)))
   })
 
-  app.get('/school-classes/students/:studentId', { preHandler }, async (request, reply) => {
+  app.get('/school-classes/students/:studentId', { preHandler: readPreHandler }, async (request, reply) => {
     const { studentId } = request.params as { studentId: string }
     return reply.send(await listStudentClassesService(getSchoolId(request), studentId))
   })
 
-  app.get('/school-classes/:id', { preHandler }, async (request, reply) => {
+  app.get('/school-classes/:id', { preHandler: readPreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       return reply.send(await getSchoolClassService(getSchoolId(request), id))
@@ -43,13 +44,13 @@ export async function schoolClassesRoutes(app: FastifyInstance) {
     }
   })
 
-  app.post('/school-classes', { preHandler }, async (request, reply) => {
+  app.post('/school-classes', { preHandler: writePreHandler }, async (request, reply) => {
     const body = createSchoolClassBodySchema.parse(request.body)
     const schoolClass = await createSchoolClassService({ schoolId: getSchoolId(request), ...body })
     return reply.status(201).send(schoolClass)
   })
 
-  app.put('/school-classes/:id', { preHandler }, async (request, reply) => {
+  app.put('/school-classes/:id', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       const body = updateSchoolClassBodySchema.parse(request.body)
@@ -62,7 +63,7 @@ export async function schoolClassesRoutes(app: FastifyInstance) {
     }
   })
 
-  app.delete('/school-classes/:id', { preHandler }, async (request, reply) => {
+  app.delete('/school-classes/:id', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       await deleteSchoolClassService(getSchoolId(request), id)
@@ -75,7 +76,7 @@ export async function schoolClassesRoutes(app: FastifyInstance) {
     }
   })
 
-  app.post('/school-classes/:id/students', { preHandler }, async (request, reply) => {
+  app.post('/school-classes/:id/students', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
       const body = addMemberBodySchema.parse(request.body)
@@ -94,7 +95,7 @@ export async function schoolClassesRoutes(app: FastifyInstance) {
     }
   })
 
-  app.delete('/school-classes/:classId/students/:studentId', { preHandler }, async (request, reply) => {
+  app.delete('/school-classes/:classId/students/:studentId', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const { classId, studentId } = request.params as { classId: string; studentId: string }
       await removeStudentFromClassService(getSchoolId(request), classId, studentId)

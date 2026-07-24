@@ -14,7 +14,8 @@ import {
   WEEK_DAYS_ORDER,
 } from '../hooks/useTimetable'
 import type { TimetableSlot } from '../hooks/useTimetable'
-import { useClass, useAcademicPeriods } from '../../classes/hooks/useClasses'
+import { useClass, useClassPeriods } from '../../classes/hooks/useClasses'
+import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
 import { useAllTeachers } from '../../teachers/hooks/useTeachers'
 import { toast } from '../../../lib/toast'
@@ -40,12 +41,10 @@ import {
 const WEEK_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 
 const slotSchema = z.object({
-  academicPeriodId: z.string().uuid('Período obrigatório'),
+  classPeriodId: z.string().uuid('Horário obrigatório'),
   subjectId: z.string().uuid('Disciplina obrigatória'),
   teacherId: z.string().uuid('Professor obrigatório'),
   weekDay: z.enum(WEEK_DAYS, { errorMap: () => ({ message: 'Dia obrigatório' }) }),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM'),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM'),
 })
 
 type SlotForm = z.infer<typeof slotSchema>
@@ -55,12 +54,15 @@ export function TimetablePage() {
   const navigate = useNavigate()
   const { data: schoolClass } = useClass(classId!)
   const { data: slots, isLoading } = useTimetableSlots(classId!)
-  const { data: periods } = useAcademicPeriods()
+  const { data: classPeriods = [] } = useClassPeriods()
+  const { data: academicYears = [] } = useAcademicYears()
   const { data: subjects } = useSubjects()
   const { data: teachers } = useAllTeachers()
   const createMutation = useCreateTimetableSlot()
   const updateMutation = useUpdateTimetableSlot(classId!)
   const deleteMutation = useDeleteTimetableSlot(classId!)
+
+  const activeYear = academicYears.find((y) => y.status === 'active')
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<TimetableSlot | undefined>()
@@ -69,29 +71,25 @@ export function TimetablePage() {
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<SlotForm>({
     resolver: zodResolver(slotSchema),
     defaultValues: {
-      academicPeriodId: schoolClass?.academicPeriodId ?? '',
+      classPeriodId: classPeriods[0]?.id ?? '',
       subjectId: '',
       teacherId: '',
       weekDay: 'monday',
-      startTime: '',
-      endTime: '',
     },
   })
 
   const weekDayValue = watch('weekDay')
   const subjectIdValue = watch('subjectId')
   const teacherIdValue = watch('teacherId')
-  const periodIdValue = watch('academicPeriodId')
+  const classPeriodIdValue = watch('classPeriodId')
 
   function handleCreate() {
     setEditing(undefined)
     reset({
-      academicPeriodId: schoolClass?.academicPeriodId ?? '',
+      classPeriodId: classPeriods[0]?.id ?? '',
       subjectId: '',
       teacherId: '',
       weekDay: 'monday',
-      startTime: '',
-      endTime: '',
     })
     setDialogOpen(true)
   }
@@ -99,12 +97,10 @@ export function TimetablePage() {
   function handleEdit(slot: TimetableSlot) {
     setEditing(slot)
     reset({
-      academicPeriodId: slot.academicPeriodId,
+      classPeriodId: slot.classPeriodId,
       subjectId: slot.subjectId,
       teacherId: slot.teacherId,
       weekDay: slot.weekDay as typeof WEEK_DAYS[number],
-      startTime: slot.startTime,
-      endTime: slot.endTime,
     })
     setDialogOpen(true)
   }
@@ -115,6 +111,11 @@ export function TimetablePage() {
   }
 
   function onSubmit(data: SlotForm) {
+    if (!activeYear) {
+      toast.error('Nenhum ano letivo ativo encontrado')
+      return
+    }
+
     if (editing) {
       updateMutation.mutate(
         { id: editing.id, data },
@@ -131,7 +132,7 @@ export function TimetablePage() {
       )
     } else {
       createMutation.mutate(
-        { classId: classId!, ...data },
+        { classId: classId!, academicYearId: activeYear.id, ...data },
         {
           onSuccess: () => {
             toast.success('Horário adicionado')
@@ -207,12 +208,12 @@ export function TimetablePage() {
               <CardContent className="p-0">
                 <div className="divide-y">
                   {daySlots
-                    .sort((a, b) => a.startTime.localeCompare(b.startTime))
+                    .sort((a, b) => a.classPeriod.startTime.localeCompare(b.classPeriod.startTime))
                     .map((slot) => (
                       <div key={slot.id} className="flex items-center justify-between px-4 py-3">
                         <div className="flex items-center gap-4">
                           <span className="text-sm font-mono text-muted-foreground w-20">
-                            {slot.startTime} – {slot.endTime}
+                            {slot.classPeriod.startTime} – {slot.classPeriod.endTime}
                           </span>
                           <div>
                             <p className="text-sm font-medium">{slot.subject.name}</p>
@@ -243,49 +244,34 @@ export function TimetablePage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Período letivo *</Label>
-              <Select value={periodIdValue} onValueChange={(v) => setValue('academicPeriodId', v)}>
+              <Label>Horário *</Label>
+              <Select value={classPeriodIdValue} onValueChange={(v) => setValue('classPeriodId', v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o período" />
+                  <SelectValue placeholder="Selecione o horário" />
                 </SelectTrigger>
                 <SelectContent>
-                  {periods?.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  {classPeriods?.map((cp) => (
+                    <SelectItem key={cp.id} value={cp.id}>{cp.name} ({cp.startTime}–{cp.endTime})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.academicPeriodId && (
-                <p className="text-xs text-destructive">{errors.academicPeriodId.message}</p>
+              {errors.classPeriodId && (
+                <p className="text-xs text-destructive">{errors.classPeriodId.message}</p>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Dia da semana *</Label>
-                <Select value={weekDayValue} onValueChange={(v) => setValue('weekDay', v as typeof WEEK_DAYS[number])}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Dia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WEEK_DAYS.map((d) => (
-                      <SelectItem key={d} value={d}>{WEEK_DAY_LABELS[d]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.weekDay && <p className="text-xs text-destructive">{errors.weekDay.message}</p>}
-              </div>
-              <div className="space-y-1 invisible" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>Início *</Label>
-                <Input type="time" {...register('startTime')} />
-                {errors.startTime && <p className="text-xs text-destructive">{errors.startTime.message}</p>}
-              </div>
-              <div className="space-y-1">
-                <Label>Fim *</Label>
-                <Input type="time" {...register('endTime')} />
-                {errors.endTime && <p className="text-xs text-destructive">{errors.endTime.message}</p>}
-              </div>
+            <div className="space-y-1">
+              <Label>Dia da semana *</Label>
+              <Select value={weekDayValue} onValueChange={(v) => setValue('weekDay', v as typeof WEEK_DAYS[number])}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Dia" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WEEK_DAYS.map((d) => (
+                    <SelectItem key={d} value={d}>{WEEK_DAY_LABELS[d]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.weekDay && <p className="text-xs text-destructive">{errors.weekDay.message}</p>}
             </div>
             <div className="space-y-1">
               <Label>Disciplina *</Label>

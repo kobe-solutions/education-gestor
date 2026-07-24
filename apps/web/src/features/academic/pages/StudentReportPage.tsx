@@ -30,20 +30,20 @@ export function StudentReportPage() {
           onClick={() => navigate(-1)}
           className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
           title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--iris-blue-50)' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
         >
-          <ArrowLeft size={16} style={{ color: 'var(--iris-slate-700)' }} />
+          <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </button>
 
         <div className="flex-1 min-w-0">
           <h1
             className="font-bold truncate"
-            style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.01em' }}
+            style={{ fontSize: 20, color: 'hsl(var(--primary))', letterSpacing: '-0.01em' }}
           >
             {student?.name ?? '...'}
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--iris-slate-500)' }}>
+          <p className="text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Boletim Escolar
           </p>
         </div>
@@ -52,9 +52,9 @@ export function StudentReportPage() {
       {/* Frequência */}
       <div
         className="rounded-xl p-5"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
       >
-        <h2 className="font-semibold text-sm mb-4" style={{ color: 'var(--iris-blue-900)' }}>
+        <h2 className="font-semibold text-sm mb-4" style={{ color: 'hsl(var(--primary))' }}>
           Frequência
         </h2>
 
@@ -62,11 +62,11 @@ export function StudentReportPage() {
           <div className="flex items-center gap-4 flex-wrap">
             <div
               className="flex items-center justify-center rounded-xl"
-              style={{ width: 64, height: 64, background: attendanceRate >= 75 ? 'var(--iris-success-50)' : 'var(--iris-danger-50)' }}
+              style={{ width: 64, height: 64, background: attendanceRate >= 75 ? 'hsl(142 76% 96%)' : 'hsl(0 86% 97%)' }}
             >
               <span
                 className="text-xl font-bold tabular-nums"
-                style={{ color: attendanceRate >= 75 ? 'var(--iris-success-600)' : 'var(--iris-danger-600)' }}
+                style={{ color: attendanceRate >= 75 ? 'hsl(142 71% 45%)' : 'hsl(var(--destructive))' }}
               >
                 {attendanceRate}%
               </span>
@@ -75,13 +75,13 @@ export function StudentReportPage() {
               <Badge variant={attendanceRate >= 75 ? 'success' : 'destructive'}>
                 {attendanceRate >= 75 ? 'Frequência Regular' : 'Frequência Irregular'}
               </Badge>
-              <p className="text-xs mt-1" style={{ color: 'var(--iris-slate-500)' }}>
+              <p className="text-xs mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 {presentCount} presença{presentCount !== 1 ? 's' : ''} de {totalAttendances} aula{totalAttendances !== 1 ? 's' : ''}
               </p>
             </div>
           </div>
         ) : (
-          <p className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+          <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Sem registros de frequência
           </p>
         )}
@@ -90,17 +90,17 @@ export function StudentReportPage() {
       {/* Notas */}
       <div
         className="rounded-xl overflow-hidden"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)', boxShadow: 'var(--shadow-sm)' }}
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
       >
-        <div className="p-5 pb-4" style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
-          <h2 className="font-semibold text-sm" style={{ color: 'var(--iris-blue-900)' }}>
+        <div className="p-5 pb-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <h2 className="font-semibold text-sm" style={{ color: 'hsl(var(--primary))' }}>
             Notas por disciplina
           </h2>
         </div>
 
         <div className="p-5">
           {!gradesBySubject || Object.keys(gradesBySubject).length === 0 ? (
-            <p className="text-xs text-center py-4" style={{ color: 'var(--iris-slate-500)' }}>
+            <p className="text-xs text-center py-4" style={{ color: 'hsl(var(--muted-foreground))' }}>
               Sem notas registradas
             </p>
           ) : (
@@ -118,7 +118,7 @@ export function StudentReportPage() {
                   {Object.entries(gradesBySubject).map(([subject, entries]) => (
                     <tr key={subject}>
                       <td>
-                        <span className="font-semibold" style={{ color: 'var(--iris-blue-900)' }}>
+                        <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
                           {subject}
                         </span>
                       </td>
@@ -126,7 +126,7 @@ export function StudentReportPage() {
                         <td key={e.period}>
                           <span
                             className="font-semibold tabular-nums"
-                            style={{ color: parseFloat(e.value) >= 5 ? 'var(--iris-success-600)' : 'var(--iris-danger-600)' }}
+                            style={{ color: parseFloat(e.value) >= 5 ? 'hsl(142 71% 45%)' : 'hsl(var(--destructive))' }}
                           >
                             {e.value}
                           </span>

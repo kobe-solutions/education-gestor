@@ -10,12 +10,12 @@ export function PageHead({ title, subtitle, actions }: PageHeadProps) {
       <div>
         <h1
           className="font-bold leading-tight"
-          style={{ fontSize: 20, color: 'var(--iris-blue-900)', letterSpacing: '-0.01em' }}
+          style={{ fontSize: 20, color: 'hsl(var(--primary))', letterSpacing: '-0.01em' }}
         >
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-0.5 text-sm" style={{ color: 'var(--iris-slate-500)' }}>
+          <p className="mt-0.5 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {subtitle}
           </p>
         )}

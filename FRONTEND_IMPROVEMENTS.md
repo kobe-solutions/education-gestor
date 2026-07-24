@@ -58,7 +58,20 @@
 
 **Impacto**: -300 linhas duplicadas; ganha-se tema dark, acessibilidade e variantes de coluna de graça.
 
-### 2.2 [P0] Criar `QueryClient` com defaults globais
+### 2.2 ~~[P0] Migrar Tailwind CSS para v4~~ ✅ IMPLEMENTADO
+
+**Problema**: Tailwind v3 usa configuração via `tailwind.config.ts` e PostCSS, que está obsoleto.
+
+**Implementado**:
+- `tailwindcss` v4.3.3 + `@tailwindcss/vite` v4.3.3
+- Removidos `postcss.config.js` e `tailwind.config.ts`
+- Configuração via `@theme inline` no `index.css`
+- `@custom-variant dark` para dark mode
+- `@utility` para custom utilities (`tbl`, `iris-table`, `touch-target`, `table-scroll`)
+- `tw-animate-css` v1.4.0 para animações (animate-in, fade-in-0, etc.)
+- Componentes UI atualizados: `rounded-sm`, `outline-hidden` (classes v4)
+
+### 2.3 [P0] Criar `QueryClient` com defaults globais
 
 **Arquivo**: `apps/web/src/main.tsx`
 
@@ -216,23 +229,13 @@ Hoje qualquer 500 do backend derruba o app inteiro.
 
 Elimina ~80+ blocos `onMouseEnter`/`onMouseLeave` e melhora acessibilidade (estado de focus).
 
-### 3.2 [P0] Substituir estilos hardcoded em `AppLayout.tsx`
+### 3.2 ~~[P0] Substituir estilos hardcoded em `AppLayout.tsx`~~ ✅ IMPLEMENTADO
 
-`AppLayout.tsx` tem **três** cópias quase idênticas do estilo de link da sidebar (desktop, mobile, drawer). Extrair `<NavLink>` interno:
-
-```tsx
-function SidebarLink({ to, icon: Icon, label, active }) {
-  return (
-    <Link to={to} className={cn('flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-colors',
-      active ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground hover:bg-accent')}>
-      <Icon className="h-5 w-5" />
-      <span className="text-sm font-medium">{label}</span>
-    </Link>
-  )
-}
-```
-
-Reduz 100+ linhas.
+`AppLayout.tsx` tinha **três** cópias quase idênticas do estilo de link da sidebar (desktop, mobile, drawer). **Implementado:**
+- Componente `SidebarLink` extraído com `active` via `bg-primary text-white`
+- Nova função `getActiveItem()` que resolve o match mais específico (previne bug /admin vs /admin/activity)
+- Sidebar desktop e mobile usam o mesmo componente
+- Reduz ~100 linhas de duplicação
 
 ### 3.3 [P1] Sidebar colapsável (recolhida → só ícones)
 
@@ -298,11 +301,11 @@ Aplicar em todas as listas vazias: students, teachers, classes, schools, secreta
 
 Aplicar `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring` globalmente aos botões de ação por linha.
 
-### 3.9 [P2] Adicionar dark mode
+### 3.9 ~~[P2] Adicionar dark mode~~ ✅ IMPLEMENTADO
 
-Tokens HSL já estão prontos em `:root`. Falta:
-- Variante `.dark` em `index.css`
-- Toggle no `AppLayout` (header)
+Tokens HSL já estão prontos em `:root`. **Implementado:**
+- Variante `.dark` em `index.css` com todos os tokens (background, foreground, iris-*, shadow-*)
+- Toggle no `AppLayout` (header) via `ThemeContext` com ícones Sun/Moon
 - Persistência em `localStorage`
 - Respeitar `prefers-color-scheme` no primeiro load
 
@@ -345,6 +348,8 @@ Quando a sidebar for colapsável, mostrar `Tooltip` com o nome do item no hover.
 ### 3.18 [P3] `LoginPage` — campo de senha sem "olhinho"
 
 UX padrão moderno é ter `<Eye />`/`<EyeOff />` para alternar visibilidade.
+
+**Nota**: O bug de autofill do navegador (background amarelo/alterado) foi corrigido via CSS `:-webkit-autofill` com `box-shadow` inset e `-webkit-text-fill-color` para light e dark mode.
 
 ### 3.19 [P3] `LoginPage` — lembrar-me
 
@@ -560,9 +565,14 @@ Só filtra por status e nome. Adicionar range de vencimento.
 
 Mostrar timeline de mudanças de status, transferências, ocorrências, observações.
 
-### 5.15 [P2] Auditoria visual
+### 5.15 ~~[P2] Auditoria visual~~ ✅ IMPLEMENTADO
 
-Hook de auditoria existe no backend (`audit.ts`). Criar página `/audit-log` (admin/gestor) com timeline de ações por usuário.
+Hook de auditoria existe no backend (`audit.ts`). **Implementado:**
+- Rota `/admin/activity` (admin only) com `AdminActivityPage`
+- Tabela de audit logs com paginação (20 por página)
+- Filtros por ação (CREATE/UPDATE/DELETE/PAY) e entidade
+- Endpoint `GET /admin/activity` com query params `action`, `entity`, `limit`, `offset`
+- Dashboard admin inclui últimos 10 logs de atividade
 
 ### 5.16 [P2] Grade horária em visualização semanal (calendário)
 
@@ -626,7 +636,7 @@ Quando o aluno é criado, gerar PDF com dados e contrato pronto para assinatura.
 
 `HubConfiguracoesPage` (linha 21) aponta para `/academic-periods` mas a gestão real é em `AcademicYearsPage` (`/academic-years`). Decidir: ou `AcademicPeriodsPage` vira legado, ou consolidar.
 
-### 6.2 [P0] `LoginPage` — texto "Email ou senha incorretos" é fixo
+### 6.2 ~~[P0] `LoginPage` — texto "Email ou senha incorretos" é fixo~~ ✅ IMPLEMENTADO
 
 ```tsx
 {error && (
@@ -636,7 +646,7 @@ Quando o aluno é criado, gerar PDF com dados e contrato pronto para assinatura.
 )}
 ```
 
-O `useLogin` retorna o `error` do Axios, mas a UI ignora e mostra sempre a mesma string. Usar `extractErrorMessage(error)`.
+O `useLogin` retorna o `error` do Axios, mas a UI ignora e mostra sempre a mesma string. **Implementado:** Usar `extractErrorMessage(error, 'Email ou senha incorretos')`.
 
 ### 6.3 [P0] `LoginPage` — `useEffect` redireciona mesmo com erro
 
@@ -715,9 +725,12 @@ Não usa componente `<Textarea>` shadcn (não criado). Criar `components/ui/text
 
 Aba "Dados Financeiros" tem dois forms: dados bancários + alterar senha. Renomear a aba ou separar.
 
-### 6.17 [P2] `HubAdminPage` tem só 2 cards, `HubPessoasPage` é mais rico
+### 6.17 ~~[P2] `HubAdminPage` tem só 2 cards, `HubPessoasPage` é mais rico~~ ✅ MELHORADO
 
-Considerar mover atalhos rápidos para um único componente ou criar um sistema de "quick actions" configurável por role.
+**Implementado:**
+- `HubAdminPage` agora tem 3 cards: Secretarias, Escolas, Atividade
+- Dashboard admin (`/` para admin) expandido com 6 KPIs, financeiro, top escolas, atividade recente
+- Navbar adicionou item "Atividade" para admin
 
 ### 6.18 [P2] `SchoolsPage` — `Edit` aparece inline como input HTML
 
@@ -1034,5 +1047,15 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 
 ---
 
-**Última atualização**: 2026-07-22
-**Status**: rascunho inicial — itens ainda precisam ser priorizados com o time.
+**Última atualização**: 2026-07-23
+**Status**: iterativo — itens sendo implementados progressivamente.
+
+### Itens implementados nesta sessão (2026-07-23)
+- ✅ **Tailwind CSS v4**: Migração completa (v3 → v4) com `@tailwindcss/vite`, configuração CSS-based, `tw-animate-css`
+- ✅ **Dark mode**: Implementado com `ThemeContext`, toggle Sun/Moon, persistência localStorage
+- ✅ **Dashboard admin**: Expandido de 2 para 6 KPIs cross-tenant + financeiro + top escolas + atividade
+- ✅ **Página de atividade**: `/admin/activity` com filtros, paginação, endpoint dedicado
+- ✅ **Sidebar navigation**: Bug corrigido (`getActiveItem()` com matching por especificidade)
+- ✅ **Login autofill**: CSS `:-webkit-autofill` com cores do tema para light e dark mode
+- ✅ **Login error message**: Usando `extractErrorMessage()` em vez de string fixa
+- ✅ **Seed script**: Adicionadas 2 secretarias de educação com vínculo secretaria-escola

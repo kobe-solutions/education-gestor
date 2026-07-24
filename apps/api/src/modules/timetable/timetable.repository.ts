@@ -129,3 +129,14 @@ export async function findDistinctTeachersByClassRepository(schoolId: string, cl
     .innerJoin(teachers, eq(timetableSlots.teacherId, teachers.id))
     .where(and(eq(timetableSlots.schoolId, schoolId), eq(timetableSlots.classId, classId)))
 }
+
+export async function listTimetableSlotsByTeacherRepository(schoolId: string, teacherId: string) {
+  return db
+    .select(withJoins)
+    .from(timetableSlots)
+    .innerJoin(subjects, eq(timetableSlots.subjectId, subjects.id))
+    .innerJoin(teachers, eq(timetableSlots.teacherId, teachers.id))
+    .innerJoin(classPeriods, eq(timetableSlots.classPeriodId, classPeriods.id))
+    .where(and(eq(timetableSlots.schoolId, schoolId), eq(timetableSlots.teacherId, teacherId)))
+    .orderBy(timetableSlots.weekDay, classPeriods.order)
+}

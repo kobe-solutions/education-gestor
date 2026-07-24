@@ -1,4 +1,4 @@
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import {
   Users,
   GraduationCap,
@@ -15,6 +15,7 @@ import {
   UserX,
   ShieldCheck,
   TrendingUp,
+  Presentation,
 } from 'lucide-react'
 import { useDashboard, isAdminDashboard } from '../features/dashboard/hooks/useDashboard'
 import { useAuth } from '../contexts/AuthContext'
@@ -38,7 +39,7 @@ function DashboardSkeleton({ cardCount }: { cardCount: number }) {
           <div
             key={i}
             className="rounded-xl p-4 space-y-3"
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
+            style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
           >
             <Skeleton className="h-8 w-8 rounded-md" />
             <Skeleton className="h-7 w-14 rounded-sm" />
@@ -48,7 +49,7 @@ function DashboardSkeleton({ cardCount }: { cardCount: number }) {
       </div>
       <div
         className="rounded-xl p-5 space-y-4"
-        style={{ background: 'var(--bg-surface)', border: '1px solid var(--iris-slate-200)' }}
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
       >
         <Skeleton className="h-5 w-64 rounded-sm" />
         {Array.from({ length: 3 }).map((_, i) => (
@@ -73,19 +74,19 @@ const TONE_CONFIG = {
   indigo: {
     iconBg: 'rgba(79, 70, 229, 0.12)',
     iconColor: '#818CF8',
-    valueColor: 'var(--fg-1)',
+    valueColor: 'hsl(var(--foreground))',
     borderColor: 'rgba(79, 70, 229, 0.15)',
   },
   violet: {
     iconBg: 'rgba(129, 140, 248, 0.12)',
     iconColor: '#A5B4FC',
-    valueColor: 'var(--fg-1)',
+    valueColor: 'hsl(var(--foreground))',
     borderColor: 'rgba(129, 140, 248, 0.15)',
   },
   slate: {
     iconBg: 'rgba(49, 46, 129, 0.10)',
     iconColor: '#818CF8',
-    valueColor: 'var(--fg-1)',
+    valueColor: 'hsl(var(--foreground))',
     borderColor: 'rgba(49, 46, 129, 0.12)',
   },
   amber: {
@@ -115,9 +116,9 @@ function DashMetric({ icon: Icon, value, label, sub, tone }: DashMetricProps) {
       className="flex flex-col gap-3 p-4 rounded-xl transition-all duration-200
         hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
       style={{
-        background: 'var(--bg-surface)',
+        background: 'hsl(var(--card))',
         border: `1px solid ${t.borderColor}`,
-        boxShadow: 'var(--shadow-xs)',
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
       <div
@@ -135,12 +136,12 @@ function DashMetric({ icon: Icon, value, label, sub, tone }: DashMetricProps) {
         </div>
         <div
           className="text-[11px] font-semibold uppercase tracking-wider mt-1.5"
-          style={{ color: 'var(--fg-3)' }}
+          style={{ color: 'hsl(var(--muted-foreground))' }}
         >
           {label}
         </div>
         {sub && (
-          <div className="text-xs font-medium mt-1 tabular-nums" style={{ color: 'var(--fg-3)' }}>
+          <div className="text-xs font-medium mt-1 tabular-nums" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {sub}
           </div>
         )}
@@ -163,11 +164,11 @@ function SectionHeader({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
       <div>
-        <h2 className="font-bold text-base" style={{ color: 'var(--fg-1)' }}>
+        <h2 className="font-bold text-base" style={{ color: 'hsl(var(--foreground))' }}>
           {title}
         </h2>
         {subtitle && (
-          <p className="text-xs mt-0.5" style={{ color: 'var(--fg-3)' }}>
+          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {subtitle}
           </p>
         )}
@@ -184,11 +185,11 @@ function TableEmpty({ icon: Icon, message }: { icon: React.ElementType; message:
     <div className="flex flex-col items-center gap-3 py-12 text-center">
       <div
         className="flex items-center justify-center rounded-full"
-        style={{ width: 48, height: 48, background: 'var(--iris-slate-50)', color: 'var(--fg-3)' }}
+        style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
       >
         <Icon size={22} />
       </div>
-      <p className="text-sm font-medium" style={{ color: 'var(--fg-2)' }}>
+      <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
         {message}
       </p>
     </div>
@@ -219,12 +220,12 @@ const ENTITY_LABELS: Record<string, string> = {
 
 function ActionBadge({ action }: { action: string }) {
   const colors: Record<string, { bg: string; fg: string }> = {
-    CREATE: { bg: 'var(--iris-success-50)', fg: 'var(--iris-success-600)' },
-    UPDATE: { bg: 'var(--iris-info-50)', fg: 'var(--iris-info-600)' },
-    DELETE: { bg: 'var(--iris-danger-50)', fg: 'var(--iris-danger-600)' },
-    PAY: { bg: 'var(--iris-warning-50)', fg: 'var(--iris-warning-600)' },
+    CREATE: { bg: 'hsl(142 76% 96%)', fg: 'hsl(142 76% 36%)' },
+    UPDATE: { bg: 'hsl(217 91% 95%)', fg: 'hsl(217 91% 40%)' },
+    DELETE: { bg: 'hsl(0 86% 97%)', fg: 'hsl(var(--destructive))' },
+    PAY: { bg: 'hsl(48 96% 95%)', fg: 'hsl(32 95% 44%)' },
   }
-  const c = colors[action] ?? { bg: 'var(--iris-slate-100)', fg: 'var(--fg-3)' }
+  const c = colors[action] ?? { bg: 'hsl(var(--border))', fg: 'hsl(var(--muted-foreground))' }
   return (
     <span
       className="inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold"
@@ -244,11 +245,11 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
       <div>
         <h1
           className="font-bold leading-tight"
-          style={{ fontSize: 22, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}
+          style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
         >
           Painel Administrativo
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'var(--fg-3)' }}>
+        <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
           Visão geral da plataforma — {new Date().getFullYear()}
         </p>
       </div>
@@ -344,8 +345,8 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
         <div
           className="rounded-xl overflow-hidden"
           style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--iris-slate-200)',
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
             boxShadow: 'var(--shadow-sm)',
           }}
         >
@@ -355,12 +356,12 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+                  <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                     {['Escola', 'Alunos'].map((h) => (
                       <th
                         key={h}
                         className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                        style={{ color: 'var(--fg-3)' }}
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
                       >
                         {h}
                       </th>
@@ -371,15 +372,15 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
                   {data.topSchools.map((s) => (
                     <tr
                       key={s.id}
-                      className="transition-colors duration-150 hover:bg-[var(--iris-slate-50)]"
-                      style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
+                      className="transition-colors duration-150 hover:bg-accent"
+                      style={{ borderBottom: '1px solid hsl(var(--border))' }}
                     >
                       <td className="px-5 py-3">
-                        <span className="font-semibold" style={{ color: 'var(--fg-1)' }}>
+                        <span className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                           {s.name}
                         </span>
                       </td>
-                      <td className="px-5 py-3 tabular-nums font-semibold" style={{ color: 'var(--fg-1)' }}>
+                      <td className="px-5 py-3 tabular-nums font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
                         {s.studentCount}
                       </td>
                     </tr>
@@ -408,8 +409,8 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
         <div
           className="rounded-xl overflow-hidden"
           style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--iris-slate-200)',
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
             boxShadow: 'var(--shadow-sm)',
           }}
         >
@@ -419,12 +420,12 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+                  <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                     {['Data', 'Usuário', 'Ação', 'Entidade'].map((h) => (
                       <th
                         key={h}
                         className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                        style={{ color: 'var(--fg-3)' }}
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
                       >
                         {h}
                       </th>
@@ -435,19 +436,19 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
                   {data.recentActivity.map((a) => (
                     <tr
                       key={a.id}
-                      className="transition-colors duration-150 hover:bg-[var(--iris-slate-50)]"
-                      style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
+                      className="transition-colors duration-150 hover:bg-accent"
+                      style={{ borderBottom: '1px solid hsl(var(--border))' }}
                     >
-                      <td className="px-5 py-3 tabular-nums text-xs" style={{ color: 'var(--fg-3)' }}>
+                      <td className="px-5 py-3 tabular-nums text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                         {new Date(a.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                       </td>
                       <td className="px-5 py-3">
-                        <span className="font-medium" style={{ color: 'var(--fg-1)' }}>
+                        <span className="font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                           {a.userId.slice(0, 8)}…
                         </span>
                         <span
                           className="ml-2 inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-semibold"
-                          style={{ background: 'var(--iris-slate-100)', color: 'var(--fg-3)' }}
+                          style={{ background: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }}
                         >
                           {a.userRole}
                         </span>
@@ -455,7 +456,7 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
                       <td className="px-5 py-3">
                         <ActionBadge action={a.action} />
                       </td>
-                      <td className="px-5 py-3 text-xs" style={{ color: 'var(--fg-3)' }}>
+                      <td className="px-5 py-3 text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                         {ENTITY_LABELS[a.entity] ?? a.entity}
                       </td>
                     </tr>
@@ -477,15 +478,15 @@ function NoSchoolView() {
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <div
         className="flex items-center justify-center rounded-full"
-        style={{ width: 64, height: 64, background: 'var(--iris-slate-50)', color: 'var(--fg-3)' }}
+        style={{ width: 64, height: 64, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
       >
         <School size={28} />
       </div>
       <div className="text-center">
-        <p className="font-semibold" style={{ color: 'var(--fg-1)' }}>
+        <p className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
           Nenhuma escola selecionada
         </p>
-        <p className="text-sm mt-1" style={{ color: 'var(--fg-3)' }}>
+        <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
           Selecione uma escola para visualizar o painel
         </p>
       </div>
@@ -499,6 +500,9 @@ function NoSchoolView() {
 // ── Main dashboard ───────────────────────────────────────────────────────────
 
 function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/useDashboard').SchoolDashboard }) {
+  const { payload } = useAuth()
+  const isProfessor = payload?.role === 'professor'
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -506,17 +510,27 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         <div>
           <h1
             className="font-bold leading-tight"
-            style={{ fontSize: 22, color: 'var(--fg-1)', letterSpacing: '-0.01em' }}
+            style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
           >
             Painel
           </h1>
-          <p className="mt-1 text-sm" style={{ color: 'var(--fg-3)' }}>
+          <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Visão geral da escola — {new Date().getFullYear()}
           </p>
         </div>
-        <Button variant="outline" size="sm">
-          Exportar relatório
-        </Button>
+        <div className="flex items-center gap-2">
+          {isProfessor && (
+            <Link to="/professor">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Presentation size={14} />
+                Meu Painel
+              </Button>
+            </Link>
+          )}
+          <Button variant="outline" size="sm">
+            Exportar relatório
+          </Button>
+        </div>
       </div>
 
       {/* ── Visão geral ──────────────────────────────────────────────────── */}
@@ -575,8 +589,8 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         <div
           className="rounded-xl overflow-hidden"
           style={{
-            background: 'var(--bg-surface)',
-            border: '1px solid var(--iris-slate-200)',
+            background: 'hsl(var(--card))',
+            border: '1px solid hsl(var(--border))',
             boxShadow: 'var(--shadow-sm)',
           }}
         >
@@ -589,12 +603,12 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--iris-slate-100)' }}>
+                  <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
                     {['Aluno', 'Vencimento', 'Valor', 'Status'].map((h) => (
                       <th
                         key={h}
                         className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                        style={{ color: 'var(--fg-3)' }}
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
                       >
                         {h}
                       </th>
@@ -605,22 +619,22 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
                   {data.upcomingTuitions.map((t) => (
                     <tr
                       key={t.id}
-                      className="transition-colors duration-150 hover:bg-[var(--iris-slate-50)]"
-                      style={{ borderBottom: '1px solid var(--iris-slate-100)' }}
+                      className="transition-colors duration-150 hover:bg-accent"
+                      style={{ borderBottom: '1px solid hsl(var(--border))' }}
                     >
                       <td className="px-5 py-3">
                         <Link
                           to={`/students/${t.studentId}`}
                           className="font-semibold hover:underline"
-                          style={{ color: 'var(--fg-1)' }}
+                          style={{ color: 'hsl(var(--foreground))' }}
                         >
                           {t.studentName}
                         </Link>
                       </td>
-                      <td className="px-5 py-3 tabular-nums" style={{ color: 'var(--fg-3)' }}>
+                      <td className="px-5 py-3 tabular-nums" style={{ color: 'hsl(var(--muted-foreground))' }}>
                         {formatDateBR(t.dueDate)}
                       </td>
-                      <td className="px-5 py-3 font-semibold tabular-nums" style={{ color: 'var(--fg-1)' }}>
+                      <td className="px-5 py-3 font-semibold tabular-nums" style={{ color: 'hsl(var(--foreground))' }}>
                         {fmtBRL(t.amount)}
                       </td>
                       <td className="px-5 py-3">
@@ -643,6 +657,9 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
 export function DashboardPage() {
   const { payload } = useAuth()
   const { activeSchoolId } = useSchoolContext()
+
+  if (payload?.role === 'professor') return <Navigate to="/professor" replace />
+
   const { data, isLoading } = useDashboard()
 
   const isSecretariaWithoutSchool = payload?.role === 'secretaria' && !activeSchoolId
