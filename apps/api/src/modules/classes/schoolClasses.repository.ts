@@ -169,3 +169,17 @@ export async function findClassesByStudentRepository(schoolId: string, studentId
     .innerJoin(schoolClasses, eq(classStudents.classId, schoolClasses.id))
     .where(and(eq(classStudents.studentId, studentId), eq(schoolClasses.schoolId, schoolId)))
 }
+
+export async function findStudentCurrentClassRepository(studentId: string) {
+  const [result] = await db
+    .select({
+      classId: classStudents.classId,
+      className: schoolClasses.name,
+    })
+    .from(classStudents)
+    .innerJoin(schoolClasses, eq(classStudents.classId, schoolClasses.id))
+    .where(eq(classStudents.studentId, studentId))
+    .limit(1)
+
+  return result
+}
