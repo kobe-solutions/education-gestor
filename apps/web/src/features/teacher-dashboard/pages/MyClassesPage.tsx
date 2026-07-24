@@ -7,21 +7,7 @@ import { Badge } from '../../../components/ui/badge'
 
 // ── Inline components ──────────────────────────────────────────────────────
 
-function TableEmpty({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
-  return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
-      >
-        <Icon size={22} />
-      </div>
-      <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-        {message}
-      </p>
-    </div>
-  )
-}
+import { EmptyState } from '../../../components/EmptyState'
 
 const SHIFT_COLORS: Record<string, { bg: string; fg: string }> = {
   matutino: { bg: 'rgba(79, 70, 229, 0.10)', fg: '#818CF8' },
@@ -46,7 +32,7 @@ function ShiftBadge({ shift }: { shift: string }) {
 
 function TurmasGrid({ classes }: { classes: import('../hooks/useTeacherDashboard').TeacherClass[] }) {
   if (classes.length === 0) {
-    return <TableEmpty icon={Users} message="Nenhuma turma atribuída" />
+    return <EmptyState icon={Users} title="Nenhuma turma atribuída" />
   }
 
   return (

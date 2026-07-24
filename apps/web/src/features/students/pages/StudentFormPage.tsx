@@ -88,19 +88,7 @@ type FamiliaForm = z.infer<typeof familiaSchema>
 type MedicalForm = z.infer<typeof medicalSchema>
 type GuardianForm = z.infer<typeof guardianSchema>
 
-const ENROLLMENT_STATUS_LABELS: Record<string, string> = {
-  active: 'Ativo',
-  inactive: 'Inativo',
-  transferred: 'Transferido',
-  cancelled: 'Cancelado',
-}
-
-const DOCUMENT_TYPE_LABELS: Record<string, string> = {
-  historico: 'Histórico Escolar',
-  boletim: 'Boletim de Notas',
-  identidade: 'Documento de Identidade',
-  outros: 'Outros',
-}
+import { ENROLLMENT_STATUS_LABELS, DOCUMENT_TYPE_LABELS } from '../../../lib/labels'
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 
@@ -273,15 +261,15 @@ export function StudentFormPage() {
     <div className="space-y-5 max-w-5xl mx-auto">
       {/* Header de detalhe */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate('/students')}
-          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
+          className="shrink-0"
           title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
         >
-          <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
-        </button>
+          <ArrowLeft size={16} />
+        </Button>
 
         <div className="flex-1 min-w-0">
           <h1

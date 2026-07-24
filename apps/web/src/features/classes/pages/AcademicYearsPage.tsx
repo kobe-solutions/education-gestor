@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, Plus, Pencil, Trash2, RefreshCw } from 'lucide-react'
-import type { AxiosError } from 'axios'
 import {
   useAcademicYears,
   useCreateAcademicYear,
@@ -12,7 +11,7 @@ import {
   useUpdateAcademicPeriod,
   useDeleteAcademicPeriod,
 } from '../hooks/useAcademicYears'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
@@ -21,23 +20,14 @@ import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Skeleton } from '../../../components/ui/skeleton'
 import type { AcademicYear, AcademicPeriod, PeriodType } from '@education-gestor/types'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const STATUS_LABEL: Record<string, string> = { planning: 'Planejamento', active: 'Ativo', closed: 'Encerrado' }
-const STATUS_VARIANT: Record<string, 'warning' | 'success' | 'outline'> = {
-  planning: 'warning',
-  active: 'success',
-  closed: 'outline',
-}
-const PERIOD_TYPE_LABEL: Record<PeriodType, string> = {
-  bimestre: 'Bimestre',
-  trimestre: 'Trimestre',
-  semestre: 'Semestre',
-}
+import { PERIOD_TYPE_LABELS } from '../../../lib/labels'
+import { StatusBadge } from '../../../components/StatusBadge'
 
 function fmtDate(d: string) {
   return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR')
@@ -85,6 +75,20 @@ function PeriodDialog({
   const updateMutation = useUpdateAcademicPeriod(yearId)
   const mutation = editing ? updateMutation : createMutation
 
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: Omit<PeriodFormData, 'order'> & { order: number }) => createMutation.mutateAsync(data),
+    successMessage: 'Período criado',
+    onSuccess: () => onClose(),
+  })
+
+  const updateApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: Record<string, unknown> }) => updateMutation.mutateAsync(vars),
+    successMessage: 'Período atualizado',
+    onSuccess: () => onClose(),
+  })
+
+  const activeApiMutation = editing ? updateApiMutation : createApiMutation
+
   function validate() {
     const errs: Partial<Record<keyof PeriodFormData, string>> = {}
     if (!form.name) errs.name = 'Nome obrigatório'
@@ -107,18 +111,9 @@ function PeriodDialog({
       ...(form.gradeClosingDate ? { gradeClosingDate: form.gradeClosingDate } : {}),
     }
     if (editing) {
-      updateMutation.mutate(
-        { id: editing.id, data: payload },
-        {
-          onSuccess: () => { toast.success('Período atualizado'); onClose() },
-          onError: (err) => toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'),
-        },
-      )
+      updateApiMutation.mutate({ id: editing.id, data: payload })
     } else {
-      createMutation.mutate(payload, {
-        onSuccess: () => { toast.success('Período criado'); onClose() },
-        onError: (err) => toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'),
-      })
+      createApiMutation.mutate(payload as Omit<PeriodFormData, 'order'> & { order: number })
     }
   }
 
@@ -170,7 +165,7 @@ function PeriodDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Salvando…' : 'Salvar'}</Button>
+            <Button type="submit" disabled={activeApiMutation.isPending}>{activeApiMutation.isPending ? 'Salvando…' : 'Salvar'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -183,6 +178,14 @@ function PeriodDialog({
 function PeriodsSection({ year }: { year: AcademicYear }) {
   const { data: periods, isLoading } = useAcademicPeriods(year.id)
   const deleteMutation = useDeleteAcademicPeriod(year.id)
+
+  const deletePeriodApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Período removido',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
+
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPeriod, setEditingPeriod] = useState<AcademicPeriod | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
@@ -228,7 +231,7 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
                 {p.name}
               </span>
               <Badge variant="outline" className="text-[10px] h-4 px-1.5">
-                {PERIOD_TYPE_LABEL[p.type]}
+                {PERIOD_TYPE_LABELS[p.type]}
               </Badge>
               <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 {fmtDate(p.startDate)} – {fmtDate(p.endDate)}
@@ -239,22 +242,22 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
                 </span>
               )}
               <div className="flex gap-0.5">
-                <button
-                  className="flex items-center justify-center rounded w-6 h-6 transition-colors"
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
                   onClick={() => { setEditingPeriod(p); setDialogOpen(true) }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                 >
                   <Pencil size={11} style={{ color: 'hsl(var(--muted-foreground))' }} />
-                </button>
-                <button
-                  className="flex items-center justify-center rounded w-6 h-6 transition-colors"
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
                   onClick={() => setDeleteTarget(p.id)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(0 86% 97%)' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                 >
                   <Trash2 size={11} style={{ color: 'hsl(var(--destructive))' }} />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -270,27 +273,14 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
         />
       )}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir período</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => { toast.success('Período removido'); setDeleteTarget(null) },
-                  onError: (err) => { toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'); setDeleteTarget(null) },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deletePeriodApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+        title="Excluir período"
+      />
     </div>
   )
 }
@@ -333,7 +323,21 @@ function YearDialog({
 
   const createMutation = useCreateAcademicYear()
   const updateMutation = useUpdateAcademicYear()
-  const mutation = editing ? updateMutation : createMutation
+
+  const createYearApiMutation = useApiMutation({
+    mutationFn: (data: { year: number; name: string; startDate: string; endDate: string; registrationStart?: string; registrationEnd?: string }) =>
+      createMutation.mutateAsync(data),
+    successMessage: 'Ano letivo criado',
+    onSuccess: () => onClose(),
+  })
+
+  const updateYearApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: Record<string, unknown> }) => updateMutation.mutateAsync(vars),
+    successMessage: 'Ano letivo atualizado',
+    onSuccess: () => onClose(),
+  })
+
+  const activeYearMutation = editing ? updateYearApiMutation : createYearApiMutation
 
   function validate() {
     const errs: Partial<Record<keyof YearFormData, string>> = {}
@@ -358,18 +362,9 @@ function YearDialog({
     }
     if (editing) {
       const { year: _year, ...updatePayload } = payload
-      updateMutation.mutate(
-        { id: editing.id, data: updatePayload },
-        {
-          onSuccess: () => { toast.success('Ano letivo atualizado'); onClose() },
-          onError: (err) => toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'),
-        },
-      )
+      updateYearApiMutation.mutate({ id: editing.id, data: updatePayload })
     } else {
-      createMutation.mutate(payload, {
-        onSuccess: () => { toast.success('Ano letivo criado'); onClose() },
-        onError: (err) => toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'),
-      })
+      createYearApiMutation.mutate(payload)
     }
   }
 
@@ -423,7 +418,7 @@ function YearDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Salvando…' : 'Salvar'}</Button>
+            <Button type="submit" disabled={activeYearMutation.isPending}>{activeYearMutation.isPending ? 'Salvando…' : 'Salvar'}</Button>
           </DialogFooter>
         </form>
       </DialogContent>
@@ -437,6 +432,18 @@ export function AcademicYearsPage() {
   const { data: years, isLoading } = useAcademicYears()
   const deleteMutation = useDeleteAcademicYear()
   const statusMutation = useUpdateAcademicYearStatus()
+
+  const deleteYearApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Ano letivo removido',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
+
+  const statusApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; status: 'active' | 'planning' | 'closed' }) => statusMutation.mutateAsync(vars),
+    successMessage: 'Status atualizado',
+  })
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [yearDialog, setYearDialog] = useState(false)
@@ -456,13 +463,7 @@ export function AcademicYearsPage() {
   function handleNextStatus(year: AcademicYear) {
     const next = year.status === 'planning' ? 'active' : year.status === 'active' ? 'closed' : null
     if (!next) return
-    statusMutation.mutate(
-      { id: year.id, status: next },
-      {
-        onSuccess: () => toast.success('Status atualizado'),
-        onError: (err) => toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'),
-      },
-    )
+    statusApiMutation.mutate({ id: year.id, status: next })
   }
 
   return (
@@ -499,24 +500,23 @@ export function AcademicYearsPage() {
               >
                 {/* Cabeçalho do ano */}
                 <div className="flex items-center gap-3 px-5 py-4">
-                  <button
-                    className="flex items-center justify-center rounded transition-colors shrink-0"
-                    style={{ width: 28, height: 28 }}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 shrink-0"
                     onClick={() => toggleExpand(year.id)}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                   >
                     {isOpen
                       ? <ChevronDown size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />
                       : <ChevronRight size={16} style={{ color: 'hsl(var(--muted-foreground))' }} />}
-                  </button>
+                  </Button>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm" style={{ color: 'hsl(var(--primary))' }}>
                         {year.name}
                       </span>
-                      <Badge variant={STATUS_VARIANT[year.status]}>{STATUS_LABEL[year.status]}</Badge>
+                      <StatusBadge status={year.status} kind="year" />
                     </div>
                     <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
                       {fmtDate(year.startDate)} – {fmtDate(year.endDate)}
@@ -528,35 +528,34 @@ export function AcademicYearsPage() {
 
                   <div className="flex items-center gap-1 shrink-0">
                     {year.status !== 'closed' && (
-                      <button
+                      <Button
+                        variant="outline"
+                        size="sm"
                         title={year.status === 'planning' ? 'Ativar' : 'Encerrar'}
-                        className="flex items-center justify-center rounded-sm px-2 h-7 text-xs font-medium gap-1 transition-colors"
-                        style={{ border: '1px solid hsl(var(--muted-foreground) / 0.3)', color: 'hsl(var(--foreground) / 0.7)' }}
+                        className="h-7 text-xs gap-1"
                         onClick={() => handleNextStatus(year)}
-                        disabled={statusMutation.isPending}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                        disabled={statusApiMutation.isPending}
                       >
                         <RefreshCw size={11} />
                         {year.status === 'planning' ? 'Ativar' : 'Encerrar'}
-                      </button>
+                      </Button>
                     )}
-                    <button
-                      className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
                       onClick={() => { setEditingYear(year); setYearDialog(true) }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
                       <Pencil size={13} style={{ color: 'hsl(var(--muted-foreground))' }} />
-                    </button>
-                    <button
-                      className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors"
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7"
                       onClick={() => setDeleteTarget(year.id)}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(0 86% 97%)' }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
                     >
                       <Trash2 size={13} style={{ color: 'hsl(var(--destructive))' }} />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -573,27 +572,15 @@ export function AcademicYearsPage() {
         onClose={() => { setYearDialog(false); setEditingYear(undefined) }}
       />
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir ano letivo</AlertDialogTitle>
-            <AlertDialogDescription>Todos os períodos vinculados também serão removidos. Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => { toast.success('Ano letivo removido'); setDeleteTarget(null) },
-                  onError: (err) => { toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'); setDeleteTarget(null) },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteYearApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+        title="Excluir ano letivo"
+        description="Todos os períodos vinculados também serão removidos. Esta ação não pode ser desfeita."
+      />
     </div>
   )
 }

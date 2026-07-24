@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import type { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../../lib/errors'
 import { useSchools, useCreateSchool, useUpdateSchool, useDeleteSchool } from '../hooks/useSchools'
 import { useAuth } from '../../../contexts/AuthContext'
 import { toast } from '../../../lib/toast'
@@ -14,16 +14,8 @@ import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
+import { SearchInput } from '../../../components/SearchInput'
 import type { School } from '@education-gestor/types'
 
 const createSchema = z.object({
@@ -100,8 +92,8 @@ export function SchoolsPage() {
           createForm.reset()
         },
         onError: (err) => {
-          const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-          toast.error(msg ?? 'Erro inesperado')
+          const msg = extractErrorMessage(err)
+          toast.error(msg)
         },
       },
     )
@@ -128,8 +120,8 @@ export function SchoolsPage() {
           setEditing(undefined)
         },
         onError: (err) => {
-          const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-          toast.error(msg ?? 'Erro inesperado')
+          const msg = extractErrorMessage(err)
+          toast.error(msg)
         },
       },
     )
@@ -152,13 +144,11 @@ export function SchoolsPage() {
 
       {/* Busca */}
       <div className="w-full max-w-sm">
-        <div className="relative">
-          <Input
-            placeholder="Buscar por nome..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar por nome..."
+        />
       </div>
 
       {/* Tabela */}
@@ -216,20 +206,22 @@ export function SchoolsPage() {
                     {isSecretaria && (
                       <td>
                         <div className="flex gap-1 justify-end">
-                          <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-primary/10"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             title="Editar"
                             onClick={() => handleEdit(s)}
                           >
-                            <Pencil size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
-                          </button>
-                          <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-destructive/10"
+                            <Pencil size={14} className="text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             title="Excluir"
                             onClick={() => setDeleteTarget(s.id)}
                           >
-                            <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
-                          </button>
+                            <Trash2 size={14} className="text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     )}
@@ -375,34 +367,23 @@ export function SchoolsPage() {
       </Dialog>
 
       {/* AlertDialog exclusão */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Escola removida')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-                    toast.error(msg ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteMutation.mutate(deleteTarget!, {
+            onSuccess: () => {
+              toast.success('Escola removida')
+              setDeleteTarget(null)
+            },
+            onError: (err) => {
+              const msg = extractErrorMessage(err)
+              toast.error(msg)
+              setDeleteTarget(null)
+            },
+          })
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

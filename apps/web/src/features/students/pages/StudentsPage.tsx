@@ -1,38 +1,16 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { AxiosError } from 'axios'
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
-import { Badge } from '../../../components/ui/badge'
 import { Skeleton } from '../../../components/ui/skeleton'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 
-const STATUS_LABELS: Record<string, string> = {
-  active: 'Ativo',
-  inactive: 'Inativo',
-  transferred: 'Transferido',
-  cancelled: 'Cancelado',
-}
-
-function statusVariant(status: string) {
-  if (status === 'active') return 'success'
-  if (status === 'transferred') return 'warning'
-  if (status === 'inactive' || status === 'cancelled') return 'outline'
-  return 'outline'
-}
+import { SearchInput } from '../../../components/SearchInput'
+import { StatusBadge } from '../../../components/StatusBadge'
 
 const PAGE_SIZE = 15
 
@@ -44,6 +22,14 @@ export function StudentsPage() {
   const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const deleteMutation = useDeleteStudent()
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Aluno removido',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
+
   const [search, setSearch] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
@@ -67,27 +53,11 @@ export function StudentsPage() {
 
       {/* Busca */}
       <div className="w-full max-w-sm">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-            size={14}
-            style={{ color: 'hsl(var(--muted-foreground))' }}
-          />
-          <input
-            type="text"
-            placeholder="Buscar por nome ou matrícula…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
-            style={{
-              border: '1px solid hsl(var(--muted-foreground) / 0.3)',
-              background: 'hsl(var(--card))',
-              color: 'hsl(var(--primary))',
-            }}
-            onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px hsl(var(--ring) / 0.3)' }}
-            onBlur={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'none' }}
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar por nome ou matrícula…"
+        />
       </div>
 
       {/* Tabela */}
@@ -140,26 +110,26 @@ export function StudentsPage() {
                         </span>
                       </td>
                       <td>
-                        <Badge variant={statusVariant(s.enrollmentStatus) as any}>
-                          {STATUS_LABELS[s.enrollmentStatus] ?? s.enrollmentStatus}
-                        </Badge>
+                        <StatusBadge status={s.enrollmentStatus} kind="enrollment" />
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-1 justify-end">
-                          <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-primary/10"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             title="Editar"
                             onClick={() => navigate(`/students/${s.id}`)}
                           >
-                            <Pencil size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
-                          </button>
-                          <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-destructive/10"
+                            <Pencil size={14} className="text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             title="Excluir"
                             onClick={() => setDeleteTarget(s.id)}
                           >
-                            <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
-                          </button>
+                            <Trash2 size={14} className="text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -198,30 +168,13 @@ export function StudentsPage() {
         </div>
       )}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => { toast.success('Aluno removido'); setDeleteTarget(null) },
-                  onError: (err) => {
-                    toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

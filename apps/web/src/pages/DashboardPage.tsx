@@ -180,21 +180,7 @@ function SectionHeader({
 
 // ── Empty state ──────────────────────────────────────────────────────────────
 
-function TableEmpty({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
-  return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
-      >
-        <Icon size={22} />
-      </div>
-      <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-        {message}
-      </p>
-    </div>
-  )
-}
+import { EmptyState } from '../components/EmptyState'
 
 // ── Admin dashboard ──────────────────────────────────────────────────────────
 
@@ -351,7 +337,7 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
           }}
         >
           {data.topSchools.length === 0 ? (
-            <TableEmpty icon={School} message="Nenhuma escola cadastrada" />
+            <EmptyState icon={School} title="Nenhuma escola cadastrada" />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -415,7 +401,7 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
           }}
         >
           {data.recentActivity.length === 0 ? (
-            <TableEmpty icon={Activity} message="Nenhuma atividade registrada" />
+            <EmptyState icon={Activity} title="Nenhuma atividade registrada" />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -595,9 +581,9 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
           }}
         >
           {data.upcomingTuitions.length === 0 ? (
-            <TableEmpty
+            <EmptyState
               icon={CalendarClock}
-              message="Nenhuma mensalidade vencendo nos próximos 7 dias"
+              title="Nenhuma mensalidade vencendo nos próximos 7 dias"
             />
           ) : (
             <div className="overflow-x-auto">

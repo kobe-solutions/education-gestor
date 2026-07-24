@@ -15,48 +15,12 @@ import {
 } from 'lucide-react'
 import { useStudents } from '../features/students/hooks/useStudents'
 import { useAllTeachers } from '../features/teachers/hooks/useTeachers'
-import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import type { Student, Teacher } from '@education-gestor/types'
 
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('')
-}
+import { Avatar } from '../components/Avatar'
 
-function Avatar({ name, size = 32 }: { name: string; size?: number }) {
-  return (
-    <div
-      className="flex items-center justify-center shrink-0 rounded-full font-semibold"
-      style={{
-        width: size,
-        height: size,
-        background: 'hsl(217 91% 95%)',
-        color: 'hsl(217 91% 40%)',
-        fontSize: size * 0.34,
-      }}
-    >
-      {getInitials(name)}
-    </div>
-  )
-}
-
-const STATUS_LABEL: Record<string, string> = {
-  active: 'Ativo',
-  inactive: 'Inativo',
-  transferred: 'Transferido',
-  cancelled: 'Cancelado',
-}
-
-function studentBadge(status: Student['enrollmentStatus']) {
-  if (status === 'active') return <Badge variant="success">Ativo</Badge>
-  if (status === 'transferred') return <Badge variant="warning">Transferido</Badge>
-  return <Badge variant="outline">{STATUS_LABEL[status ?? ''] ?? status}</Badge>
-}
+import { StatusBadge } from '../components/StatusBadge'
 
 // ── Metric card ──────────────────────────────────────────────────────────────
 
@@ -131,9 +95,10 @@ interface PersonRowProps {
 
 function PersonRow({ name, meta, badge, onClick }: PersonRowProps) {
   return (
-    <button
-      type="button"
-      className="flex items-center gap-3 w-full py-2.5 px-3 -mx-3 rounded-md transition-colors duration-150 text-left hover:bg-accent"
+    <Button
+      variant="ghost"
+      size="sm"
+      className="flex items-center gap-3 w-full py-2.5 px-3 -mx-3 h-auto justify-start text-left hover:bg-accent"
       onClick={onClick}
     >
       <Avatar name={name} size={32} />
@@ -146,7 +111,7 @@ function PersonRow({ name, meta, badge, onClick }: PersonRowProps) {
         </div>
       </div>
       {badge && <div className="shrink-0">{badge}</div>}
-    </button>
+    </Button>
   )
 }
 
@@ -231,14 +196,16 @@ function SectionPanel({
             {sectionLabel}
           </span>
           {hasItems && viewAllOnClick && (
-            <button
-              className="flex items-center gap-1 text-xs font-medium transition-colors duration-150 hover:opacity-80"
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-xs font-medium h-auto"
               style={{ color: 'hsl(217 91% 40%)' }}
               onClick={viewAllOnClick}
             >
               {viewAllLabel}
               <ArrowRight size={12} />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -278,9 +245,10 @@ interface QuickActionProps {
 
 function QuickAction({ icon: Icon, label, description, onClick }: QuickActionProps) {
   return (
-    <button
-      type="button"
-      className="flex items-center gap-3.5 p-4 rounded-xl text-left transition-all duration-200 group
+    <Button
+      variant="ghost"
+      size="sm"
+      className="flex items-center gap-3.5 p-4 rounded-xl text-left h-auto justify-start
         border hover:border-[hsl(217 91% 40%)] hover:shadow-[var(--shadow-sm)]
         hover:bg-[hsl(217 91% 95%)]"
       style={{
@@ -311,7 +279,7 @@ function QuickAction({ icon: Icon, label, description, onClick }: QuickActionPro
           </div>
         )}
       </div>
-    </button>
+    </Button>
   )
 }
 
@@ -380,7 +348,7 @@ export function HubPeoplePage() {
               key={s.id}
               name={s.name}
               meta={<span className="font-mono text-[11px]">{s.enrollmentCode}</span>}
-              badge={studentBadge(s.enrollmentStatus)}
+              badge={<StatusBadge status={s.enrollmentStatus} kind="enrollment" />}
               onClick={() => navigate(`/students/${s.id}`)}
             />
           ))}

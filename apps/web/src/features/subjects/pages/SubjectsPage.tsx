@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import type { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../../lib/errors'
 import { useSubjects, useCreateSubject, useUpdateSubject, useDeleteSubject } from '../hooks/useSubjects'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
@@ -10,16 +10,8 @@ import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
+import { SearchInput } from '../../../components/SearchInput'
 import type { Subject } from '@education-gestor/types'
 
 interface SubjectFormData {
@@ -35,6 +27,26 @@ export function SubjectsPage() {
   const createMutation = useCreateSubject()
   const updateMutation = useUpdateSubject()
   const deleteMutation = useDeleteSubject()
+
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: { name: string; code?: string; weeklyHours: number }) => createMutation.mutateAsync(data),
+    successMessage: 'Disciplina criada com sucesso',
+    onSuccess: () => handleClose(),
+  })
+
+  const updateApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: { name: string; code: string | null; weeklyHours: number } }) =>
+      updateMutation.mutateAsync(vars),
+    successMessage: 'Disciplina atualizada',
+    onSuccess: () => handleClose(),
+  })
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Disciplina removida',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
 
   const [search, setSearch] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -93,48 +105,26 @@ export function SubjectsPage() {
     const weeklyHours = Number(form.weeklyHours)
 
     if (editing) {
-      updateMutation.mutate(
-        {
-          id: editing.id,
-          data: {
-            name: form.name,
-            code: form.code || null,
-            weeklyHours,
-          },
-        },
-        {
-          onSuccess: () => {
-            toast.success('Disciplina atualizada')
-            handleClose()
-          },
-          onError: (err) => {
-            toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-          },
-        },
-      )
-    } else {
-      createMutation.mutate(
-        {
+      updateApiMutation.mutate({
+        id: editing.id,
+        data: {
           name: form.name,
-          ...(form.code ? { code: form.code } : {}),
+          code: form.code || null,
           weeklyHours,
         },
-        {
-          onSuccess: () => {
-            toast.success('Disciplina criada com sucesso')
-            handleClose()
-          },
-          onError: (err) => {
-            toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-          },
-        },
-      )
+      })
+    } else {
+      createApiMutation.mutate({
+        name: form.name,
+        ...(form.code ? { code: form.code } : {}),
+        weeklyHours,
+      })
     }
   }
 
-  const activeMutation = editing ? updateMutation : createMutation
+  const activeMutation = editing ? updateApiMutation : createApiMutation
   const isPending = activeMutation.isPending
-  const apiError = (activeMutation.error as AxiosError<{ message: string }>)?.response?.data?.message
+  const apiError = extractErrorMessage(activeMutation.error)
 
   return (
     <div className="space-y-5">
@@ -151,13 +141,11 @@ export function SubjectsPage() {
 
       {/* Busca */}
       <div className="w-full max-w-sm">
-        <div className="relative">
-          <Input
-            placeholder="Buscar disciplina..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar disciplina..."
+        />
       </div>
 
       {/* Tabela */}
@@ -193,20 +181,22 @@ export function SubjectsPage() {
                     <td style={{ color: 'hsl(var(--muted-foreground))' }}>{s.weeklyHours}h</td>
                     <td>
                       <div className="flex gap-1 justify-end">
-                        <button
-                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-primary/10"
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           title="Editar"
                           onClick={() => handleEdit(s)}
                         >
-                          <Pencil size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
-                        </button>
-                        <button
-                          className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-destructive/10"
+                          <Pencil size={14} className="text-muted-foreground" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           title="Excluir"
                           onClick={() => handleDelete(s.id)}
                         >
-                          <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
-                        </button>
+                          <Trash2 size={14} className="text-destructive" />
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -264,33 +254,13 @@ export function SubjectsPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Disciplina removida')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

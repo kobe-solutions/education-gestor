@@ -13,15 +13,9 @@ import { toast } from '../../../lib/toast'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Badge } from '../../../components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
-
-const ENROLLMENT_STATUS_LABELS: Record<string, string> = {
-  active: 'Ativo',
-  inactive: 'Inativo',
-  transferred: 'Transferido',
-  cancelled: 'Cancelado',
-}
+import { Badge } from '../../../components/ui/badge'
+import { StatusBadge } from '../../../components/StatusBadge'
 
 const guardianSchema = z.object({
   name: z.string().min(2, 'Nome obrigatório'),
@@ -91,15 +85,15 @@ export function StudentDetailPage() {
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => navigate('/students')}
-          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
+          className="shrink-0"
           title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
         >
-          <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
-        </button>
+          <ArrowLeft size={16} />
+        </Button>
 
         <div className="flex-1 min-w-0">
           <h1
@@ -112,12 +106,7 @@ export function StudentDetailPage() {
             <span className="mono text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
               Matrícula: {student.enrollmentCode}
             </span>
-            <Badge
-              variant={student.enrollmentStatus === 'active' ? 'success' : student.enrollmentStatus === 'transferred' ? 'warning' : 'outline'}
-              className="text-[10px] h-4 px-1.5"
-            >
-              {ENROLLMENT_STATUS_LABELS[student.enrollmentStatus]}
-            </Badge>
+            <StatusBadge status={student.enrollmentStatus} kind="enrollment" />
           </div>
         </div>
 
@@ -202,15 +191,15 @@ export function StudentDetailPage() {
                       )}
                     </div>
                   </div>
-                  <button
-                    className="flex items-center justify-center rounded-sm w-7 h-7 transition-colors shrink-0"
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     title="Remover"
                     onClick={() => onDeleteGuardian(g.id)}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(0 86% 97%)' }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
+                    className="shrink-0"
                   >
-                    <Trash2 size={13} style={{ color: 'hsl(var(--destructive))' }} />
-                  </button>
+                    <Trash2 size={13} className="text-destructive" />
+                  </Button>
                 </div>
               ))}
             </div>

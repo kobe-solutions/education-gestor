@@ -76,24 +76,7 @@ type FormacaoForm = z.infer<typeof formacaoSchema>
 type FinanceiroForm = z.infer<typeof financeiroSchema>
 type SenhaForm = z.infer<typeof senhaSchema>
 
-const EMPLOYMENT_STATUS_LABELS: Record<string, string> = {
-  ativo: 'Ativo',
-  inativo: 'Inativo',
-  licenca: 'Licença',
-}
-
-const CONTRACT_LABELS: Record<string, string> = {
-  clt: 'CLT',
-  temporario: 'Temporário',
-  horista: 'Horista',
-}
-
-const SHIFT_LABELS: Record<string, string> = {
-  matutino: 'Matutino',
-  vespertino: 'Vespertino',
-  noturno: 'Noturno',
-  integral: 'Integral',
-}
+import { EMPLOYMENT_STATUS_LABELS, CONTRACT_LABELS, SHIFT_LABELS } from '../../../lib/labels'
 
 // ─── Componente ───────────────────────────────────────────────────────────────
 

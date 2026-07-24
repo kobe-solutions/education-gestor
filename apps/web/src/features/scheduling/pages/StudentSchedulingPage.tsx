@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { GripVertical, X, Search, Users, AlertTriangle } from 'lucide-react'
-import type { AxiosError } from 'axios'
+import { GripVertical, X, Users, AlertTriangle } from 'lucide-react'
+import { extractErrorMessage } from '../../../lib/errors'
 import { useStudents } from '../../students/hooks/useStudents'
 import { useClasses, useClass } from '../../classes/hooks/useClasses'
 import { api } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
-import { Input } from '../../../components/ui/input'
+import { SearchInput } from '../../../components/SearchInput'
 import { Button } from '../../../components/ui/button'
 import {
   Dialog,
@@ -41,12 +41,7 @@ function initials(name: string) {
   return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('')
 }
 
-const SHIFT_LABELS: Record<string, { label: string; badge: string }> = {
-  manha:    { label: 'Manhã',    badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' },
-  tarde:    { label: 'Tarde',    badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30' },
-  noite:    { label: 'Noite',    badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
-  integral: { label: 'Integral', badge: 'bg-green-500/10 text-green-400 border-green-500/30' },
-}
+import { SHIFT_LABELS, SHIFT_BADGE_CLASSES } from '../../../lib/labels'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -114,12 +109,14 @@ function EnrolledPill({
         <span className="text-[9px] font-bold text-white">{initials(student.name)}</span>
       </div>
       <span className="flex-1 truncate" style={{ maxWidth: 100 }}>{student.name}</span>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
+        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600 h-5 w-5"
         onClick={onRemove}
-        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600"
       >
         <X className="h-3 w-3" />
-      </button>
+      </Button>
     </div>
   )
 }
@@ -156,10 +153,9 @@ function ClassColumn({
   const isFull = count >= max
   const fillPct = Math.min(100, Math.round((count / max) * 100))
 
-  const shiftInfo = SHIFT_LABELS[schoolClass.shift?.toLowerCase()] ?? {
-    label: schoolClass.shift,
-    badge: 'bg-muted text-muted-foreground border-border',
-  }
+  const shiftKey = schoolClass.shift?.toLowerCase() ?? ''
+  const shiftLabel = SHIFT_LABELS[shiftKey] ?? schoolClass.shift
+  const shiftBadge = SHIFT_BADGE_CLASSES[shiftKey] ?? 'bg-muted text-muted-foreground border-border'
 
   return (
     <div
@@ -199,8 +195,8 @@ function ClassColumn({
               {schoolClass.serie && (
                 <span className="text-[10px] text-muted-foreground">{schoolClass.serie.name}</span>
               )}
-              <span className={`text-[10px] border rounded px-1.5 py-0.5 font-medium ${shiftInfo.badge}`}>
-                {shiftInfo.label}
+              <span className={`text-[10px] border rounded px-1.5 py-0.5 font-medium ${shiftBadge}`}>
+                {shiftLabel}
               </span>
             </div>
           </div>
@@ -256,12 +252,14 @@ function ClassColumn({
       {/* Botão rápido quando aluno selecionado */}
       {selectedStudent && !isFull && (
         <div className="p-3 pt-1 border-t">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-center gap-1.5 py-2 text-xs font-medium border-dashed border-primary text-primary hover:bg-primary/10 transition-all"
             onClick={() => onDrop(schoolClass.id, selectedStudent.id, selectedStudent.name)}
-            className="w-full flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium border-2 border-dashed border-primary text-primary hover:bg-primary/10 transition-all"
           >
             Matricular {selectedStudent.name.split(' ')[0]}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -321,10 +319,10 @@ export function StudentSchedulingPage() {
       queryClient.invalidateQueries({ queryKey: ['classes'] })
       setSelectedStudent(null)
     } catch (err) {
-      const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
+      const msg = extractErrorMessage(err)
       if (msg === 'Class is full') toast.error('Turma lotada — limite máximo atingido')
       else if (msg === 'Student already in class') toast.error('Aluno já está nesta turma')
-      else toast.error(msg ?? 'Erro ao matricular')
+      else toast.error(msg)
     } finally {
       setEnrolling(false)
       setConfirmTarget(null)
@@ -342,12 +340,11 @@ export function StudentSchedulingPage() {
         </div>
 
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar aluno..."
+          <SearchInput
             value={studentSearch}
-            onChange={(e) => setStudentSearch(e.target.value)}
-            className="pl-8 h-8 text-sm"
+            onChange={setStudentSearch}
+            placeholder="Buscar aluno..."
+            className="h-8 text-sm"
           />
         </div>
 
@@ -356,9 +353,9 @@ export function StudentSchedulingPage() {
             <span className="text-xs font-medium text-primary">
               {selectedStudent.name.split(' ')[0]} selecionado
             </span>
-            <button onClick={() => setSelectedStudent(null)} className="text-primary hover:opacity-70">
+            <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSelectedStudent(null)}>
               <X className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           </div>
         )}
 
@@ -397,13 +394,12 @@ export function StudentSchedulingPage() {
               Arraste um aluno até a turma para matricular
             </p>
           </div>
-          <div className="ml-auto relative w-52">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Filtrar turmas..."
+          <div className="ml-auto w-52">
+            <SearchInput
               value={classSearch}
-              onChange={(e) => setClassSearch(e.target.value)}
-              className="pl-8 h-8 text-sm"
+              onChange={setClassSearch}
+              placeholder="Filtrar turmas..."
+              className="h-8 text-sm"
             />
           </div>
         </div>

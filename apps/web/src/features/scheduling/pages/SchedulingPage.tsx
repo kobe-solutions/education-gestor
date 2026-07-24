@@ -1,8 +1,7 @@
 import { useState, useRef } from 'react'
-import { GripVertical, Plus, X, ChevronDown, ChevronUp, Search, Zap, ArrowLeft } from 'lucide-react'
+import { GripVertical, Plus, X, ChevronDown, ChevronUp, Zap, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { PageHead } from '../../../components/PageHead'
-import type { AxiosError } from 'axios'
 import { useAllTeachers } from '../../teachers/hooks/useTeachers'
 import { useClasses, useClassPeriods } from '../../classes/hooks/useClasses'
 import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
@@ -15,9 +14,9 @@ import {
   WEEK_DAYS_ORDER,
 } from '../../timetable/hooks/useTimetable'
 import type { TimetableSlot } from '../../timetable/hooks/useTimetable'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
+import { SearchInput } from '../../../components/SearchInput'
 import { Label } from '../../../components/ui/label'
 import { Badge } from '../../../components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
@@ -59,12 +58,7 @@ function initials(name: string) {
     .join('')
 }
 
-const SHIFT_LABELS: Record<string, { label: string; badge: string }> = {
-  manha: { label: 'Manhã', badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' },
-  tarde: { label: 'Tarde', badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30' },
-  noite: { label: 'Noite', badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
-  integral: { label: 'Integral', badge: 'bg-green-500/10 text-green-400 border-green-500/30' },
-}
+import { SHIFT_LABELS, SHIFT_BADGE_CLASSES } from '../../../lib/labels'
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
 
@@ -144,12 +138,14 @@ function SlotPill({ slot, colorIdx, onRemove }: SlotPillProps) {
         <p className="truncate leading-tight" style={{ maxWidth: 100 }}>{slot.subject.name}</p>
         <p className="text-[10px] opacity-70 font-normal">{slot.classPeriod.startTime}–{slot.classPeriod.endTime}</p>
       </div>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
+        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600 h-5 w-5"
         onClick={onRemove}
-        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600"
       >
         <X className="h-3 w-3" />
-      </button>
+      </Button>
     </div>
   )
 }
@@ -180,7 +176,9 @@ function ClassColumn({
     return acc
   }, {})
 
-  const shiftInfo = SHIFT_LABELS[schoolClass.shift.toLowerCase()] ?? { label: schoolClass.shift, badge: 'bg-muted text-muted-foreground border-border' }
+  const shiftKey = schoolClass.shift.toLowerCase()
+  const shiftLabel = SHIFT_LABELS[shiftKey] ?? schoolClass.shift
+  const shiftBadge = SHIFT_BADGE_CLASSES[shiftKey] ?? 'bg-muted text-muted-foreground border-border'
 
   return (
     <div
@@ -217,16 +215,16 @@ function ClassColumn({
             {schoolClass.serie && (
               <span className="text-[10px] text-muted-foreground">{schoolClass.serie.name}</span>
             )}
-            <span className={`text-[10px] border rounded px-1.5 py-0.5 font-medium ${shiftInfo.badge}`}>
-              {shiftInfo.label}
+            <span className={`text-[10px] border rounded px-1.5 py-0.5 font-medium ${shiftBadge}`}>
+              {shiftLabel}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-1 ml-2">
           <span className="text-[10px] text-muted-foreground font-medium">{slots.length} aulas</span>
-          <button onClick={() => setCollapsed((v) => !v)} className="text-muted-foreground hover:text-foreground">
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => setCollapsed((v) => !v)}>
             {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -266,22 +264,24 @@ function ClassColumn({
 
       {/* Footer: Add button */}
       <div className="p-3 pt-1">
-        <button
+        <Button
+          variant="outline"
+          size="sm"
+          className={[
+            'w-full justify-center gap-1.5 py-2 text-xs font-medium border-dashed transition-all',
+            selectedTeacher
+              ? 'border-primary text-primary hover:bg-primary/10'
+              : 'border-muted-foreground/30 text-muted-foreground hover:border-muted-foreground/60 hover:text-foreground',
+          ].join(' ')}
           onClick={() =>
             selectedTeacher
               ? onClickAdd(schoolClass.id, selectedTeacher.id, selectedTeacher.name)
               : onClickAdd(schoolClass.id)
           }
-          className={[
-            'w-full flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-medium border-2 border-dashed transition-all',
-            selectedTeacher
-              ? 'border-primary text-primary hover:bg-primary/10'
-              : 'border-muted-foreground/30 text-muted-foreground hover:border-muted-foreground/60 hover:text-foreground',
-          ].join(' ')}
         >
           <Plus className="h-3.5 w-3.5" />
           {selectedTeacher ? `Alocar ${selectedTeacher.name.split(' ')[0]}` : 'Adicionar aula'}
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -301,6 +301,20 @@ export function SchedulingPage() {
 
   const createSlot = useCreateTimetableSlot()
   const deleteSlotMutation = useDeleteTimetableSlot('')
+
+  const createSlotApiMutation = useApiMutation({
+    mutationFn: (data: { classId: string; teacherId: string; subjectId: string; academicYearId: string; classPeriodId: string; weekDay: string }) =>
+      createSlot.mutateAsync(data),
+    successMessage: 'Aula alocada!',
+    onSuccess: () => setAssignTarget(null),
+    errorMessage: 'Erro ao alocar',
+  })
+
+  const deleteSlotApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteSlotMutation.mutateAsync(id),
+    successMessage: 'Aula removida',
+    errorMessage: 'Erro ao remover',
+  })
 
   const [teacherSearch, setTeacherSearch] = useState('')
   const [classSearch, setClassSearch] = useState('')
@@ -345,37 +359,21 @@ export function SchedulingPage() {
 
   async function handleAssign() {
     if (!assignTarget || !formTeacher || !formSubject || !formClassPeriodId || !formDay || !activeYear) {
-      toast.error('Preencha todos os campos')
       return
     }
 
-    createSlot.mutate(
-      {
-        classId: assignTarget.classId,
-        teacherId: formTeacher,
-        subjectId: formSubject,
-        academicYearId: activeYear.id,
-        classPeriodId: formClassPeriodId,
-        weekDay: formDay,
-      },
-      {
-        onSuccess: () => {
-          toast.success('Aula alocada!')
-          setAssignTarget(null)
-        },
-        onError: (err) => {
-          const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-          toast.error(msg ?? 'Erro ao alocar')
-        },
-      },
-    )
+    createSlotApiMutation.mutate({
+      classId: assignTarget.classId,
+      teacherId: formTeacher,
+      subjectId: formSubject,
+      academicYearId: activeYear.id,
+      classPeriodId: formClassPeriodId,
+      weekDay: formDay,
+    })
   }
 
   function handleDeleteSlot(slotId: string, classId: string) {
-    deleteSlotMutation.mutate(slotId, {
-      onSuccess: () => toast.success('Aula removida'),
-      onError: () => toast.error('Erro ao remover'),
-    })
+    deleteSlotApiMutation.mutate(slotId)
   }
 
   return (
@@ -397,12 +395,11 @@ export function SchedulingPage() {
         </div>
 
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Buscar professor..."
+          <SearchInput
             value={teacherSearch}
-            onChange={(e) => setTeacherSearch(e.target.value)}
-            className="pl-8 h-8 text-sm"
+            onChange={setTeacherSearch}
+            placeholder="Buscar professor..."
+            className="h-8 text-sm"
           />
         </div>
 
@@ -414,9 +411,9 @@ export function SchedulingPage() {
                 {selectedTeacher.name.split(' ')[0]} selecionado
               </span>
             </div>
-            <button onClick={() => setSelectedTeacher(null)} className="text-primary hover:opacity-70">
+            <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSelectedTeacher(null)}>
               <X className="h-3.5 w-3.5" />
-            </button>
+            </Button>
           </div>
         )}
 
@@ -457,13 +454,12 @@ export function SchedulingPage() {
               Arraste um professor até a turma para alocar
             </p>
           </div>
-          <div className="ml-auto relative w-52">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Filtrar turmas..."
+          <div className="ml-auto w-52">
+            <SearchInput
               value={classSearch}
-              onChange={(e) => setClassSearch(e.target.value)}
-              className="pl-8 h-8 text-sm"
+              onChange={setClassSearch}
+              placeholder="Filtrar turmas..."
+              className="h-8 text-sm"
             />
           </div>
         </div>
@@ -573,8 +569,8 @@ export function SchedulingPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setAssignTarget(null)}>Cancelar</Button>
-            <Button onClick={handleAssign} disabled={createSlot.isPending}>
-              {createSlot.isPending ? 'Alocando...' : 'Alocar'}
+            <Button onClick={handleAssign} disabled={createSlotApiMutation.isPending}>
+              {createSlotApiMutation.isPending ? 'Alocando...' : 'Alocar'}
             </Button>
           </DialogFooter>
         </DialogContent>

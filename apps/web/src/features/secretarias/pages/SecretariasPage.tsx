@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import type { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../../lib/errors'
 import type { Secretaria } from '@education-gestor/types'
 import {
   useSecretarias,
@@ -11,22 +11,15 @@ import {
   useUpdateSecretaria,
   useDeleteSecretaria,
 } from '../hooks/useSecretarias'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
+import { SearchInput } from '../../../components/SearchInput'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Badge } from '../../../components/ui/badge'
+import { PageHead } from '../../../components/PageHead'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { StatusBadge } from '../../../components/StatusBadge'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import {
   Table,
   TableBody,
@@ -62,6 +55,25 @@ export function SecretariasPage() {
   const createMutation = useCreateSecretaria()
   const updateMutation = useUpdateSecretaria()
   const deleteMutation = useDeleteSecretaria()
+
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: CreateFormData) => createMutation.mutateAsync(data),
+    successMessage: 'Secretaria criada com sucesso',
+    onSuccess: () => { setCreateOpen(false); resetCreate() },
+  })
+
+  const updateApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: Record<string, unknown> }) => updateMutation.mutateAsync(vars),
+    successMessage: 'Secretaria atualizada',
+    onSuccess: () => setEditTarget(null),
+  })
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Secretaria removida',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
 
   const [search, setSearch] = useState('')
   const [createOpen, setCreateOpen] = useState(false)
@@ -101,84 +113,57 @@ export function SecretariasPage() {
   }
 
   function onCreateSubmit(data: CreateFormData) {
-    createMutation.mutate(data, {
-      onSuccess: () => {
-        toast.success('Secretaria criada com sucesso')
-        setCreateOpen(false)
-        resetCreate()
-      },
-      onError: (err) => {
-        toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-      },
-    })
+    createApiMutation.mutate(data)
   }
 
   function onEditSubmit(data: EditFormData) {
     if (!editTarget) return
-    updateMutation.mutate(
-      {
-        id: editTarget.id,
-        data: {
-          ...data,
-          phone: data.phone || null,
-          address: data.address || null,
-          responsible: data.responsible || null,
-        },
-      },
-      {
-        onSuccess: () => {
-          toast.success('Secretaria atualizada')
-          setEditTarget(null)
-        },
-        onError: (err) => {
-          toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-        },
-      },
-    )
-  }
-
-  function onDeleteConfirm() {
-    if (!deleteTarget) return
-    deleteMutation.mutate(deleteTarget.id, {
-      onSuccess: () => {
-        toast.success('Secretaria removida')
-        setDeleteTarget(null)
-      },
-      onError: (err) => {
-        toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-        setDeleteTarget(null)
+    updateApiMutation.mutate({
+      id: editTarget.id,
+      data: {
+        ...data,
+        phone: data.phone || null,
+        address: data.address || null,
+        responsible: data.responsible || null,
       },
     })
   }
 
-  const createApiError = createMutation.isError
-    ? ((createMutation.error as AxiosError<{ message: string }>)?.response?.data?.message ??
-      'Erro ao criar secretaria')
+  function onDeleteConfirm() {
+    if (!deleteTarget) return
+    deleteApiMutation.mutate(deleteTarget.id)
+  }
+
+  const createApiError = createApiMutation.isError
+    ? extractErrorMessage(createApiMutation.error, 'Erro ao criar secretaria')
     : null
 
-  const editApiError = updateMutation.isError
-    ? ((updateMutation.error as AxiosError<{ message: string }>)?.response?.data?.message ??
-      'Erro ao atualizar secretaria')
+  const editApiError = updateApiMutation.isError
+    ? extractErrorMessage(updateApiMutation.error, 'Erro ao atualizar secretaria')
     : null
 
   const activeValue = watchEdit('active')
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Secretarias</h1>
-        <Button size="sm" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" />
-          Nova secretaria
-        </Button>
-      </div>
-
-      <Input
-        placeholder="Buscar por nome..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-sm"
+      <PageHead
+        title="Secretarias"
+        subtitle={`${filtered.length} secretarias cadastradas`}
+        actions={
+          <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            Nova secretaria
+          </Button>
+        }
       />
+
+      <div className="max-w-sm">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar por nome..."
+        />
+      </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
       {!isLoading && filtered.length === 0 && (
@@ -205,11 +190,7 @@ export function SecretariasPage() {
                 <TableCell>{s.email}</TableCell>
                 <TableCell>{s.phone ?? '—'}</TableCell>
                 <TableCell>
-                  {s.active ? (
-                    <Badge variant="default">Ativo</Badge>
-                  ) : (
-                    <Badge variant="secondary">Inativo</Badge>
-                  )}
+                  <StatusBadge status={String(s.active)} kind="active" />
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
@@ -278,7 +259,7 @@ export function SecretariasPage() {
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
+              <Button type="submit" disabled={createApiMutation.isPending}>
                 Criar
               </Button>
             </DialogFooter>
@@ -337,7 +318,7 @@ export function SecretariasPage() {
               <Button type="button" variant="outline" onClick={() => setEditTarget(null)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={updateMutation.isPending}>
+              <Button type="submit" disabled={updateApiMutation.isPending}>
                 Salvar
               </Button>
             </DialogFooter>
@@ -346,20 +327,11 @@ export function SecretariasPage() {
       </Dialog>
 
       {/* AlertDialog confirmação de exclusão */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={onDeleteConfirm}>
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={onDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

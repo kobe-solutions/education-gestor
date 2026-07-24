@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useStudent } from '../../students/hooks/useStudents'
 import { useStudentGrades, useStudentAttendances } from '../hooks/useAcademic'
+import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 
 export function StudentReportPage() {
@@ -26,15 +27,9 @@ export function StudentReportPage() {
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
-          title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
-        >
-          <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
-        </button>
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} title="Voltar" className="shrink-0">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
 
         <div className="flex-1 min-w-0">
           <h1

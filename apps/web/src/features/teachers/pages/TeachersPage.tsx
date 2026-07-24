@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { AxiosError } from 'axios'
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { extractErrorMessage } from '../../../lib/errors'
 import { useTeachers, useDeleteTeacher } from '../hooks/useTeachers'
 import { toast } from '../../../lib/toast'
 import { PageHead } from '../../../components/PageHead'
@@ -9,22 +9,10 @@ import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 import { Skeleton } from '../../../components/ui/skeleton'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 
-const EMPLOYMENT_STATUS_LABELS: Record<string, string> = {
-  ativo: 'Ativo',
-  inativo: 'Inativo',
-  licenca: 'Licença',
-}
+import { SearchInput } from '../../../components/SearchInput'
+import { EMPLOYMENT_STATUS_LABELS } from '../../../lib/labels'
 
 const PAGE_SIZE = 15
 
@@ -58,27 +46,11 @@ export function TeachersPage() {
 
       {/* Busca */}
       <div className="w-full max-w-sm">
-        <div className="relative">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-            size={14}
-            style={{ color: 'hsl(var(--muted-foreground))' }}
-          />
-          <input
-            type="text"
-            placeholder="Buscar por nome..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
-            style={{
-              border: '1px solid hsl(var(--muted-foreground) / 0.3)',
-              background: 'hsl(var(--card))',
-              color: 'hsl(var(--primary))',
-            }}
-            onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px hsl(var(--ring) / 0.3)' }}
-            onBlur={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'none' }}
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Buscar por nome..."
+        />
       </div>
 
       {/* Tabela */}
@@ -136,20 +108,22 @@ export function TeachersPage() {
                       </td>
                       <td onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-1 justify-end">
-                          <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-primary/10"
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             title="Editar"
                             onClick={() => navigate(`/teachers/${t.id}/edit`)}
                           >
-                            <Pencil size={14} style={{ color: 'hsl(var(--muted-foreground))' }} />
-                          </button>
-                          <button
-                            className="flex items-center justify-center rounded-sm w-8 h-8 transition-colors hover:bg-destructive/10"
+                            <Pencil size={14} className="text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             title="Excluir"
                             onClick={() => setDeleteTarget(t.id)}
                           >
-                            <Trash2 size={14} style={{ color: 'hsl(var(--destructive))' }} />
-                          </button>
+                            <Trash2 size={14} className="text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -188,34 +162,23 @@ export function TeachersPage() {
         </div>
       )}
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Professor removido')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-                    toast.error(msg ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteMutation.mutate(deleteTarget!, {
+            onSuccess: () => {
+              toast.success('Professor removido')
+              setDeleteTarget(null)
+            },
+            onError: (err) => {
+              const msg = extractErrorMessage(err)
+              toast.error(msg)
+              setDeleteTarget(null)
+            },
+          })
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

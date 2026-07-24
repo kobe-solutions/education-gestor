@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import type { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../../lib/errors'
 import {
   useAcademicPeriods,
   useCreateAcademicPeriod,
   useUpdateAcademicPeriod,
   useDeleteAcademicPeriod,
 } from '../hooks/useClasses'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -16,16 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Skeleton } from '../../../components/ui/skeleton'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import type { AcademicPeriod } from '@education-gestor/types'
 
 interface PeriodFormData {
@@ -41,6 +32,26 @@ export function AcademicPeriodsPage() {
   const createMutation = useCreateAcademicPeriod()
   const updateMutation = useUpdateAcademicPeriod()
   const deleteMutation = useDeleteAcademicPeriod()
+
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: { name: string; startDate: string; endDate: string }) => createMutation.mutateAsync(data),
+    successMessage: 'Período letivo criado com sucesso',
+    onSuccess: () => handleClose(),
+  })
+
+  const updateApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: { name: string; startDate: string; endDate: string } }) =>
+      updateMutation.mutateAsync(vars),
+    successMessage: 'Período letivo atualizado',
+    onSuccess: () => handleClose(),
+  })
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Período letivo removido',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<AcademicPeriod | undefined>()
@@ -96,44 +107,22 @@ export function AcademicPeriodsPage() {
     if (!validate()) return
 
     if (editing) {
-      updateMutation.mutate(
-        {
-          id: editing.id,
-          data: {
-            name: form.name,
-            startDate: form.startDate,
-            endDate: form.endDate,
-          },
+      updateApiMutation.mutate({
+        id: editing.id,
+        data: {
+          name: form.name,
+          startDate: form.startDate,
+          endDate: form.endDate,
         },
-        {
-          onSuccess: () => {
-            toast.success('Período letivo atualizado')
-            handleClose()
-          },
-          onError: (err) => {
-            toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-          },
-        },
-      )
+      })
     } else {
-      createMutation.mutate(
-        { name: form.name, startDate: form.startDate, endDate: form.endDate },
-        {
-          onSuccess: () => {
-            toast.success('Período letivo criado com sucesso')
-            handleClose()
-          },
-          onError: (err) => {
-            toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-          },
-        },
-      )
+      createApiMutation.mutate({ name: form.name, startDate: form.startDate, endDate: form.endDate })
     }
   }
 
-  const activeMutation = editing ? updateMutation : createMutation
+  const activeMutation = editing ? updateApiMutation : createApiMutation
   const isPending = activeMutation.isPending
-  const apiError = (activeMutation.error as AxiosError<{ message: string }>)?.response?.data?.message
+  const apiError = extractErrorMessage(activeMutation.error)
 
   return (
     <div className="space-y-4">
@@ -244,33 +233,13 @@ export function AcademicPeriodsPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Período letivo removido')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

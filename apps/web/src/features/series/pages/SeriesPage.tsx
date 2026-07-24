@@ -4,11 +4,10 @@ import { Plus, Pencil, Trash2, ArrowLeft, HelpCircle } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { AxiosError } from 'axios'
 import { useSeries, useCreateSerie, useUpdateSerie, useDeleteSerie } from '../hooks/useSeries'
 import type { Serie } from '../hooks/useSeries'
 import { useEducationLevels, EDUCATION_LEVEL_TYPE_LABELS } from '../../educationLevels/hooks/useEducationLevels'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -18,16 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Tooltip } from '../../../components/ui/tooltip'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 
 const schema = z.object({
   educationLevelId: z.string().uuid('Nível obrigatório'),
@@ -45,6 +35,25 @@ export function SeriesPage() {
   const createMutation = useCreateSerie()
   const updateMutation = useUpdateSerie()
   const deleteMutation = useDeleteSerie()
+
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: { educationLevelId: string; name: string; order?: number }) => createMutation.mutateAsync(data),
+    successMessage: 'Série criada com sucesso',
+    onSuccess: () => handleClose(),
+  })
+
+  const updateApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: { name: string; order?: number } }) => updateMutation.mutateAsync(vars),
+    successMessage: 'Série atualizada',
+    onSuccess: () => handleClose(),
+  })
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Série removida',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Serie | undefined>()
@@ -79,37 +88,13 @@ export function SeriesPage() {
 
   function onSubmit(data: FormData) {
     if (editing) {
-      updateMutation.mutate(
-        { id: editing.id, data: { name: data.name, order: data.order } },
-        {
-          onSuccess: () => {
-            toast.success('Série atualizada')
-            handleClose()
-          },
-          onError: (err) => {
-            const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-            toast.error(msg ?? 'Erro inesperado')
-          },
-        },
-      )
+      updateApiMutation.mutate({ id: editing.id, data: { name: data.name, order: data.order } })
     } else {
-      createMutation.mutate(
-        { educationLevelId: data.educationLevelId, name: data.name, order: data.order },
-        {
-          onSuccess: () => {
-            toast.success('Série criada com sucesso')
-            handleClose()
-          },
-          onError: (err) => {
-            const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-            toast.error(msg ?? 'Erro inesperado')
-          },
-        },
-      )
+      createApiMutation.mutate({ educationLevelId: data.educationLevelId, name: data.name, order: data.order })
     }
   }
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createApiMutation.isPending || updateApiMutation.isPending
 
   return (
     <div className="space-y-4">
@@ -233,34 +218,13 @@ export function SeriesPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Série removida')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-                    toast.error(msg ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

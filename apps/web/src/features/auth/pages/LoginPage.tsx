@@ -1,8 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useLogin } from '../hooks/useLogin'
 import { useAuth } from '../../../contexts/AuthContext'
 import { extractErrorMessage } from '../../../lib/errors'
@@ -21,6 +22,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const { token, payload } = useAuth()
   const { mutate: login, isPending, error } = useLogin()
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -88,13 +90,17 @@ export function LoginPage() {
           <Label htmlFor="email" style={{ fontSize: 13, color: 'hsl(var(--foreground))', fontWeight: 500 }}>
             E-mail
           </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="email@escola.com"
-            autoComplete="email"
-            {...register('email')}
-          />
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="email@escola.com"
+              autoComplete="email"
+              className="pl-9"
+              {...register('email')}
+            />
+          </div>
           {errors.email && (
             <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.email.message}</p>
           )}
@@ -104,12 +110,26 @@ export function LoginPage() {
           <Label htmlFor="password" style={{ fontSize: 13, color: 'hsl(var(--foreground))', fontWeight: 500 }}>
             Senha
           </Label>
-          <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            {...register('password')}
-          />
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              className="pl-9 pr-9"
+              {...register('password')}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
           {errors.password && (
             <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.password.message}</p>
           )}

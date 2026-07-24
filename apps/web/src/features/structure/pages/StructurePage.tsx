@@ -4,7 +4,9 @@ import { useEducationLevels, EDUCATION_LEVEL_TYPE_LABELS } from '../../education
 import { useSeries } from '../../series/hooks/useSeries'
 import { useClasses } from '../../classes/hooks/useClasses'
 import { Badge } from '../../../components/ui/badge'
+import { Button } from '../../../components/ui/button'
 import { PageHead } from '../../../components/PageHead'
+import { StatusBadge } from '../../../components/StatusBadge'
 import { Skeleton } from '../../../components/ui/skeleton'
 
 export function StructurePage() {
@@ -69,9 +71,7 @@ export function StructurePage() {
                       <Badge variant="info" className="text-[10px] h-4 px-1.5">
                         {EDUCATION_LEVEL_TYPE_LABELS[level.type] ?? level.type}
                       </Badge>
-                      {!level.active && (
-                        <Badge variant="outline" className="text-[10px] h-4 px-1.5">Inativo</Badge>
-                      )}
+                      <StatusBadge status={String(level.active)} kind="active" />
                     </div>
                     <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
                       {levelSeries.length} {levelSeries.length === 1 ? 'série' : 'séries'} · {levelClassCount} {levelClassCount === 1 ? 'turma' : 'turmas'}
@@ -127,30 +127,19 @@ export function StructurePage() {
                             {serieClasses.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 ml-7">
                                 {serieClasses.map((turma) => (
-                                  <button
+                                  <Button
                                     key={turma.id}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-auto px-2.5 py-1 rounded-full text-xs font-medium"
                                     onClick={() => navigate(`/classes/${turma.id}`)}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-                                    style={{ border: '1px solid hsl(var(--muted-foreground) / 0.3)', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
-                                    onMouseEnter={(e) => {
-                                      const el = e.currentTarget as HTMLElement
-                                      el.style.background = '#4F46E5'
-                                      el.style.borderColor = '#4F46E5'
-                                      el.style.color = '#fff'
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      const el = e.currentTarget as HTMLElement
-                                      el.style.background = 'hsl(var(--card))'
-                                      el.style.borderColor = 'hsl(var(--muted-foreground) / 0.3)'
-                                      el.style.color = 'hsl(var(--foreground))'
-                                    }}
                                   >
                                     <BookOpen size={11} />
                                     {turma.name}
                                     {turma.shift && (
                                       <span style={{ opacity: 0.65 }}>· {turma.shift}</span>
                                     )}
-                                  </button>
+                                  </Button>
                                 ))}
                               </div>
                             )}
@@ -191,27 +180,16 @@ export function StructurePage() {
               </div>
               <div className="px-5 py-4 flex flex-wrap gap-1.5">
                 {unlinkedClasses.map((turma) => (
-                  <button
+                  <Button
                     key={turma.id}
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto px-2.5 py-1 rounded-full text-xs font-medium"
                     onClick={() => navigate(`/classes/${turma.id}`)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
-                    style={{ border: '1px solid hsl(var(--muted-foreground) / 0.3)', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
-                    onMouseEnter={(e) => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.background = '#4F46E5'
-                      el.style.borderColor = '#4F46E5'
-                      el.style.color = '#fff'
-                    }}
-                    onMouseLeave={(e) => {
-                      const el = e.currentTarget as HTMLElement
-                      el.style.background = 'hsl(var(--card))'
-                      el.style.borderColor = 'hsl(var(--muted-foreground) / 0.3)'
-                      el.style.color = 'hsl(var(--foreground))'
-                    }}
                   >
                     <BookOpen size={11} />
                     {turma.name} · {turma.shift}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -226,13 +204,14 @@ export function StructurePage() {
               <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Nenhum nível de ensino cadastrado ainda.
               </p>
-              <button
-                className="text-sm font-medium mt-1 hover:underline"
-                style={{ color: '#4F46E5' }}
+              <Button
+                variant="link"
+                size="sm"
+                className="mt-1"
                 onClick={() => navigate('/education-levels')}
               >
                 Cadastrar agora
-              </button>
+              </Button>
             </div>
           )}
         </div>

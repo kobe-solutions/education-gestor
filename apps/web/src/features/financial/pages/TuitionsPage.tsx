@@ -2,14 +2,13 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Link } from 'react-router'
-import type { AxiosError } from 'axios'
 import { useTuitions, useCreateTuition, useRegisterPayment } from '../hooks/useFinancial'
 import { useStudents } from '../../students/hooks/useStudents'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
@@ -17,6 +16,7 @@ import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
+import { SearchInput } from '../../../components/SearchInput'
 import { Skeleton } from '../../../components/ui/skeleton'
 import type { Tuition } from '@education-gestor/types'
 
@@ -40,6 +40,20 @@ export function TuitionsPage() {
   const students = studentsData?.data
   const createMutation = useCreateTuition()
   const payMutation = useRegisterPayment()
+
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: TuitionForm) => createMutation.mutateAsync(data),
+    successMessage: 'Mensalidade criada',
+    onSuccess: () => { setDialogOpen(false); reset() },
+  })
+
+  const payApiMutation = useApiMutation({
+    mutationFn: (id: string) => payMutation.mutateAsync(id),
+    successMessage: 'Pagamento registrado',
+    onSuccess: () => setConfirmPay(null),
+    onError: () => setConfirmPay(null),
+  })
+
   const [dialogOpen, setDialogOpen] = useState(false)
   const [confirmPay, setConfirmPay] = useState<Tuition | null>(null)
   const [search, setSearch] = useState('')
@@ -59,29 +73,11 @@ export function TuitionsPage() {
   }) ?? []
 
   function onSubmit(data: TuitionForm) {
-    createMutation.mutate(data, {
-      onSuccess: () => {
-        toast.success('Mensalidade criada')
-        setDialogOpen(false)
-        reset()
-      },
-      onError: (err) => {
-        toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-      },
-    })
+    createApiMutation.mutate(data)
   }
 
   function handlePay(tuition: Tuition) {
-    payMutation.mutate(tuition.id, {
-      onSuccess: () => {
-        toast.success('Pagamento registrado')
-        setConfirmPay(null)
-      },
-      onError: (err) => {
-        toast.error((err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado')
-        setConfirmPay(null)
-      },
-    })
+    payApiMutation.mutate(tuition.id)
   }
 
   return (
@@ -100,27 +96,11 @@ export function TuitionsPage() {
       {/* Filtros */}
       <div className="flex gap-3 flex-wrap">
         <div className="w-full max-w-sm">
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              size={14}
-              style={{ color: 'hsl(var(--muted-foreground))' }}
-            />
-            <input
-              type="text"
-              placeholder="Buscar aluno…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md outline-hidden transition-shadow"
-              style={{
-                border: '1px solid hsl(var(--muted-foreground) / 0.3)',
-                background: 'hsl(var(--card))',
-                color: 'hsl(var(--primary))',
-              }}
-              onFocus={(e) => { (e.target as HTMLInputElement).style.boxShadow = '0 0 0 3px hsl(var(--ring) / 0.3)' }}
-              onBlur={(e) => { (e.target as HTMLInputElement).style.boxShadow = 'none' }}
-            />
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Buscar aluno…"
+          />
         </div>
 
         <select
@@ -261,7 +241,7 @@ export function TuitionsPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={createMutation.isPending}>Salvar</Button>
+              <Button type="submit" disabled={createApiMutation.isPending}>Salvar</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -280,7 +260,7 @@ export function TuitionsPage() {
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmPay(null)}>Cancelar</Button>
-            <Button onClick={() => confirmPay && handlePay(confirmPay)} disabled={payMutation.isPending}>
+            <Button onClick={() => confirmPay && handlePay(confirmPay)} disabled={payApiMutation.isPending}>
               Confirmar
             </Button>
           </DialogFooter>
