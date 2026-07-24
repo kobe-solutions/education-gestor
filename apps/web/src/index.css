@@ -203,6 +203,16 @@
   --shadow-glow: 0 0 40px hsl(245 58% 61% / 0.3);
   --shadow-orange-glow: 0 0 40px hsl(230 93% 82% / 0.3);
 
+  /* Badge colors (light mode) */
+  --badge-success-fg: hsl(142 76% 36%);
+  --badge-success-bg: hsl(142 76% 96%);
+  --badge-warning-fg: hsl(32 95% 44%);
+  --badge-warning-bg: hsl(48 96% 95%);
+  --badge-danger-fg: hsl(0 84% 60%);
+  --badge-danger-bg: hsl(0 86% 97%);
+  --badge-info-fg: hsl(217 91% 40%);
+  --badge-info-bg: hsl(217 91% 95%);
+
   /* Sidebar */
   --sidebar-background: 230 67% 98%;
   --sidebar-foreground: 228 56% 16%;
@@ -339,4 +349,69 @@ body {
   &::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground) / 0.4);
   }
+}
+
+@utility tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th {
+    text-align: left;
+    padding: 0.625rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: hsl(var(--muted-foreground));
+    border-bottom: 1px solid hsl(var(--border));
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  tbody tr {
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: hsl(var(--accent) / 0.5);
+    }
+  }
+}
+
+@utility table-scroll {
+  overflow-x: auto;
+}
+
+/* Autofill: remove background amarelo/branco do Chrome/Safari em light e dark mode */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  caret-color: hsl(var(--foreground)) !important;
+  animation: autofill-dissolve 0s forwards !important;
+}
+
+@keyframes autofill-dissolve {
+  from { background-color: transparent; }
+  to { background-color: transparent; }
+}
+
+/* Light mode */
+:root input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px hsl(0 0% 100%) inset !important;
+}
+
+/* Dark mode */
+.dark input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px hsl(230 25% 8%) inset !important;
 }

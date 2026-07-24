@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   ChevronRight, ChevronDown, Users, BookOpen,
-  GraduationCap, UserCircle2, Search, ExternalLink,
+  GraduationCap, UserCircle2, ExternalLink,
 } from 'lucide-react'
 import { useSeries } from '../../series/hooks/useSeries'
 import { useClasses, useClass } from '../../classes/hooks/useClasses'
-import { Input } from '../../../components/ui/input'
+import { SearchInput } from '../../../components/SearchInput'
+import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 import { Skeleton } from '../../../components/ui/skeleton'
 
@@ -69,10 +70,11 @@ function ClassStudentsList({ classId, search }: { classId: string; search: strin
     <div className="pb-2 px-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-1.5 px-2">
         {filtered.map((student) => (
-          <button
+          <Button
             key={student.id}
+            variant="ghost"
+            className="w-full justify-start gap-3 rounded-md border border-transparent bg-card px-3 py-2 h-auto text-left font-normal transition-all hover:border-border hover:shadow-sm active:scale-[0.99]"
             onClick={() => navigate(`/students/${student.id}/edit`)}
-            className="group flex items-center gap-3 rounded-md border border-transparent bg-card px-3 py-2 text-left transition-all hover:border-border hover:shadow-sm active:scale-[0.99]"
           >
             <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
               <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-primary">
@@ -84,7 +86,7 @@ function ClassStudentsList({ classId, search }: { classId: string; search: strin
               <p className="text-[11px] text-muted-foreground">{student.enrollmentCode}</p>
             </div>
             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary/60 shrink-0 transition-colors" />
-          </button>
+          </Button>
         ))}
       </div>
     </div>
@@ -109,9 +111,10 @@ function ClassRow({ schoolClass, studentCount, search }: ClassRowProps) {
 
   return (
     <div className={`rounded-xl border transition-all ${expanded ? 'border-border shadow-sm' : 'border-border/50 hover:border-border'}`}>
-      <button
+      <Button
+        variant="ghost"
+        className="w-full justify-start gap-3 px-4 py-3 h-auto text-left font-normal"
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left"
       >
         <div className={`transition-transform duration-200 ${expanded ? 'rotate-90' : ''}`}>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -129,7 +132,7 @@ function ClassRow({ schoolClass, studentCount, search }: ClassRowProps) {
           <Users className="h-3 w-3" />
           <span>{studentCount}</span>
         </div>
-      </button>
+      </Button>
 
       {expanded && (
         <div className="border-t bg-muted/20">
@@ -166,9 +169,10 @@ function SerieGroup({ serieName, classes, studentSearch, defaultOpen = false }: 
 
   return (
     <div className="space-y-2">
-      <button
+      <Button
+        variant="ghost"
+        className="w-full justify-start gap-2 py-1.5 px-1 h-auto text-left font-normal"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 py-1.5 px-1 rounded-md hover:bg-muted/50 transition-colors"
       >
         {open
           ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -179,7 +183,7 @@ function SerieGroup({ serieName, classes, studentSearch, defaultOpen = false }: 
           {classes.length} {classes.length === 1 ? 'turma' : 'turmas'}
         </Badge>
         <span className="text-xs text-muted-foreground ml-1">· {totalStudents} alunos</span>
-      </button>
+      </Button>
 
       {open && (
         <div className="space-y-2 ml-4 pl-3 border-l-2 border-muted">
@@ -322,22 +326,20 @@ export function ClassStructurePage() {
 
       {/* Barra de busca dupla */}
       <div className="flex gap-3">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Filtrar por aluno..."
+        <div className="flex-1 max-w-xs">
+          <SearchInput
             value={studentSearch}
-            onChange={(e) => setStudentSearch(e.target.value)}
-            className="pl-8 h-8 text-sm"
+            onChange={setStudentSearch}
+            placeholder="Filtrar por aluno..."
+            className="h-8 text-sm"
           />
         </div>
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Filtrar por nível de ensino..."
+        <div className="flex-1 max-w-xs">
+          <SearchInput
             value={levelSearch}
-            onChange={(e) => setLevelSearch(e.target.value)}
-            className="pl-8 h-8 text-sm"
+            onChange={setLevelSearch}
+            placeholder="Filtrar por nível de ensino..."
+            className="h-8 text-sm"
           />
         </div>
       </div>

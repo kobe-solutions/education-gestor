@@ -108,17 +108,19 @@ export function AttendancePage() {
                   <TableRow key={s.id}>
                     <TableCell>{s.name}</TableCell>
                     <TableCell className="text-center">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         type="button"
                         onClick={() => toggle(s.id)}
-                        className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+                        className={`w-8 h-8 rounded-full text-sm font-medium ${
                           attendance[s.id]
-                            ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
-                            : 'bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                            ? 'bg-green-500/10 text-green-400'
+                            : 'bg-red-500/10 text-red-400'
                         }`}
                       >
                         {attendance[s.id] ? 'P' : 'F'}
-                      </button>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

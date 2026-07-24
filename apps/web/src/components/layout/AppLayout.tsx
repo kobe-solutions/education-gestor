@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { SchoolSelector } from '../SchoolSelector'
+import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
 
 interface NavItem {
@@ -189,7 +190,7 @@ function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: Reac
     >
       {active && (
         <div
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-6 rounded-r-full"
           style={{ background: ACCENT_COLOR }}
         />
       )}
@@ -266,24 +267,26 @@ export function AppLayout() {
         {/* Bottom section */}
         <div className="px-3 pb-3 flex flex-col gap-2">
           {/* Theme toggle */}
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-3"
             onClick={toggleTheme}
-            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-all duration-150 text-gray-400 hover:text-white hover:bg-white/5"
-            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             <span className="text-sm font-medium">Alternar tema</span>
-          </button>
+          </Button>
 
           {/* Logout */}
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-3"
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-all duration-150 text-gray-400 hover:text-white hover:bg-white/5"
-            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <LogOut size={18} />
             <span className="text-sm font-medium">Sair</span>
-          </button>
+          </Button>
 
           {/* User card */}
           <div
@@ -354,12 +357,14 @@ export function AppLayout() {
             </svg>
             <span className="font-bold text-sm text-white">Painel Geral</span>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-gray-400 hover:text-white"
             onClick={() => setMobileDrawerOpen(false)}
-            className="flex items-center justify-center w-8 h-8 rounded-md text-gray-400 hover:text-white transition-colors"
           >
             <X size={18} />
-          </button>
+          </Button>
         </div>
 
         <nav className="flex-1 flex flex-col gap-0.5 py-2 px-2 overflow-y-auto">
@@ -375,23 +380,25 @@ export function AppLayout() {
         </nav>
 
         <div className="px-3 pb-3 flex flex-col gap-2">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-3"
             onClick={toggleTheme}
-            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-all duration-150 text-gray-400 hover:text-white hover:bg-white/5"
-            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             <span className="text-sm font-medium">Alternar tema</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-3"
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-all duration-150 text-gray-400 hover:text-white hover:bg-white/5"
-            style={{ border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <LogOut size={18} />
             <span className="text-sm font-medium">Sair</span>
-          </button>
+          </Button>
 
           <div
             className="flex items-center gap-3 rounded-xl px-3 py-3 mt-1"
@@ -427,13 +434,15 @@ export function AppLayout() {
             borderBottom: '1px solid hsl(var(--border))',
           }}
         >
-          <button
-            onClick={() => setMobileDrawerOpen(true)}
-            className="flex items-center justify-center w-9 h-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors md:hidden"
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 md:hidden"
             aria-label="Abrir menu"
+            onClick={() => setMobileDrawerOpen(true)}
           >
             <Menu size={20} />
-          </button>
+          </Button>
 
           <span
             className="text-xs font-medium uppercase tracking-wide hidden sm:inline"

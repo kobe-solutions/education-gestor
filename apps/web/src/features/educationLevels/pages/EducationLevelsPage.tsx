@@ -4,7 +4,6 @@ import { Plus, Pencil, Trash2, ChevronRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { AxiosError } from 'axios'
 import {
   useEducationLevels,
   useCreateEducationLevel,
@@ -14,26 +13,18 @@ import {
   EDUCATION_MODALITY_LABELS,
 } from '../hooks/useEducationLevels'
 import type { EducationLevel } from '../hooks/useEducationLevels'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Badge } from '../../../components/ui/badge'
+import { StatusBadge } from '../../../components/StatusBadge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Skeleton } from '../../../components/ui/skeleton'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 
 const LEVEL_TYPES = Object.entries(EDUCATION_LEVEL_TYPE_LABELS)
 const MODALITIES = Object.entries(EDUCATION_MODALITY_LABELS)
@@ -52,6 +43,26 @@ export function EducationLevelsPage() {
   const createMutation = useCreateEducationLevel()
   const updateMutation = useUpdateEducationLevel()
   const deleteMutation = useDeleteEducationLevel()
+
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: { type: string; modality?: string; name: string }) => createMutation.mutateAsync(data),
+    successMessage: 'Nível criado com sucesso',
+    onSuccess: () => handleClose(),
+  })
+
+  const updateApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: { type: string; modality?: string; name: string } }) =>
+      updateMutation.mutateAsync(vars),
+    successMessage: 'Nível atualizado',
+    onSuccess: () => handleClose(),
+  })
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Nível removido',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<EducationLevel | undefined>()
@@ -91,34 +102,13 @@ export function EducationLevelsPage() {
     }
 
     if (editing) {
-      updateMutation.mutate(
-        { id: editing.id, data: payload },
-        {
-          onSuccess: () => {
-            toast.success('Nível atualizado')
-            handleClose()
-          },
-          onError: (err) => {
-            const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-            toast.error(msg ?? 'Erro inesperado')
-          },
-        },
-      )
+      updateApiMutation.mutate({ id: editing.id, data: payload })
     } else {
-      createMutation.mutate(payload, {
-        onSuccess: () => {
-          toast.success('Nível criado com sucesso')
-          handleClose()
-        },
-        onError: (err) => {
-          const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-          toast.error(msg ?? 'Erro inesperado')
-        },
-      })
+      createApiMutation.mutate(payload)
     }
   }
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createApiMutation.isPending || updateApiMutation.isPending
 
   return (
     <div className="space-y-4">
@@ -168,9 +158,7 @@ export function EducationLevelsPage() {
                       }
                     </TableCell>
                     <TableCell>
-                      <Badge variant={level.active ? 'default' : 'secondary'}>
-                        {level.active ? 'Ativo' : 'Inativo'}
-                      </Badge>
+                      <StatusBadge status={String(level.active)} kind="active" />
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1 justify-end">
@@ -245,36 +233,14 @@ export function EducationLevelsPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Todas as séries vinculadas a este nível também serão removidas. Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Nível removido')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-                    toast.error(msg ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+        description="Todas as séries vinculadas a este nível também serão removidas. Esta ação não pode ser desfeita."
+      />
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { useSecretariaSchools } from '../hooks/useSecretarias'
 import type { SecretariaPayload } from '@education-gestor/types'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Button } from '../../../components/ui/button'
-import { Badge } from '../../../components/ui/badge'
+import { StatusBadge } from '../../../components/StatusBadge'
 
 export function MySchoolsPage() {
   const { payload } = useAuth()
@@ -38,7 +38,7 @@ export function MySchoolsPage() {
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between gap-2">
                   <CardTitle className="text-base">{school.name}</CardTitle>
-                  {isActive && <Badge variant="default">Ativa</Badge>}
+                  {isActive && <StatusBadge status="true" kind="active" />}
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">

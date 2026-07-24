@@ -26,10 +26,10 @@ const badgeVariants = cva(
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
 
 const variantStyles: Record<string, React.CSSProperties> = {
-  success: { color: 'hsl(142 76% 36%)', background: 'hsl(142 76% 96%)' },
-  warning: { color: 'hsl(32 95% 44%)', background: 'hsl(48 96% 95%)' },
-  danger:  { color: 'hsl(var(--destructive))', background: 'hsl(0 86% 97%)' },
-  info:    { color: 'hsl(217 91% 40%)', background: 'hsl(217 91% 95%)' },
+  success: { color: 'var(--badge-success-fg)', background: 'var(--badge-success-bg)' },
+  warning: { color: 'var(--badge-warning-fg)', background: 'var(--badge-warning-bg)' },
+  danger:  { color: 'var(--badge-danger-fg)', background: 'var(--badge-danger-bg)' },
+  info:    { color: 'var(--badge-info-fg)', background: 'var(--badge-info-bg)' },
 }
 
 function Badge({ className, variant, ...props }: BadgeProps) {

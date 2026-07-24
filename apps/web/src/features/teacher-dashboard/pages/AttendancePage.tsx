@@ -9,6 +9,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 import { Button } from '../../../components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { toast } from '../../../lib/toast'
+import { parseLocalDate } from '../../../lib/format'
 
 // ── Inline components ──────────────────────────────────────────────────────
 
@@ -111,7 +112,7 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
             <SelectContent>
               {dateOptions.map((d) => (
                 <SelectItem key={d} value={d}>
-                  {new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                  {parseLocalDate(d).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -160,10 +161,12 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
                           {s.name}
                         </td>
                         <td className="px-5 py-3 text-center">
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             type="button"
                             onClick={() => toggleAttendance(s.id)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold"
                             style={{
                               background: isPresent
                                 ? 'rgba(21, 128, 61, 0.10)'
@@ -172,7 +175,7 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
                             }}
                           >
                             {isPresent ? '✓ Presente' : '✗ Ausente'}
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     )

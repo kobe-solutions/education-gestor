@@ -4,7 +4,6 @@ import { ArrowLeft, Plus, Trash2, Pencil } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { AxiosError } from 'axios'
 import {
   useTimetableSlots,
   useCreateTimetableSlot,
@@ -18,7 +17,7 @@ import { useClass, useClassPeriods } from '../../classes/hooks/useClasses'
 import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
 import { useAllTeachers } from '../../teachers/hooks/useTeachers'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -27,16 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Skeleton } from '../../../components/ui/skeleton'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 
 const WEEK_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 
@@ -61,6 +51,26 @@ export function TimetablePage() {
   const createMutation = useCreateTimetableSlot()
   const updateMutation = useUpdateTimetableSlot(classId!)
   const deleteMutation = useDeleteTimetableSlot(classId!)
+
+  const createApiMutation = useApiMutation({
+    mutationFn: (data: { classId: string; academicYearId: string; classPeriodId: string; subjectId: string; teacherId: string; weekDay: string }) =>
+      createMutation.mutateAsync(data),
+    successMessage: 'Horário adicionado',
+    onSuccess: () => handleClose(),
+  })
+
+  const updateApiMutation = useApiMutation({
+    mutationFn: (vars: { id: string; data: SlotForm }) => updateMutation.mutateAsync(vars),
+    successMessage: 'Horário atualizado',
+    onSuccess: () => handleClose(),
+  })
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Horário removido',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
 
   const activeYear = academicYears.find((y) => y.status === 'active')
 
@@ -112,42 +122,17 @@ export function TimetablePage() {
 
   function onSubmit(data: SlotForm) {
     if (!activeYear) {
-      toast.error('Nenhum ano letivo ativo encontrado')
       return
     }
 
     if (editing) {
-      updateMutation.mutate(
-        { id: editing.id, data },
-        {
-          onSuccess: () => {
-            toast.success('Horário atualizado')
-            handleClose()
-          },
-          onError: (err) => {
-            const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-            toast.error(msg ?? 'Erro inesperado')
-          },
-        },
-      )
+      updateApiMutation.mutate({ id: editing.id, data })
     } else {
-      createMutation.mutate(
-        { classId: classId!, academicYearId: activeYear.id, ...data },
-        {
-          onSuccess: () => {
-            toast.success('Horário adicionado')
-            handleClose()
-          },
-          onError: (err) => {
-            const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-            toast.error(msg ?? 'Erro inesperado')
-          },
-        },
-      )
+      createApiMutation.mutate({ classId: classId!, academicYearId: activeYear.id, ...data })
     }
   }
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createApiMutation.isPending || updateApiMutation.isPending
 
   // Agrupar slots por dia da semana (apenas dias que têm slots)
   const slotsByDay = WEEK_DAYS_ORDER.reduce<Record<string, TimetableSlot[]>>((acc, day) => {
@@ -309,34 +294,14 @@ export function TimetablePage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Este horário será removido da grade. Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Horário removido')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-                    toast.error(msg ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+        description="Este horário será removido da grade. Esta ação não pode ser desfeita."
+      />
     </div>
   )
 }

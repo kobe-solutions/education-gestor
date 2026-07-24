@@ -38,21 +38,7 @@ function gradeTone(value: number): 'emerald' | 'amber' | 'red' {
 
 // ── Inline components ─────────────────────────────────────────────────────
 
-function TableEmpty({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
-  return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
-      >
-        <Icon size={22} />
-      </div>
-      <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-        {message}
-      </p>
-    </div>
-  )
-}
+import { EmptyState } from '../../../components/EmptyState'
 
 // ── Page ──────────────────────────────────────────────────────────────────
 
@@ -150,7 +136,7 @@ export function ClassPerformancePage() {
 
       {/* Performance cards */}
       {filtered.length === 0 ? (
-        <TableEmpty icon={BarChart3} message="Nenhuma nota registrada para esta turma" />
+        <EmptyState icon={BarChart3} title="Nenhuma nota registrada para esta turma" />
       ) : (
         <div className="space-y-3 sm:space-y-4">
           {filtered.map((p) => {

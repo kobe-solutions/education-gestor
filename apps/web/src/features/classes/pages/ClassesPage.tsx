@@ -1,30 +1,28 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import type { AxiosError } from 'axios'
 import { useClasses, useDeleteClass } from '../hooks/useClasses'
 import { ClassDialog } from '../components/ClassDialog'
-import { toast } from '../../../lib/toast'
+import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '../../../components/ui/alert-dialog'
+import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import type { SchoolClass } from '@education-gestor/types'
 
 export function ClassesPage() {
   const navigate = useNavigate()
   const { data: classes, isLoading } = useClasses()
   const deleteMutation = useDeleteClass()
+
+  const deleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => deleteMutation.mutateAsync(id),
+    successMessage: 'Turma removida',
+    onSuccess: () => setDeleteTarget(null),
+    onError: () => setDeleteTarget(null),
+  })
+
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<SchoolClass | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
@@ -102,34 +100,13 @@ export function ClassesPage() {
 
       <ClassDialog open={dialogOpen} onClose={() => setDialogOpen(false)} schoolClass={editing} />
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                deleteMutation.mutate(deleteTarget!, {
-                  onSuccess: () => {
-                    toast.success('Turma removida')
-                    setDeleteTarget(null)
-                  },
-                  onError: (err) => {
-                    const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-                    toast.error(msg ?? 'Erro inesperado')
-                    setDeleteTarget(null)
-                  },
-                })
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onConfirm={() => {
+          deleteApiMutation.mutate(deleteTarget!)
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }

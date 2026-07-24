@@ -71,7 +71,7 @@
 - `tw-animate-css` v1.4.0 para animações (animate-in, fade-in-0, etc.)
 - Componentes UI atualizados: `rounded-sm`, `outline-hidden` (classes v4)
 
-### 2.3 [P0] Criar `QueryClient` com defaults globais
+### 2.3 ~~[P0] Criar `QueryClient` com defaults globais~~ ✅ IMPLEMENTADO
 
 **Arquivo**: `apps/web/src/main.tsx`
 
@@ -109,7 +109,7 @@ const queryClient = new QueryClient({
 - Criar `lib/api.ts` que injeta o `queryClient` no `onResponseError` e dispara `toast.error(message)` automaticamente para mutações; deixa 4xx/5xx de query cair no `error` do `useQuery`.
 - Mapear `err.response?.data?.message ?? 'Erro inesperado'` num helper `extractErrorMessage(err)`.
 
-### 2.4 [P1] Mover `ApiError`/`extractErrorMessage` para `lib/`
+### 2.4 ~~[P1] Mover `ApiError`/`extractErrorMessage` para `lib/`~~ ✅ IMPLEMENTADO
 
 Criar `apps/web/src/lib/errors.ts`:
 ```ts
@@ -121,7 +121,7 @@ export function extractErrorMessage(err: unknown, fallback = 'Erro inesperado') 
 
 Substituir `(err as AxiosError<{ message: string }>)?.response?.data?.message ?? 'Erro inesperado'` (~30 ocorrências).
 
-### 2.5 [P1] Unificar `StudentDialog` (em `students/components/`) — atualmente é componente morto
+### 2.5 ~~[P1] Unificar `StudentDialog` (em `students/components/`) — atualmente é componente morto~~ ✅ IMPLEMENTADO
 
 **Arquivo**: `apps/web/src/features/students/components/StudentDialog.tsx`
 
@@ -131,11 +131,11 @@ Foi criado, mas a página `StudentsPage` não o usa (vai direto para `/students/
 
 Já está em `features/classes/pages/`, mas o seu link no `App.tsx` aponta para `/academic-periods` com `role: ['gestor']` enquanto a gestão principal (anos + períodos) está em `AcademicYearsPage` (`gestor` + `secretaria`). Decidir se mantém os dois ou funde.
 
-### 2.7 [P2] Unificar `MetricChip` (em `HubPessoasPage`) num componente global
+### 2.7 ~~[P2] Unificar `MetricChip` (em `HubPessoasPage`) num componente global~~ ✅ IMPLEMENTADO
 
 A função `MetricChip` + `TONE_STYLES` é definida inline em `HubPessoasPage.tsx` mas poderia servir `DashboardPage` e `HubPessoasPage` (ambos têm KPIs). Promover para `components/MetricChip.tsx`.
 
-### 2.8 [P2] Extrair `PersonRow` + `Avatar` para `components/`
+### 2.8 ~~[P2] Extrair `PersonRow` + `Avatar` para `components/`~~ ✅ IMPLEMENTADO
 
 Mesma situação: definidos em `HubPessoasPage.tsx` mas o padrão avatar circular com iniciais aparece também em:
 - `AppLayout.tsx` (header avatar)
@@ -145,14 +145,14 @@ Mesma situação: definidos em `HubPessoasPage.tsx` mas o padrão avatar circula
 
 Criar `<Avatar name={...} size={...} color={...} />` em `components/Avatar.tsx`.
 
-### 2.9 [P2] Padronizar headers de página
+### 2.9 ~~[P2] Padronizar headers de página~~ ✅ IMPLEMENTADO
 
 Atualmente, cada página implementa o bloco "botão voltar + título + meta + actions" do zero (12+ vezes). Extrair `<PageHeader title subtitle back actions />` com base no atual `PageHead` e adicionar o botão de voltar opcional.
 
 Substituir:
 - `StudentDetailPage`, `StudentFormPage`, `ClassDetailPage`, `TimetablePage`, `SeriesPage`, `StudentReportPage`, etc.
 
-### 2.10 [P3] Mover labels e enums para `packages/types` (single source of truth)
+### 2.10 ~~[P3] Mover labels e enums para `packages/types` (single source of truth)~~ ✅ IMPLEMENTADO
 
 Hoje temos:
 - `EDUCATION_LEVEL_TYPE_LABELS` em `features/educationLevels/hooks/useEducationLevels.ts`
@@ -278,7 +278,7 @@ Padronizar:
 - `<MetricSkeleton />` para cards
 - `<PageSkeleton />` opcional
 
-### 3.7 [P1] Empty states visuais
+### 3.7 ~~[P1] Empty states visuais~~ ✅ IMPLEMENTADO
 
 Quase todas as listas têm um "Nenhum X cadastrado" em texto cinza simples. Criar `<EmptyState icon title description action />`:
 
@@ -666,7 +666,7 @@ A aba é `disabled={!isEdit}`, mas a UX fica estranha porque o usuário tem que 
 
 O `updateStudent.mutateAsync(data)` envia `data: FamiliaForm`, mas o `useUpdateStudent` aceita `Partial<CreateStudentInput>`. Não há validação no backend de quais campos aceitar. Verificar consistência.
 
-### 6.6 [P1] `SchoolContext` — `clearActiveSchool` nunca é chamado
+### 6.6 ~~[P1] `SchoolContext` — `clearActiveSchool` nunca é chamado~~ ✅ IMPLEMENTADO
 
 Hook exposto mas não usado. Usar em:
 - Logout (juntamente com o `localStorage.removeItem('token')`)
@@ -800,7 +800,7 @@ Mas `useForm` só usa `defaultValues` no mount. Se o user muda de turma, o `defa
 
 Há um `studentCount` em `SchoolClass` retornado pela API, mas `EstruturaTurmasPage` usa `useClasses()` (sem `with=students`). O `studentCount` deve ser populado pelo backend.
 
-### 6.27 [P3] `DashboardPage` — `fmtBRL` duplicado em 3+ arquivos
+### 6.27 ~~[P3] `DashboardPage` — `fmtBRL` duplicado em 3+ arquivos~~ ✅ IMPLEMENTADO
 
 Mover para `lib/format.ts`:
 
@@ -809,7 +809,7 @@ export const fmtBRL = (v: string | number) =>
   Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 ```
 
-### 6.28 [P3] `DashboardPage` — `new Date(t.dueDate + 'T12:00:00')` é repetido
+### 6.28 ~~[P3] `DashboardPage` — `new Date(t.dueDate + 'T12:00:00')` é repetido~~ ✅ IMPLEMENTADO
 
 `T12:00:00` é hack para evitar timezone. Criar `lib/date.ts`:
 
@@ -946,19 +946,19 @@ export const iris = {
 
 Permite usar tanto em `style={{}}` quanto em classes Tailwind arbitrárias.
 
-### 8.2 [P1] Componente `<StatusBadge status={...} kind="student" />`
+### 8.2 ~~[P1] Componente `<StatusBadge status={...} kind="student" />`~~ ✅ IMPLEMENTADO
 
 Mapear todos os badges espalhados (EnrollmentStatus, EmploymentStatus, TuitionStatus, PeriodType) num único componente. Cada label é um mapa em `lib/labels.ts`.
 
-### 8.3 [P1] Componente `<SearchInput value onChange placeholder />`
+### 8.3 ~~[P1] Componente `<SearchInput value onChange placeholder />`~~ ✅ IMPLEMENTADO
 
 Hoje o input de busca é duplicado em **7** lugares com pequenas variações (`StudentsPage`, `TeachersPage`, `SubjectsPage`, `SchoolsPage`, `TuitionsPage`, `LocacaoAlunosPage`, `LocacaoPage`). Centralizar.
 
-### 8.4 [P1] Componente `<ConfirmDialog open onConfirm onCancel title description />`
+### 8.4 ~~[P1] Componente `<ConfirmDialog open onConfirm onCancel title description />`~~ ✅ IMPLEMENTADO
 
 Reduzir as **15+** cópias de `<AlertDialog>...<AlertDialogAction>...</AlertDialogAction></AlertDialog>` espalhadas pelas páginas.
 
-### 8.5 [P1] Hook `useApiMutation` com toast automático
+### 8.5 ~~[P1] Hook `useApiMutation` com toast automático~~ ✅ IMPLEMENTADO
 
 ```ts
 const deleteMutation = useApiMutation({
@@ -1059,3 +1059,17 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 - ✅ **Login autofill**: CSS `:-webkit-autofill` com cores do tema para light e dark mode
 - ✅ **Login error message**: Usando `extractErrorMessage()` em vez de string fixa
 - ✅ **Seed script**: Adicionadas 2 secretarias de educação com vínculo secretaria-escola
+
+### Itens implementados nesta sessão (2026-07-23 — Quick Wins)
+- ✅ **Item 2.5**: Removido `StudentDialog.tsx` (código morto, nunca importado)
+- ✅ **Item 2.10**: Centralizados labels/enums em `lib/labels.ts` (enrollment, employment, contract, shift, year status, period type, tuition status, document type) — eliminadas ~10 cópias duplicadas
+- ✅ **Item 2.4**: Substituídas ~39 ocorrências do padrão `AxiosError` inline por `extractErrorMessage()` em 16 arquivos
+- ✅ **Item 8.3**: Criado componente `SearchInput` — substituídas 11+ implementações inline em 9 arquivos
+- ✅ **Item 8.4**: Criado componente `ConfirmDialog` — substituídas 13 instâncias de `AlertDialog` em 11 arquivos
+- ✅ **Item 3.7**: Criado componente `EmptyState` — consolidadas 4 definições `TableEmpty` duplicadas
+- ✅ **Item 2.8**: Criado componente `Avatar` — substituída definição inline em `HubPeoplePage`
+- ✅ **Item 8.2**: Criado componente `StatusBadge` — substituídos 15+ badges inline de status em 8 arquivos
+- ✅ **Item 8.5**: Criado hook `useApiMutation` com toast automático — substituídos padrões em 11 arquivos
+- ✅ **Item 2.9**: Adicionado `backTo` prop ao `PageHead` com botão voltar
+- ✅ **Item 6.6**: Adicionado `sessionStorage.clear()` ao `logout()` no `AuthContext`
+- ✅ **Item 6.28**: Substituído `T12:00:00` raw por `parseLocalDate()` em `AttendancePage`

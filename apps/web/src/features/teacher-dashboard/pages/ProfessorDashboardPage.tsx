@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useTeacherDashboard } from '../hooks/useTeacherDashboard'
 import { useAuth } from '../../../contexts/AuthContext'
+import { Button } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Badge } from '../../../components/ui/badge'
 import { WEEK_DAY_LABELS, WEEK_DAYS_ORDER } from '../../timetable/hooks/useTimetable'
@@ -162,21 +163,7 @@ function SectionHeader({
   )
 }
 
-function TableEmpty({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
-  return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
-      >
-        <Icon size={22} />
-      </div>
-      <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-        {message}
-      </p>
-    </div>
-  )
-}
+import { EmptyState } from '../../../components/EmptyState'
 
 // ── Grade color helper ────────────────────────────────────────────────────
 
@@ -190,7 +177,7 @@ function gradeTone(value: number): 'emerald' | 'amber' | 'red' {
 
 function TodayScheduleTable({ slots }: { slots: import('../hooks/useTeacherDashboard').TimetableSlotInfo[] }) {
   if (slots.length === 0) {
-    return <TableEmpty icon={Clock} message="Nenhuma aula programada para hoje" />
+    return <EmptyState icon={Clock} title="Nenhuma aula programada para hoje" />
   }
 
   return (
@@ -266,7 +253,7 @@ function WeeklyTimetable({ slots }: { slots: import('../hooks/useTeacherDashboar
   const daysWithSlots = WEEK_DAYS_ORDER.filter((d) => slotsByDay.has(d))
 
   if (daysWithSlots.length === 0) {
-    return <TableEmpty icon={CalendarDays} message="Nenhuma aula na grade horária" />
+    return <EmptyState icon={CalendarDays} title="Nenhuma aula na grade horária" />
   }
 
   return (
@@ -286,8 +273,9 @@ function WeeklyTimetable({ slots }: { slots: import('../hooks/useTeacherDashboar
               boxShadow: isToday ? '0 0 0 1px rgba(79, 70, 229, 0.1)' : 'var(--shadow-sm)',
             }}
           >
-            <button
-              className="flex items-center justify-between w-full px-4 py-3 text-left"
+            <Button
+              variant="ghost"
+              className="w-full justify-between px-4 py-3 h-auto text-left font-normal"
               onClick={() => setExpandedDay(isExpanded ? null : day)}
             >
               <div className="flex items-center gap-2">
@@ -307,7 +295,7 @@ function WeeklyTimetable({ slots }: { slots: import('../hooks/useTeacherDashboar
               <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 {daySlots.length} aula{daySlots.length !== 1 ? 's' : ''}
               </span>
-            </button>
+            </Button>
             {isExpanded && (
               <div className="overflow-x-auto" style={{ borderTop: '1px solid hsl(var(--border))' }}>
                 <table className="w-full text-sm">

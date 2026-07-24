@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { AxiosError } from 'axios'
+import { extractErrorMessage } from '../../../lib/errors'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -61,8 +61,8 @@ export function TeacherDialog({ open, onClose, teacher }: TeacherDialogProps) {
         onClose()
       },
       onError: (err) => {
-        const msg = (err as AxiosError<{ message: string }>)?.response?.data?.message
-        toast.error(msg ?? 'Erro inesperado')
+        const msg = extractErrorMessage(err)
+        toast.error(msg)
       },
     })
   }
