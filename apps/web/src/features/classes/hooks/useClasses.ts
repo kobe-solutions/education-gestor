@@ -31,6 +31,7 @@ interface ClassInput {
   shift: string
   serieId?: string | null
   academicPeriodId?: string | null
+  maxStudents?: number
 }
 
 export function useCreateClass() {

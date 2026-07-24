@@ -8,6 +8,7 @@ type CreateSchoolClassRepositoryInput = {
   shift: string
   serieId?: string | null
   academicYearId?: string | null
+  maxStudents?: number
 }
 
 type UpdateSchoolClassRepositoryInput = {
@@ -79,6 +80,7 @@ export async function createSchoolClassRepository(input: CreateSchoolClassReposi
       name: input.name,
       shift: input.shift,
       serieId: input.serieId ?? null,
+      maxStudents: input.maxStudents,
     })
     .returning(classFields)
 

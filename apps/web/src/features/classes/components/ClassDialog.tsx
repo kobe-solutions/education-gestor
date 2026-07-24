@@ -18,6 +18,7 @@ const schema = z.object({
   shift: z.string().min(1, 'Turno obrigatório'),
   serieId: z.string().optional(),
   academicPeriodId: z.string().optional(),
+  maxStudents: z.coerce.number().int().min(1, 'Mínimo 1 aluno').optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -37,7 +38,7 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', shift: '', serieId: '', academicPeriodId: '' },
+    defaultValues: { name: '', shift: '', serieId: '', academicPeriodId: '', maxStudents: undefined },
   })
 
   const shiftValue = watch('shift')
@@ -51,9 +52,10 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
         shift: schoolClass.shift,
         serieId: schoolClass.serieId ?? '',
         academicPeriodId: schoolClass.academicPeriodId ?? '',
+        maxStudents: schoolClass.maxStudents ?? undefined,
       })
     } else {
-      reset({ name: '', shift: '', serieId: '', academicPeriodId: '' })
+      reset({ name: '', shift: '', serieId: '', academicPeriodId: '', maxStudents: undefined })
     }
   }, [schoolClass, reset])
 
@@ -63,6 +65,7 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
       shift: data.shift,
       serieId: data.serieId || null,
       academicPeriodId: data.academicPeriodId || null,
+      maxStudents: data.maxStudents || undefined,
     }
 
     const mutation = isEdit ? updateMutation : createMutation
@@ -142,6 +145,11 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-1">
+            <Label>Máximo de alunos (opcional)</Label>
+            <Input type="number" placeholder="Ex: 40" {...register('maxStudents')} />
+            {errors.maxStudents && <p className="text-xs text-destructive">{errors.maxStudents.message}</p>}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
