@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -42,6 +42,15 @@ const editSchema = z.object({
 type CreateForm = z.infer<typeof createSchema>
 type EditForm = z.infer<typeof editSchema>
 
+function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\u0300-\u036f/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
 export function SchoolsPage() {
   const { payload } = useAuth()
   const { data: schools, isLoading } = useSchools()
@@ -56,6 +65,7 @@ export function SchoolsPage() {
 
   const createForm = useForm<CreateForm>({ resolver: zodResolver(createSchema) })
   const editForm = useForm<EditForm>({ resolver: zodResolver(editSchema) })
+  const slugManuallyEdited = useRef(false)
 
   const filtered = schools?.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()),
@@ -210,6 +220,7 @@ export function SchoolsPage() {
                             variant="ghost"
                             size="icon"
                             title="Editar"
+                            aria-label="Editar"
                             onClick={() => handleEdit(s)}
                           >
                             <Pencil size={14} className="text-muted-foreground" />
@@ -218,6 +229,7 @@ export function SchoolsPage() {
                             variant="ghost"
                             size="icon"
                             title="Excluir"
+                            aria-label="Excluir"
                             onClick={() => setDeleteTarget(s.id)}
                           >
                             <Trash2 size={14} className="text-destructive" />
@@ -234,7 +246,7 @@ export function SchoolsPage() {
       )}
 
       {/* Dialog criação */}
-      <Dialog open={createOpen} onOpenChange={(v) => { if (!v) { setCreateOpen(false); createForm.reset() } }}>
+      <Dialog open={createOpen} onOpenChange={(v) => { if (!v) { setCreateOpen(false); createForm.reset(); slugManuallyEdited.current = false } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Nova escola</DialogTitle>
@@ -243,14 +255,29 @@ export function SchoolsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Nome *</Label>
-                <Input {...createForm.register('name')} />
+                <Input
+                  {...createForm.register('name')}
+                  onChange={(e) => {
+                    createForm.setValue('name', e.target.value)
+                    if (!slugManuallyEdited.current) {
+                      createForm.setValue('slug', slugify(e.target.value))
+                    }
+                  }}
+                />
                 {createForm.formState.errors.name && (
                   <p className="text-xs text-destructive">{createForm.formState.errors.name.message}</p>
                 )}
               </div>
               <div className="space-y-1">
                 <Label>Slug *</Label>
-                <Input placeholder="ex: escola-modelo" {...createForm.register('slug')} />
+                <Input
+                  placeholder="ex: escola-modelo"
+                  {...createForm.register('slug')}
+                  onChange={(e) => {
+                    slugManuallyEdited.current = true
+                    createForm.setValue('slug', e.target.value)
+                  }}
+                />
                 {createForm.formState.errors.slug && (
                   <p className="text-xs text-destructive">{createForm.formState.errors.slug.message}</p>
                 )}
@@ -293,7 +320,7 @@ export function SchoolsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setCreateOpen(false); createForm.reset() }}>
+              <Button type="button" variant="outline" onClick={() => { setCreateOpen(false); createForm.reset(); slugManuallyEdited.current = false }}>
                 Cancelar
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>

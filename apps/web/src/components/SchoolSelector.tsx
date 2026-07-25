@@ -21,7 +21,7 @@ export function SchoolSelector() {
   }
 
   return (
-    <Select value={activeSchoolId ?? ''} onValueChange={handleChange}>
+    <Select value={activeSchoolId ?? ''} onValueChange={(v) => { if (v !== null) handleChange(v) }}>
       <SelectTrigger className="w-52 h-8 text-sm">
         <SelectValue placeholder="Selecionar escola" />
       </SelectTrigger>

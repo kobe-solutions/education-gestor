@@ -23,6 +23,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { SchoolSelector } from '../SchoolSelector'
 import { Button } from '../ui/button'
+import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import { cn } from '../../lib/utils'
 
 interface NavItem {
@@ -227,6 +228,15 @@ export function AppLayout() {
     return () => { document.body.style.overflow = '' }
   }, [mobileDrawerOpen])
 
+  useEffect(() => {
+    if (!mobileDrawerOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMobileDrawerOpen(false)
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [mobileDrawerOpen])
+
   function handleLogout() {
     logout()
     navigate('/login')
@@ -298,16 +308,19 @@ export function AppLayout() {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <div
-              className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-              style={{
-                width: 36,
-                height: 36,
-                background: ACCENT_COLOR,
-              }}
-            >
-              {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-            </div>
+            <Tooltip>
+              <TooltipTrigger
+                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
+                style={{
+                  width: 36,
+                  height: 36,
+                  background: ACCENT_COLOR,
+                }}
+              >
+                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
+              </TooltipTrigger>
+              <TooltipContent>{userName || role}</TooltipContent>
+            </Tooltip>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">{userName}</p>
               {userEmail && (
@@ -411,12 +424,15 @@ export function AppLayout() {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <div
-              className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-              style={{ width: 36, height: 36, background: ACCENT_COLOR }}
-            >
-              {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-            </div>
+            <Tooltip>
+              <TooltipTrigger
+                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
+                style={{ width: 36, height: 36, background: ACCENT_COLOR }}
+              >
+                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
+              </TooltipTrigger>
+              <TooltipContent>{userName || role}</TooltipContent>
+            </Tooltip>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">{userName}</p>
               {userEmail && (

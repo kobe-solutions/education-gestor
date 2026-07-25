@@ -25,6 +25,7 @@ api.interceptors.response.use(
       sessionStorage.clear()
       queryClient.clear()
       window.location.href = '/login'
+      return new Promise(() => {}) // never resolves — page is redirecting
     }
     return Promise.reject(error)
   },

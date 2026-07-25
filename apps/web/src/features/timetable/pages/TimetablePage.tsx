@@ -18,6 +18,7 @@ import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
 import { useAllTeachers } from '../../teachers/hooks/useTeachers'
 import { useApiMutation } from '../../../hooks/useApiMutation'
+import { Breadcrumbs } from '../../../components/Breadcrumbs'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -145,6 +146,15 @@ export function TimetablePage() {
 
   return (
     <div className="space-y-4">
+      <Breadcrumbs
+        items={[
+          { label: 'Acadêmico', to: '/' },
+          { label: 'Turmas', to: '/structure/classes' },
+          { label: schoolClass?.name ?? '...', to: `/classes/${classId}` },
+          { label: 'Horário' },
+        ]}
+      />
+
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate(`/classes/${classId}`)}>
           <ArrowLeft className="h-4 w-4" />
@@ -230,7 +240,7 @@ export function TimetablePage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <Label>Horário *</Label>
-              <Select value={classPeriodIdValue} onValueChange={(v) => setValue('classPeriodId', v)}>
+              <Select value={classPeriodIdValue} onValueChange={(v) => { if (v !== null) setValue('classPeriodId', v) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o horário" />
                 </SelectTrigger>
@@ -246,7 +256,7 @@ export function TimetablePage() {
             </div>
             <div className="space-y-1">
               <Label>Dia da semana *</Label>
-              <Select value={weekDayValue} onValueChange={(v) => setValue('weekDay', v as typeof WEEK_DAYS[number])}>
+              <Select value={weekDayValue} onValueChange={(v) => { if (v !== null) setValue('weekDay', v as typeof WEEK_DAYS[number]) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Dia" />
                 </SelectTrigger>
@@ -260,7 +270,7 @@ export function TimetablePage() {
             </div>
             <div className="space-y-1">
               <Label>Disciplina *</Label>
-              <Select value={subjectIdValue} onValueChange={(v) => setValue('subjectId', v)}>
+              <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a disciplina" />
                 </SelectTrigger>
@@ -274,7 +284,7 @@ export function TimetablePage() {
             </div>
             <div className="space-y-1">
               <Label>Professor *</Label>
-              <Select value={teacherIdValue} onValueChange={(v) => setValue('teacherId', v)}>
+              <Select value={teacherIdValue} onValueChange={(v) => { if (v !== null) setValue('teacherId', v) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o professor" />
                 </SelectTrigger>

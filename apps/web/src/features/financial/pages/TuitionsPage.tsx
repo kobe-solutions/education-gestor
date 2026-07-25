@@ -17,7 +17,7 @@ import { Label } from '../../../components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { SearchInput } from '../../../components/SearchInput'
-import { Skeleton } from '../../../components/ui/skeleton'
+import { TableSkeleton } from '../../../components/skeletons'
 import type { Tuition } from '@education-gestor/types'
 
 const tuitionSchema = z.object({
@@ -123,8 +123,8 @@ export function TuitionsPage() {
       {/* Tabela */}
       {isLoading ? (
         <Surface>
-          <div className="p-4 space-y-2">
-            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+          <div className="p-4">
+            <TableSkeleton columns={5} rows={6} />
           </div>
         </Surface>
       ) : (
@@ -196,6 +196,7 @@ export function TuitionsPage() {
               size="sm"
               variant="outline"
               disabled={page <= 1}
+              aria-label="Página anterior"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -204,6 +205,7 @@ export function TuitionsPage() {
               size="sm"
               variant="outline"
               disabled={page >= totalPages}
+              aria-label="Próxima página"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               <ChevronRight className="h-4 w-4" />
@@ -219,7 +221,7 @@ export function TuitionsPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Aluno</Label>
-              <Select value={studentIdValue} onValueChange={(v) => setValue('studentId', v)}>
+              <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>
                   {students?.map((s) => (

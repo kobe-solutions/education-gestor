@@ -93,7 +93,7 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
-          <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+          <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione uma turma" />
             </SelectTrigger>
@@ -105,7 +105,7 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
           </Select>
         </div>
         <div className="flex-1">
-          <Select value={selectedDate} onValueChange={setSelectedDate}>
+          <Select value={selectedDate} onValueChange={(v) => setSelectedDate(v ?? '')}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione uma data" />
             </SelectTrigger>
@@ -222,10 +222,8 @@ export function AttendancePage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <Link
           to="/professor"
-          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
+          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0 hover:bg-primary/10"
           title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
         >
           <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </Link>

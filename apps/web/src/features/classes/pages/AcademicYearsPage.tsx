@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { PageSkeleton } from '../../../components/skeletons'
 import type { AcademicYear, AcademicPeriod, PeriodType } from '@education-gestor/types'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -246,6 +247,7 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
+                  aria-label="Editar período"
                   onClick={() => { setEditingPeriod(p); setDialogOpen(true) }}
                 >
                   <Pencil size={11} style={{ color: 'hsl(var(--muted-foreground))' }} />
@@ -254,6 +256,7 @@ function PeriodsSection({ year }: { year: AcademicYear }) {
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
+                  aria-label="Excluir período"
                   onClick={() => setDeleteTarget(p.id)}
                 >
                   <Trash2 size={11} style={{ color: 'hsl(var(--destructive))' }} />
@@ -479,9 +482,7 @@ export function AcademicYearsPage() {
       />
 
       {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
-        </div>
+        <PageSkeleton />
       ) : sorted.length === 0 ? (
         <Surface>
           <div className="py-12 text-center">
@@ -504,6 +505,7 @@ export function AcademicYearsPage() {
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 shrink-0"
+                    aria-label={isOpen ? 'Recolher períodos' : 'Expandir períodos'}
                     onClick={() => toggleExpand(year.id)}
                   >
                     {isOpen
@@ -544,6 +546,7 @@ export function AcademicYearsPage() {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
+                      aria-label="Editar ano letivo"
                       onClick={() => { setEditingYear(year); setYearDialog(true) }}
                     >
                       <Pencil size={13} style={{ color: 'hsl(var(--muted-foreground))' }} />
@@ -552,6 +555,7 @@ export function AcademicYearsPage() {
                       variant="ghost"
                       size="icon"
                       className="h-7 w-7"
+                      aria-label="Excluir ano letivo"
                       onClick={() => setDeleteTarget(year.id)}
                     >
                       <Trash2 size={13} style={{ color: 'hsl(var(--destructive))' }} />

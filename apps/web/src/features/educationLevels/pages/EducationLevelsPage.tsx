@@ -166,14 +166,15 @@ export function EducationLevelsPage() {
                           variant="ghost"
                           size="icon"
                           title="Ver séries"
+                          aria-label="Ver séries"
                           onClick={() => navigate(`/education-levels/${level.id}/series`)}
                         >
                           <ChevronRight className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(level)}>
+                        <Button variant="ghost" size="icon" aria-label="Editar" onClick={() => handleEdit(level)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(level.id)}>
+                        <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleteTarget(level.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
@@ -194,7 +195,7 @@ export function EducationLevelsPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <Label>Tipo *</Label>
-              <Select value={typeValue} onValueChange={(v) => setValue('type', v)}>
+              <Select value={typeValue} onValueChange={(v) => { if (v !== null) setValue('type', v) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
@@ -208,7 +209,7 @@ export function EducationLevelsPage() {
             </div>
             <div className="space-y-1">
               <Label>Modalidade (opcional)</Label>
-              <Select value={modalityValue ?? ''} onValueChange={(v) => setValue('modality', v === 'none' ? '' : v)}>
+              <Select value={modalityValue ?? ''} onValueChange={(v) => { if (v !== null) setValue('modality', v === 'none' ? '' : v) }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Nenhuma modalidade específica" />
                 </SelectTrigger>

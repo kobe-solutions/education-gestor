@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Skeleton } from '../../../components/ui/skeleton'
-import { Tooltip } from '../../../components/ui/tooltip'
+import { Tooltip, TooltipTrigger, TooltipContent } from '../../../components/ui/tooltip'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 
 const schema = z.object({
@@ -99,7 +99,7 @@ export function SeriesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/education-levels')}>
+        <Button variant="ghost" size="icon" aria-label="Voltar" onClick={() => navigate('/education-levels')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
@@ -155,10 +155,10 @@ export function SeriesPage() {
                     )}
                     <TableCell>
                       <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(serie)}>
+                        <Button variant="ghost" size="icon" aria-label="Editar" onClick={() => handleEdit(serie)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(serie.id)}>
+                        <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleteTarget(serie.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>
@@ -180,7 +180,7 @@ export function SeriesPage() {
             {!editing && (
               <div className="space-y-1">
                 <Label>Nível de ensino *</Label>
-                <Select value={levelIdValue} onValueChange={(v) => setValue('educationLevelId', v)}>
+                <Select value={levelIdValue} onValueChange={(v) => { if (v !== null) setValue('educationLevelId', v) }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o nível" />
                   </SelectTrigger>
@@ -203,8 +203,11 @@ export function SeriesPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-1">
                 <Label>Posição na sequência</Label>
-                <Tooltip content="Define a ordem de exibição das séries dentro do nível. Ex: 1º ano = 1, 2º ano = 2, 3º ano = 3.">
-                  <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-default" />
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-default" />
+                  </TooltipTrigger>
+                  <TooltipContent>Define a ordem de exibição das séries dentro do nível. Ex: 1º ano = 1, 2º ano = 2, 3º ano = 3.</TooltipContent>
                 </Tooltip>
               </div>
               <Input type="number" min={0} placeholder="Ex: 1" {...register('order')} />

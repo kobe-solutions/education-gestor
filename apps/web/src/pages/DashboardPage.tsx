@@ -135,7 +135,7 @@ function DashMetric({ icon: Icon, value, label, sub, tone }: DashMetricProps) {
           {value}
         </div>
         <div
-          className="text-[11px] font-semibold uppercase tracking-wider mt-1.5"
+          className="text-[11px] font-semibold uppercase tracking-wider mt-1.5 truncate"
           style={{ color: 'hsl(var(--muted-foreground))' }}
         >
           {label}
@@ -243,7 +243,7 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
       {/* ── KPIs ───────────────────────────────────────────────────────── */}
       <section className="space-y-4">
         <SectionHeader title="Indicadores da plataforma" />
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
           <DashMetric
             icon={Building2}
             value={data.secretariasCount}

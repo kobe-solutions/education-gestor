@@ -18,7 +18,6 @@ import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { SearchInput } from '../../../components/SearchInput'
 import { Label } from '../../../components/ui/label'
-import { Badge } from '../../../components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import {
   Dialog,
@@ -237,7 +236,7 @@ function ClassColumn({
 
       {/* Slots by day */}
       {!collapsed && (
-        <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-3 max-h-[480px]">
+        <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-3 max-h-120">
           {Object.keys(slotsByDay).length === 0 ? (
             <p className="text-[11px] text-muted-foreground text-center py-4">Nenhuma aula alocada</p>
           ) : (
@@ -508,7 +507,7 @@ export function SchedulingPage() {
           <div className="space-y-3">
             <div className="space-y-1">
               <Label>Professor *</Label>
-              <Select value={formTeacher} onValueChange={setFormTeacher}>
+              <Select value={formTeacher} onValueChange={(v) => setFormTeacher(v ?? '')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecionar professor" />
                 </SelectTrigger>
@@ -531,7 +530,7 @@ export function SchedulingPage() {
 
             <div className="space-y-1">
               <Label>Disciplina *</Label>
-              <Select value={formSubject} onValueChange={setFormSubject}>
+              <Select value={formSubject} onValueChange={(v) => setFormSubject(v ?? '')}>
                 <SelectTrigger><SelectValue placeholder="Selecionar disciplina" /></SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
@@ -544,7 +543,7 @@ export function SchedulingPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Dia *</Label>
-                <Select value={formDay} onValueChange={setFormDay}>
+                <Select value={formDay} onValueChange={(v) => setFormDay(v ?? '')}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {WEEK_DAYS_ORDER.map((d) => (
@@ -555,7 +554,7 @@ export function SchedulingPage() {
               </div>
               <div className="space-y-1">
                 <Label>Horário *</Label>
-                <Select value={formClassPeriodId} onValueChange={setFormClassPeriodId}>
+                <Select value={formClassPeriodId} onValueChange={(v) => setFormClassPeriodId(v ?? '')}>
                   <SelectTrigger><SelectValue placeholder="Selecionar horário" /></SelectTrigger>
                   <SelectContent>
                     {classPeriods.map((cp) => (
