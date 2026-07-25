@@ -454,6 +454,13 @@ export function AppLayout() {
           </Button>
 
           <span
+            className="text-lg font-bold md:hidden"
+            style={{ color: ACCENT_COLOR }}
+          >
+            IRIS
+          </span>
+
+          <span
             className="text-xs font-medium uppercase tracking-wide hidden sm:inline"
             style={{ color: ACCENT_COLOR, letterSpacing: '0.12em' }}
           >

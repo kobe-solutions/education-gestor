@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { GripVertical, X, Users, AlertTriangle } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { useStudents } from '../../students/hooks/useStudents'
-import { useClasses, useClass, useUnenrollStudent } from '../../classes/hooks/useClasses'
+import { useClasses, useUnenrollStudent } from '../../classes/hooks/useClasses'
 import { api } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
 import { SearchInput } from '../../../components/SearchInput'
@@ -103,6 +103,7 @@ const MAX_VISIBLE_AVATARS = 8
 
 function ClassCard({
   schoolClass,
+  enrolledStudents,
   selectedStudent,
   onDrop,
 }: {
@@ -114,6 +115,7 @@ function ClassCard({
     studentCount?: number
     serie: { name: string } | null
   }
+  enrolledStudents: { id: string; name: string }[]
   selectedStudent: { id: string; name: string } | null
   onDrop: (classId: string, studentId: string, studentName: string) => void
 }) {
@@ -126,8 +128,7 @@ function ClassCard({
     setTimeout(() => setJustReceived(false), 500)
   }
 
-  const { data: classDetail } = useClass(schoolClass.id)
-  const enrolled = classDetail?.students ?? []
+  const enrolled = enrolledStudents
   const count = enrolled.length
   const max = schoolClass.maxStudents
   const isFull = count >= max
@@ -445,6 +446,7 @@ export function StudentSchedulingPage() {
                 <ClassCard
                   key={schoolClass.id}
                   schoolClass={schoolClass as any}
+                  enrolledStudents={(schoolClass as any).students ?? []}
                   selectedStudent={selectedStudent}
                   onDrop={handleDrop}
                 />

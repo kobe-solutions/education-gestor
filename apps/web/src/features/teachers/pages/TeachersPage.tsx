@@ -5,16 +5,54 @@ import { extractErrorMessage } from '../../../lib/errors'
 import { useTeachers, useDeleteTeacher } from '../hooks/useTeachers'
 import { toast } from '../../../lib/toast'
 import { PageHead } from '../../../components/PageHead'
-import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
-import { TableSkeleton } from '../../../components/skeletons'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
-
 import { SearchInput } from '../../../components/SearchInput'
 import { EMPLOYMENT_STATUS_LABELS } from '../../../lib/labels'
+import { DataTable, type Column } from '../../../components/DataTable'
+import type { Teacher } from '@education-gestor/types'
 
 const PAGE_SIZE = 15
+
+const columns: Column<Teacher>[] = [
+  {
+    key: 'name',
+    label: 'Nome',
+    render: (t) => (
+      <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
+        {t.name}
+      </span>
+    ),
+  },
+  {
+    key: 'email',
+    label: 'Email',
+    className: 'hidden sm:table-cell',
+    render: (t) => (
+      <span style={{ color: 'hsl(var(--muted-foreground))' }}>{t.email}</span>
+    ),
+  },
+  {
+    key: 'position',
+    label: 'Cargo',
+    render: (t) => (
+      <span style={{ color: 'hsl(var(--muted-foreground))' }}>{t.position ?? '—'}</span>
+    ),
+  },
+  {
+    key: 'employmentStatus',
+    label: 'Situação',
+    render: (t) => (
+      <Badge
+        variant={t.employmentStatus === 'ativo' ? 'success' : 'secondary'}
+        className="text-[10px]"
+      >
+        {EMPLOYMENT_STATUS_LABELS[t.employmentStatus] ?? t.employmentStatus}
+      </Badge>
+    ),
+  },
+]
 
 export function TeachersPage() {
   const navigate = useNavigate()
@@ -44,7 +82,6 @@ export function TeachersPage() {
         }
       />
 
-      {/* Busca */}
       <div className="w-full max-w-sm">
         <SearchInput
           value={search}
@@ -53,91 +90,38 @@ export function TeachersPage() {
         />
       </div>
 
-      {/* Tabela */}
-      {isLoading ? (
-        <Surface>
-          <div className="p-4">
-            <TableSkeleton columns={5} rows={5} />
+      <DataTable
+        columns={columns}
+        data={filtered}
+        rowKey={(t) => t.id}
+        onRowClick={(t) => navigate(`/teachers/${t.id}/edit`)}
+        actions={(t) => (
+          <div className="flex gap-1 justify-end">
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Editar"
+              aria-label="Editar"
+              onClick={() => navigate(`/teachers/${t.id}/edit`)}
+            >
+              <Pencil size={14} className="text-muted-foreground" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Excluir"
+              aria-label="Excluir"
+              onClick={() => setDeleteTarget(t.id)}
+            >
+              <Trash2 size={14} className="text-destructive" />
+            </Button>
           </div>
-        </Surface>
-      ) : (
-        <Surface>
-          <div className="table-scroll">
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th className="hidden sm:table-cell">Email</th>
-                  <th>Cargo</th>
-                  <th>Situação</th>
-                  <th style={{ width: 80 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="text-center py-10"
-                      style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}
-                    >
-                      {search
-                        ? `Nenhum professor encontrado para "${search}".`
-                        : 'Nenhum professor cadastrado.'}
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((t) => (
-                    <tr key={t.id} className="cursor-pointer" onClick={() => navigate(`/teachers/${t.id}/edit`)}>
-                      <td>
-                        <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
-                          {t.name}
-                        </span>
-                      </td>
-                      <td className="hidden sm:table-cell" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                        {t.email}
-                      </td>
-                      <td style={{ color: 'hsl(var(--muted-foreground))' }}>{t.position ?? '—'}</td>
-                      <td>
-                        <Badge
-                          variant={t.employmentStatus === 'ativo' ? 'success' : 'secondary'}
-                          className="text-[10px]"
-                        >
-                          {EMPLOYMENT_STATUS_LABELS[t.employmentStatus] ?? t.employmentStatus}
-                        </Badge>
-                      </td>
-                      <td onClick={(e) => e.stopPropagation()}>
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Editar"
-                            aria-label="Editar"
-                            onClick={() => navigate(`/teachers/${t.id}/edit`)}
-                          >
-                            <Pencil size={14} className="text-muted-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Excluir"
-                            aria-label="Excluir"
-                            onClick={() => setDeleteTarget(t.id)}
-                          >
-                            <Trash2 size={14} className="text-destructive" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Surface>
-      )}
+        )}
+        emptyMessage={search ? `Nenhum professor encontrado para "${search}".` : 'Nenhum professor cadastrado.'}
+        caption="Lista de professores"
+        loading={isLoading}
+      />
 
-      {/* Paginação */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>

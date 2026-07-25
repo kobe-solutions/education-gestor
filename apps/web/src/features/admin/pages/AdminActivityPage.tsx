@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Activity, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAdminActivity, type ActivityItem } from '../hooks/useAdminActivity'
 import { PageHead } from '../../../components/PageHead'
-import { Skeleton } from '../../../components/ui/skeleton'
 import { Button } from '../../../components/ui/button'
+import { DataTable, type Column } from '../../../components/DataTable'
 
 const ACTION_LABELS: Record<string, string> = {
   CREATE: 'Criou',
@@ -126,116 +126,59 @@ export function AdminActivityPage() {
         </div>
       </div>
 
-      {/* Tabela */}
-      <div
-        className="rounded-xl overflow-hidden"
-        style={{
-          background: 'hsl(var(--card))',
-          border: '1px solid hsl(var(--border))',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        {isLoading ? (
-          <div className="p-4 space-y-2">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        ) : !data?.items.length ? (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <div
-              className="flex items-center justify-center rounded-full"
-              style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
-            >
-              <Activity size={22} />
-            </div>
-            <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-              Nenhum registro encontrado
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                  {['Data / Hora', 'Usuário', 'Ação', 'Entidade'].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                      style={{ color: 'hsl(var(--muted-foreground))' }}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((a) => (
-                  <tr
-                    key={a.id}
-                    className="transition-colors duration-150 hover:bg-accent"
-                    style={{ borderBottom: '1px solid hsl(var(--border))' }}
-                  >
-                    <td className="px-5 py-3 tabular-nums text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      {new Date(a.createdAt).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className="font-medium text-xs" style={{ color: 'hsl(var(--foreground))' }}>
-                        {a.userId.slice(0, 8)}…
-                      </span>
-                      <span className="ml-2">
-                        <RoleBadge role={a.userRole} />
-                      </span>
-                    </td>
-                    <td className="px-5 py-3">
-                      <ActionBadge action={a.action} />
-                    </td>
-                    <td className="px-5 py-3 text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      {ENTITY_LABELS[a.entity] ?? a.entity}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Paginação */}
-        {data && data.total > PAGE_SIZE && (
-          <div
-            className="flex items-center justify-between px-5 py-3"
-            style={{ borderTop: '1px solid hsl(var(--border))' }}
-          >
-            <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Página {page + 1} de {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page === 0}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                <ChevronLeft size={14} />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= totalPages - 1}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                <ChevronRight size={14} />
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+      <DataTable
+        columns={[
+          {
+            key: 'createdAt',
+            label: 'Data / Hora',
+            render: (a) => (
+              <span className="tabular-nums text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                {new Date(a.createdAt).toLocaleDateString('pt-BR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            ),
+          },
+          {
+            key: 'userId',
+            label: 'Usuário',
+            render: (a) => (
+              <>
+                <span className="font-medium text-xs" style={{ color: 'hsl(var(--foreground))' }}>
+                  {a.userId.slice(0, 8)}…
+                </span>
+                <span className="ml-2">
+                  <RoleBadge role={a.userRole} />
+                </span>
+              </>
+            ),
+          },
+          {
+            key: 'action',
+            label: 'Ação',
+            render: (a) => <ActionBadge action={a.action} />,
+          },
+          {
+            key: 'entity',
+            label: 'Entidade',
+            render: (a) => (
+              <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                {ENTITY_LABELS[a.entity] ?? a.entity}
+              </span>
+            ),
+          },
+        ]}
+        data={data?.items ?? []}
+        rowKey={(a) => a.id}
+        emptyMessage="Nenhum registro encontrado"
+        emptyIcon={Activity}
+        caption="Log de atividades"
+        loading={isLoading}
+      />
     </div>
   )
 }

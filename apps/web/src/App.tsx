@@ -85,7 +85,7 @@ export function App() {
                   <Route path="/education-levels" element={<Suspense fallback={<PageLoader />}><EducationLevelsPage /></Suspense>} />
                   <Route path="/education-levels/:levelId/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />
                   <Route path="/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />
-                  <Route path="/academic-periods" element={<Suspense fallback={<PageLoader />}><AcademicPeriodsPage /></Suspense>} />
+                  <Route path="/academic-periods" element={<Navigate to="/academic-years" replace />} />
                 </Route>
 
                 {/* Hubs de navegação — gestor e secretaria */}

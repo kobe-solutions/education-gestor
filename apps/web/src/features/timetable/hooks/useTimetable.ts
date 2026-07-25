@@ -90,14 +90,16 @@ export function useUpdateTimetableSlot(classId: string) {
   })
 }
 
-export function useDeleteTimetableSlot(classId: string) {
+export function useDeleteTimetableSlot(classId?: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
       await api.delete(`/timetable-slots/${id}`)
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['timetable-slots', classId] })
+      if (classId) {
+        qc.invalidateQueries({ queryKey: ['timetable-slots', classId] })
+      }
       qc.invalidateQueries({ queryKey: ['timetable-slots', 'all'] })
     },
   })

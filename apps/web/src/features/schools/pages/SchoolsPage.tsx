@@ -8,14 +8,13 @@ import { useSchools, useCreateSchool, useUpdateSchool, useDeleteSchool } from '.
 import { useAuth } from '../../../contexts/AuthContext'
 import { toast } from '../../../lib/toast'
 import { PageHead } from '../../../components/PageHead'
-import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Skeleton } from '../../../components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { SearchInput } from '../../../components/SearchInput'
+import { DataTable, type Column } from '../../../components/DataTable'
 import type { School } from '@education-gestor/types'
 
 const createSchema = z.object({
@@ -74,6 +73,8 @@ export function SchoolsPage() {
   const isSecretaria = payload?.role === 'secretaria'
 
   function handleEdit(school: School) {
+    setCreateOpen(false)
+    createForm.reset()
     setEditing(school)
     editForm.reset({
       name: school.name,
@@ -84,6 +85,11 @@ export function SchoolsPage() {
       phone: school.phone ?? '',
       address: school.address ?? '',
     })
+  }
+
+  function handleCreate() {
+    setEditing(undefined)
+    setCreateOpen(true)
   }
 
   function onCreateSubmit(data: CreateForm) {
@@ -144,7 +150,7 @@ export function SchoolsPage() {
         subtitle={`${filtered?.length ?? 0} escolas cadastradas`}
         actions={
           isSecretaria ? (
-            <Button size="sm" onClick={() => setCreateOpen(true)}>
+            <Button size="sm" onClick={handleCreate}>
               <Plus className="h-4 w-4 mr-1" />
               Nova escola
             </Button>
@@ -161,95 +167,64 @@ export function SchoolsPage() {
         />
       </div>
 
-      {/* Tabela */}
-      {isLoading ? (
-        <Surface>
-          <div className="p-4 space-y-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
+      <DataTable
+        columns={[
+          {
+            key: 'name',
+            label: 'Nome',
+            render: (s) => (
+              <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
+                {s.name}
+              </span>
+            ),
+          },
+          {
+            key: 'director',
+            label: 'Diretor',
+            className: 'hidden md:table-cell',
+            render: (s) => <span style={{ color: 'hsl(var(--muted-foreground))' }}>{s.director ?? '—'}</span>,
+          },
+          {
+            key: 'coordinator',
+            label: 'Coordenador',
+            className: 'hidden lg:table-cell',
+            render: (s) => <span style={{ color: 'hsl(var(--muted-foreground))' }}>{s.coordinator ?? '—'}</span>,
+          },
+          {
+            key: 'email',
+            label: 'Email',
+            render: (s) => <span style={{ color: 'hsl(var(--muted-foreground))' }}>{s.email}</span>,
+          },
+          {
+            key: 'phone',
+            label: 'Telefone',
+            className: 'hidden sm:table-cell',
+            render: (s) => <span style={{ color: 'hsl(var(--muted-foreground))' }}>{s.phone ?? '—'}</span>,
+          },
+        ]}
+        data={filtered ?? []}
+        rowKey={(s) => s.id}
+        actions={isSecretaria ? (s) => (
+          <div className="flex gap-1 justify-end">
+            <Button variant="ghost" size="icon" title="Editar" aria-label="Editar" onClick={() => handleEdit(s)}>
+              <Pencil size={14} className="text-muted-foreground" />
+            </Button>
+            <Button variant="ghost" size="icon" title="Excluir" aria-label="Excluir" onClick={() => setDeleteTarget(s.id)}>
+              <Trash2 size={14} className="text-destructive" />
+            </Button>
           </div>
-        </Surface>
-      ) : (
-        <Surface>
-          <div className="table-scroll">
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th className="hidden md:table-cell">Diretor</th>
-                  <th className="hidden lg:table-cell">Coordenador</th>
-                  <th>Email</th>
-                  <th className="hidden sm:table-cell">Telefone</th>
-                  {isSecretaria && <th style={{ width: 80 }} />}
-                </tr>
-              </thead>
-              <tbody>
-                {!filtered?.length && (
-                  <tr>
-                    <td
-                      colSpan={isSecretaria ? 6 : 5}
-                      className="text-center py-10"
-                      style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}
-                    >
-                      Nenhuma escola encontrada
-                    </td>
-                  </tr>
-                )}
-                {filtered?.map((s) => (
-                  <tr key={s.id}>
-                    <td>
-                      <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
-                        {s.name}
-                      </span>
-                    </td>
-                    <td className="hidden md:table-cell" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      {s.director ?? '—'}
-                    </td>
-                    <td className="hidden lg:table-cell" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      {s.coordinator ?? '—'}
-                    </td>
-                    <td style={{ color: 'hsl(var(--muted-foreground))' }}>{s.email}</td>
-                    <td className="hidden sm:table-cell" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                      {s.phone ?? '—'}
-                    </td>
-                    {isSecretaria && (
-                      <td>
-                        <div className="flex gap-1 justify-end">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Editar"
-                            aria-label="Editar"
-                            onClick={() => handleEdit(s)}
-                          >
-                            <Pencil size={14} className="text-muted-foreground" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Excluir"
-                            aria-label="Excluir"
-                            onClick={() => setDeleteTarget(s.id)}
-                          >
-                            <Trash2 size={14} className="text-destructive" />
-                          </Button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Surface>
-      )}
+        ) : undefined}
+        emptyMessage="Nenhuma escola encontrada"
+        caption="Lista de escolas"
+        loading={isLoading}
+      />
 
       {/* Dialog criação */}
       <Dialog open={createOpen} onOpenChange={(v) => { if (!v) { setCreateOpen(false); createForm.reset(); slugManuallyEdited.current = false } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Nova escola</DialogTitle>
+            <DialogDescription className="sr-only">Criar uma nova escola</DialogDescription>
           </DialogHeader>
           <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
@@ -336,6 +311,7 @@ export function SchoolsPage() {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Editar escola</DialogTitle>
+            <DialogDescription className="sr-only">Editar dados da escola</DialogDescription>
           </DialogHeader>
           <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">

@@ -10,14 +10,13 @@ import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
-import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { SearchInput } from '../../../components/SearchInput'
-import { TableSkeleton } from '../../../components/skeletons'
+import { DataTable, type Column } from '../../../components/DataTable'
 import type { Tuition } from '@education-gestor/types'
 
 const tuitionSchema = z.object({
@@ -72,6 +71,10 @@ export function TuitionsPage() {
     return matchesSearch && matchesStatus
   }) ?? []
 
+  function getStudentName(studentId: string) {
+    return students?.find((s) => s.id === studentId)?.name ?? studentId
+  }
+
   function onSubmit(data: TuitionForm) {
     createApiMutation.mutate(data)
   }
@@ -79,6 +82,38 @@ export function TuitionsPage() {
   function handlePay(tuition: Tuition) {
     payApiMutation.mutate(tuition.id)
   }
+
+  const columns: Column<Tuition & { studentName?: string }>[] = [
+    {
+      key: 'studentId',
+      label: 'Aluno',
+      render: (t) => (
+        <Link
+          to={`/students/${t.studentId}`}
+          className="font-semibold hover:underline"
+          style={{ color: 'hsl(var(--primary))' }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {getStudentName(t.studentId)}
+        </Link>
+      ),
+    },
+    {
+      key: 'dueDate',
+      label: 'Vencimento',
+      render: (t) => formatDateBR(t.dueDate),
+    },
+    {
+      key: 'amount',
+      label: 'Valor',
+      render: (t) => <span className="tabular-nums">{fmtBRL(t.amount)}</span>,
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (t) => <TuitionStatusBadge status={t.status} />,
+    },
+  ]
 
   return (
     <div className="space-y-5">
@@ -93,7 +128,6 @@ export function TuitionsPage() {
         }
       />
 
-      {/* Filtros */}
       <div className="flex gap-3 flex-wrap">
         <div className="w-full max-w-sm">
           <SearchInput
@@ -120,75 +154,25 @@ export function TuitionsPage() {
         </select>
       </div>
 
-      {/* Tabela */}
-      {isLoading ? (
-        <Surface>
-          <div className="p-4">
-            <TableSkeleton columns={5} rows={6} />
-          </div>
-        </Surface>
-      ) : (
-        <Surface>
-          <div className="table-scroll">
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>Aluno</th>
-                  <th>Vencimento</th>
-                  <th>Valor</th>
-                  <th>Status</th>
-                  <th style={{ width: 160 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="text-center py-10"
-                      style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13 }}
-                    >
-                      Nenhuma mensalidade encontrada
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map((t) => {
-                    const student = students?.find((s) => s.id === t.studentId)
-                    return (
-                      <tr key={t.id}>
-                        <td>
-                          <Link
-                            to={`/students/${t.studentId}`}
-                            className="font-semibold hover:underline"
-                            style={{ color: 'hsl(var(--primary))' }}
-                          >
-                            {student?.name ?? t.studentId}
-                          </Link>
-                        </td>
-                        <td>{formatDateBR(t.dueDate)}</td>
-                        <td className="tabular-nums">{fmtBRL(t.amount)}</td>
-                        <td><TuitionStatusBadge status={t.status} /></td>
-                        <td>
-                          {t.status !== 'paid' && (
-                            <Button size="sm" variant="outline" onClick={() => setConfirmPay(t)}>
-                              Registrar pagamento
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Surface>
-      )}
+      <DataTable
+        columns={columns}
+        data={filtered}
+        rowKey={(t) => t.id}
+        actions={(t) => (
+          t.status !== 'paid' ? (
+            <Button size="sm" variant="outline" onClick={() => setConfirmPay(t)}>
+              Registrar pagamento
+            </Button>
+          ) : undefined
+        )}
+        emptyMessage="Nenhuma mensalidade encontrada"
+        caption="Lista de mensalidades"
+        loading={isLoading}
+      />
 
-      {/* Paginação */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'var(--iris-slate-500)' }}>
+          <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Página {page} de {totalPages}
           </span>
           <div className="flex gap-1">
@@ -214,10 +198,12 @@ export function TuitionsPage() {
         </div>
       )}
 
-      {/* Dialog: nova mensalidade */}
       <Dialog open={dialogOpen} onOpenChange={(v) => !v && setDialogOpen(false)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Nova mensalidade</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Nova mensalidade</DialogTitle>
+            <DialogDescription className="sr-only">Criar uma nova mensalidade para um aluno</DialogDescription>
+          </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Aluno</Label>
@@ -250,10 +236,12 @@ export function TuitionsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog: confirmar pagamento */}
       <Dialog open={!!confirmPay} onOpenChange={(v) => !v && setConfirmPay(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Confirmar pagamento</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Confirmar pagamento</DialogTitle>
+            <DialogDescription className="sr-only">Confirmar registro de pagamento de mensalidade</DialogDescription>
+          </DialogHeader>
           <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
             Registrar pagamento de{' '}
             <strong style={{ color: 'hsl(var(--primary))' }}>
