@@ -70,20 +70,16 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
     })
   }
 
-  async function handleSave() {
+  function handleSave() {
     if (!selectedClassId || !selectedDate) return
     const attendances = Array.from(attendanceMap.entries()).map(([studentId, present]) => ({
       studentId,
       present,
     }))
-    try {
-      await registerBulk.mutateAsync({ classId: selectedClassId, date: selectedDate, attendances })
-      toast.success('Frequência registrada com sucesso')
-    } catch (err: unknown) {
-      console.error('Attendance save error:', err)
-      const msg = err instanceof Error ? err.message : 'Erro ao registrar frequência'
-      toast.error(msg)
-    }
+    registerBulk.mutate(
+      { classId: selectedClassId, date: selectedDate, attendances },
+      { onSuccess: () => toast.success('Frequência registrada com sucesso') },
+    )
   }
 
   const students = schoolClass?.students ?? []
@@ -93,7 +89,8 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1">
-          <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
+          <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}
+            items={classes.map((c) => ({ value: c.id, label: c.name }))}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione uma turma" />
             </SelectTrigger>
@@ -105,7 +102,8 @@ function AttendanceForm({ classes }: { classes: import('../hooks/useTeacherDashb
           </Select>
         </div>
         <div className="flex-1">
-          <Select value={selectedDate} onValueChange={(v) => setSelectedDate(v ?? '')}>
+          <Select value={selectedDate} onValueChange={(v) => setSelectedDate(v ?? '')}
+            items={dateOptions.map((d) => ({ value: d, label: parseLocalDate(d).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }) }))}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione uma data" />
             </SelectTrigger>

@@ -64,7 +64,8 @@ export function GradesPage() {
 
       <div className="w-64">
         <Label>Turma</Label>
-        <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
+        <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}
+          items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? c.shift}` }))}>
           <SelectTrigger>
             <SelectValue placeholder="Selecione a turma" />
           </SelectTrigger>
@@ -119,7 +120,8 @@ export function GradesPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <Label>Aluno</Label>
-              <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}>
+              <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}
+                items={enrolledStudents.map((s) => ({ value: s.id, label: s.name }))}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>
                   {enrolledStudents.map((s) => (
@@ -131,7 +133,8 @@ export function GradesPage() {
             </div>
             <div className="space-y-1">
               <Label>Disciplina</Label>
-              <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}>
+              <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}
+                items={subjects?.map((s) => ({ value: s.id, label: s.name }))}>
                 <SelectTrigger><SelectValue placeholder="Selecione a disciplina" /></SelectTrigger>
                 <SelectContent>
                   {subjects?.map((s) => (
@@ -149,7 +152,8 @@ export function GradesPage() {
               </div>
               <div className="space-y-1">
                 <Label>Período letivo</Label>
-                <Select value={periodIdValue} onValueChange={(v) => { if (v !== null) setValue('academicPeriodId', v) }}>
+                <Select value={periodIdValue} onValueChange={(v) => { if (v !== null) setValue('academicPeriodId', v) }}
+                  items={periods?.map((p) => ({ value: p.id, label: p.name }))}>
                   <SelectTrigger><SelectValue placeholder="Selecione o período" /></SelectTrigger>
                   <SelectContent>
                     {periods?.map((p) => (

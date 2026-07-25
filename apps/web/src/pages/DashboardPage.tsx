@@ -22,6 +22,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
 import { TuitionStatusBadge } from '../features/financial/components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../lib/format'
+import { TONE_CONFIG, type ToneKey } from '../lib/colors'
 import { Skeleton } from '../components/ui/skeleton'
 import { Button } from '../components/ui/button'
 
@@ -67,47 +68,8 @@ interface DashMetricProps {
   value: number | string
   label: string
   sub?: string
-  tone: 'indigo' | 'violet' | 'slate' | 'amber' | 'emerald' | 'red'
+  tone: ToneKey
 }
-
-const TONE_CONFIG = {
-  indigo: {
-    iconBg: 'rgba(79, 70, 229, 0.12)',
-    iconColor: '#818CF8',
-    valueColor: 'hsl(var(--foreground))',
-    borderColor: 'rgba(79, 70, 229, 0.15)',
-  },
-  violet: {
-    iconBg: 'rgba(129, 140, 248, 0.12)',
-    iconColor: '#A5B4FC',
-    valueColor: 'hsl(var(--foreground))',
-    borderColor: 'rgba(129, 140, 248, 0.15)',
-  },
-  slate: {
-    iconBg: 'rgba(49, 46, 129, 0.10)',
-    iconColor: '#818CF8',
-    valueColor: 'hsl(var(--foreground))',
-    borderColor: 'rgba(49, 46, 129, 0.12)',
-  },
-  amber: {
-    iconBg: 'rgba(180, 83, 9, 0.10)',
-    iconColor: '#F59E0B',
-    valueColor: '#F59E0B',
-    borderColor: 'rgba(180, 83, 9, 0.15)',
-  },
-  emerald: {
-    iconBg: 'rgba(21, 128, 61, 0.10)',
-    iconColor: '#22C55E',
-    valueColor: '#22C55E',
-    borderColor: 'rgba(21, 128, 61, 0.15)',
-  },
-  red: {
-    iconBg: 'rgba(185, 28, 28, 0.10)',
-    iconColor: '#EF4444',
-    valueColor: '#EF4444',
-    borderColor: 'rgba(185, 28, 28, 0.15)',
-  },
-} as const
 
 function DashMetric({ icon: Icon, value, label, sub, tone }: DashMetricProps) {
   const t = TONE_CONFIG[tone]

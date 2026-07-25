@@ -180,7 +180,8 @@ export function SeriesPage() {
             {!editing && (
               <div className="space-y-1">
                 <Label>Nível de ensino *</Label>
-                <Select value={levelIdValue} onValueChange={(v) => { if (v !== null) setValue('educationLevelId', v) }}>
+                <Select value={levelIdValue} onValueChange={(v) => { if (v !== null) setValue('educationLevelId', v) }}
+                  items={levels?.map((l) => ({ value: l.id, label: l.name }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o nível" />
                   </SelectTrigger>

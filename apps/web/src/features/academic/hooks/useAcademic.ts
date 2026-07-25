@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { api } from '../../../lib/api'
+import { extractErrorMessage } from '../../../lib/errors'
 import type { Grade, Attendance } from '@education-gestor/types'
 
 export function useStudentGrades(studentId: string) {
@@ -44,6 +46,9 @@ export function useRegisterGrade() {
       qc.invalidateQueries({ queryKey: ['grades', 'class', vars.classId] })
       qc.invalidateQueries({ queryKey: ['grades', 'student', vars.studentId] })
     },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, 'Erro ao lançar nota'))
+    },
   })
 }
 
@@ -84,6 +89,9 @@ export function useRegisterBulkAttendance() {
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['attendances', 'class', vars.classId] })
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, 'Erro ao registrar frequência'))
     },
   })
 }

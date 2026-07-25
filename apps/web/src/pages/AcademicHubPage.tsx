@@ -34,14 +34,12 @@ export function AcademicHubPage() {
           icon={BookOpen}
           title="Notas & Boletim"
           description="Lançamento de notas por bimestre e geração de boletins por aluno."
-          disabled
         />
         <HubCard
           to="/attendance"
           icon={CheckSquare}
           title="Frequência"
           description="Registro diário de presença em lote ou aluno a aluno."
-          disabled
         />
         <HubCard
           to="/settings"

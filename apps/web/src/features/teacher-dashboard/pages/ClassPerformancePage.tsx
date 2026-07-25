@@ -6,29 +6,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Button } from '../../../components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
-
-// ── Tone config (same as dashboard) ────────────────────────────────────────
-
-const TONE_CONFIG = {
-  emerald: {
-    iconBg: 'rgba(21, 128, 61, 0.10)',
-    iconColor: '#22C55E',
-    valueColor: '#22C55E',
-    borderColor: 'rgba(21, 128, 61, 0.15)',
-  },
-  amber: {
-    iconBg: 'rgba(180, 83, 9, 0.10)',
-    iconColor: '#F59E0B',
-    valueColor: '#F59E0B',
-    borderColor: 'rgba(180, 83, 9, 0.15)',
-  },
-  red: {
-    iconBg: 'rgba(185, 28, 28, 0.10)',
-    iconColor: '#EF4444',
-    valueColor: '#EF4444',
-    borderColor: 'rgba(185, 28, 28, 0.15)',
-  },
-} as const
+import { TONE_CONFIG } from '../../../lib/colors'
 
 function gradeTone(value: number): 'emerald' | 'amber' | 'red' {
   if (value >= 7) return 'emerald'
@@ -100,7 +78,8 @@ export function ClassPerformancePage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="w-full sm:w-64">
-          <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
+          <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}
+            items={[{ value: 'all', label: 'Todas as turmas' }, ...data.classes.map((c) => ({ value: c.id, label: c.name }))]}>
             <SelectTrigger>
               <SelectValue placeholder="Todas as turmas" />
             </SelectTrigger>

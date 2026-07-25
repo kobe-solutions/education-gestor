@@ -23,8 +23,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { SchoolSelector } from '../SchoolSelector'
 import { Button } from '../ui/button'
-import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import { cn } from '../../lib/utils'
+import { SIDEBAR_BG, ACCENT_COLOR } from '../../lib/colors'
 
 interface NavItem {
   to: string
@@ -173,9 +173,6 @@ function getInitials(name: string) {
 }
 
 const SIDEBAR_W = 240
-const SIDEBAR_BG = '#0a0f1a'
-const SIDEBAR_ITEM_HOVER = '#111827'
-const ACCENT_COLOR = '#818CF8'
 
 function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
   return (
@@ -308,19 +305,12 @@ export function AppLayout() {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <Tooltip>
-              <TooltipTrigger
-                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-                style={{
-                  width: 36,
-                  height: 36,
-                  background: ACCENT_COLOR,
-                }}
-              >
-                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-              </TooltipTrigger>
-              <TooltipContent>{userName || role}</TooltipContent>
-            </Tooltip>
+            <div
+              className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
+              style={{ width: 36, height: 36, background: ACCENT_COLOR }}
+            >
+              {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">{userName}</p>
               {userEmail && (
@@ -406,6 +396,7 @@ export function AppLayout() {
             <span className="text-sm font-medium">Alternar tema</span>
           </Button>
 
+          {/* Logout */}
           <Button
             variant="outline"
             size="default"
@@ -417,6 +408,7 @@ export function AppLayout() {
             <span className="text-sm font-medium">Sair</span>
           </Button>
 
+          {/* User card */}
           <div
             className="flex items-center gap-3 rounded-xl px-3 py-3 mt-1"
             style={{
@@ -424,15 +416,12 @@ export function AppLayout() {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <Tooltip>
-              <TooltipTrigger
-                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-                style={{ width: 36, height: 36, background: ACCENT_COLOR }}
-              >
-                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-              </TooltipTrigger>
-              <TooltipContent>{userName || role}</TooltipContent>
-            </Tooltip>
+            <div
+              className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
+              style={{ width: 36, height: 36, background: ACCENT_COLOR }}
+            >
+              {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
+            </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">{userName}</p>
               {userEmail && (

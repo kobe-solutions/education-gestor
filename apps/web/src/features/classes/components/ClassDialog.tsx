@@ -94,7 +94,8 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
           </div>
           <div className="space-y-1">
             <Label>Turno *</Label>
-            <Select value={shiftValue} onValueChange={(v) => { if (v !== null) setValue('shift', v) }}>
+            <Select value={shiftValue} onValueChange={(v) => { if (v !== null) setValue('shift', v) }}
+              items={[{ value: 'manhã', label: 'Manhã' }, { value: 'tarde', label: 'Tarde' }, { value: 'noite', label: 'Noite' }, { value: 'integral', label: 'Integral' }]}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o turno" />
               </SelectTrigger>

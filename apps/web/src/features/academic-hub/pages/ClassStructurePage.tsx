@@ -10,22 +10,9 @@ import { SearchInput } from '../../../components/SearchInput'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { SHIFT_CONFIG, LEVEL_COLORS } from '../../../lib/colors'
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────
-
-const SHIFT_CONFIG: Record<string, { label: string; className: string }> = {
-  manha:    { label: 'Manhã',    className: 'bg-amber-500/10 text-amber-400 border-amber-500/30' },
-  tarde:    { label: 'Tarde',    className: 'bg-orange-500/10 text-orange-400 border-orange-500/30' },
-  noite:    { label: 'Noite',    className: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
-  integral: { label: 'Integral', className: 'bg-green-500/10 text-green-400 border-green-500/30' },
-}
-
-const LEVEL_COLORS: Record<string, string> = {
-  fundamental: 'bg-blue-500',
-  medio:       'bg-violet-500',
-  tecnico:     'bg-teal-500',
-  superior:    'bg-rose-500',
-}
 
 function shiftConfig(shift: string) {
   return SHIFT_CONFIG[shift.toLowerCase()] ?? { label: shift, className: 'bg-muted text-muted-foreground border-border' }

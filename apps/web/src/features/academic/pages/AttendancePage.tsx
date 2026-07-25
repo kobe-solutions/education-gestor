@@ -64,7 +64,8 @@ export function AttendancePage() {
       <div className="flex gap-4 items-end">
         <div className="w-64 space-y-1">
           <Label>Turma</Label>
-          <Select value={selectedClassId} onValueChange={(v) => { if (v === null) return; setSelectedClassId(v); setAttendance({}); setSaved(false) }}>
+          <Select value={selectedClassId} onValueChange={(v) => { if (v === null) return; setSelectedClassId(v); setAttendance({}); setSaved(false) }}
+            items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? c.shift}` }))}>
             <SelectTrigger><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
             <SelectContent>
               {classes?.map((c) => (
