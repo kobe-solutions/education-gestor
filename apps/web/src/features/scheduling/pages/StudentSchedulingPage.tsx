@@ -91,44 +91,20 @@ function StudentCard({ student, colorIdx, isSelected, onSelect }: StudentCardPro
   )
 }
 
-// ─── Componente: Pílula de aluno matriculado ──────────────────────────────────
+// ─── Componente: Card de turma (Kanban) ───────────────────────────────────────
 
-function EnrolledPill({
-  student,
-  colorIndex,
-  onRemove,
-}: {
-  student: { id: string; name: string; enrollmentCode: string }
-  colorIndex: number
-  onRemove: () => void
-}) {
-  const color = STUDENT_COLORS[colorIndex]
-  return (
-    <div className={`group flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-medium ${color.light}`}>
-      <div className={`h-5 w-5 rounded-full ${color.bg} flex items-center justify-center shrink-0`}>
-        <span className="text-[9px] font-bold text-white">{initials(student.name)}</span>
-      </div>
-      <span className="flex-1 truncate" style={{ maxWidth: 100 }}>{student.name}</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600 h-5 w-5"
-        onClick={onRemove}
-      >
-        <X className="h-3 w-3" />
-      </Button>
-    </div>
-  )
-}
+const AVATAR_COLORS = [
+  'bg-blue-500', 'bg-violet-500', 'bg-emerald-500', 'bg-orange-500',
+  'bg-pink-500', 'bg-teal-500', 'bg-red-500', 'bg-indigo-500',
+  'bg-amber-500', 'bg-cyan-500',
+]
 
-// ─── Componente: Coluna de turma ──────────────────────────────────────────────
+const MAX_VISIBLE_AVATARS = 8
 
-function ClassColumn({
+function ClassCard({
   schoolClass,
   selectedStudent,
-  studentColorMap,
   onDrop,
-  onRemoveStudent,
 }: {
   schoolClass: {
     id: string
@@ -139,12 +115,16 @@ function ClassColumn({
     serie: { name: string } | null
   }
   selectedStudent: { id: string; name: string } | null
-  studentColorMap: Record<string, number>
   onDrop: (classId: string, studentId: string, studentName: string) => void
-  onRemoveStudent: (classId: string, studentId: string) => void
 }) {
   const [dragOver, setDragOver] = useState(false)
+  const [justReceived, setJustReceived] = useState(false)
   const dragCounter = useRef(0)
+
+  function triggerReceiveAnimation() {
+    setJustReceived(true)
+    setTimeout(() => setJustReceived(false), 500)
+  }
 
   const { data: classDetail } = useClass(schoolClass.id)
   const enrolled = classDetail?.students ?? []
@@ -152,6 +132,7 @@ function ClassColumn({
   const max = schoolClass.maxStudents
   const isFull = count >= max
   const fillPct = Math.min(100, Math.round((count / max) * 100))
+  const overflow = count - MAX_VISIBLE_AVATARS
 
   const shiftKey = schoolClass.shift?.toLowerCase() ?? ''
   const shiftLabel = SHIFT_LABELS[shiftKey] ?? schoolClass.shift
@@ -160,7 +141,8 @@ function ClassColumn({
   return (
     <div
       className={[
-        'flex flex-col rounded-2xl border-2 transition-all duration-150 shrink-0 w-64 h-full',
+        'flex flex-col rounded-2xl border-2 transition-all duration-150 w-full',
+        justReceived && 'animate-card-receive',
         dragOver && !isFull
           ? 'border-primary bg-primary/5 shadow-lg shadow-primary/20 scale-[1.02]'
           : isFull
@@ -183,7 +165,10 @@ function ClassColumn({
         setDragOver(false)
         const studentId = e.dataTransfer.getData('studentId')
         const studentName = e.dataTransfer.getData('studentName')
-        if (studentId) onDrop(schoolClass.id, studentId, studentName)
+        if (studentId) {
+          triggerReceiveAnimation()
+          onDrop(schoolClass.id, studentId, studentName)
+        }
       }}
     >
       {/* Header */}
@@ -219,44 +204,51 @@ function ClassColumn({
         </div>
       </div>
 
-      {/* Drop zone hints */}
+      {/* Drop zone hint */}
       {dragOver && !isFull && (
-        <div className="mx-3 mb-2 rounded-xl border-2 border-dashed border-primary/50 bg-primary/10 py-3 text-center">
+        <div className="mx-3 mb-2 rounded-xl border-2 border-dashed border-primary/50 bg-primary/10 py-2 text-center">
           <p className="text-xs font-medium text-primary">Soltar para matricular</p>
         </div>
       )}
       {dragOver && isFull && (
-        <div className="mx-3 mb-2 rounded-xl border-2 border-dashed border-destructive/50 bg-destructive/10 py-3 text-center">
+        <div className="mx-3 mb-2 rounded-xl border-2 border-dashed border-destructive/50 bg-destructive/10 py-2 text-center">
           <p className="text-xs font-medium text-destructive flex items-center justify-center gap-1">
             <AlertTriangle className="h-3 w-3" /> Turma lotada
           </p>
         </div>
       )}
 
-      {/* Alunos matriculados */}
-      <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-1 min-h-0">
-        {enrolled.length === 0 ? (
-          <p className="text-[11px] text-muted-foreground text-center py-4">Nenhum aluno matriculado</p>
-        ) : (
-          enrolled.map((s) => (
-            <EnrolledPill
-              key={s.id}
-              student={s}
-              colorIndex={studentColorMap[s.id] ?? getColorIdx(s.name)}
-              onRemove={() => onRemoveStudent(schoolClass.id, s.id)}
-            />
-          ))
-        )}
-      </div>
+      {/* Avatares compactos dos alunos matriculados */}
+      {enrolled.length > 0 && !dragOver && (
+        <div className="px-3 pb-3 flex items-center">
+          <div className="flex -space-x-2">
+            {enrolled.slice(0, MAX_VISIBLE_AVATARS).map((s, i) => (
+              <div
+                key={s.id}
+                className={`h-7 w-7 rounded-full ${AVATAR_COLORS[getColorIdx(s.name)]} flex items-center justify-center ring-2 ring-background`}
+                title={s.name}
+              >
+                <span className="text-[8px] font-bold text-white">{initials(s.name)}</span>
+              </div>
+            ))}
+          </div>
+          {overflow > 0 && (
+            <span className="ml-2 text-[11px] text-muted-foreground font-medium">+{overflow}</span>
+          )}
+        </div>
+      )}
 
       {/* Botão rápido quando aluno selecionado */}
-      {selectedStudent && !isFull && (
-        <div className="p-3 pt-1 border-t">
+      {selectedStudent && !isFull && !dragOver && (
+        <div className="px-3 pb-3">
           <Button
             variant="outline"
             size="sm"
-            className="w-full justify-center gap-1.5 py-2 text-xs font-medium border-dashed border-primary text-primary hover:bg-primary/10 transition-all"
-            onClick={() => onDrop(schoolClass.id, selectedStudent.id, selectedStudent.name)}
+            className="w-full justify-center gap-1.5 py-1.5 text-xs font-medium border-dashed border-primary text-primary hover:bg-primary/10 transition-all"
+            onClick={() => {
+              triggerReceiveAnimation()
+              onDrop(schoolClass.id, selectedStudent.id, selectedStudent.name)
+            }}
           >
             Matricular {selectedStudent.name.split(' ')[0]}
           </Button>
@@ -289,11 +281,13 @@ export function StudentSchedulingPage() {
     targetClassName: string
   } | null>(null)
 
-  const studentColorMap: Record<string, number> = Object.fromEntries(
-    students.map((s) => [s.id, getColorIdx(s.name)])
+  const enrolledStudentIds = new Set(
+    classes.flatMap((c) => (c.students ?? []).map((s) => s.id))
   )
 
-  const filteredStudents = students.filter((s) =>
+  const unenrolledStudents = students.filter((s) => enrolledStudentIds.has(s.id))
+
+  const filteredStudents = unenrolledStudents.filter((s) =>
     s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
     s.enrollmentCode.toLowerCase().includes(studentSearch.toLowerCase())
   )
@@ -306,16 +300,6 @@ export function StudentSchedulingPage() {
     const schoolClass = classes.find((c) => c.id === classId)
     if (!schoolClass) return
     setConfirmTarget({ classId, studentId, studentName, className: schoolClass.name })
-  }
-
-  async function handleRemoveStudent(classId: string, studentId: string) {
-    try {
-      await api.delete(`/school-classes/${classId}/students/${studentId}`)
-      toast.success('Aluno removido da turma')
-      queryClient.invalidateQueries({ queryKey: ['classes', classId] })
-    } catch {
-      toast.error('Erro ao remover aluno')
-    }
   }
 
   async function confirmEnroll() {
@@ -401,15 +385,19 @@ export function StudentSchedulingPage() {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+        <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
           {filteredStudents.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-8">Nenhum aluno encontrado</p>
+            <p className="text-xs text-muted-foreground text-center py-8">
+              {unenrolledStudents.length === 0
+                ? 'Todos os alunos estão matriculados'
+                : 'Nenhum aluno encontrado'}
+            </p>
           )}
           {filteredStudents.map((student) => (
             <StudentCard
               key={student.id}
               student={student}
-              colorIdx={studentColorMap[student.id] ?? 0}
+              colorIdx={getColorIdx(student.name)}
               isSelected={selectedStudent?.id === student.id}
               onSelect={() =>
                 setSelectedStudent((prev) =>
@@ -422,7 +410,7 @@ export function StudentSchedulingPage() {
 
         <div className="pt-2 border-t">
           <p className="text-[10px] text-muted-foreground">
-            <span className="font-medium">{students.length}</span> alunos cadastrados
+            <span className="font-medium">{unenrolledStudents.length}</span> alunos disponíveis
           </p>
         </div>
       </aside>
@@ -451,17 +439,17 @@ export function StudentSchedulingPage() {
             <p className="text-sm text-muted-foreground">Nenhuma turma cadastrada</p>
           </div>
         ) : (
-          <div className="flex-1 flex gap-4 overflow-x-auto pb-4 items-stretch">
-            {filteredClasses.map((schoolClass) => (
-              <ClassColumn
-                key={schoolClass.id}
-                schoolClass={schoolClass as any}
-                selectedStudent={selectedStudent}
-                studentColorMap={studentColorMap}
-                onDrop={handleDrop}
-                onRemoveStudent={handleRemoveStudent}
-              />
-            ))}
+          <div className="flex-1 overflow-y-auto custom-scrollbar pb-4">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-3">
+              {filteredClasses.map((schoolClass) => (
+                <ClassCard
+                  key={schoolClass.id}
+                  schoolClass={schoolClass as any}
+                  selectedStudent={selectedStudent}
+                  onDrop={handleDrop}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
