@@ -221,7 +221,8 @@ export function TuitionsPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1.5">
               <Label>Aluno</Label>
-              <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}>
+              <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}
+                items={students?.map((s) => ({ value: s.id, label: s.name }))}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>
                   {students?.map((s) => (

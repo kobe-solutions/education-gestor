@@ -40,8 +40,11 @@ const AdminActivityPage = lazy(() => import('./features/admin/pages/AdminActivit
 const HubSchoolsPage = lazy(() => import('./pages/HubSchoolsPage').then(m => ({ default: m.HubSchoolsPage })))
 const ProfessorDashboardPage = lazy(() => import('./features/teacher-dashboard/pages/ProfessorDashboardPage').then(m => ({ default: m.ProfessorDashboardPage })))
 const ClassPerformancePage = lazy(() => import('./features/teacher-dashboard/pages/ClassPerformancePage').then(m => ({ default: m.ClassPerformancePage })))
-const AttendancePage = lazy(() => import('./features/teacher-dashboard/pages/AttendancePage').then(m => ({ default: m.AttendancePage })))
+const TeacherAttendancePage = lazy(() => import('./features/teacher-dashboard/pages/AttendancePage').then(m => ({ default: m.AttendancePage })))
 const MyClassesPage = lazy(() => import('./features/teacher-dashboard/pages/MyClassesPage').then(m => ({ default: m.MyClassesPage })))
+const GestorAttendancePage = lazy(() => import('./features/academic/pages/AttendancePage').then(m => ({ default: m.AttendancePage })))
+const GradesPage = lazy(() => import('./features/academic/pages/GradesPage').then(m => ({ default: m.GradesPage })))
+const AcademicPeriodsPage = lazy(() => import('./features/classes/pages/AcademicPeriodsPage').then(m => ({ default: m.AcademicPeriodsPage })))
 
 function PageLoader() {
   return (
@@ -82,6 +85,7 @@ export function App() {
                   <Route path="/education-levels" element={<Suspense fallback={<PageLoader />}><EducationLevelsPage /></Suspense>} />
                   <Route path="/education-levels/:levelId/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />
                   <Route path="/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />
+                  <Route path="/academic-periods" element={<Suspense fallback={<PageLoader />}><AcademicPeriodsPage /></Suspense>} />
                 </Route>
 
                 {/* Hubs de navegação — gestor e secretaria */}
@@ -98,6 +102,8 @@ export function App() {
                   <Route path="/teachers/new" element={<Suspense fallback={<PageLoader />}><TeacherFormPage /></Suspense>} />
                   <Route path="/teachers/:id/edit" element={<Suspense fallback={<PageLoader />}><TeacherFormPage /></Suspense>} />
                   <Route path="/financial" element={<Suspense fallback={<PageLoader />}><TuitionsPage /></Suspense>} />
+                  <Route path="/grades" element={<Suspense fallback={<PageLoader />}><GradesPage /></Suspense>} />
+                  <Route path="/attendance" element={<Suspense fallback={<PageLoader />}><GestorAttendancePage /></Suspense>} />
                 </Route>
 
                 {/* Hubs de navegação — gestor, professor e secretaria */}
@@ -112,7 +118,7 @@ export function App() {
                   <Route path="/professor" element={<Suspense fallback={<PageLoader />}><ProfessorDashboardPage /></Suspense>} />
                   <Route path="/professor/classes" element={<Suspense fallback={<PageLoader />}><MyClassesPage /></Suspense>} />
                   <Route path="/professor/performance" element={<Suspense fallback={<PageLoader />}><ClassPerformancePage /></Suspense>} />
-                  <Route path="/professor/attendance" element={<Suspense fallback={<PageLoader />}><AttendancePage /></Suspense>} />
+                  <Route path="/professor/attendance" element={<Suspense fallback={<PageLoader />}><TeacherAttendancePage /></Suspense>} />
                 </Route>
 
                 {/* Secretaria */}

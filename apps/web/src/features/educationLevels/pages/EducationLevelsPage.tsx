@@ -195,7 +195,8 @@ export function EducationLevelsPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <Label>Tipo *</Label>
-              <Select value={typeValue} onValueChange={(v) => { if (v !== null) setValue('type', v) }}>
+              <Select value={typeValue} onValueChange={(v) => { if (v !== null) setValue('type', v) }}
+                items={LEVEL_TYPES.map(([value, label]) => ({ value, label }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
@@ -209,7 +210,8 @@ export function EducationLevelsPage() {
             </div>
             <div className="space-y-1">
               <Label>Modalidade (opcional)</Label>
-              <Select value={modalityValue ?? ''} onValueChange={(v) => { if (v !== null) setValue('modality', v === 'none' ? '' : v) }}>
+              <Select value={modalityValue ?? ''} onValueChange={(v) => { if (v !== null) setValue('modality', v === 'none' ? '' : v) }}
+                items={[{ value: 'none', label: 'Nenhuma' }, ...MODALITIES.map(([value, label]) => ({ value, label }))]}>
                 <SelectTrigger>
                   <SelectValue placeholder="Nenhuma modalidade específica" />
                 </SelectTrigger>

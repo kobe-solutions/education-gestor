@@ -240,7 +240,8 @@ export function TimetablePage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <Label>Horário *</Label>
-              <Select value={classPeriodIdValue} onValueChange={(v) => { if (v !== null) setValue('classPeriodId', v) }}>
+              <Select value={classPeriodIdValue} onValueChange={(v) => { if (v !== null) setValue('classPeriodId', v) }}
+                items={classPeriods?.map((cp) => ({ value: cp.id, label: `${cp.name} (${cp.startTime}–${cp.endTime})` }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o horário" />
                 </SelectTrigger>
@@ -256,7 +257,8 @@ export function TimetablePage() {
             </div>
             <div className="space-y-1">
               <Label>Dia da semana *</Label>
-              <Select value={weekDayValue} onValueChange={(v) => { if (v !== null) setValue('weekDay', v as typeof WEEK_DAYS[number]) }}>
+              <Select value={weekDayValue} onValueChange={(v) => { if (v !== null) setValue('weekDay', v as typeof WEEK_DAYS[number]) }}
+                items={WEEK_DAYS.map((d) => ({ value: d, label: WEEK_DAY_LABELS[d] }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Dia" />
                 </SelectTrigger>
@@ -270,7 +272,8 @@ export function TimetablePage() {
             </div>
             <div className="space-y-1">
               <Label>Disciplina *</Label>
-              <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}>
+              <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}
+                items={subjects?.map((s) => ({ value: s.id, label: s.name }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a disciplina" />
                 </SelectTrigger>
@@ -284,7 +287,8 @@ export function TimetablePage() {
             </div>
             <div className="space-y-1">
               <Label>Professor *</Label>
-              <Select value={teacherIdValue} onValueChange={(v) => { if (v !== null) setValue('teacherId', v) }}>
+              <Select value={teacherIdValue} onValueChange={(v) => { if (v !== null) setValue('teacherId', v) }}
+                items={teachers?.map((t) => ({ value: t.id, label: t.name }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o professor" />
                 </SelectTrigger>

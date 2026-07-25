@@ -133,7 +133,8 @@ function PeriodDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label>Tipo *</Label>
-              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as PeriodType })}>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as PeriodType })}
+                items={[{ value: 'bimestre', label: 'Bimestre' }, { value: 'trimestre', label: 'Trimestre' }, { value: 'semestre', label: 'Semestre' }]}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="bimestre">Bimestre</SelectItem>

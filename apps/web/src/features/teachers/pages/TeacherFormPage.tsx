@@ -12,16 +12,6 @@ import { Label } from '../../../components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Badge } from '../../../components/ui/badge'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from '../../../components/ui/alert-dialog'
 import { useTeacher, useCreateTeacher, useUpdateTeacher, useChangeTeacherPassword } from '../hooks/useTeachers'
 
 function Opt() {
@@ -120,7 +110,7 @@ export function TeacherFormPage() {
     } : undefined,
   })
 
-  const blocker = useUnsavedChanges(pessoalForm.formState.isDirty)
+  useUnsavedChanges(pessoalForm.formState.isDirty)
 
   const enderecoForm = useForm<EnderecoForm>({
     resolver: zodResolver(enderecoSchema),
@@ -257,7 +247,7 @@ export function TeacherFormPage() {
             <TabsTrigger value="endereco" disabled={!isEdit}>Endereço</TabsTrigger>
             <TabsTrigger value="profissional" disabled={!isEdit}>Dados Profissionais</TabsTrigger>
             <TabsTrigger value="formacao" disabled={!isEdit}>Formação</TabsTrigger>
-            <TabsTrigger value="financeiro" disabled={!isEdit}>Financeiro</TabsTrigger>
+            <TabsTrigger value="financeiro" disabled={!isEdit}>Dados Bancários & Senha</TabsTrigger>
           </TabsList>
         </div>
 
@@ -546,25 +536,6 @@ export function TeacherFormPage() {
           </form>
         </TabsContent>
       </Tabs>
-
-      <AlertDialog open={blocker.state === 'blocked'}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Alterações não salvas</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você tem alterações não salvas. Deseja sair mesmo assim?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset?.()}>
-              Ficar
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => blocker.proceed?.()}>
-              Sair
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

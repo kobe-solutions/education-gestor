@@ -99,7 +99,14 @@ export function StudentsPage() {
             placeholder="Buscar por nome ou matrícula…"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? '')}>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? '')}
+          items={[
+            { value: 'all', label: 'Todos' },
+            { value: 'active', label: 'Ativo' },
+            { value: 'inactive', label: 'Inativo' },
+            { value: 'transferred', label: 'Transferido' },
+            { value: 'cancelled', label: 'Cancelado' },
+          ]}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Situação" />
           </SelectTrigger>

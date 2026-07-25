@@ -507,7 +507,8 @@ export function SchedulingPage() {
           <div className="space-y-3">
             <div className="space-y-1">
               <Label>Professor *</Label>
-              <Select value={formTeacher} onValueChange={(v) => setFormTeacher(v ?? '')}>
+              <Select value={formTeacher} onValueChange={(v) => setFormTeacher(v ?? '')}
+                items={teachers.map((t) => ({ value: t.id, label: t.name }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecionar professor" />
                 </SelectTrigger>
@@ -530,7 +531,8 @@ export function SchedulingPage() {
 
             <div className="space-y-1">
               <Label>Disciplina *</Label>
-              <Select value={formSubject} onValueChange={(v) => setFormSubject(v ?? '')}>
+              <Select value={formSubject} onValueChange={(v) => setFormSubject(v ?? '')}
+                items={subjects.map((s) => ({ value: s.id, label: s.name }))}>
                 <SelectTrigger><SelectValue placeholder="Selecionar disciplina" /></SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
@@ -543,7 +545,8 @@ export function SchedulingPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Dia *</Label>
-                <Select value={formDay} onValueChange={(v) => setFormDay(v ?? '')}>
+                <Select value={formDay} onValueChange={(v) => setFormDay(v ?? '')}
+                  items={WEEK_DAYS_ORDER.map((d) => ({ value: d, label: WEEK_DAY_LABELS[d] }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {WEEK_DAYS_ORDER.map((d) => (
@@ -554,7 +557,8 @@ export function SchedulingPage() {
               </div>
               <div className="space-y-1">
                 <Label>Horário *</Label>
-                <Select value={formClassPeriodId} onValueChange={(v) => setFormClassPeriodId(v ?? '')}>
+                <Select value={formClassPeriodId} onValueChange={(v) => setFormClassPeriodId(v ?? '')}
+                  items={classPeriods.map((cp) => ({ value: cp.id, label: `${cp.name} (${cp.startTime}–${cp.endTime})` }))}>
                   <SelectTrigger><SelectValue placeholder="Selecionar horário" /></SelectTrigger>
                   <SelectContent>
                     {classPeriods.map((cp) => (

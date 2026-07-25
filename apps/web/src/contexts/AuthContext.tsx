@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
+import { queryClient } from '../lib/queryClient'
 import type { JwtPayload } from '@education-gestor/types'
 
 interface AuthContextValue {
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem('token')
     sessionStorage.clear()
+    queryClient.clear()
     setToken(null)
     setPayload(null)
   }, [])

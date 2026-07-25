@@ -18,16 +18,6 @@ import { Textarea } from '../../../components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Badge } from '../../../components/ui/badge'
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from '../../../components/ui/alert-dialog'
-import {
   useStudent,
   useCreateStudent,
   useUpdateStudent,
@@ -179,7 +169,7 @@ export function StudentFormPage() {
     } : undefined,
   })
 
-  const blocker = useUnsavedChanges(pessoalForm.formState.isDirty)
+  useUnsavedChanges(pessoalForm.formState.isDirty)
 
   const familiaForm = useForm<FamiliaForm>({
     resolver: zodResolver(familiaSchema),
@@ -392,7 +382,8 @@ export function StudentFormPage() {
                   </div>
                   <div className="space-y-1">
                     <Label>Sexo<Opt /></Label>
-                    <Select value={pessoalForm.watch('sex') ?? ''} onValueChange={(v) => pessoalForm.setValue('sex', v as 'M' | 'F' | 'outro')}>
+                    <Select value={pessoalForm.watch('sex') ?? ''} onValueChange={(v) => pessoalForm.setValue('sex', v as 'M' | 'F' | 'outro')}
+                      items={[{ value: 'M', label: 'Masculino' }, { value: 'F', label: 'Feminino' }, { value: 'outro', label: 'Outro' }]}>
                       <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="M">Masculino</SelectItem>
@@ -403,7 +394,8 @@ export function StudentFormPage() {
                   </div>
                   <div className="space-y-1">
                     <Label>Tipo sanguíneo<Opt /></Label>
-                    <Select value={pessoalForm.watch('bloodType') ?? ''} onValueChange={(v) => pessoalForm.setValue('bloodType', v as any)}>
+                    <Select value={pessoalForm.watch('bloodType') ?? ''} onValueChange={(v) => pessoalForm.setValue('bloodType', v as any)}
+                      items={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => ({ value: t, label: t }))}>
                       <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
                       <SelectContent>
                         {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => (
@@ -628,7 +620,8 @@ export function StudentFormPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Documentos e anexos</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Select value={docType} onValueChange={(v) => setDocType(v ?? '')}>
+                  <Select value={docType} onValueChange={(v) => setDocType(v ?? '')}
+                    items={Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => ({ value, label }))}>
                     <SelectTrigger className="h-8 w-48 text-xs">
                       <SelectValue />
                     </SelectTrigger>
@@ -745,7 +738,8 @@ export function StudentFormPage() {
               ))}
 
               <div className="flex gap-2 pt-1">
-                <Select value={classToAdd} onValueChange={(v) => setClassToAdd(v ?? '')}>
+                <Select value={classToAdd} onValueChange={(v) => setClassToAdd(v ?? '')}
+                  items={allClasses.filter((c) => !studentClasses.some((sc) => sc.id === c.id)).map((c) => ({ value: c.id, label: c.name }))}>
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Selecionar turma..." />
                   </SelectTrigger>
@@ -770,25 +764,6 @@ export function StudentFormPage() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <AlertDialog open={blocker.state === 'blocked'}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Alterações não salvas</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você tem alterações não salvas. Deseja sair mesmo assim?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset?.()}>
-              Ficar
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={() => blocker.proceed?.()}>
-              Sair
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

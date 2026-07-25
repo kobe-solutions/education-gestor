@@ -313,7 +313,7 @@ Tokens HSL já estão prontos em `:root`. **Implementado:**
 
 Pequeno fix de UX: se o usuário pressionar `Esc`, a sidebar deve fechar. Usar `onEscapeKeyDown` no Drawer.
 
-### 3.11 [P2] Avatar de usuário no header clicável (dropdown)
+### ~~[P2] Avatar de usuário no header clicável (dropdown)~~ ✅ IMPLEMENTADO
 
 Hoje o avatar leva ao clique → nada (`<div>` no `AppLayout.tsx`). Criar menu:
 - Meu perfil (placeholder)
@@ -321,7 +321,7 @@ Hoje o avatar leva ao clique → nada (`<div>` no `AppLayout.tsx`). Criar menu:
 - Tema (claro/escuro/sistema)
 - Sair
 
-### 3.12 [P2] `Logout` limpa `sessionStorage` da escola
+### ~~[P2] `Logout` limpa `sessionStorage` da escola~~ ✅ IMPLEMENTADO
 
 `api.ts` remove só `localStorage.token` no 401. O `SchoolContext` mantém `sessionStorage` de uma escola que pode não existir mais. Limpar tudo no `logout()`.
 
@@ -486,7 +486,7 @@ Hoje: notas por disciplina × período + % de frequência. Falta:
 - Compartilhar com responsável (link assinado, e-mail)
 - Falta por disciplina (continuar com `AttendancePage` que está desabilitado)
 
-### 5.2 [P0] `AttendancePage` (rotas `disabled` em `AcademicoHubPage`)
+### ~~[P0] `AttendancePage` (rotas `disabled` em `AcademicoHubPage`)~~ ✅ IMPLEMENTADO
 
 Lá está `disabled: true`. **Ativar** — está nos hooks (`useClassAttendance`, `useRegisterBulkAttendance`) mas sem UI. Implementar:
 - Lista de alunos da turma
@@ -495,7 +495,7 @@ Lá está `disabled: true`. **Ativar** — está nos hooks (`useClassAttendance`
 - Botão "Salvar todos"
 - Histórico por aluno
 
-### 5.3 [P0] `GradesPage` (idem, `disabled`)
+### ~~[P0] `GradesPage` (idem, `disabled`)~~ ✅ IMPLEMENTADO
 
 Idem acima. **Ativar** — hooks prontos (`useClassGrades`, `useRegisterGrade`).
 - Tabela aluno × disciplina
@@ -632,7 +632,7 @@ Quando o aluno é criado, gerar PDF com dados e contrato pronto para assinatura.
 
 ## 6. Consistência entre páginas e bugs pontuais
 
-### 6.1 [P0] `AcademicPeriodsPage` não está linkado em `AcademicoHubPage`
+### ~~[P0] `AcademicPeriodsPage` não está linkado em `AcademicoHubPage`~~ ✅ IMPLEMENTADO
 
 `HubConfiguracoesPage` (linha 21) aponta para `/academic-periods` mas a gestão real é em `AcademicYearsPage` (`/academic-years`). Decidir: ou `AcademicPeriodsPage` vira legado, ou consolidar.
 
@@ -721,7 +721,7 @@ A página `LocacaoPage` faz `useAllTimetableSlots` e filtra no client. `Timetabl
 
 Não usa componente `<Textarea>` shadcn (não criado). Criar `components/ui/textarea.tsx` e usar.
 
-### 6.16 [P2] `TeacherFormPage` — `senhaForm` está dentro de "Financeiro"
+### ~~[P2] `TeacherFormPage` — `senhaForm` está dentro de "Financeiro"~~ ✅ IMPLEMENTADO
 
 Aba "Dados Financeiros" tem dois forms: dados bancários + alterar senha. Renomear a aba ou separar.
 
@@ -929,7 +929,7 @@ Já há mock do `react-router`, mas não de APIs do browser que algumas libs usa
 
 ## 8. Sugestões de design system e padrões
 
-### 8.1 [P1] Criar arquivo `apps/web/src/lib/colors.ts`
+### ~~[P1] Criar arquivo `apps/web/src/lib/colors.ts`~~ ✅ IMPLEMENTADO
 
 Expor os tokens IRIS como constantes TypeScript:
 
@@ -1096,3 +1096,13 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 - ✅ **Item 6.29**: Adicionado `Tooltip` com nome completo do usuário nos avatares do `AppLayout` (desktop + mobile)
 - ✅ **Item 6.37**: Implementado auto-gerador de slug em `SchoolsPage` — gera slug a partir do nome com normalização NFD
 - ✅ **Dependência**: Instalado `@radix-ui/react-switch` para componente `Switch`
+
+### Itens implementados nesta sessão (2026-07-25)
+- ✅ **Item 6.1**: Adicionada rota `/academic-periods` no App.tsx — AcademicPeriodsPage agora está acessível
+- ✅ **Item 5.2**: Ativada AttendancePage (gestor) — adicionada rota `/attendance` e removido `disabled` do HubCard
+- ✅ **Item 5.3**: Ativada GradesPage — adicionada rota `/grades` e removido `disabled` do HubCard
+- ✅ **Item 2.3 (parcial)**: Adicionado `onError` com toast em `useRegisterGrade` e `useRegisterBulkAttendance`. Simplificado `handleSave` no teacher AttendancePage para usar `mutate` callback ao invés de try/catch com `instanceof Error`
+- ✅ **Item 3.12**: Adicionado `queryClient.clear()` ao logout manual no AuthContext — cache do TanStack Query agora é limpo corretamente
+- ✅ **Item 3.11**: Criado componente `DropdownMenu` (shadcn) e adicionado menu dropdown no avatar do header (desktop + mobile) com "Meu perfil" e "Sair"
+- ✅ **Item 8.1**: Criado `lib/colors.ts` com tokens centralizados (`TONE_CONFIG`, `SHIFT_CONFIG`, `LEVEL_COLORS`, `SIDEBAR_BG`, `ACCENT_COLOR`) — atualizados 5 arquivos para importar do módulo centralizado
+- ✅ **Item 6.16**: Renomeado aba "Financeiro" para "Dados Bancários & Senha" em TeacherFormPage
