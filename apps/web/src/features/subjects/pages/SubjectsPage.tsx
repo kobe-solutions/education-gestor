@@ -4,14 +4,13 @@ import { extractErrorMessage } from '../../../lib/errors'
 import { useSubjects, useCreateSubject, useUpdateSubject, useDeleteSubject } from '../hooks/useSubjects'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
-import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
-import { Skeleton } from '../../../components/ui/skeleton'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../components/ui/dialog'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { SearchInput } from '../../../components/SearchInput'
+import { DataTable, type Column } from '../../../components/DataTable'
 import type { Subject } from '@education-gestor/types'
 
 interface SubjectFormData {
@@ -148,71 +147,50 @@ export function SubjectsPage() {
         />
       </div>
 
-      {/* Tabela */}
-      {isLoading ? (
-        <Surface>
-          <div className="p-4 space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
+      <DataTable
+        columns={[
+          {
+            key: 'name',
+            label: 'Nome',
+            render: (s) => (
+              <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
+                {s.name}
+              </span>
+            ),
+          },
+          {
+            key: 'code',
+            label: 'Código',
+            render: (s) => <span style={{ color: 'hsl(var(--muted-foreground))' }}>{s.code ?? '—'}</span>,
+          },
+          {
+            key: 'weeklyHours',
+            label: 'Horas Semanais',
+            render: (s) => <span style={{ color: 'hsl(var(--muted-foreground))' }}>{s.weeklyHours}h</span>,
+          },
+        ]}
+        data={filtered ?? []}
+        rowKey={(s) => s.id}
+        actions={(s) => (
+          <div className="flex gap-1 justify-end">
+            <Button variant="ghost" size="icon" title="Editar" aria-label="Editar" onClick={() => handleEdit(s)}>
+              <Pencil size={14} className="text-muted-foreground" />
+            </Button>
+            <Button variant="ghost" size="icon" title="Excluir" aria-label="Excluir" onClick={() => handleDelete(s.id)}>
+              <Trash2 size={14} className="text-destructive" />
+            </Button>
           </div>
-        </Surface>
-      ) : (
-        <Surface>
-          <div className="table-scroll">
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Código</th>
-                  <th>Horas Semanais</th>
-                  <th style={{ width: 80 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {filtered?.map((s) => (
-                  <tr key={s.id}>
-                    <td>
-                      <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
-                        {s.name}
-                      </span>
-                    </td>
-                    <td style={{ color: 'hsl(var(--muted-foreground))' }}>{s.code ?? '—'}</td>
-                    <td style={{ color: 'hsl(var(--muted-foreground))' }}>{s.weeklyHours}h</td>
-                    <td>
-                      <div className="flex gap-1 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Editar"
-                          aria-label="Editar"
-                          onClick={() => handleEdit(s)}
-                        >
-                          <Pencil size={14} className="text-muted-foreground" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Excluir"
-                          aria-label="Excluir"
-                          onClick={() => handleDelete(s.id)}
-                        >
-                          <Trash2 size={14} className="text-destructive" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Surface>
-      )}
+        )}
+        emptyMessage="Nenhuma disciplina cadastrada"
+        caption="Lista de disciplinas"
+        loading={isLoading}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={(v) => !v && handleClose()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar disciplina' : 'Nova disciplina'}</DialogTitle>
+            <DialogDescription className="sr-only">{editing ? 'Editar dados da disciplina' : 'Criar uma nova disciplina'}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">

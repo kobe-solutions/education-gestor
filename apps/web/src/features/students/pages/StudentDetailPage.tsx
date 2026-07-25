@@ -224,21 +224,21 @@ export function StudentDetailPage() {
               Nenhuma mensalidade registrada
             </p>
           ) : (
-            <div className="table-scroll">
-              <table className="tbl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" aria-label="Mensalidades do aluno">
                 <thead>
                   <tr>
-                    <th>Vencimento</th>
-                    <th>Valor</th>
-                    <th>Status</th>
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>Vencimento</th>
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>Valor</th>
+                    <th className="text-left px-3 py-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {tuitions.map((t) => (
-                    <tr key={t.id}>
-                      <td>{formatDateBR(t.dueDate)}</td>
-                      <td className="tabular-nums">{fmtBRL(t.amount)}</td>
-                      <td><TuitionStatusBadge status={t.status} /></td>
+                    <tr key={t.id} style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                      <td className="px-3 py-2.5">{formatDateBR(t.dueDate)}</td>
+                      <td className="px-3 py-2.5 tabular-nums">{fmtBRL(t.amount)}</td>
+                      <td className="px-3 py-2.5"><TuitionStatusBadge status={t.status} /></td>
                     </tr>
                   ))}
                 </tbody>

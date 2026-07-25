@@ -45,7 +45,7 @@
 
 ## 2. Arquitetura, organização e refactor
 
-### 2.1 [P0] Padronizar um único componente de tabela
+### 2.1 [P0] Padronizar um único componente de tabela ✅ IMPLEMENTADO
 
 **Problema**: o projeto alterna entre duas implementações:
 - **IRIS** (`Surface` + `<table class="tbl">`): usado em `StudentsPage`, `TeachersPage`, `TuitionsPage`, `SubjectsPage`, `SchoolsPage`, `EstruturaTurmasPage`.
@@ -127,7 +127,7 @@ Substituir `(err as AxiosError<{ message: string }>)?.response?.data?.message ??
 
 Foi criado, mas a página `StudentsPage` não o usa (vai direto para `/students/new` → `StudentFormPage`). Ou se remove (morto), ou se reativa como quick-create pela lista.
 
-### 2.6 [P1] Mover `AcademicPeriodsPage` para `features/classes/`
+### 2.6 ~~[P1] Mover `AcademicPeriodsPage` para `features/classes/`~~ ✅ IMPLEMENTADO
 
 Já está em `features/classes/pages/`, mas o seu link no `App.tsx` aponta para `/academic-periods` com `role: ['gestor']` enquanto a gestão principal (anos + períodos) está em `AcademicYearsPage` (`gestor` + `secretaria`). Decidir se mantém os dois ou funde.
 
@@ -249,7 +249,7 @@ Nunca chega a ser usada essa versão colapsada. Implementar toggle com persistê
 
 **Benefício**: telas largas ganham mais área para o conteúdo; telas pequenas continuam OK com o drawer.
 
-### 3.4 [P1] Cabeçalho do mobile: alinhar logo + selector
+### 3.4 [P1] Cabeçalho do mobile: alinhar logo + selector ✅ IMPLEMENTADO
 
 `AppLayout.tsx` header mobile só mostra o botão hamburger + role + (secretaria) `SchoolSelector` + nome/avatar. Falta:
 - Logo IRIS visível (aparece só no drawer e no desktop)
@@ -395,7 +395,7 @@ Botão "Salvar" desabilitado vira "Salvando..." com spinner. Adicionar `<Spinner
 
 ## 4. Acessibilidade e performance
 
-### 4.1 [P1] Acessibilidade — labels ausentes
+### 4.1 [P1] Acessibilidade — labels ausentes ✅ IMPLEMENTADO
 
 Vários `<Input>` em `SubjectsPage`, `TuitionsPage`, `SeriesPage` etc. não estão usando o `Label` shadcn (estão como `<Input placeholder="..." />` solto). Ex.:
 
@@ -411,11 +411,11 @@ Vários `<Input>` em `SubjectsPage`, `TuitionsPage`, `SeriesPage` etc. não est�
 </div>
 ```
 
-### 4.2 [P1] `Dialog` com foco preso e `aria-describedby`
+### 4.2 [P1] `Dialog` com foco preso e `aria-describedby` ✅ IMPLEMENTADO
 
 O `Dialog` do Radix já faz focus trap. Mas os conteúdos (`TuitionsPage`, `SchoolsPage`, etc.) às vezes renderizam parágrafo de aviso sem associar via `aria-describedby`.
 
-### 4.3 [P1] `Tabela` (`.tbl`) sem `<caption>`
+### 4.3 [P1] `Tabela` (`.tbl`) sem `<caption>` ✅ IMPLEMENTADO
 
 A `.tbl` em `index.css` é `<table>` crua, sem `<caption>` ou `aria-label`. Adicionar em `Surface` ou nas páginas.
 
@@ -474,7 +474,7 @@ Para foto de aluno, gerar múltiplos tamanhos no backend e usar `srcSet`.
 
 ## 5. Features faltantes e melhorias funcionais
 
-### 5.1 [P0] Boletim do aluno incompleto
+### 5.1 [P0] Boletim do aluno incompleto ✅ IMPLEMENTADO
 
 **Arquivo**: `apps/web/src/features/academic/pages/StudentReportPage.tsx`
 
@@ -696,7 +696,7 @@ Só a primeira série do primeiro nível abre. Se o usuário filtrar por aluno, 
 
 `Card` do shadcn sem consistência com o resto do app (que usa `Surface` IRIS). Padronizar com `Surface`.
 
-### 6.11 [P1] `SchoolsPage` — `EditDialog` reaparece após fechar quando reabre Create
+### 6.11 [P1] `SchoolsPage` — `EditDialog` reaparece após fechar quando reabre Create ✅ IMPLEMENTADO
 
 ```tsx
 <Dialog open={createOpen} ...>
@@ -705,11 +705,11 @@ Só a primeira série do primeiro nível abre. Se o usuário filtrar por aluno, 
 
 Os dois `Dialog` montam simultaneamente quando `createOpen === true` e `editing` é definido. Botão "Cancelar" do Create não limpa `editing`. Limpar tudo.
 
-### 6.12 [P1] `LocacaoPage` — `useDeleteTimetableSlot('')` (linha 299)
+### 6.12 [P1] `LocacaoPage` — `useDeleteTimetableSlot('')` (linha 299) ✅ IMPLEMENTADO
 
 Hook chamado com string vazia só para satisfazer TS. `useDeleteTimetableSlot` aceita `classId` no escopo errado — refatorar para não exigir.
 
-### 6.13 [P1] `LocacaoAlunosPage` — `useClass` chamado para cada coluna
+### 6.13 [P1] `LocacaoAlunosPage` — `useClass` chamado para cada coluna ✅ IMPLEMENTADO
 
 Para N turmas, faz N requests independentes. `useClasses` já traz `students: []` (vazio por padrão). Criar um endpoint `/school-classes?with=students` ou usar `useQueries` com batch.
 
@@ -1047,7 +1047,7 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 
 ---
 
-**Última atualização**: 2026-07-24
+**Última atualização**: 2026-07-25
 **Status**: iterativo — itens sendo implementados progressivamente.
 
 ### Itens implementados nesta sessão (2026-07-23)
@@ -1106,3 +1106,14 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 - ✅ **Item 3.11**: Criado componente `DropdownMenu` (shadcn) e adicionado menu dropdown no avatar do header (desktop + mobile) com "Meu perfil" e "Sair"
 - ✅ **Item 8.1**: Criado `lib/colors.ts` com tokens centralizados (`TONE_CONFIG`, `SHIFT_CONFIG`, `LEVEL_COLORS`, `SIDEBAR_BG`, `ACCENT_COLOR`) — atualizados 5 arquivos para importar do módulo centralizado
 - ✅ **Item 6.16**: Renomeado aba "Financeiro" para "Dados Bancários & Senha" em TeacherFormPage
+
+### Itens implementados nesta sessão (2026-07-25 — P0+P1)
+- ✅ **Item 2.1 [P0]**: Criado componente `DataTable` (`components/DataTable.tsx`) com suporte a colunas, ações, loading, empty state, aria-label. Migradas 8 páginas do padrão legacy `Surface + .tbl` para `DataTable`: StudentsPage, TeachersPage, TuitionsPage, SubjectsPage, SchoolsPage, StudentReportPage (grades table), StudentDetailPage (tuitions table), AdminActivityPage
+- ✅ **Item 5.1 [P0]**: Boletim do aluno expandido — adicionadas média por disciplina, média geral, situação final (Aprovado/Reprovado) por disciplina e geral, card de resumo no topo
+- ✅ **Item 4.2 [P1]**: Adicionado `DialogDescription` (sr-only) em dialogs de TuitionsPage, SubjectsPage e SchoolsPage para acessibilidade
+- ✅ **Item 4.3 [P1]**: Adicionado `aria-label` a todas as tabelas migradas para DataTable e às tabelas restantes em StudentDetailPage e AdminActivityPage
+- ✅ **Item 3.4 [P1]**: Adicionado logo "IRIS" no mobile header ao lado do hamburger
+- ✅ **Item 6.11 [P1]**: Corrigido race condition no SchoolsPage — `handleEdit` agora fecha create dialog e `handleCreate` limpa editing state
+- ✅ **Item 6.12 [P1]**: Refatorado `useDeleteTimetableSlot` — `classId` agora é opcional, evita invalidação de query key vazia
+- ✅ **Item 6.13 [P1]**: Eliminado N+1 no StudentSchedulingPage — `ClassCard` recebe `enrolledStudents` via props em vez de chamar `useClass(id)` individualmente
+- ✅ **Item 2.6 [P1]**: Rota `/academic-periods` agora redireciona para `/academic-years` — remove duplicata simplificada

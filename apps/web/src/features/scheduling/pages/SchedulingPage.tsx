@@ -299,7 +299,7 @@ export function SchedulingPage() {
   const activeYear = academicYears.find((y) => y.status === 'active')
 
   const createSlot = useCreateTimetableSlot()
-  const deleteSlotMutation = useDeleteTimetableSlot('')
+  const deleteSlotMutation = useDeleteTimetableSlot()
 
   const createSlotApiMutation = useApiMutation({
     mutationFn: (data: { classId: string; teacherId: string; subjectId: string; academicYearId: string; classPeriodId: string; weekDay: string }) =>
