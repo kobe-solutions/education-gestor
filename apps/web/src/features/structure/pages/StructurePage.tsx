@@ -51,11 +51,9 @@ export function StructurePage() {
               >
                 {/* Cabeçalho do nível — fundo tint azul */}
                 <div
-                  className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors"
+                  className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-primary/10"
                   style={{ background: 'hsl(var(--primary) / 0.1)', borderBottom: '1px solid hsl(var(--border))' }}
                   onClick={() => navigate(`/education-levels/${level.id}/series`)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
                 >
                   <div
                     className="flex items-center justify-center rounded-xl shrink-0"
@@ -111,11 +109,9 @@ export function StructurePage() {
                                 <GraduationCap size={12} />
                               </div>
                               <span
-                                className="text-sm font-semibold cursor-pointer transition-colors"
+                                className="text-sm font-semibold cursor-pointer transition-colors hover:text-primary"
                                 style={{ color: 'hsl(var(--primary))' }}
-                                onClick={() => navigate('/classes')}
-                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = '#4F46E5' }}
-                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'hsl(var(--primary))' }}
+                                onClick={() => navigate('/structure/classes')}
                               >
                                 {serie.name}
                               </span>

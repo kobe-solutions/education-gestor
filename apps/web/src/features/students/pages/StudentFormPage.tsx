@@ -8,13 +8,25 @@ import { ArrowLeft, Upload, Trash2, FileText, Plus, UserCircle2, BookOpen, X } f
 import { Link } from 'react-router'
 import { api } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
+import { useUnsavedChanges } from '../../../lib/useUnsavedChanges'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Textarea } from '../../../components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Badge } from '../../../components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '../../../components/ui/alert-dialog'
 import {
   useStudent,
   useCreateStudent,
@@ -88,6 +100,7 @@ type FamiliaForm = z.infer<typeof familiaSchema>
 type MedicalForm = z.infer<typeof medicalSchema>
 type GuardianForm = z.infer<typeof guardianSchema>
 
+import { Breadcrumbs } from '../../../components/Breadcrumbs'
 import { ENROLLMENT_STATUS_LABELS, DOCUMENT_TYPE_LABELS } from '../../../lib/labels'
 
 // ─── Componente ───────────────────────────────────────────────────────────────
@@ -150,6 +163,7 @@ export function StudentFormPage() {
 
   const pessoalForm = useForm<PessoalForm>({
     resolver: zodResolver(pessoalSchema),
+    mode: 'onBlur',
     values: student ? {
       name: student.name,
       email: student.email ?? '',
@@ -165,8 +179,11 @@ export function StudentFormPage() {
     } : undefined,
   })
 
+  const blocker = useUnsavedChanges(pessoalForm.formState.isDirty)
+
   const familiaForm = useForm<FamiliaForm>({
     resolver: zodResolver(familiaSchema),
+    mode: 'onBlur',
     values: student ? {
       motherName: student.motherName ?? '',
       fatherName: student.fatherName ?? '',
@@ -183,6 +200,7 @@ export function StudentFormPage() {
 
   const medicalForm = useForm<MedicalForm>({
     resolver: zodResolver(medicalSchema),
+    mode: 'onBlur',
     values: medical ? {
       allergies: medical.allergies ?? '',
       medications: medical.medications ?? '',
@@ -194,6 +212,7 @@ export function StudentFormPage() {
 
   const guardianForm = useForm<GuardianForm>({
     resolver: zodResolver(guardianSchema),
+    mode: 'onBlur',
     defaultValues: { isResponsible: false, isAuthorizedPickup: false },
   })
 
@@ -259,6 +278,14 @@ export function StudentFormPage() {
 
   return (
     <div className="space-y-5 max-w-5xl mx-auto">
+      <Breadcrumbs
+        items={[
+          { label: 'Pessoas', to: '/' },
+          { label: 'Alunos', to: '/students' },
+          { label: isEdit ? student?.name ?? 'Editar' : 'Novo' },
+        ]}
+      />
+
       {/* Header de detalhe */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <Button
@@ -326,7 +353,7 @@ export function StudentFormPage() {
                 onClick={() => isEdit && photoInputRef.current?.click()}
               >
                 {student?.photoUrl
-                  ? <img src={student.photoUrl} alt="foto" className="h-full w-full object-cover" />
+                  ? <img src={student.photoUrl} alt="foto" className="h-full w-full object-cover" loading="lazy" decoding="async" />
                   : <UserCircle2 className="h-14 w-14 md:h-16 md:w-16 text-muted-foreground/40" />
                 }
               </div>
@@ -404,8 +431,8 @@ export function StudentFormPage() {
                   </div>
                   <div className="col-span-2 space-y-1">
                     <Label>Observações<Opt /></Label>
-                    <textarea
-                      className="flex min-h-[80px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                    <Textarea
+                      className="resize-none"
                       placeholder="Observações gerais sobre o aluno..."
                       {...pessoalForm.register('observations')}
                     />
@@ -577,8 +604,8 @@ export function StudentFormPage() {
                 ].map(({ field, label, placeholder }) => (
                   <div key={field} className="space-y-1">
                     <Label>{label}<Opt /></Label>
-                    <textarea
-                      className="flex min-h-[72px] w-full rounded-sm border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring resize-none"
+                    <Textarea
+                      className="min-h-[72px] resize-none"
                       placeholder={placeholder}
                       {...medicalForm.register(field)}
                     />
@@ -601,7 +628,7 @@ export function StudentFormPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm">Documentos e anexos</CardTitle>
                 <div className="flex items-center gap-2">
-                  <Select value={docType} onValueChange={setDocType}>
+                  <Select value={docType} onValueChange={(v) => setDocType(v ?? '')}>
                     <SelectTrigger className="h-8 w-48 text-xs">
                       <SelectValue />
                     </SelectTrigger>
@@ -673,7 +700,7 @@ export function StudentFormPage() {
             <CardContent>
               <Select
                 value={student?.enrollmentStatus ?? 'active'}
-                onValueChange={(v) => updateStudent.mutate({ enrollmentStatus: v })}
+                onValueChange={(v) => { if (v !== null) updateStudent.mutate({ enrollmentStatus: v }) }}
               >
                 <SelectTrigger className="w-48">
                   <SelectValue />
@@ -718,7 +745,7 @@ export function StudentFormPage() {
               ))}
 
               <div className="flex gap-2 pt-1">
-                <Select value={classToAdd} onValueChange={setClassToAdd}>
+                <Select value={classToAdd} onValueChange={(v) => setClassToAdd(v ?? '')}>
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Selecionar turma..." />
                   </SelectTrigger>
@@ -743,6 +770,25 @@ export function StudentFormPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={blocker.state === 'blocked'}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Alterações não salvas</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você tem alterações não salvas. Deseja sair mesmo assim?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => blocker.reset?.()}>
+              Ficar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => blocker.proceed?.()}>
+              Sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

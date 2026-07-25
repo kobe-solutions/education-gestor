@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from '../../../lib/toast'
+import { useUnsavedChanges } from '../../../lib/useUnsavedChanges'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -11,6 +12,16 @@ import { Label } from '../../../components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Badge } from '../../../components/ui/badge'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '../../../components/ui/alert-dialog'
 import { useTeacher, useCreateTeacher, useUpdateTeacher, useChangeTeacherPassword } from '../hooks/useTeachers'
 
 function Opt() {
@@ -94,6 +105,7 @@ export function TeacherFormPage() {
 
   const pessoalForm = useForm<PessoalForm>({
     resolver: zodResolver(pessoalSchema),
+    mode: 'onBlur',
     values: teacher ? {
       name: teacher.name,
       email: teacher.email,
@@ -108,8 +120,11 @@ export function TeacherFormPage() {
     } : undefined,
   })
 
+  const blocker = useUnsavedChanges(pessoalForm.formState.isDirty)
+
   const enderecoForm = useForm<EnderecoForm>({
     resolver: zodResolver(enderecoSchema),
+    mode: 'onBlur',
     values: teacher ? {
       addressCep: teacher.addressCep ?? '',
       addressStreet: teacher.addressStreet ?? '',
@@ -123,6 +138,7 @@ export function TeacherFormPage() {
 
   const profissionalForm = useForm<ProfissionalForm>({
     resolver: zodResolver(profissionalSchema),
+    mode: 'onBlur',
     values: teacher ? {
       position: teacher.position ?? '',
       contractType: (teacher.contractType as any) ?? undefined,
@@ -134,6 +150,7 @@ export function TeacherFormPage() {
 
   const formacaoForm = useForm<FormacaoForm>({
     resolver: zodResolver(formacaoSchema),
+    mode: 'onBlur',
     values: teacher ? {
       educationLevel: teacher.educationLevel ?? '',
       degree: teacher.degree ?? '',
@@ -144,6 +161,7 @@ export function TeacherFormPage() {
 
   const financeiroForm = useForm<FinanceiroForm>({
     resolver: zodResolver(financeiroSchema),
+    mode: 'onBlur',
     values: teacher ? {
       bank: teacher.bank ?? '',
       agency: teacher.agency ?? '',
@@ -153,7 +171,7 @@ export function TeacherFormPage() {
     } : undefined,
   })
 
-  const senhaForm = useForm<SenhaForm>({ resolver: zodResolver(senhaSchema) })
+  const senhaForm = useForm<SenhaForm>({ resolver: zodResolver(senhaSchema), mode: 'onBlur' })
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -528,6 +546,25 @@ export function TeacherFormPage() {
           </form>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={blocker.state === 'blocked'}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Alterações não salvas</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você tem alterações não salvas. Deseja sair mesmo assim?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => blocker.reset?.()}>
+              Ficar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => blocker.proceed?.()}>
+              Sair
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

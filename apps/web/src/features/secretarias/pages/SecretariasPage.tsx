@@ -16,6 +16,7 @@ import { Button } from '../../../components/ui/button'
 import { SearchInput } from '../../../components/SearchInput'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
+import { Switch } from '../../../components/ui/switch'
 import { PageHead } from '../../../components/PageHead'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { StatusBadge } from '../../../components/StatusBadge'
@@ -194,10 +195,10 @@ export function SecretariasPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(s)}>
+                    <Button variant="ghost" size="icon" aria-label="Editar" onClick={() => openEdit(s)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(s)}>
+                    <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleteTarget(s)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
@@ -301,15 +302,12 @@ export function SecretariasPage() {
               <Input {...registerEdit('address')} />
             </div>
             <div className="flex items-center gap-3">
-              <Label>Ativo</Label>
-              <Button
-                type="button"
-                variant={activeValue ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setEditValue('active', !activeValue)}
-              >
-                {activeValue ? 'Ativo' : 'Inativo'}
-              </Button>
+              <Label htmlFor="secretaria-active">Ativo</Label>
+              <Switch
+                id="secretaria-active"
+                checked={activeValue}
+                onCheckedChange={(checked) => setEditValue('active', checked)}
+              />
             </div>
             {editApiError && (
               <p className="text-xs text-destructive text-center">{editApiError}</p>

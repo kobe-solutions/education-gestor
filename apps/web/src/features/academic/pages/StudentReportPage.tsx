@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { useStudent } from '../../students/hooks/useStudents'
 import { useStudentGrades, useStudentAttendances } from '../hooks/useAcademic'
+import { Breadcrumbs } from '../../../components/Breadcrumbs'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 
@@ -25,9 +26,18 @@ export function StudentReportPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
+      <Breadcrumbs
+        items={[
+          { label: 'Pessoas', to: '/' },
+          { label: 'Alunos', to: '/students' },
+          { label: student?.name ?? '...', to: `/students/${id}` },
+          { label: 'Boletim' },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} title="Voltar" className="shrink-0">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} title="Voltar" aria-label="Voltar" className="shrink-0">
           <ArrowLeft className="h-4 w-4" />
         </Button>
 

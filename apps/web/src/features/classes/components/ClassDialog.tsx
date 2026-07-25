@@ -94,7 +94,7 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
           </div>
           <div className="space-y-1">
             <Label>Turno *</Label>
-            <Select value={shiftValue} onValueChange={(v) => setValue('shift', v)}>
+            <Select value={shiftValue} onValueChange={(v) => { if (v !== null) setValue('shift', v) }}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o turno" />
               </SelectTrigger>
@@ -111,7 +111,7 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
             <Label>Série (opcional)</Label>
             <Select
               value={serieIdValue ?? ''}
-              onValueChange={(v) => setValue('serieId', v === 'none' ? '' : v)}
+              onValueChange={(v) => { if (v !== null) setValue('serieId', v === 'none' ? '' : v) }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a série" />
@@ -130,7 +130,7 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
             <Label>Período letivo (opcional)</Label>
             <Select
               value={periodIdValue ?? ''}
-              onValueChange={(v) => setValue('academicPeriodId', v === 'none' ? '' : v)}
+              onValueChange={(v) => { if (v !== null) setValue('academicPeriodId', v === 'none' ? '' : v) }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o período" />

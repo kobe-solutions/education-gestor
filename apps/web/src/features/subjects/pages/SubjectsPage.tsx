@@ -185,6 +185,7 @@ export function SubjectsPage() {
                           variant="ghost"
                           size="icon"
                           title="Editar"
+                          aria-label="Editar"
                           onClick={() => handleEdit(s)}
                         >
                           <Pencil size={14} className="text-muted-foreground" />
@@ -193,6 +194,7 @@ export function SubjectsPage() {
                           variant="ghost"
                           size="icon"
                           title="Excluir"
+                          aria-label="Excluir"
                           onClick={() => handleDelete(s.id)}
                         >
                           <Trash2 size={14} className="text-destructive" />

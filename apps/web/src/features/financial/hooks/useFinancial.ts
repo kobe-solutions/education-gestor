@@ -43,8 +43,9 @@ export function useCreateTuition() {
       const res = await api.post<Tuition>('/tuitions', data)
       return res.data
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['tuitions'] })
+      qc.invalidateQueries({ queryKey: ['tuitions', 'student', variables.studentId] })
     },
   })
 }
@@ -56,8 +57,11 @@ export function useRegisterPayment() {
       const res = await api.patch<Tuition>(`/tuitions/${tuitionId}/pay`)
       return res.data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['tuitions'] })
+      if (data?.studentId) {
+        qc.invalidateQueries({ queryKey: ['tuitions', 'student', data.studentId] })
+      }
     },
   })
 }

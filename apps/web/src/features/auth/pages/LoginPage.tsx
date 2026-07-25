@@ -23,12 +23,18 @@ export function LoginPage() {
   const { token, payload } = useAuth()
   const { mutate: login, isPending, error } = useLogin()
   const [showPassword, setShowPassword] = useState(false)
+  const [remember, setRemember] = useState(() => !!localStorage.getItem('rememberedEmail'))
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(schema) })
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      email: localStorage.getItem('rememberedEmail') ?? '',
+    },
+  })
 
   useEffect(() => {
     if (token && payload) {
@@ -38,6 +44,11 @@ export function LoginPage() {
   }, [token, payload, navigate])
 
   function onSubmit(data: FormData) {
+    if (remember) {
+      localStorage.setItem('rememberedEmail', data.email)
+    } else {
+      localStorage.removeItem('rememberedEmail')
+    }
     login(data)
   }
 
@@ -134,6 +145,16 @@ export function LoginPage() {
             <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.password.message}</p>
           )}
         </div>
+
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            className="rounded border-input"
+          />
+          <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>Lembrar-me</span>
+        </label>
 
         {error && (
           <p className="text-xs text-center" style={{ color: 'hsl(var(--destructive))' }}>

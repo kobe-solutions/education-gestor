@@ -79,10 +79,8 @@ export function ClassPerformancePage() {
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <Link
           to="/professor"
-          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0"
+          className="flex items-center justify-center rounded-md w-8 h-8 transition-colors shrink-0 hover:bg-primary/10"
           title="Voltar"
-          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--primary) / 0.1)' }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = '' }}
         >
           <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </Link>
@@ -102,7 +100,7 @@ export function ClassPerformancePage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="w-full sm:w-64">
-          <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+          <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
             <SelectTrigger>
               <SelectValue placeholder="Todas as turmas" />
             </SelectTrigger>
@@ -172,10 +170,8 @@ export function ClassPerformancePage() {
                       </span>
                     )}
                   </div>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to={`/classes/${p.classId}`} className="gap-1">
-                      Detalhes <ArrowRight size={12} />
-                    </Link>
+                  <Button variant="ghost" size="sm" render={<Link to={`/classes/${p.classId}`} className="gap-1" />}>
+                    Detalhes <ArrowRight size={12} />
                   </Button>
                 </div>
                 <div className="overflow-x-auto">

@@ -190,7 +190,7 @@ Mover `YearDialog` e `PeriodDialog` para `features/classes/components/`.
 
 Mover `TuitionCreateDialog` para `features/financial/components/`.
 
-### 2.14 [P2] Adicionar `ErrorBoundary` por rota
+### 2.14 ~~[P2] Adicionar `ErrorBoundary` por rota~~ ✅ IMPLEMENTADO
 
 ```tsx
 <Route errorElement={<RouteError />}>
@@ -205,7 +205,7 @@ Hoje qualquer 500 do backend derruba o app inteiro.
 
 ## 3. Layout, UX e problemas visuais
 
-### 3.1 [P0] Eliminar `onMouseEnter`/`onMouseLeave` que mudam `style` inline
+### 3.1 ~~[P0] Eliminar `onMouseEnter`/`onMouseLeave` que mudam `style` inline~~ ✅ IMPLEMENTADO
 
 **Arquivos afetados (amostra)**:
 - `AppLayout.tsx` (linhas 184-189, 203-205, 232-238, 301-305)
@@ -256,7 +256,7 @@ Nunca chega a ser usada essa versão colapsada. Implementar toggle com persistê
 - Botão de notificações (próximo item)
 - Título da página atual (breadcrumbs) — ver 3.5
 
-### 3.5 [P1] Adicionar breadcrumbs
+### 3.5 ~~[P1] Adicionar breadcrumbs~~ ✅ IMPLEMENTADO
 
 Páginas como `StudentDetailPage`, `ClassDetailPage`, `TimetablePage` têm "voltar" cego. Adicionar trilha:
 ```
@@ -265,7 +265,7 @@ Pessoas › Alunos › Maria Silva › Boletim
 
 Implementar `<Breadcrumbs items={[...]} />` que lê do React Router e/ou aceita prop explícita.
 
-### 3.6 [P1] Skeleton padronizado
+### 3.6 ~~[P1] Skeleton padronizado~~ ✅ IMPLEMENTADO
 
 Há **três** padrões diferentes de loading:
 - `SkeletonCards` em `DashboardPage.tsx`
@@ -293,7 +293,7 @@ Quase todas as listas têm um "Nenhum X cadastrado" em texto cinza simples. Cria
 
 Aplicar em todas as listas vazias: students, teachers, classes, schools, secretarias, education levels, series, subjects, tuitions, etc.
 
-### 3.8 [P1] Acessibilidade — focus ring e keyboard nav
+### 3.8 ~~[P1] Acessibilidade — focus ring e keyboard nav~~ ✅ IMPLEMENTADO
 
 - Botões "ícone" (`<button className="... w-8 h-8">` em `TeachersPage`, `StudentsPage`, `SchoolsPage`, etc.) **não têm `aria-label`** e nem `focus-visible:ring`.
 - Inputs custom de busca (que não usam o `<Input>` shadcn) também não têm focus ring.
@@ -309,7 +309,7 @@ Tokens HSL já estão prontos em `:root`. **Implementado:**
 - Persistência em `localStorage`
 - Respeitar `prefers-color-scheme` no primeiro load
 
-### 3.10 [P2] `Sidebar` mobile: fechar ao clicar fora via `useEffect` (atualmente fecha só em `onClick` do overlay)
+### 3.10 ~~[P2] `Sidebar` mobile: fechar ao clicar fora via `useEffect` (atualmente fecha só em `onClick` do overlay)~~ ✅ IMPLEMENTADO
 
 Pequeno fix de UX: se o usuário pressionar `Esc`, a sidebar deve fechar. Usar `onEscapeKeyDown` no Drawer.
 
@@ -351,7 +351,7 @@ UX padrão moderno é ter `<Eye />`/`<EyeOff />` para alternar visibilidade.
 
 **Nota**: O bug de autofill do navegador (background amarelo/alterado) foi corrigido via CSS `:-webkit-autofill` com `box-shadow` inset e `-webkit-text-fill-color` para light e dark mode.
 
-### 3.19 [P3] `LoginPage` — lembrar-me
+### 3.19 ~~[P3] `LoginPage` — lembrar-me~~ ✅ IMPLEMENTADO
 
 Checkbox "lembrar-me" + persistir `email` (não senha) em `localStorage`.
 
@@ -367,7 +367,7 @@ A `Tabs` em `StudentFormPage` e `TeacherFormPage` está fora do `PageHead`. Unif
 
 Hoje é só um gradient. Adicionar ilustração do lado esquerdo (split layout), frase de impacto, e depoimentos em um carrossel (ou mock).
 
-### 3.23 [P2] Responsividade do `DashboardPage` em telas muito pequenas (320px)
+### 3.23 ~~[P2] Responsividade do `DashboardPage` em telas muito pequenas (320px)~~ ✅ IMPLEMENTADO
 
 `grid-cols-2 ... xl:grid-cols-6` está OK, mas as labels "Pagas / Pendentes / Atrasadas" ficam truncadas em `width: 360px`. Adicionar `truncate` ou empilhar.
 
@@ -387,7 +387,7 @@ Filtro genérico no header (ex: "Situação" em alunos). Hoje o filtro é só gl
 
 Botão "Salvar" desabilitado vira "Salvando..." com spinner. Adicionar `<Spinner />` visual.
 
-### 3.28 [P3] Confirmar navegação quando há mudanças não salvas
+### 3.28 ~~[P3] Confirmar navegação quando há mudanças não salvas~~ ✅ IMPLEMENTADO
 
 `StudentFormPage`, `TeacherFormPage` não avisam ao fechar aba com form sujo. Hook `usePrompt` do React Router v7 ou um `beforeunload`.
 
@@ -419,11 +419,11 @@ O `Dialog` do Radix já faz focus trap. Mas os conteúdos (`TuitionsPage`, `Scho
 
 A `.tbl` em `index.css` é `<table>` crua, sem `<caption>` ou `aria-label`. Adicionar em `Surface` ou nas páginas.
 
-### 4.4 [P2] `react-hook-form` sem `mode: 'onBlur'`
+### 4.4 ~~[P2] `react-hook-form` sem `mode: 'onBlur'`~~ ✅ IMPLEMENTADO
 
 Schema Zod é rodado apenas no `onSubmit`. Adicionar `mode: 'onBlur'` para feedback mais rápido.
 
-### 4.5 [P2] `Bundle` — code splitting por rota
+### 4.5 ~~[P2] `Bundle` — code splitting por rota~~ ✅ IMPLEMENTADO
 
 Hoje `App.tsx` importa todas as páginas sincronamente. Usar `React.lazy`:
 
@@ -433,15 +433,15 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ de
 
 Especialmente útil para `StudentFormPage` (761 linhas), `LocacaoAlunosPage` (453 linhas), `LocacaoPage` (598 linhas).
 
-### 4.6 [P2] Imagens sem `loading="lazy"`
+### 4.6 ~~[P2] Imagens sem `loading="lazy"`~~ ✅ IMPLEMENTADO
 
 `StudentFormPage` (`<img src={student.photoUrl}>`) e boletins não usam `loading="lazy"` nem `decoding="async"`.
 
-### 4.7 [P2] TanStack Query — revalidação de queries após mutação
+### 4.7 ~~[P2] TanStack Query — revalidação de queries após mutação~~ ✅ IMPLEMENTADO
 
 Vários `useMutation` invalidam só `['students']` mas o detalhe `['students', id]` é separado. Esquecer de invalidar o detalhe gera UI desatualizada. Ex.: `useCreateStudent` em `useStudents.ts:43`.
 
-### 4.8 [P3] `prefers-reduced-motion`
+### 4.8 ~~[P3] `prefers-reduced-motion`~~ ✅ IMPLEMENTADO
 
 Há um media query no `index.css` que zera a transição do drawer, mas todas as outras (`hover:scale`, `transition-colors`, `animate-in`) continuam ativas. Aplicar regra global em `tailwind.config` ou CSS:
 
@@ -648,7 +648,7 @@ Quando o aluno é criado, gerar PDF com dados e contrato pronto para assinatura.
 
 O `useLogin` retorna o `error` do Axios, mas a UI ignora e mostra sempre a mesma string. **Implementado:** Usar `extractErrorMessage(error, 'Email ou senha incorretos')`.
 
-### 6.3 [P0] `LoginPage` — `useEffect` redireciona mesmo com erro
+### 6.3 ~~[P0] `LoginPage` — `useEffect` redireciona mesmo com erro~~ ✅ IMPLEMENTADO
 
 ```ts
 useEffect(() => {
@@ -676,7 +676,7 @@ Hook exposto mas não usado. Usar em:
 
 Linha 8-9: `requireSchool?: boolean`. Todas as chamadas omitem. Decidir o comportamento por role em vez de checar manualmente.
 
-### 6.8 [P1] `EstruturaPage` — link da série aponta para `/classes` (linha 116)
+### 6.8 ~~[P1] `EstruturaPage` — link da série aponta para `/classes` (linha 116)~~ ✅ IMPLEMENTADO
 
 A navegação `<span ... onClick={() => navigate('/classes')}>` leva à lista geral. Provavelmente devia abrir detalhes (`/series/:id`) ou `/classes?serieId=...`. Quebrar cabeçalho de URL não é descobrível.
 
@@ -717,7 +717,7 @@ Para N turmas, faz N requests independentes. `useClasses` já traz `students: []
 
 A página `LocacaoPage` faz `useAllTimetableSlots` e filtra no client. `TimetablePage` faz `useTimetableSlots(classId)`. Padronizar.
 
-### 6.15 [P2] `StudentFormPage` — textarea de `observations`/`comorbidities` é `<textarea>` cru
+### 6.15 ~~[P2] `StudentFormPage` — textarea de `observations`/`comorbidities` é `<textarea>` cru~~ ✅ IMPLEMENTADO
 
 Não usa componente `<Textarea>` shadcn (não criado). Criar `components/ui/textarea.tsx` e usar.
 
@@ -744,7 +744,7 @@ Verificar com backend: `admin` também deveria poder criar? Hoje nem admin vê.
 
 Mostra string crua, sem avatar/iniciais, sem link para o detalhe do funcionário.
 
-### 6.21 [P2] `SecretariasPage` — `Ativo`/`Inativo` é um `<Button>` que alterna boolean (linha 324-331)
+### 6.21 ~~[P2] `SecretariasPage` — `Ativo`/`Inativo` é um `<Button>` que alterna boolean (linha 324-331)~~ ✅ IMPLEMENTADO
 
 ```tsx
 <Button
@@ -820,7 +820,7 @@ export const fmtDate = (d: string) => parseLocalDate(d).toLocaleDateString('pt-B
 
 Aplicar em `DashboardPage`, `StudentDetailPage`, `TuitionsPage`, `AcademicYearsPage`, `PeriodsSection`.
 
-### 6.29 [P3] `Avatar` (AppLayout) com `payload.name` pode ser `undefined`
+### 6.29 ~~[P3] `Avatar` (AppLayout) com `payload.name` pode ser `undefined`~~ ✅ IMPLEMENTADO
 
 ```tsx
 {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
@@ -864,7 +864,7 @@ Aplicar quando implementar sidebar colapsável (item 3.3).
 
 `<Input type="number" step="0.01" ... />` permite digitar `,` em vez de `.`. Aplicar máscara BRL.
 
-### 6.37 [P3] `SchoolsPage` — `slug` não tem auto-gerador
+### 6.37 ~~[P3] `SchoolsPage` — `slug` não tem auto-gerador~~ ✅ IMPLEMENTADO
 
 Ao digitar "Escola Modelo", o slug deveria sugerir "escola-modelo". Auto-gerar no `onChange` de `name`.
 
@@ -1047,7 +1047,7 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 
 ---
 
-**Última atualização**: 2026-07-23
+**Última atualização**: 2026-07-24
 **Status**: iterativo — itens sendo implementados progressivamente.
 
 ### Itens implementados nesta sessão (2026-07-23)
@@ -1073,3 +1073,26 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 - ✅ **Item 2.9**: Adicionado `backTo` prop ao `PageHead` com botão voltar
 - ✅ **Item 6.6**: Adicionado `sessionStorage.clear()` ao `logout()` no `AuthContext`
 - ✅ **Item 6.28**: Substituído `T12:00:00` raw por `parseLocalDate()` em `AttendancePage`
+
+### Itens implementados nesta sessão (2026-07-24)
+- ✅ **Item 2.14**: Criado componente `RouteError` com `errorElement` em todas as rotas — erros de fetch não derrubam mais o app inteiro
+- ✅ **Item 3.1**: Eliminados todos os `onMouseEnter`/`onMouseLeave` inline restantes (HubCard, StructurePage, ClassPerformancePage, AttendancePage) — substituídos por classes Tailwind `hover:`
+- ✅ **Item 3.5**: Criado componente `Breadcrumbs` — adicionado a StudentFormPage, ClassDetailPage, StudentReportPage, TimetablePage
+- ✅ **Item 3.6**: Criados componentes `TableSkeleton`, `MetricSkeleton`, `PageSkeleton` em `skeletons.tsx` — substituídos padrões inline em StudentsPage, TeachersPage, TuitionsPage, AcademicYearsPage
+- ✅ **Item 3.8**: Adicionados `aria-label` a 28 botões ícone em 11 arquivos (Students, Teachers, Schools, Subjects, AcademicYears, Tuitions, Secretarias, EducationLevels, Series, ClassDetail, StudentReport)
+- ✅ **Item 3.10**: Adicionado listener de tecla `Escape` para fechar drawer mobile no `AppLayout`
+- ✅ **Item 3.19**: Implementado checkbox "Lembrar-me" no `LoginPage` — persiste email em localStorage
+- ✅ **Item 3.23**: Adicionado `truncate` em labels de métricas do `DashboardPage` para telas pequenas
+- ✅ **Item 3.28**: Criado hook `useUnsavedChanges` com `useBlocker` + `beforeunload` — aplicado a `StudentFormPage` e `TeacherFormPage` com AlertDialog de confirmação
+- ✅ **Item 4.4**: Adicionado `mode: 'onBlur'` a todos os `useForm` em `StudentFormPage` (4 forms) e `TeacherFormPage` (6 forms)
+- ✅ **Item 4.5**: Code splitting com `React.lazy` + `Suspense` para todas as 28 páginas pesadas no `App.tsx` — LoginPage e DashboardPage mantidos como eager imports
+- ✅ **Item 4.6**: Adicionados `loading="lazy" decoding="async"` a todas as tags `<img>` do app
+- ✅ **Item 4.7**: Corrigida invalidação de queries em `useFinancial.ts` — mutations agora invalidam tanto a lista quanto o detalhe do estudante
+- ✅ **Item 4.8**: Adicionada regra global `prefers-reduced-motion: reduce` no `index.css` — zera animações e transições
+- ✅ **Item 6.3**: Verificado que `LoginPage` já limpa sessionStorage no mount antes do redirect — comportamento correto
+- ✅ **Item 6.8**: Corrigido link em `StructurePage` — `navigate('/classes')` → `navigate('/structure/classes')`
+- ✅ **Item 6.15**: Substituídos 2 `<textarea>` crus por componente shadcn `Textarea` em `StudentFormPage`
+- ✅ **Item 6.21**: Substituído toggle `Ativo`/`Inativo` por componente `Switch` (Radix) em `SecretariasPage`
+- ✅ **Item 6.29**: Adicionado `Tooltip` com nome completo do usuário nos avatares do `AppLayout` (desktop + mobile)
+- ✅ **Item 6.37**: Implementado auto-gerador de slug em `SchoolsPage` — gera slug a partir do nome com normalização NFD
+- ✅ **Dependência**: Instalado `@radix-ui/react-switch` para componente `Switch`

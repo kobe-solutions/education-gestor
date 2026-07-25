@@ -35,18 +35,8 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
   return (
     <Link
       to={to}
-      className="group flex flex-col gap-3 p-4 md:gap-4 md:p-5 rounded-xl transition-all duration-180"
+      className="group flex flex-col gap-3 p-4 md:gap-4 md:p-5 rounded-xl transition-all duration-180 hover:border-primary hover:shadow-md"
       style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
-      onMouseEnter={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = '#4F46E5'
-        el.style.boxShadow = 'var(--shadow-md)'
-      }}
-      onMouseLeave={(e) => {
-        const el = e.currentTarget as HTMLElement
-        el.style.borderColor = 'hsl(var(--border))'
-        el.style.boxShadow = 'var(--shadow-sm)'
-      }}
     >
       <div
         className="flex items-center justify-center rounded-md shrink-0"

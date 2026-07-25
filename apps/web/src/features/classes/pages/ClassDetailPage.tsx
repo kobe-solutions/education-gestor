@@ -3,6 +3,7 @@ import { ArrowLeft, CalendarClock } from 'lucide-react'
 import { useClass } from '../hooks/useClasses'
 import { useTimetableSlots, WEEK_DAY_LABELS, WEEK_DAYS_ORDER } from '../../timetable/hooks/useTimetable'
 import { useClassPeriods } from '../hooks/useClasses'
+import { Breadcrumbs } from '../../../components/Breadcrumbs'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
@@ -48,9 +49,17 @@ export function ClassDetailPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs
+        items={[
+          { label: 'Acadêmico', to: '/' },
+          { label: 'Turmas', to: '/structure/classes' },
+          { label: schoolClass.name },
+        ]}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} title="Voltar" className="shrink-0">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} title="Voltar" aria-label="Voltar" className="shrink-0">
           <ArrowLeft className="h-4 w-4" />
         </Button>
 

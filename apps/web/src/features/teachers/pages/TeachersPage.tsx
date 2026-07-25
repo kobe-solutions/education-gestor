@@ -8,7 +8,7 @@ import { PageHead } from '../../../components/PageHead'
 import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
-import { Skeleton } from '../../../components/ui/skeleton'
+import { TableSkeleton } from '../../../components/skeletons'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 
 import { SearchInput } from '../../../components/SearchInput'
@@ -56,8 +56,8 @@ export function TeachersPage() {
       {/* Tabela */}
       {isLoading ? (
         <Surface>
-          <div className="p-4 space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+          <div className="p-4">
+            <TableSkeleton columns={5} rows={5} />
           </div>
         </Surface>
       ) : (
@@ -112,6 +112,7 @@ export function TeachersPage() {
                             variant="ghost"
                             size="icon"
                             title="Editar"
+                            aria-label="Editar"
                             onClick={() => navigate(`/teachers/${t.id}/edit`)}
                           >
                             <Pencil size={14} className="text-muted-foreground" />
@@ -120,6 +121,7 @@ export function TeachersPage() {
                             variant="ghost"
                             size="icon"
                             title="Excluir"
+                            aria-label="Excluir"
                             onClick={() => setDeleteTarget(t.id)}
                           >
                             <Trash2 size={14} className="text-destructive" />
@@ -146,6 +148,7 @@ export function TeachersPage() {
               size="sm"
               variant="outline"
               disabled={page <= 1}
+              aria-label="Página anterior"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -154,6 +157,7 @@ export function TeachersPage() {
               size="sm"
               variant="outline"
               disabled={page >= totalPages}
+              aria-label="Próxima página"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               <ChevronRight className="h-4 w-4" />

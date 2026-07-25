@@ -372,10 +372,10 @@ export function StudentSchedulingPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] gap-4 overflow-hidden min-w-0">
+    <div className="grid h-[calc(100vh-5rem)] grid-cols-[288px_1fr] gap-4 overflow-hidden min-w-0">
 
       {/* ── Sidebar: Alunos ──────────────────────────────────────────────── */}
-      <aside className="flex flex-col gap-3 w-72 shrink-0">
+      <aside className="flex flex-col gap-3 min-h-0 overflow-hidden">
         <div>
           <h2 className="text-base font-semibold">Alunos</h2>
           <p className="text-[11px] text-muted-foreground mt-0.5">Arraste ou clique para selecionar</p>
@@ -428,7 +428,7 @@ export function StudentSchedulingPage() {
       </aside>
 
       {/* ── Main: Kanban ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col flex-1 min-w-0 gap-3 overflow-hidden">
+      <div className="flex flex-col min-h-0 gap-3 overflow-hidden">
         <div className="flex items-center gap-3 shrink-0">
           <div>
             <h2 className="text-base font-semibold">Turmas</h2>
@@ -451,7 +451,7 @@ export function StudentSchedulingPage() {
             <p className="text-sm text-muted-foreground">Nenhuma turma cadastrada</p>
           </div>
         ) : (
-          <div className="flex-1 flex gap-4 overflow-auto pb-4 items-stretch">
+          <div className="flex-1 flex gap-4 overflow-x-auto pb-4 items-stretch">
             {filteredClasses.map((schoolClass) => (
               <ClassColumn
                 key={schoolClass.id}

@@ -64,7 +64,7 @@ export function GradesPage() {
 
       <div className="w-64">
         <Label>Turma</Label>
-        <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+        <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
           <SelectTrigger>
             <SelectValue placeholder="Selecione a turma" />
           </SelectTrigger>
@@ -119,7 +119,7 @@ export function GradesPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
               <Label>Aluno</Label>
-              <Select value={studentIdValue} onValueChange={(v) => setValue('studentId', v)}>
+              <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}>
                 <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
                 <SelectContent>
                   {enrolledStudents.map((s) => (
@@ -131,7 +131,7 @@ export function GradesPage() {
             </div>
             <div className="space-y-1">
               <Label>Disciplina</Label>
-              <Select value={subjectIdValue} onValueChange={(v) => setValue('subjectId', v)}>
+              <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}>
                 <SelectTrigger><SelectValue placeholder="Selecione a disciplina" /></SelectTrigger>
                 <SelectContent>
                   {subjects?.map((s) => (
@@ -149,7 +149,7 @@ export function GradesPage() {
               </div>
               <div className="space-y-1">
                 <Label>Período letivo</Label>
-                <Select value={periodIdValue} onValueChange={(v) => setValue('academicPeriodId', v)}>
+                <Select value={periodIdValue} onValueChange={(v) => { if (v !== null) setValue('academicPeriodId', v) }}>
                   <SelectTrigger><SelectValue placeholder="Selecione o período" /></SelectTrigger>
                   <SelectContent>
                     {periods?.map((p) => (

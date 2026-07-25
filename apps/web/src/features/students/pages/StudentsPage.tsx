@@ -6,7 +6,7 @@ import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
-import { Skeleton } from '../../../components/ui/skeleton'
+import { TableSkeleton } from '../../../components/skeletons'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { SearchInput } from '../../../components/SearchInput'
@@ -99,7 +99,7 @@ export function StudentsPage() {
             placeholder="Buscar por nome ou matrícula…"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? '')}>
           <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Situação" />
           </SelectTrigger>
@@ -116,8 +116,8 @@ export function StudentsPage() {
       {/* Tabela */}
       {isLoading ? (
         <Surface>
-          <div className="p-4 space-y-2">
-            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+          <div className="p-4">
+            <TableSkeleton columns={5} rows={6} />
           </div>
         </Surface>
       ) : (
@@ -166,7 +166,7 @@ export function StudentsPage() {
                           style={{ background: 'hsl(var(--primary))' }}
                         >
                           {s.photoUrl ? (
-                            <img src={s.photoUrl} alt={s.name} className="w-8 h-8 rounded-full object-cover" />
+                            <img src={s.photoUrl} alt={s.name} className="w-8 h-8 rounded-full object-cover" loading="lazy" decoding="async" />
                           ) : (
                             getInitials(s.name)
                           )}
@@ -191,6 +191,7 @@ export function StudentsPage() {
                             variant="ghost"
                             size="sm"
                             title="Editar"
+                            aria-label="Editar"
                             onClick={() => navigate(`/students/${s.id}`)}
                           >
                             <Pencil size={14} className="text-muted-foreground" />
@@ -201,6 +202,7 @@ export function StudentsPage() {
                             size="sm"
                             className="text-destructive"
                             title="Excluir"
+                            aria-label="Excluir"
                             onClick={() => setDeleteTarget(s.id)}
                           >
                             <Trash2 size={14} />
@@ -228,6 +230,7 @@ export function StudentsPage() {
               size="sm"
               variant="outline"
               disabled={page <= 1}
+              aria-label="Página anterior"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -250,6 +253,7 @@ export function StudentsPage() {
               size="sm"
               variant="outline"
               disabled={page >= totalPages}
+              aria-label="Próxima página"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
               <ChevronRight className="h-4 w-4" />
