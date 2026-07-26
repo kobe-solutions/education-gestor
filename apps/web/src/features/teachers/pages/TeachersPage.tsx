@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { useTeachers, useDeleteTeacher } from '../hooks/useTeachers'
@@ -62,7 +62,8 @@ export function TeachersPage() {
   const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const deleteMutation = useDeleteTeacher()
-  const [search, setSearch] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const search = searchParams.get('q') ?? ''
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const filtered = teachers?.filter((t) =>
@@ -85,7 +86,7 @@ export function TeachersPage() {
       <div className="w-full max-w-sm">
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
           placeholder="Buscar por nome..."
         />
       </div>

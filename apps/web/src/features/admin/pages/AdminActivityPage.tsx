@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { Activity, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAdminActivity, type ActivityItem } from '../hooks/useAdminActivity'
 import { PageHead } from '../../../components/PageHead'
@@ -57,9 +58,10 @@ function RoleBadge({ role }: { role: string }) {
 const PAGE_SIZE = 20
 
 export function AdminActivityPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [page, setPage] = useState(0)
-  const [actionFilter, setActionFilter] = useState<string>('')
-  const [entityFilter, setEntityFilter] = useState<string>('')
+  const actionFilter = searchParams.get('action') ?? ''
+  const entityFilter = searchParams.get('entity') ?? ''
 
   const { data, isLoading } = useAdminActivity({
     action: actionFilter || undefined,
@@ -85,7 +87,7 @@ export function AdminActivityPage() {
           </label>
           <select
             value={actionFilter}
-            onChange={(e) => { setActionFilter(e.target.value); setPage(0) }}
+            onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('action'); else next.set('action', e.target.value); return next }); setPage(0) }}
             className="h-9 rounded-sm border px-3 text-sm"
             style={{
               background: 'hsl(var(--card))',
@@ -106,7 +108,7 @@ export function AdminActivityPage() {
           </label>
           <select
             value={entityFilter}
-            onChange={(e) => { setEntityFilter(e.target.value); setPage(0) }}
+            onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('entity'); else next.set('entity', e.target.value); return next }); setPage(0) }}
             className="h-9 rounded-sm border px-3 text-sm"
             style={{
               background: 'hsl(var(--card))',

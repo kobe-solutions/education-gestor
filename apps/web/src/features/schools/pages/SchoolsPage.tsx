@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useSearchParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -57,7 +58,8 @@ export function SchoolsPage() {
   const updateMutation = useUpdateSchool()
   const deleteMutation = useDeleteSchool()
 
-  const [search, setSearch] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const search = searchParams.get('q') ?? ''
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<School | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
@@ -162,7 +164,7 @@ export function SchoolsPage() {
       <div className="w-full max-w-sm">
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
           placeholder="Buscar por nome..."
         />
       </div>

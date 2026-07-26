@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
 import { useApiMutation } from '../../../hooks/useApiMutation'
@@ -83,8 +83,9 @@ export function StudentsPage() {
     onError: () => setDeleteTarget(null),
   })
 
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const search = searchParams.get('q') ?? ''
+  const statusFilter = searchParams.get('status') ?? 'all'
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   const filtered = students?.filter((s) => {
@@ -136,11 +137,11 @@ export function StudentsPage() {
         <div className="w-full max-w-sm">
           <SearchInput
             value={search}
-            onChange={setSearch}
+            onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
             placeholder="Buscar por nome ou matrícula…"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v ?? '')}
+        <Select value={statusFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('status'); else next.set('status', v); return next }) }}
           items={[
             { value: 'all', label: 'Todos' },
             { value: 'active', label: 'Ativo' },

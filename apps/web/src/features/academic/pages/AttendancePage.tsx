@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useClasses } from '../../classes/hooks/useClasses'
 import { useClassAttendance, useRegisterBulkAttendance } from '../hooks/useAcademic'
 import { useStudents } from '../../students/hooks/useStudents'
@@ -11,8 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 
 export function AttendancePage() {
   const today = new Date().toISOString().split('T')[0]
-  const [selectedClassId, setSelectedClassId] = useState('')
-  const [date, setDate] = useState(today)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedClassId = searchParams.get('class') ?? ''
+  const date = searchParams.get('date') ?? today
   const [attendance, setAttendance] = useState<Record<string, boolean>>({})
   const [saved, setSaved] = useState(false)
 
@@ -64,7 +66,7 @@ export function AttendancePage() {
       <div className="flex gap-4 items-end">
         <div className="w-64 space-y-1">
           <Label>Turma</Label>
-          <Select value={selectedClassId} onValueChange={(v) => { if (v === null) return; setSelectedClassId(v); setAttendance({}); setSaved(false) }}
+          <Select value={selectedClassId} onValueChange={(v) => { if (v === null) return; setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('class'); else next.set('class', v); return next }); setAttendance({}); setSaved(false) }}
             items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? c.shift}` }))}>
             <SelectTrigger><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
             <SelectContent>
@@ -76,7 +78,7 @@ export function AttendancePage() {
         </div>
         <div className="space-y-1">
           <Label>Data</Label>
-          <Input type="date" value={date} onChange={(e) => { setDate(e.target.value); setAttendance({}); setSaved(false) }} />
+          <Input type="date" value={date} onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('date', e.target.value); return next }); setAttendance({}); setSaved(false) }} />
         </div>
         {isReady && Object.keys(attendance).length === 0 && (
           <Button variant="outline" onClick={initAttendance}>Carregar chamada</Button>

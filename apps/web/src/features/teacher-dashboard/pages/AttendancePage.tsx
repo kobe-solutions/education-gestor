@@ -17,7 +17,7 @@ import {
   RotateCcw,
   AlertCircle,
 } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useTeacherDashboard, type TeacherClass, type AttendanceSummaryEntry } from '../hooks/useTeacherDashboard'
 import { useClass } from '../../classes/hooks/useClasses'
 import { useClassAttendance, useRegisterBulkAttendance } from '../../academic/hooks/useAcademic'
@@ -206,12 +206,13 @@ interface AttendanceFormProps {
 }
 
 function AttendanceForm({ classes }: AttendanceFormProps) {
-  const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedClassId = searchParams.get('class') ?? classes[0]?.id ?? ''
   const today = useMemo(() => new Date().toISOString().slice(0, 10), [])
-  const [selectedDate, setSelectedDate] = useState<string>(today)
+  const selectedDate = searchParams.get('date') ?? today
   const [attendanceMap, setAttendanceMap] = useState<Map<string, boolean>>(new Map())
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterMode, setFilterMode] = useState<'all' | 'present' | 'absent'>('all')
+  const searchQuery = searchParams.get('student') ?? ''
+  const filterMode = (searchParams.get('filter') as 'all' | 'present' | 'absent') ?? 'all'
   const [focusedIndex, setFocusedIndex] = useState<number>(0)
 
   const { data: schoolClass, isLoading: isClassLoading } = useClass(selectedClassId)
@@ -226,10 +227,14 @@ function AttendanceForm({ classes }: AttendanceFormProps) {
 
   const dateOptions = useMemo(() => {
     const base = new Date()
-    return Array.from({ length: 8 }, (_, i) => {
-      const d = new Date(base.getTime() - i * 24 * 60 * 60 * 1000)
-      return d.toISOString().slice(0, 10)
-    })
+    const dates: string[] = []
+    let daysBack = 0
+    while (dates.length < 8) {
+      const d = new Date(base.getTime() - daysBack * 24 * 60 * 60 * 1000)
+      if (d.getDay() !== 0) dates.push(d.toISOString().slice(0, 10))
+      daysBack++
+    }
+    return dates
   }, [])
 
   const dateLabels = useMemo(() => {
@@ -391,7 +396,14 @@ function AttendanceForm({ classes }: AttendanceFormProps) {
               <label className="text-xs font-semibold block mb-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Turma
               </label>
-              <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
+              <Select value={selectedClassId} onValueChange={(v) =>
+                setSearchParams((prev) => {
+                  const next = new URLSearchParams(prev)
+                  if (!v) next.delete('class')
+                  else next.set('class', v)
+                  return next
+                })
+              }>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma turma">
                     {selectedClassId ? classMap[selectedClassId] : ''}
@@ -410,7 +422,14 @@ function AttendanceForm({ classes }: AttendanceFormProps) {
               <label className="text-xs font-semibold block mb-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
                 Data de Aula
               </label>
-              <Select value={selectedDate} onValueChange={(v) => setSelectedDate(v ?? '')}>
+              <Select value={selectedDate} onValueChange={(v) =>
+                setSearchParams((prev) => {
+                  const next = new URLSearchParams(prev)
+                  if (!v || v === today) next.delete('date')
+                  else next.set('date', v)
+                  return next
+                })
+              }>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma data">
                     {selectedDate ? dateLabels[selectedDate] : ''}
@@ -499,7 +518,7 @@ function AttendanceForm({ classes }: AttendanceFormProps) {
                 <Input
                   placeholder="Buscar por nome do aluno..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('student'); else next.set('student', e.target.value); return next })}
                   className="pl-8 h-9 text-xs"
                 />
               </div>
@@ -508,14 +527,14 @@ function AttendanceForm({ classes }: AttendanceFormProps) {
                 <Button
                   variant={filterMode === 'all' ? 'secondary' : 'ghost'}
                   size="xs"
-                  onClick={() => setFilterMode('all')}
+                  onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('filter'); return next })}
                 >
                   Todos ({students.length})
                 </Button>
                 <Button
                   variant={filterMode === 'present' ? 'secondary' : 'ghost'}
                   size="xs"
-                  onClick={() => setFilterMode('present')}
+                  onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('filter', 'present'); return next })}
                   className="text-emerald-600 dark:text-emerald-400"
                 >
                   Presentes ({presentCount})
@@ -523,7 +542,7 @@ function AttendanceForm({ classes }: AttendanceFormProps) {
                 <Button
                   variant={filterMode === 'absent' ? 'secondary' : 'ghost'}
                   size="xs"
-                  onClick={() => setFilterMode('absent')}
+                  onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('filter', 'absent'); return next })}
                   className="text-rose-600 dark:text-rose-400"
                 >
                   Ausentes ({absentCount})
@@ -648,7 +667,8 @@ interface AttendanceSummaryProps {
 }
 
 function AttendanceSummary({ classes, attendanceSummary }: AttendanceSummaryProps) {
-  const [selectedClassId, setSelectedClassId] = useState<string>(classes[0]?.id ?? '')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedClassId = searchParams.get('class') ?? classes[0]?.id ?? ''
 
   const classMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -684,7 +704,14 @@ function AttendanceSummary({ classes, attendanceSummary }: AttendanceSummaryProp
           <SectionHeader title="Selecionar Turma" subtitle="Escolha a turma para visualizar o histórico consolidado" />
         </CardHeader>
         <CardContent className="pt-0">
-          <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}>
+          <Select value={selectedClassId} onValueChange={(v) =>
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev)
+              if (!v) next.delete('class')
+              else next.set('class', v)
+              return next
+            })
+          }>
             <SelectTrigger className="w-full sm:w-75">
               <SelectValue placeholder="Selecione uma turma">
                 {selectedClassId ? classMap[selectedClassId] : ''}
@@ -857,6 +884,8 @@ function AttendanceSummary({ classes, attendanceSummary }: AttendanceSummaryProp
 export function AttendancePage() {
   const { payload } = useAuth()
   const { data, isLoading, isError, error } = useTeacherDashboard()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = searchParams.get('tab') ?? 'registro'
 
   if (isLoading) {
     return (
@@ -943,7 +972,17 @@ export function AttendancePage() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="registro" className="w-full">
+      <Tabs
+        value={tab}
+        onValueChange={(v) =>
+          setSearchParams((prev) => {
+            const next = new URLSearchParams(prev)
+            next.set('tab', v)
+            return next
+          })
+        }
+        className="w-full"
+      >
         <TabsList className="w-full bg-background border border-border p-1" aria-label="Abas de frequência">
           <TabsTrigger value="registro">
             <Calendar className="size-4 mr-1" />

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { GripVertical, X, Users, AlertTriangle } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
@@ -268,9 +269,13 @@ export function StudentSchedulingPage() {
   const { data: classes = [] } = useClasses()
   const unenrollMutation = useUnenrollStudent()
 
-  const [studentSearch, setStudentSearch] = useState('')
-  const [classSearch, setClassSearch] = useState('')
-  const [selectedStudent, setSelectedStudent] = useState<{ id: string; name: string } | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const studentSearch = searchParams.get('student') ?? ''
+  const classSearch = searchParams.get('class') ?? ''
+  const selectedStudentId = searchParams.get('studentId')
+  const selectedStudent: { id: string; name: string } | null = selectedStudentId
+    ? (() => { const s = students.find((s) => s.id === selectedStudentId); return s ? { id: s.id, name: s.name } : null })()
+    : null
   const [confirmTarget, setConfirmTarget] = useState<ConfirmTarget | null>(null)
   const [enrolling, setEnrolling] = useState(false)
   const [enrollmentConflict, setEnrollmentConflict] = useState<{
@@ -311,7 +316,7 @@ export function StudentSchedulingPage() {
       toast.success(`${confirmTarget.studentName} matriculado em ${confirmTarget.className}`)
       queryClient.invalidateQueries({ queryKey: ['classes', confirmTarget.classId] })
       queryClient.invalidateQueries({ queryKey: ['classes'] })
-      setSelectedStudent(null)
+      setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('studentId'); return next })
     } catch (err) {
       const msg = extractErrorMessage(err)
       if (msg === 'Class is full') toast.error('Turma lotada — limite máximo atingido')
@@ -348,7 +353,7 @@ export function StudentSchedulingPage() {
       queryClient.invalidateQueries({ queryKey: ['classes', targetClassId] })
       queryClient.invalidateQueries({ queryKey: ['classes', currentClassId] })
       queryClient.invalidateQueries({ queryKey: ['classes'] })
-      setSelectedStudent(null)
+      setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('studentId'); return next })
     } catch {
       toast.error('Erro ao desmatricular e matricular aluno')
     } finally {
@@ -369,7 +374,7 @@ export function StudentSchedulingPage() {
         <div className="relative">
           <SearchInput
             value={studentSearch}
-            onChange={setStudentSearch}
+            onChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('student'); else next.set('student', v); return next })}
             placeholder="Buscar aluno..."
             className="h-8 text-sm"
           />
@@ -380,7 +385,7 @@ export function StudentSchedulingPage() {
             <span className="text-xs font-medium text-primary">
               {selectedStudent.name.split(' ')[0]} selecionado
             </span>
-            <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSelectedStudent(null)}>
+            <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('studentId'); return next })}>
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -401,9 +406,12 @@ export function StudentSchedulingPage() {
               colorIdx={getColorIdx(student.name)}
               isSelected={selectedStudent?.id === student.id}
               onSelect={() =>
-                setSelectedStudent((prev) =>
-                  prev?.id === student.id ? null : { id: student.id, name: student.name }
-                )
+                setSearchParams((prev) => {
+                  const next = new URLSearchParams(prev)
+                  if (prev.get('studentId') === student.id) next.delete('studentId')
+                  else next.set('studentId', student.id)
+                  return next
+                })
               }
             />
           ))}
@@ -428,7 +436,7 @@ export function StudentSchedulingPage() {
           <div className="ml-auto w-52">
             <SearchInput
               value={classSearch}
-              onChange={setClassSearch}
+              onChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('class'); else next.set('class', v); return next })}
               placeholder="Filtrar turmas..."
               className="h-8 text-sm"
             />

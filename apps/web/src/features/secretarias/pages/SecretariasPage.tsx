@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -76,7 +77,8 @@ export function SecretariasPage() {
     onError: () => setDeleteTarget(null),
   })
 
-  const [search, setSearch] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const search = searchParams.get('q') ?? ''
   const [createOpen, setCreateOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Secretaria | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Secretaria | null>(null)
@@ -161,7 +163,7 @@ export function SecretariasPage() {
       <div className="max-w-sm">
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
           placeholder="Buscar por nome..."
         />
       </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { ArrowLeft, Plus, Trash2, Pencil } from 'lucide-react'
+import { useAuth } from '../../../contexts/AuthContext'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -43,6 +44,8 @@ type SlotForm = z.infer<typeof slotSchema>
 export function TimetablePage() {
   const { id: classId } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { payload } = useAuth()
+  const canManage = payload?.role !== 'professor'
   const { data: schoolClass } = useClass(classId!)
   const { data: slots, isLoading } = useTimetableSlots(classId!)
   const { data: classPeriods = [] } = useClassPeriods()
@@ -170,12 +173,14 @@ export function TimetablePage() {
             </p>
           )}
         </div>
-        <div className="ml-auto">
-          <Button size="sm" onClick={handleCreate}>
-            <Plus className="h-4 w-4" />
-            Novo horário
-          </Button>
-        </div>
+        {canManage && (
+          <div className="ml-auto">
+            <Button size="sm" onClick={handleCreate}>
+              <Plus className="h-4 w-4" />
+              Novo horário
+            </Button>
+          </div>
+        )}
       </div>
 
       {isLoading ? (
@@ -187,7 +192,9 @@ export function TimetablePage() {
       ) : !hasSlots ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground text-sm">
-            Nenhum horário cadastrado. Clique em "Novo horário" para começar.
+            {canManage
+              ? 'Nenhum horário cadastrado. Clique em "Novo horário" para começar.'
+              : 'Nenhum horário cadastrado para esta turma.'}
           </CardContent>
         </Card>
       ) : (
@@ -215,14 +222,16 @@ export function TimetablePage() {
                             <p className="text-xs text-muted-foreground">{slot.teacher.name}</p>
                           </div>
                         </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleEdit(slot)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(slot.id)}>
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
+                        {canManage && (
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => handleEdit(slot)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(slot.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))}
                 </div>
