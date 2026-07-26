@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { useSubjects, useCreateSubject, useUpdateSubject, useDeleteSubject } from '../hooks/useSubjects'
@@ -47,7 +48,8 @@ export function SubjectsPage() {
     onError: () => setDeleteTarget(null),
   })
 
-  const [search, setSearch] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const search = searchParams.get('q') ?? ''
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Subject | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
@@ -142,7 +144,7 @@ export function SubjectsPage() {
       <div className="w-full max-w-sm">
         <SearchInput
           value={search}
-          onChange={setSearch}
+          onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
           placeholder="Buscar disciplina..."
         />
       </div>

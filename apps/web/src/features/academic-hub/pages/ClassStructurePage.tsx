@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import {
   ChevronRight, ChevronDown, Users, BookOpen,
   GraduationCap, UserCircle2, ExternalLink,
@@ -257,8 +257,9 @@ function LevelSection({ levelName, levelType, seriesWithClasses, studentSearch }
 export function ClassStructurePage() {
   const { data: series = [] } = useSeries()
   const { data: allClasses = [], isLoading } = useClasses()
-  const [studentSearch, setStudentSearch] = useState('')
-  const [levelSearch, setLevelSearch] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const studentSearch = searchParams.get('student') ?? ''
+  const levelSearch = searchParams.get('level') ?? ''
 
   // Agrupa classes por serieId
   const classesBySerie = allClasses.reduce<Record<string, typeof allClasses>>((acc, c) => {
@@ -316,7 +317,7 @@ export function ClassStructurePage() {
         <div className="flex-1 max-w-xs">
           <SearchInput
             value={studentSearch}
-            onChange={setStudentSearch}
+            onChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('student'); else next.set('student', v); return next })}
             placeholder="Filtrar por aluno..."
             className="h-8 text-sm"
           />
@@ -324,7 +325,7 @@ export function ClassStructurePage() {
         <div className="flex-1 max-w-xs">
           <SearchInput
             value={levelSearch}
-            onChange={setLevelSearch}
+            onChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('level'); else next.set('level', v); return next })}
             placeholder="Filtrar por nível de ensino..."
             className="h-8 text-sm"
           />

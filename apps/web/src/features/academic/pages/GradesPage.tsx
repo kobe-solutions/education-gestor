@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -27,7 +28,8 @@ type GradeForm = z.infer<typeof gradeSchema>
 export function GradesPage() {
   const { payload } = useAuth()
   const { data: classes } = useClasses()
-  const [selectedClassId, setSelectedClassId] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedClassId = searchParams.get('class') ?? ''
   const [dialogOpen, setDialogOpen] = useState(false)
   const { data: grades, isLoading } = useClassGrades(selectedClassId)
   const { data: selectedClass } = useClass(selectedClassId)
@@ -64,7 +66,7 @@ export function GradesPage() {
 
       <div className="w-64">
         <Label>Turma</Label>
-        <Select value={selectedClassId} onValueChange={(v) => setSelectedClassId(v ?? '')}
+        <Select value={selectedClassId} onValueChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('class'); else next.set('class', v); return next })}
           items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? c.shift}` }))}>
           <SelectTrigger>
             <SelectValue placeholder="Selecione a turma" />

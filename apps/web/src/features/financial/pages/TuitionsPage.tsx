@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useTuitions, useCreateTuition, useRegisterPayment } from '../hooks/useFinancial'
 import { useStudents } from '../../students/hooks/useStudents'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
@@ -55,8 +55,9 @@ export function TuitionsPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [confirmPay, setConfirmPay] = useState<Tuition | null>(null)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const search = searchParams.get('q') ?? ''
+  const statusFilter = searchParams.get('status') ?? 'all'
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TuitionForm>({
     resolver: zodResolver(tuitionSchema),
@@ -132,14 +133,14 @@ export function TuitionsPage() {
         <div className="w-full max-w-sm">
           <SearchInput
             value={search}
-            onChange={setSearch}
+            onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
             placeholder="Buscar aluno…"
           />
         </div>
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value || e.target.value === 'all') next.delete('status'); else next.set('status', e.target.value); return next }) }}
           className="px-3 py-2.5 text-sm rounded-md outline-hidden"
           style={{
             border: '1px solid hsl(var(--muted-foreground) / 0.3)',

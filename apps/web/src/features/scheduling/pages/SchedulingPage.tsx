@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { GripVertical, Plus, X, ChevronDown, ChevronUp, Zap, ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { PageHead } from '../../../components/PageHead'
 import { useAllTeachers } from '../../teachers/hooks/useTeachers'
 import { useClasses, useClassPeriods } from '../../classes/hooks/useClasses'
@@ -315,9 +315,13 @@ export function SchedulingPage() {
     errorMessage: 'Erro ao remover',
   })
 
-  const [teacherSearch, setTeacherSearch] = useState('')
-  const [classSearch, setClassSearch] = useState('')
-  const [selectedTeacher, setSelectedTeacher] = useState<{ id: string; name: string } | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const teacherSearch = searchParams.get('teacher') ?? ''
+  const classSearch = searchParams.get('class') ?? ''
+  const selectedTeacherId = searchParams.get('teacherId')
+  const selectedTeacher: { id: string; name: string } | null = selectedTeacherId
+    ? (() => { const t = teachers.find((t) => t.id === selectedTeacherId); return t ? { id: t.id, name: t.name } : null })()
+    : null
   const [assignTarget, setAssignTarget] = useState<AssignTarget | null>(null)
 
   // Form state
@@ -396,7 +400,7 @@ export function SchedulingPage() {
         <div className="relative">
           <SearchInput
             value={teacherSearch}
-            onChange={setTeacherSearch}
+            onChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('teacher'); else next.set('teacher', v); return next })}
             placeholder="Buscar professor..."
             className="h-8 text-sm"
           />
@@ -410,7 +414,7 @@ export function SchedulingPage() {
                 {selectedTeacher.name.split(' ')[0]} selecionado
               </span>
             </div>
-            <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSelectedTeacher(null)}>
+            <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('teacherId'); return next })}>
               <X className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -428,9 +432,12 @@ export function SchedulingPage() {
               assignmentCount={teacherAssignmentCount[teacher.id] ?? 0}
               isSelected={selectedTeacher?.id === teacher.id}
               onSelect={() =>
-                setSelectedTeacher((prev) =>
-                  prev?.id === teacher.id ? null : { id: teacher.id, name: teacher.name }
-                )
+                setSearchParams((prev) => {
+                  const next = new URLSearchParams(prev)
+                  if (prev.get('teacherId') === teacher.id) next.delete('teacherId')
+                  else next.set('teacherId', teacher.id)
+                  return next
+                })
               }
             />
           ))}
@@ -456,7 +463,7 @@ export function SchedulingPage() {
           <div className="ml-auto w-52">
             <SearchInput
               value={classSearch}
-              onChange={setClassSearch}
+              onChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('class'); else next.set('class', v); return next })}
               placeholder="Filtrar turmas..."
               className="h-8 text-sm"
             />
