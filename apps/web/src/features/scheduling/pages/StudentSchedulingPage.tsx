@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { GripVertical, X, Users, AlertTriangle } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
-import { useStudents } from '../../students/hooks/useStudents'
+import { useAllStudents } from '../../students/hooks/useStudents'
 import { useClasses, useUnenrollStudent } from '../../classes/hooks/useClasses'
 import { api } from '../../../lib/api'
 import { toast } from '../../../lib/toast'
@@ -130,7 +130,7 @@ function ClassCard({
   }
 
   const enrolled = enrolledStudents
-  const count = enrolled.length
+  const count = schoolClass.studentCount ?? enrolled.length
   const max = schoolClass.maxStudents
   const isFull = count >= max
   const fillPct = Math.min(100, Math.round((count / max) * 100))
@@ -264,8 +264,7 @@ function ClassCard({
 
 export function StudentSchedulingPage() {
   const queryClient = useQueryClient()
-  const { data: studentsData } = useStudents()
-  const students = studentsData?.data ?? []
+  const { data: students = [] } = useAllStudents()
   const { data: classes = [] } = useClasses()
   const unenrollMutation = useUnenrollStudent()
 
@@ -291,7 +290,7 @@ export function StudentSchedulingPage() {
     classes.flatMap((c) => (c.students ?? []).map((s) => s.id))
   )
 
-  const unenrolledStudents = students.filter((s) => enrolledStudentIds.has(s.id))
+  const unenrolledStudents = students.filter((s) => !enrolledStudentIds.has(s.id))
 
   const filteredStudents = unenrolledStudents.filter((s) =>
     s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||

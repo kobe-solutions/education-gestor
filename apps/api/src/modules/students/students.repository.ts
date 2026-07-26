@@ -1,4 +1,4 @@
-import { eq, and, sql, count, isNull } from 'drizzle-orm'
+import { eq, and, sql, count, isNull, desc } from 'drizzle-orm'
 import { db } from '../../db'
 import { students, guardians, studentMedical, studentDocuments } from '../../db/schema'
 
@@ -134,6 +134,7 @@ export async function findAllStudentsRepository(
   const [data, [countResult]] = await Promise.all([
     db.select(studentFields).from(students)
       .where(and(eq(students.schoolId, schoolId), isNull(students.deletedAt)))
+      .orderBy(desc(students.createdAt))
       .limit(limit).offset(offset),
     db.select({ total: count() }).from(students)
       .where(and(eq(students.schoolId, schoolId), isNull(students.deletedAt))),

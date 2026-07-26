@@ -161,11 +161,11 @@ export function SecretariasPage() {
       />
 
       <div className="max-w-sm">
-        <SearchInput
-          value={search}
-          onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
-          placeholder="Buscar por nome..."
-        />
+          <SearchInput
+            value={search}
+            onChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('q'); else next.set('q', v); return next }) }}
+            placeholder="Buscar por nome..."
+          />
       </div>
 
       {isLoading && <p className="text-sm text-muted-foreground">Carregando...</p>}
