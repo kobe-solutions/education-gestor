@@ -20,8 +20,8 @@ export function Avatar({ name, size = 32, className }: AvatarProps) {
     <div
       className={cn('flex items-center justify-center shrink-0 rounded-full font-semibold', className)}
       style={{
-        width: size,
         height: size,
+        width: size,
         background: 'hsl(var(--primary) / 0.1)',
         color: 'hsl(var(--primary))',
         fontSize: size * 0.34,

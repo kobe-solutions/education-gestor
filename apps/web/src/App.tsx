@@ -14,6 +14,7 @@ import { DashboardPage } from './pages/DashboardPage'
 
 // Code-split heavy pages
 const StudentsPage = lazy(() => import('./features/students/pages/StudentsPage').then(m => ({ default: m.StudentsPage })))
+const StudentDetailPage = lazy(() => import('./features/students/pages/StudentDetailPage').then(m => ({ default: m.StudentDetailPage })))
 const StudentFormPage = lazy(() => import('./features/students/pages/StudentFormPage').then(m => ({ default: m.StudentFormPage })))
 const TeachersPage = lazy(() => import('./features/teachers/pages/TeachersPage').then(m => ({ default: m.TeachersPage })))
 const TeacherFormPage = lazy(() => import('./features/teachers/pages/TeacherFormPage').then(m => ({ default: m.TeacherFormPage })))
@@ -94,7 +95,8 @@ export function App() {
                   <Route path="/people" element={<Suspense fallback={<PageLoader />}><HubPeoplePage /></Suspense>} />
                   <Route path="/students" element={<Suspense fallback={<PageLoader />}><StudentsPage /></Suspense>} />
                   <Route path="/students/new" element={<Suspense fallback={<PageLoader />}><StudentFormPage /></Suspense>} />
-                  <Route path="/students/:id" element={<Suspense fallback={<PageLoader />}><StudentFormPage /></Suspense>} />
+                  <Route path="/students/:id" element={<Suspense fallback={<PageLoader />}><StudentDetailPage /></Suspense>} />
+                  <Route path="/students/:id/edit" element={<Suspense fallback={<PageLoader />}><StudentFormPage /></Suspense>} />
                   <Route path="/students/:id/report" element={<Suspense fallback={<PageLoader />}><StudentReportPage /></Suspense>} />
                   <Route path="/scheduling" element={<Suspense fallback={<PageLoader />}><SchedulingPage /></Suspense>} />
                   <Route path="/scheduling/students" element={<Suspense fallback={<PageLoader />}><StudentSchedulingPage /></Suspense>} />

@@ -267,62 +267,81 @@ export function StudentFormPage() {
   }
 
   return (
-    <div className="space-y-5 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <Breadcrumbs
         items={[
-          { label: 'Pessoas', to: '/' },
+          { label: 'Pessoas', to: '/people' },
           { label: 'Alunos', to: '/students' },
-          { label: isEdit ? student?.name ?? 'Editar' : 'Novo' },
+          { label: isEdit ? student?.name ?? 'Editar' : 'Novo aluno' },
         ]}
       />
 
-      {/* Header de detalhe */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/students')}
-          className="shrink-0"
-          title="Voltar"
-        >
-          <ArrowLeft size={16} />
-        </Button>
-
-        <div className="flex-1 min-w-0">
-          <h1
-            className="font-bold truncate"
-            style={{ fontSize: 20, color: 'hsl(var(--primary))', letterSpacing: '-0.01em' }}
-          >
-            {isEdit ? student?.name : 'Novo aluno'}
-          </h1>
-          {isEdit && student && (
-            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span className="mono text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                {student.enrollmentCode}
-              </span>
-              {student.internalCode && (
-                <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  · Cód. {student.internalCode}
-                </span>
-              )}
-              <Badge
-                variant={student.enrollmentStatus === 'active' ? 'success' : student.enrollmentStatus === 'transferred' ? 'warning' : 'outline'}
-                className="text-[10px] h-4 px-1.5"
+      {/* Header Profile Card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate('/students')}
+                className="shrink-0"
+                title="Voltar para lista de alunos"
               >
-                {ENROLLMENT_STATUS_LABELS[student.enrollmentStatus]}
-              </Badge>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground truncate">
+                  {isEdit ? student?.name ?? 'Editar aluno' : 'Novo aluno'}
+                </h1>
+                {isEdit && student && (
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="mono text-xs text-muted-foreground">
+                      Matrícula: {student.enrollmentCode}
+                    </span>
+                    {student.internalCode && (
+                      <span className="text-xs text-muted-foreground">
+                        · Cód. {student.internalCode}
+                      </span>
+                    )}
+                    <Badge
+                      variant={
+                        student.enrollmentStatus === 'active'
+                          ? 'success'
+                          : student.enrollmentStatus === 'transferred'
+                          ? 'warning'
+                          : 'outline'
+                      }
+                      className="text-[10px] h-4 px-1.5"
+                    >
+                      {ENROLLMENT_STATUS_LABELS[student.enrollmentStatus]}
+                    </Badge>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
 
-        {isEdit && (
-          <Link to={`/students/${id}/report`}>
-            <Button size="sm" variant="outline">Ver boletim</Button>
-          </Link>
-        )}
-      </div>
+            {isEdit && (
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <Link to={`/students/${id}`}>
+                  <Button size="sm" variant="outline">
+                    Ver detalhes
+                  </Button>
+                </Link>
+                <Link to={`/students/${id}/report`}>
+                  <Button size="sm" variant="outline">
+                    <FileText className="h-4 w-4 mr-1.5" />
+                    Boletim
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-      <Tabs defaultValue="pessoal">
+      <Tabs defaultValue="pessoal" className="w-full space-y-6">
         <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
           <TabsList className="w-full justify-start min-w-max">
             <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
@@ -335,9 +354,12 @@ export function StudentFormPage() {
 
         {/* ── Aba 1: Dados Pessoais ──────────────────────────────────────── */}
         <TabsContent value="pessoal">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Foto */}
-            <div className="flex flex-col items-center gap-3">
+            <Card className="md:col-span-1 p-5 flex flex-col items-center justify-start gap-4 h-fit">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center w-full">
+                Foto 3x4
+              </div>
               <div
                 className="h-28 w-28 md:h-32 md:w-32 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary transition-colors"
                 onClick={() => isEdit && photoInputRef.current?.click()}
@@ -347,96 +369,102 @@ export function StudentFormPage() {
                   : <UserCircle2 className="h-14 w-14 md:h-16 md:w-16 text-muted-foreground/40" />
                 }
               </div>
-              {isEdit && (
+              {isEdit ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => photoInputRef.current?.click()} disabled={uploadPhoto.isPending}>
-                    <Upload className="h-3.5 w-3.5" />
-                    {uploadPhoto.isPending ? 'Enviando...' : 'Foto 3x4'}
+                  <Button variant="outline" size="sm" onClick={() => photoInputRef.current?.click()} disabled={uploadPhoto.isPending} className="w-full text-xs">
+                    <Upload className="h-3.5 w-3.5 mr-1" />
+                    {uploadPhoto.isPending ? 'Enviando...' : 'Alterar foto'}
                   </Button>
                   <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
                 </>
+              ) : (
+                <p className="text-xs text-muted-foreground text-center">Salve os dados pessoais primeiro para adicionar a foto</p>
               )}
-              {!isEdit && <p className="text-xs text-muted-foreground text-center">Salve os dados pessoais primeiro para adicionar a foto</p>}
-            </div>
+            </Card>
 
             {/* Formulário */}
-            <div className="md:col-span-2">
-              <form onSubmit={pessoalForm.handleSubmit(onSavePessoal)} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="col-span-2 space-y-1">
-                    <Label>Nome completo *</Label>
-                    <Input {...pessoalForm.register('name')} />
-                    {pessoalForm.formState.errors.name && <p className="text-xs text-destructive">{pessoalForm.formState.errors.name.message}</p>}
+            <Card className="md:col-span-3">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Dados Pessoais e Identificação</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={pessoalForm.handleSubmit(onSavePessoal)} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="col-span-1 sm:col-span-2 space-y-1.5">
+                      <Label>Nome completo *</Label>
+                      <Input {...pessoalForm.register('name')} placeholder="Nome completo do aluno" />
+                      {pessoalForm.formState.errors.name && <p className="text-xs text-destructive">{pessoalForm.formState.errors.name.message}</p>}
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>CPF<Opt /></Label>
+                      <Input placeholder="000.000.000-00" {...pessoalForm.register('cpf')} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>RG<Opt /></Label>
+                      <Input placeholder="00.000.000-0" {...pessoalForm.register('rg')} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Data de nascimento<Opt /></Label>
+                      <Input type="date" {...pessoalForm.register('birthDate')} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Sexo<Opt /></Label>
+                      <Select value={pessoalForm.watch('sex') ?? ''} onValueChange={(v) => pessoalForm.setValue('sex', v as 'M' | 'F' | 'outro')}
+                        items={[{ value: 'M', label: 'Masculino' }, { value: 'F', label: 'Feminino' }, { value: 'outro', label: 'Outro' }]}>
+                        <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="M">Masculino</SelectItem>
+                          <SelectItem value="F">Feminino</SelectItem>
+                          <SelectItem value="outro">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Tipo sanguíneo<Opt /></Label>
+                      <Select value={pessoalForm.watch('bloodType') ?? ''} onValueChange={(v) => pessoalForm.setValue('bloodType', v as any)}
+                        items={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => ({ value: t, label: t }))}>
+                        <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                        <SelectContent>
+                          {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => (
+                            <SelectItem key={t} value={t}>{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Naturalidade<Opt /></Label>
+                      <Input placeholder="Cidade / Estado" {...pessoalForm.register('naturalidade')} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Telefone<Opt /></Label>
+                      <Input placeholder="(00) 00000-0000" {...pessoalForm.register('phone')} />
+                    </div>
+                    <div className="col-span-1 sm:col-span-2 space-y-1.5">
+                      <Label>Email<Opt /></Label>
+                      <Input type="email" placeholder="email@exemplo.com" {...pessoalForm.register('email')} />
+                      {pessoalForm.formState.errors.email && <p className="text-xs text-destructive">{pessoalForm.formState.errors.email.message}</p>}
+                    </div>
+                    <div className="col-span-1 sm:col-span-2 space-y-1.5">
+                      <Label>Comorbidades<Opt /></Label>
+                      <Input placeholder="Ex: Hipertensão, diabetes..." {...pessoalForm.register('comorbidities')} />
+                    </div>
+                    <div className="col-span-1 sm:col-span-2 space-y-1.5">
+                      <Label>Observações<Opt /></Label>
+                      <Textarea
+                        className="resize-none min-h-[80px]"
+                        placeholder="Observações gerais sobre o aluno..."
+                        {...pessoalForm.register('observations')}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <Label>CPF<Opt /></Label>
-                    <Input placeholder="000.000.000-00" {...pessoalForm.register('cpf')} />
+                  <div className="flex justify-end pt-2 border-t">
+                    <Button type="submit" disabled={createStudent.isPending || updateStudent.isPending}>
+                      {createStudent.isPending || updateStudent.isPending ? 'Salvando...' : isEdit ? 'Salvar dados pessoais' : 'Cadastrar aluno'}
+                    </Button>
                   </div>
-                  <div className="space-y-1">
-                    <Label>RG<Opt /></Label>
-                    <Input placeholder="00.000.000-0" {...pessoalForm.register('rg')} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Data de nascimento<Opt /></Label>
-                    <Input type="date" {...pessoalForm.register('birthDate')} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Sexo<Opt /></Label>
-                    <Select value={pessoalForm.watch('sex') ?? ''} onValueChange={(v) => pessoalForm.setValue('sex', v as 'M' | 'F' | 'outro')}
-                      items={[{ value: 'M', label: 'Masculino' }, { value: 'F', label: 'Feminino' }, { value: 'outro', label: 'Outro' }]}>
-                      <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="M">Masculino</SelectItem>
-                        <SelectItem value="F">Feminino</SelectItem>
-                        <SelectItem value="outro">Outro</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Tipo sanguíneo<Opt /></Label>
-                    <Select value={pessoalForm.watch('bloodType') ?? ''} onValueChange={(v) => pessoalForm.setValue('bloodType', v as any)}
-                      items={['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => ({ value: t, label: t }))}>
-                      <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
-                      <SelectContent>
-                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => (
-                          <SelectItem key={t} value={t}>{t}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Naturalidade<Opt /></Label>
-                    <Input placeholder="Cidade / Estado" {...pessoalForm.register('naturalidade')} />
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Telefone<Opt /></Label>
-                    <Input placeholder="(00) 00000-0000" {...pessoalForm.register('phone')} />
-                  </div>
-                  <div className="col-span-2 space-y-1">
-                    <Label>Email<Opt /></Label>
-                    <Input type="email" {...pessoalForm.register('email')} />
-                    {pessoalForm.formState.errors.email && <p className="text-xs text-destructive">{pessoalForm.formState.errors.email.message}</p>}
-                  </div>
-                  <div className="col-span-2 space-y-1">
-                    <Label>Comorbidades<Opt /></Label>
-                    <Input placeholder="Ex: Hipertensão, diabetes..." {...pessoalForm.register('comorbidities')} />
-                  </div>
-                  <div className="col-span-2 space-y-1">
-                    <Label>Observações<Opt /></Label>
-                    <Textarea
-                      className="resize-none"
-                      placeholder="Observações gerais sobre o aluno..."
-                      {...pessoalForm.register('observations')}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={createStudent.isPending || updateStudent.isPending}>
-                    {createStudent.isPending || updateStudent.isPending ? 'Salvando...' : isEdit ? 'Salvar dados pessoais' : 'Cadastrar aluno'}
-                  </Button>
-                </div>
-              </form>
-            </div>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 

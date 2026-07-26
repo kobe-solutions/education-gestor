@@ -25,6 +25,7 @@ import { SchoolSelector } from '../SchoolSelector'
 import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
 import { SIDEBAR_BG, ACCENT_COLOR } from '../../lib/colors'
+import { Avatar } from '../Avatar'
 
 interface NavItem {
   to: string
@@ -476,6 +477,11 @@ export function AppLayout() {
                 {userName}
               </span>
             )}
+
+            <Avatar
+              name={userName}
+              size={40}
+            />
           </div>
         </header>
 

@@ -428,14 +428,15 @@ async function main() {
     }
 
     // -----------------------------------------------------------------------
-    // Vínculo professor ↔ disciplina (2-3 por professor)
+    // Vínculo professor ↔ disciplina (cada disciplina com 2-3 professores)
     // -----------------------------------------------------------------------
     const teacherSubjectsData: (typeof teacherSubjects.$inferInsert)[] = []
-    for (const professor of professoresInseridos) {
-      const qtd = 2 + Math.floor(Math.random() * 2) // 2 ou 3
-      const shuffle = [...disciplinasInseridas].sort(() => Math.random() - 0.5).slice(0, qtd)
-      for (const disc of shuffle) {
-        teacherSubjectsData.push({ teacherId: professor.id, subjectId: disc.id, schoolId: escola.id })
+    for (let i = 0; i < disciplinasInseridas.length; i++) {
+      const disc = disciplinasInseridas[i]
+      const count = 2 + (i % 2)
+      for (let j = 0; j < count; j++) {
+        const prof = professoresInseridos[(i * 2 + j) % professoresInseridos.length]
+        teacherSubjectsData.push({ teacherId: prof.id, subjectId: disc.id, schoolId: escola.id })
       }
     }
     await db.insert(teacherSubjects).values(teacherSubjectsData).onConflictDoNothing()
@@ -639,27 +640,37 @@ async function main() {
           const discsEmbaralhadas = [...discsDisponiveis].sort(() => Math.random() - 0.5)
 
           for (const disc of discsEmbaralhadas) {
-            const profId = pickTeacherForSubject(disc.id)
-            if (!profId) continue
+            const profs = subjectTeachersMap.get(disc.id) ?? []
+            const profsEmbaralhados = [...profs].sort(() => Math.random() - 0.5)
 
-            const k = `${profId}-${dia}-${periodo.id}`
-            if (usedTeacherSlots.has(k)) continue
+            for (const profId of profsEmbaralhados) {
+              const k = `${profId}-${dia}-${periodo.id}`
+              if (usedTeacherSlots.has(k)) continue
 
-            // Priorizar professor que ainda não deu aula nessa turma hoje
-            if (!usadosNoDia.has(profId) || usadosNoDia.size >= professoresInseridos.length - 1) {
-              usadosNoDia.add(profId)
-              tryAddSlot(profId, turma.id, dia, periodo.id, disc.id)
-              placed = true
-              break
+              if (!usadosNoDia.has(profId) || usadosNoDia.size >= professoresInseridos.length - 1) {
+                usadosNoDia.add(profId)
+                tryAddSlot(profId, turma.id, dia, periodo.id, disc.id)
+                placed = true
+                break
+              }
             }
+
+            if (placed) break
           }
 
           // Se não conseguiu com professor diverso, tentar qualquer um disponível
           if (!placed) {
             for (const disc of discsEmbaralhadas) {
-              const profId = pickTeacherForSubject(disc.id)
-              if (!profId) continue
-              if (tryAddSlot(profId, turma.id, dia, periodo.id, disc.id)) break
+              const profs = subjectTeachersMap.get(disc.id) ?? []
+              const profsEmbaralhados = [...profs].sort(() => Math.random() - 0.5)
+
+              for (const profId of profsEmbaralhados) {
+                if (tryAddSlot(profId, turma.id, dia, periodo.id, disc.id)) {
+                  placed = true
+                  break
+                }
+              }
+              if (placed) break
             }
           }
         }

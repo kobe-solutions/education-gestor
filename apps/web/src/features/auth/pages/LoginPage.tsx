@@ -10,6 +10,7 @@ import { extractErrorMessage } from '../../../lib/errors'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 
 const schema = z.object({
   email: z.string().email('E-mail inválido'),
@@ -147,10 +148,9 @@ export function LoginPage() {
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
+          <Checkbox 
             checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
+            onCheckedChange={(checked) => setRemember(checked)}
             className="rounded border-input"
           />
           <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>Lembrar-me</span>
