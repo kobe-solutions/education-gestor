@@ -24,7 +24,7 @@ export async function timetableRoutes(app: FastifyInstance) {
     const user = request.user as JwtPayload
     const schoolId = getSchoolId(request)
 
-    if (user.role === 'professor') {
+    if (user.role === 'professor' && !classId) {
       const teacherId = (user as TenantPayload).userId
       return reply.send(await listTimetableSlotsByTeacherRepository(schoolId, teacherId))
     }
