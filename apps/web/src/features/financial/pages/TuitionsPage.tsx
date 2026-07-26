@@ -133,7 +133,7 @@ export function TuitionsPage() {
         <div className="w-full max-w-sm">
           <SearchInput
             value={search}
-            onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('q'); else next.set('q', e.target.value); return next }) }}
+            onChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('q'); else next.set('q', v); return next }) }}
             placeholder="Buscar aluno…"
           />
         </div>

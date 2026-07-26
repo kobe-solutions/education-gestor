@@ -22,6 +22,18 @@ export function useStudents(params?: { page?: number; limit?: number }) {
   })
 }
 
+export function useAllStudents() {
+  const { schoolKey, enabled } = useSchoolKey()
+  return useQuery({
+    queryKey: ['students', 'all', schoolKey],
+    queryFn: async () => {
+      const res = await api.get<{ data: Student[]; total: number }>('/students', { params: { page: 1, limit: 200 } })
+      return res.data.data
+    },
+    enabled,
+  })
+}
+
 export function useStudent(id: string) {
   return useQuery({
     queryKey: ['students', id],
