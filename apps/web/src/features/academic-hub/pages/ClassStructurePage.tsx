@@ -244,7 +244,7 @@ function LevelSection({ levelName, levelType, seriesWithClasses, studentSearch }
               serieName={serie.name}
               classes={classes}
               studentSearch={studentSearch}
-              defaultOpen={idx === 0}
+              defaultOpen={!studentSearch && idx === 0}
             />
           ))}
       </div>

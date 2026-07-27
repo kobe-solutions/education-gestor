@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { toast } from 'sonner'
 import { queryClient } from './queryClient'
 
 export const api = axios.create({
@@ -20,13 +21,24 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status
+    const data = error.response?.data
+    const message = data?.message
+
+    if (status === 401) {
       localStorage.removeItem('token')
       sessionStorage.clear()
       queryClient.clear()
       window.location.href = '/login'
-      return new Promise(() => {}) // never resolves — page is redirecting
+      return new Promise(() => {})
     }
+
+    if (status === 403) {
+      toast.error(message ?? 'Acesso negado. Você não tem permissão para esta ação.')
+    } else if (status && status >= 500) {
+      toast.error(message ?? 'Erro interno do servidor. Tente novamente mais tarde.')
+    }
+
     return Promise.reject(error)
   },
 )
