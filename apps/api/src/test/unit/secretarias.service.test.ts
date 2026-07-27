@@ -21,6 +21,7 @@ const mockSecretaria = {
   address: null as string | null,
   responsible: null as string | null,
   active: true,
+  showFinancial: true,
   createdAt: new Date(),
   updatedAt: new Date(),
 }
@@ -36,6 +37,7 @@ const mockSchool = {
   coordinator: null as string | null,
   phone: null as string | null,
   address: null as string | null,
+  showFinancial: true,
   createdAt: new Date(),
   updatedAt: new Date(),
   deletedAt: null as Date | null,

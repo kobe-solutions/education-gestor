@@ -1,3 +1,6 @@
+import { eq, count } from 'drizzle-orm'
+import { db } from '../../db'
+import { secretariaSchools } from '../../db/schema/secretarias'
 import { hashPassword, verifyPassword } from '../../lib/crypto'
 import {
   createTeacherRepository,
@@ -12,7 +15,19 @@ import {
 } from './teachers.repository'
 import type { CreateTeacherBody, UpdateTeacherBody } from './teachers.schema'
 
-export async function createTeacherService(schoolId: string, input: CreateTeacherBody) {
+type RequesterInfo = { role: string; secretariaId?: string }
+
+export async function createTeacherService(schoolId: string, input: CreateTeacherBody, requester?: RequesterInfo) {
+  if (requester?.role === 'secretaria' && requester.secretariaId) {
+    const [result] = await db
+      .select({ total: count() })
+      .from(secretariaSchools)
+      .where(eq(secretariaSchools.secretariaId, requester.secretariaId))
+
+    if (!result || result.total === 0) {
+      throw new Error('Secretaria não possui escolas vinculadas')
+    }
+  }
   const normalizedEmail = input.email.toLowerCase().trim()
   const existing = await findTeacherByEmailRepository(schoolId, normalizedEmail)
   if (existing) throw new Error('Teacher already exists with this email')

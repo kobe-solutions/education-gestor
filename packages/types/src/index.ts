@@ -31,6 +31,7 @@ export interface School {
   coordinator: string | null
   phone: string | null
   address: string | null
+  showFinancial: boolean
   createdAt: string
 }
 
@@ -250,6 +251,7 @@ export interface Secretaria {
   address: string | null
   responsible: string | null
   active: boolean
+  showFinancial: boolean
   role: 'secretaria'
   createdAt: string
 }

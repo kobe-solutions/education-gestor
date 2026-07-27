@@ -18,9 +18,13 @@ import {
   Presentation,
   BarChart3,
   ClipboardCheck,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useFinancialVisibility } from '../../contexts/FinancialVisibilityContext'
+import { useFinancialBlocked } from '../../lib/useFinancialBlocked'
 import { SchoolSelector } from '../SchoolSelector'
 import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
@@ -240,7 +244,14 @@ export function AppLayout() {
     navigate('/login')
   }
 
-  const visibleItems = navItems.filter((item) => role && item.roles.includes(role))
+  const { hideFinancialData, toggleFinancialVisibility } = useFinancialVisibility()
+  const { blocked: financialBlocked } = useFinancialBlocked()
+
+  const visibleItems = navItems.filter((item) => {
+    if (!role || !item.roles.includes(role)) return false
+    if (item.to === '/financial' && financialBlocked) return false
+    return true
+  })
   const activeItem = getActiveItem(visibleItems, location.pathname)
   const userName = payload?.name ?? ''
   const userEmail = payload && 'email' in payload ? (payload as { email?: string }).email : ''
@@ -274,6 +285,22 @@ export function AppLayout() {
 
         {/* Bottom section */}
         <div className="px-3 pb-3 flex flex-col gap-2">
+          {/* Financial visibility toggle — admin only */}
+          {role === 'admin' && (
+          <Button
+            variant="outline"
+            size="default"
+            className="w-full justify-start gap-3 bg-transparent hover:bg-primary/10"
+            style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
+            onClick={toggleFinancialVisibility}
+          >
+            {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
+            <span className="text-sm font-medium">
+              {hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}
+            </span>
+          </Button>
+          )}
+
           {/* Theme toggle */}
           <Button
             variant="outline"
@@ -386,6 +413,22 @@ export function AppLayout() {
         </nav>
 
         <div className="px-3 pb-3 flex flex-col gap-2">
+          {/* Financial visibility toggle — admin only */}
+          {role === 'admin' && (
+          <Button
+            variant="outline"
+            size="default"
+            className="w-full justify-start gap-3 bg-transparent hover:bg-primary/10"
+            style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
+            onClick={toggleFinancialVisibility}
+          >
+            {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
+            <span className="text-sm font-medium">
+              {hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}
+            </span>
+          </Button>
+          )}
+
           <Button
             variant="outline"
             size="default"
@@ -472,6 +515,20 @@ export function AppLayout() {
           <div className="flex-1" />
 
           <div className="flex items-center gap-2">
+            {/* Financial visibility toggle (navbar) — admin only */}
+            {role === 'admin' && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9"
+              aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}
+              onClick={toggleFinancialVisibility}
+              title={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}
+            >
+              {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
+            </Button>
+            )}
+
             {userName && (
               <span className="text-sm font-medium hidden sm:inline" style={{ color: 'hsl(var(--foreground))' }}>
                 {userName}

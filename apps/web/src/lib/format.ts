@@ -9,3 +9,8 @@ export function parseLocalDate(d: string) {
 export function formatDateBR(d: string) {
   return parseLocalDate(d).toLocaleDateString('pt-BR')
 }
+
+export function maskDoc(value: string | null | undefined): string {
+  if (!value) return '—'
+  return value.replace(/[a-zA-Z0-9]/g, '*')
+}

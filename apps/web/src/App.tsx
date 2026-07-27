@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { Toaster } from './components/ui/sonner'
 import { AuthProvider } from './contexts/AuthContext'
 import { SchoolProvider } from './contexts/SchoolContext'
+import { FinancialVisibilityProvider } from './contexts/FinancialVisibilityContext'
 import { PrivateRoute } from './components/PrivateRoute'
 import { AppLayout } from './components/layout/AppLayout'
 import { PublicLayout } from './components/layout/PublicLayout'
@@ -65,6 +66,7 @@ export function App() {
   return (
     <AuthProvider>
       <SchoolProvider>
+        <FinancialVisibilityProvider>
         <BrowserRouter>
           <Routes>
             {/* Rotas públicas */}
@@ -147,6 +149,7 @@ export function App() {
           </Routes>
           <Toaster />
         </BrowserRouter>
+      </FinancialVisibilityProvider>
       </SchoolProvider>
     </AuthProvider>
   )

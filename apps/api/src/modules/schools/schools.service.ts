@@ -11,6 +11,7 @@ import {
   deleteSchoolRepository,
   linkSchoolToSecretariaRepository,
   isSchoolOwnedBySecretariaRepository,
+  toggleSchoolFinancialVisibilityRepository,
 } from './schools.repository'
 
 type CreateSchoolServiceInput = {
@@ -109,6 +110,15 @@ export async function changeSchoolPasswordService(id: string, password: string, 
   if (!school) throw new Error('School not found')
   await assertOwnership(id, requester)
   await updateSchoolPasswordRepository(id, hashPassword(password))
+}
+
+export async function toggleSchoolFinancialVisibilityService(id: string, requester: RequesterInfo) {
+  const school = await findSchoolByIdRepository(id)
+  if (!school) throw new Error('School not found')
+  await assertOwnership(id, requester)
+  const updated = await toggleSchoolFinancialVisibilityRepository(id)
+  if (!updated) throw new Error('School not found')
+  return updated
 }
 
 export async function deleteSchoolService(id: string, requester: RequesterInfo) {

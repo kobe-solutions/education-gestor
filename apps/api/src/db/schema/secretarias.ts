@@ -11,6 +11,7 @@ export const secretarias = pgTable('secretarias', {
   address: text('address'),
   responsible: text('responsible'),
   active: boolean('active').notNull().default(true),
+  showFinancial: boolean('show_financial').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

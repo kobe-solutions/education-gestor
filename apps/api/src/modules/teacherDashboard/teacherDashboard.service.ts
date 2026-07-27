@@ -59,11 +59,13 @@ export async function getTeacherDashboardService(schoolId: string, teacherId: st
     subject: { id: s.subjectId, name: s.subjectName },
   }))
 
+  const classIds = new Set(classes.map((c) => c.id))
+
   return {
     classes,
     todaySchedule,
     weeklyTimetable,
     attendanceSummary,
-    classPerformance,
+    classPerformance: classPerformance.filter((p) => classIds.has(p.classId)),
   }
 }

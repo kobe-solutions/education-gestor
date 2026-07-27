@@ -13,6 +13,7 @@ import {
   listSchoolsBySecretariaService,
   listSecretariasService,
   changeSecretariaPasswordService,
+  toggleSecretariaFinancialVisibilityService,
 } from './secretarias.service'
 import { changePasswordBodySchema } from '../schools/schools.schema'
 
@@ -74,6 +75,25 @@ export async function secretariasRoutes(app: FastifyInstance) {
         const body = changePasswordBodySchema.parse(request.body)
         await changeSecretariaPasswordService(id, body.password)
         return reply.status(204).send()
+      } catch (error) {
+        if (error instanceof Error && error.message === 'Secretaria not found') {
+          return reply.status(404).send({ message: error.message })
+        }
+        throw error
+      }
+    },
+  )
+
+  app.patch(
+    '/secretarias/:id/financial-visibility',
+    { preHandler: [authenticate, injectTenant, authorizeRoles(['admin'])] },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string }
+        const result = await toggleSecretariaFinancialVisibilityService(id)
+        const user = request.user as JwtPayload
+        await logAudit({ userId: user.userId, userRole: user.role }, 'UPDATE', 'secretaria', id)
+        return reply.send(result)
       } catch (error) {
         if (error instanceof Error && error.message === 'Secretaria not found') {
           return reply.status(404).send({ message: error.message })

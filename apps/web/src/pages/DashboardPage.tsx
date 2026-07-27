@@ -20,6 +20,8 @@ import {
 import { useDashboard, isAdminDashboard } from '../features/dashboard/hooks/useDashboard'
 import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
+import { useFinancialVisibility } from '../contexts/FinancialVisibilityContext'
+import { useFinancialBlocked } from '../lib/useFinancialBlocked'
 import { TuitionStatusBadge } from '../features/financial/components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../lib/format'
 import { TONE_CONFIG, type ToneKey } from '../lib/colors'
@@ -186,6 +188,7 @@ function ActionBadge({ action }: { action: string }) {
 
 function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/useDashboard').AdminDashboard }) {
   const totalStudents = data.studentsByStatus.active + data.studentsByStatus.inactive + data.studentsByStatus.transferred + data.studentsByStatus.cancelled
+  const { hideFinancialData } = useFinancialVisibility()
 
   return (
     <div className="space-y-8">
@@ -239,43 +242,46 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
             label="Turmas"
             tone="indigo"
           />
-          <DashMetric
-            icon={TrendingUp}
-            value={fmtBRL(data.tuitions.paid.total)}
-            label="Receita total"
-            sub={`${data.tuitions.paid.count} pagas`}
-            tone="emerald"
-          />
+          {!hideFinancialData && (
+            <DashMetric
+              icon={TrendingUp}
+              value={fmtBRL(data.tuitions.paid.total)}
+              label="Receita total"
+              sub={`${data.tuitions.paid.count} pagas`}
+              tone="emerald"
+            />
+          )}
         </div>
       </section>
 
-      {/* ── Financeiro ─────────────────────────────────────────────────── */}
-      <section className="space-y-4">
-        <SectionHeader title="Financeiro" subtitle="Mensalidades de todas as escolas" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <DashMetric
-            icon={Clock}
-            value={data.tuitions.pending.count}
-            label="Pendentes"
-            sub={fmtBRL(data.tuitions.pending.total)}
-            tone="amber"
-          />
-          <DashMetric
-            icon={CheckCircle2}
-            value={data.tuitions.paid.count}
-            label="Pagas"
-            sub={fmtBRL(data.tuitions.paid.total)}
-            tone="emerald"
-          />
-          <DashMetric
-            icon={AlertCircle}
-            value={data.tuitions.overdue.count}
-            label="Atrasadas"
-            sub={fmtBRL(data.tuitions.overdue.total)}
-            tone="red"
-          />
-        </div>
-      </section>
+      {!hideFinancialData && (
+        <section className="space-y-4">
+          <SectionHeader title="Financeiro" subtitle="Mensalidades de todas as escolas" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <DashMetric
+              icon={Clock}
+              value={data.tuitions.pending.count}
+              label="Pendentes"
+              sub={fmtBRL(data.tuitions.pending.total)}
+              tone="amber"
+            />
+            <DashMetric
+              icon={CheckCircle2}
+              value={data.tuitions.paid.count}
+              label="Pagas"
+              sub={fmtBRL(data.tuitions.paid.total)}
+              tone="emerald"
+            />
+            <DashMetric
+              icon={AlertCircle}
+              value={data.tuitions.overdue.count}
+              label="Atrasadas"
+              sub={fmtBRL(data.tuitions.overdue.total)}
+              tone="red"
+            />
+          </div>
+        </section>
+      )}
 
       {/* ── Escolas com mais alunos ────────────────────────────────────── */}
       <section className="space-y-4">
@@ -449,6 +455,8 @@ function NoSchoolView() {
 
 function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/useDashboard').SchoolDashboard }) {
   const { payload } = useAuth()
+  const { hideFinancialData } = useFinancialVisibility()
+  const { blocked: financialBlocked } = useFinancialBlocked()
   const isProfessor = payload?.role === 'professor'
 
   return (
@@ -491,35 +499,36 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         </div>
       </section>
 
-      {/* ── Financeiro ───────────────────────────────────────────────────── */}
-      <section className="space-y-4">
-        <SectionHeader title="Financeiro" subtitle="Status das mensalidades" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-          <DashMetric
-            icon={Clock}
-            value={data.tuitions.pending.count}
-            label="Pendentes"
-            sub={fmtBRL(data.tuitions.pending.total)}
-            tone="amber"
-          />
-          <DashMetric
-            icon={CheckCircle2}
-            value={data.tuitions.paid.count}
-            label="Pagas"
-            sub={fmtBRL(data.tuitions.paid.total)}
-            tone="emerald"
-          />
-          <DashMetric
-            icon={AlertCircle}
-            value={data.tuitions.overdue.count}
-            label="Atrasadas"
-            sub={fmtBRL(data.tuitions.overdue.total)}
-            tone="red"
-          />
-        </div>
-      </section>
+      {!financialBlocked && (
+        <section className="space-y-4">
+          <SectionHeader title="Financeiro" subtitle="Status das mensalidades" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <DashMetric
+              icon={Clock}
+              value={data.tuitions.pending.count}
+              label="Pendentes"
+              sub={fmtBRL(data.tuitions.pending.total)}
+              tone="amber"
+            />
+            <DashMetric
+              icon={CheckCircle2}
+              value={data.tuitions.paid.count}
+              label="Pagas"
+              sub={fmtBRL(data.tuitions.paid.total)}
+              tone="emerald"
+            />
+            <DashMetric
+              icon={AlertCircle}
+              value={data.tuitions.overdue.count}
+              label="Atrasadas"
+              sub={fmtBRL(data.tuitions.overdue.total)}
+              tone="red"
+            />
+          </div>
+        </section>
+      )}
 
-      {/* ── Vencimentos próximos ─────────────────────────────────────────── */}
+      {!financialBlocked && (
       <section className="space-y-4">
         <SectionHeader
           title="Mensalidades vencendo nos próximos 7 dias"
@@ -596,6 +605,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
           )}
         </div>
       </section>
+      )}
     </div>
   )
 }

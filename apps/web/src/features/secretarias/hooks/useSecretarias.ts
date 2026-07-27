@@ -92,3 +92,30 @@ export function useUnlinkSchool(secretariaId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['secretarias', secretariaId, 'schools'] }),
   })
 }
+
+export function useChangeSecretariaPassword() {
+  return useMutation({
+    mutationFn: async ({ id, password }: { id: string; password: string }) => {
+      await api.put(`/secretarias/${id}/password`, { password })
+    },
+  })
+}
+
+export function useChangeSchoolPassword() {
+  return useMutation({
+    mutationFn: async ({ id, password }: { id: string; password: string }) => {
+      await api.put(`/schools/${id}/password`, { password })
+    },
+  })
+}
+
+export function useToggleSecretariaFinancialVisibility() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.patch<Secretaria>(`/secretarias/${id}/financial-visibility`)
+      return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['secretarias'] }),
+  })
+}

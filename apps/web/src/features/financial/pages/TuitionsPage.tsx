@@ -2,13 +2,15 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, EyeOff } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { useTuitions, useCreateTuition, useRegisterPayment } from '../hooks/useFinancial'
 import { useStudents } from '../../students/hooks/useStudents'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { useApiMutation } from '../../../hooks/useApiMutation'
+import { useFinancialVisibility } from '../../../contexts/FinancialVisibilityContext'
+import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -30,6 +32,8 @@ type TuitionForm = z.infer<typeof tuitionSchema>
 const PAGE_SIZE = 15
 
 export function TuitionsPage() {
+  const { hideFinancialData } = useFinancialVisibility()
+  const { blocked: financialBlocked } = useFinancialBlocked()
   const [page, setPage] = useState(1)
   const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE })
   const tuitions = tuitionsData?.data
@@ -115,6 +119,27 @@ export function TuitionsPage() {
       render: (t) => <TuitionStatusBadge status={t.status} />,
     },
   ]
+
+  if (hideFinancialData || financialBlocked) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 gap-4">
+        <div
+          className="flex items-center justify-center rounded-full"
+          style={{ width: 72, height: 72, background: 'hsl(var(--accent))' }}
+        >
+          <EyeOff size={32} className="text-muted-foreground" />
+        </div>
+        <div className="text-center max-w-sm">
+          <p className="font-semibold text-lg" style={{ color: 'hsl(var(--foreground))' }}>
+            Dados financeiros ocultos
+          </p>
+          <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
+            Ative a visualização de dados financeiros no menu lateral ou no cabeçalho para acessar as mensalidades.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-5">

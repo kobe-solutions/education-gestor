@@ -1,3 +1,6 @@
+import { eq, count } from 'drizzle-orm'
+import { db } from '../../db'
+import { secretariaSchools } from '../../db/schema/secretarias'
 import {
   findAllStudentsRepository,
   findStudentByIdRepository,
@@ -35,7 +38,20 @@ export async function getStudentService(schoolId: string, id: string) {
   return student
 }
 
-export async function createStudentService(schoolId: string, input: CreateStudentBody) {
+type RequesterInfo = { role: string; secretariaId?: string }
+
+export async function createStudentService(schoolId: string, input: CreateStudentBody, requester?: RequesterInfo) {
+  if (requester?.role === 'secretaria' && requester.secretariaId) {
+    const [result] = await db
+      .select({ total: count() })
+      .from(secretariaSchools)
+      .where(eq(secretariaSchools.secretariaId, requester.secretariaId))
+
+    if (!result || result.total === 0) {
+      throw new Error('Secretaria não possui escolas vinculadas')
+    }
+  }
+
   const enrollmentCode = await generateEnrollmentCodeRepository(schoolId)
 
   return createStudentRepository({

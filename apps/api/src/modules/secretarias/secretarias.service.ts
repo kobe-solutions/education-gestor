@@ -11,6 +11,7 @@ import {
   updateSecretariaRepository,
   deleteSecretariaRepository,
   updateSecretariaPasswordRepository,
+  toggleSecretariaFinancialVisibilityRepository,
 } from './secretarias.repository'
 import { findSchoolByIdRepository } from '../schools/schools.repository'
 
@@ -114,6 +115,14 @@ export async function removeSchoolFromSecretariaService(secretariaId: string, sc
 
 export async function listSecretariasService() {
   return listSecretariasRepository()
+}
+
+export async function toggleSecretariaFinancialVisibilityService(id: string) {
+  const secretaria = await findSecretariaByIdRepository(id)
+  if (!secretaria) throw new Error('Secretaria not found')
+  const updated = await toggleSecretariaFinancialVisibilityRepository(id)
+  if (!updated) throw new Error('Secretaria not found')
+  return updated
 }
 
 export async function listSchoolsBySecretariaService(secretariaId: string) {

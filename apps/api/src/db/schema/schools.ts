@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core'
 
 export const schools = pgTable('schools', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -11,6 +11,7 @@ export const schools = pgTable('schools', {
   coordinator: text('coordinator'),
   phone: text('phone'),
   address: text('address'),
+  showFinancial: boolean('show_financial').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
   deletedAt: timestamp('deleted_at'),
