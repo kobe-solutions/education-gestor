@@ -82,14 +82,21 @@ export function TimetablePage() {
   const [editing, setEditing] = useState<TimetableSlot | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<SlotForm>({
+  const formValues: SlotForm = editing ? {
+    classPeriodId: editing.classPeriodId,
+    subjectId: editing.subjectId,
+    teacherId: editing.teacherId,
+    weekDay: editing.weekDay as typeof WEEK_DAYS[number],
+  } : {
+    classPeriodId: classPeriods[0]?.id ?? '',
+    subjectId: '',
+    teacherId: '',
+    weekDay: 'monday',
+  }
+
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SlotForm>({
     resolver: zodResolver(slotSchema),
-    defaultValues: {
-      classPeriodId: classPeriods[0]?.id ?? '',
-      subjectId: '',
-      teacherId: '',
-      weekDay: 'monday',
-    },
+    values: formValues,
   })
 
   const weekDayValue = watch('weekDay')
@@ -99,23 +106,11 @@ export function TimetablePage() {
 
   function handleCreate() {
     setEditing(undefined)
-    reset({
-      classPeriodId: classPeriods[0]?.id ?? '',
-      subjectId: '',
-      teacherId: '',
-      weekDay: 'monday',
-    })
     setDialogOpen(true)
   }
 
   function handleEdit(slot: TimetableSlot) {
     setEditing(slot)
-    reset({
-      classPeriodId: slot.classPeriodId,
-      subjectId: slot.subjectId,
-      teacherId: slot.teacherId,
-      weekDay: slot.weekDay as typeof WEEK_DAYS[number],
-    })
     setDialogOpen(true)
   }
 
