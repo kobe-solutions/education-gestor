@@ -161,6 +161,7 @@ export function StudentDetailPage() {
                   <img
                     src={student.photoUrl}
                     alt={student.name}
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
                     className="h-full w-full object-cover"
                   />
                 ) : (

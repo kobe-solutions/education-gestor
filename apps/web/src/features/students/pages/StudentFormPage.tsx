@@ -395,7 +395,8 @@ export function StudentFormPage() {
                 onClick={() => isEdit && photoInputRef.current?.click()}
               >
                 {student?.photoUrl
-                  ? <img src={student.photoUrl} alt="foto" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                  ? <img src={student.photoUrl} alt="foto" className="h-full w-full object-cover" loading="lazy" decoding="async"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                   : <UserCircle2 className="h-14 w-14 md:h-16 md:w-16 text-muted-foreground/40" />
                 }
               </div>

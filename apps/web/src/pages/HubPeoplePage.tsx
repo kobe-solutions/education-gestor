@@ -128,20 +128,21 @@ function QuickAction({ icon: Icon, label, description, onClick, tone }: QuickAct
 
 interface PersonRowProps {
   name: string
+  photoUrl?: string | null
   metaLine1: React.ReactNode
   metaLine2?: React.ReactNode
   badge?: React.ReactNode
   onClick?: () => void
 }
 
-function PersonRow({ name, metaLine1, metaLine2, badge, onClick }: PersonRowProps) {
+function PersonRow({ name, photoUrl, metaLine1, metaLine2, badge, onClick }: PersonRowProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       className="group flex items-center gap-3 w-full py-2.5 px-3 rounded-xl text-left transition-all duration-150 hover:bg-accent cursor-pointer"
     >
-      <Avatar name={name} size={38} />
+      <Avatar name={name} photoUrl={photoUrl} size={38} />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-semibold truncate flex items-center gap-2" style={{ color: 'hsl(var(--foreground))' }}>
           {name}
@@ -464,6 +465,7 @@ export function HubPeoplePage() {
             <PersonRow
               key={s.id}
               name={s.name}
+              photoUrl={s.photoUrl}
               metaLine1={
                 <span className="font-mono text-[11px]" style={{ color: 'hsl(var(--muted-foreground) / 0.7)' }}>
                   {s.enrollmentCode}
@@ -508,6 +510,7 @@ export function HubPeoplePage() {
             <PersonRow
               key={t.id}
               name={t.name}
+              photoUrl={t.photoUrl}
               metaLine1={t.position ?? 'Professor(a)'}
               metaLine2={t.email}
               badge={
