@@ -3,6 +3,7 @@ import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles, type TenantPayload } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { extFromMime, validateImageFile } from '../../lib/validators'
 import { logAudit } from '../../lib/audit'
 import { createTeacherBodySchema, updateTeacherBodySchema, changePasswordBodySchema } from './teachers.schema'
 import {
@@ -15,21 +16,37 @@ import {
   uploadTeacherPhotoService,
   addTeacherSubjectService,
   removeTeacherSubjectService,
+  listTeacherDocumentsService,
+  uploadTeacherDocumentService,
+  deleteTeacherDocumentService,
 } from './teachers.service'
-
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-
-function extFromMime(mime: string) {
-  const map: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
-  return map[mime] ?? 'jpg'
-}
 
 const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
 const writePreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
 
 export async function teachersRoutes(app: FastifyInstance) {
   // ── Self-service (professor) ──────────────────────────────────────────────────
+
+  app.post('/teachers/:id/photo', { preHandler: writePreHandler }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+
+      const buffer = await data.toBuffer()
+      const validation = validateImageFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+
+      return reply.send(await uploadTeacherPhotoService(
+        getSchoolId(request), id, buffer, data.mimetype, extFromMime(data.mimetype),
+      ))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
 
   app.put('/teachers/me', { preHandler: readPreHandler }, async (request, reply) => {
     try {
@@ -63,12 +80,10 @@ export async function teachersRoutes(app: FastifyInstance) {
       const teacherId = (request.user as TenantPayload).userId
       const data = await request.file()
       if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
-      if (!ALLOWED_IMAGE_TYPES.includes(data.mimetype))
-        return reply.status(400).send({ message: 'Formato inválido. Use JPEG, PNG ou WebP.' })
 
       const buffer = await data.toBuffer()
-      if (buffer.length > MAX_FILE_SIZE)
-        return reply.status(400).send({ message: 'Arquivo muito grande. Máximo 10MB.' })
+      const validation = validateImageFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
 
       return reply.send(await uploadTeacherPhotoService(
         getSchoolId(request), teacherId, buffer, data.mimetype, extFromMime(data.mimetype),
@@ -186,6 +201,63 @@ export async function teachersRoutes(app: FastifyInstance) {
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher not found') {
         return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  // ─── Documentos do Professor ────────────────────────────────────────────────
+
+  const DOC_ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+
+  app.get('/teachers/:id/documents', { preHandler: writePreHandler }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      return reply.send(await listTeacherDocumentsService(getSchoolId(request), id))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.post('/teachers/:id/documents', { preHandler: writePreHandler }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const { type = 'outros' } = request.query as { type?: string }
+
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+      if (!DOC_ALLOWED_TYPES.includes(data.mimetype))
+        return reply.status(400).send({ message: 'Formato inválido. Use PDF, JPEG ou PNG.' })
+
+      const buffer = await data.toBuffer()
+      if (buffer.length > 10 * 1024 * 1024)
+        return reply.status(400).send({ message: 'Arquivo muito grande. Máximo 10MB.' })
+
+      const doc = await uploadTeacherDocumentService(
+        getSchoolId(request), id, buffer, data.filename, type, data.mimetype, buffer.length, extFromMime(data.mimetype),
+      )
+      return reply.status(201).send(doc)
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.delete('/teachers/:id/documents/:docId', { preHandler: writePreHandler }, async (request, reply) => {
+    try {
+      const { id, docId } = request.params as { id: string; docId: string }
+      await deleteTeacherDocumentService(getSchoolId(request), id, docId)
+      return reply.status(204).send()
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Teacher not found' || error.message === 'Document not found') {
+          return reply.status(404).send({ message: error.message })
+        }
       }
       throw error
     }

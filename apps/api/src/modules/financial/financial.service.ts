@@ -1,6 +1,7 @@
 import { eq, and } from 'drizzle-orm'
 import { db } from '../../db'
 import { tuitions } from '../../db/schema'
+import { deleteFile, extractKeyFromUrl, uploadFile } from '../../lib/storage'
 import {
   findAllTuitionsRepository,
   findTuitionsByStudentRepository,
@@ -90,4 +91,44 @@ export async function registerPaymentService(schoolId: string, id: string) {
     if (!updated) throw new Error('Tuition not found')
     return updated
   })
+}
+
+export async function uploadTuitionBoletoService(
+  schoolId: string,
+  tuitionId: string,
+  buffer: Buffer,
+  mimeType: string,
+  ext: string,
+) {
+  const tuition = await findTuitionByIdRepository(schoolId, tuitionId)
+  if (!tuition) throw new Error('Tuition not found')
+
+  if (tuition.boletoUrl) {
+    await deleteFile(extractKeyFromUrl(tuition.boletoUrl)).catch(() => null)
+  }
+
+  const key = `schools/${schoolId}/tuitions/${tuitionId}/boleto.${ext}`
+  const url = await uploadFile(key, buffer, mimeType)
+
+  return updateTuitionRepository(schoolId, tuitionId, { boletoUrl: url, boletoFileSize: buffer.length })
+}
+
+export async function uploadTuitionReceiptService(
+  schoolId: string,
+  tuitionId: string,
+  buffer: Buffer,
+  mimeType: string,
+  ext: string,
+) {
+  const tuition = await findTuitionByIdRepository(schoolId, tuitionId)
+  if (!tuition) throw new Error('Tuition not found')
+
+  if (tuition.receiptUrl) {
+    await deleteFile(extractKeyFromUrl(tuition.receiptUrl)).catch(() => null)
+  }
+
+  const key = `schools/${schoolId}/tuitions/${tuitionId}/receipt.${ext}`
+  const url = await uploadFile(key, buffer, mimeType)
+
+  return updateTuitionRepository(schoolId, tuitionId, { receiptUrl: url, receiptFileSize: buffer.length })
 }

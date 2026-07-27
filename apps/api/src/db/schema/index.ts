@@ -19,3 +19,4 @@ export * from "./timetableSlots";
 export * from "./studentMedical";
 export * from "./studentDocuments";
 export * from "./teacherSubjects";
+export * from "./teacherDocuments";

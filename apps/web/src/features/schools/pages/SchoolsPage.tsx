@@ -17,9 +17,11 @@ import {
   BookOpen,
   Eye,
   EyeOff,
+  Camera,
 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { useSchools, useCreateSchool, useUpdateSchool, useDeleteSchool, useChangeSchoolPassword } from '../hooks/useSchools'
+import { useUploadSchoolLogo } from '../hooks/useSchools'
 import { useAuth } from '../../../contexts/AuthContext'
 import { toast } from '../../../lib/toast'
 import { PageHead } from '../../../components/PageHead'
@@ -84,6 +86,8 @@ interface SchoolCardProps {
 
 function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }: SchoolCardProps) {
   const toggleFinancial = useToggleSchoolFinancialVisibility()
+  const uploadLogo = useUploadSchoolLogo()
+  const logoInputRef = useRef<HTMLInputElement>(null)
   return (
     <div
       className="rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md"
@@ -94,7 +98,34 @@ function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }:
     >
       <div className="p-5">
         <div className="flex items-start gap-4">
-          <Avatar name={school.name} size={48} />
+          <div className="relative group shrink-0">
+            <Avatar name={school.name} photoUrl={school.logoUrl} size={48} />
+            {isSecretaria && (
+              <>
+                <button
+                  type="button"
+                  className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  onClick={() => logoInputRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4 text-white" />
+                </button>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    uploadLogo.mutate({ id: school.id, file }, {
+                      onSuccess: () => toast.success('Logo atualizada'),
+                      onError: () => toast.error('Erro ao enviar logo'),
+                    })
+                  }}
+                />
+              </>
+            )}
+          </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-base leading-tight" style={{ color: 'hsl(var(--foreground))' }}>
               {school.name}

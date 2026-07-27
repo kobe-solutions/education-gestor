@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, ChevronLeft, ChevronRight, EyeOff } from 'lucide-react'
+import { Plus, ChevronLeft, ChevronRight, EyeOff, FileText, Receipt } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
-import { useTuitions, useCreateTuition, useRegisterPayment } from '../hooks/useFinancial'
+import { toast } from '../../../lib/toast'
+import { useTuitions, useCreateTuition, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
 import { useStudents } from '../../students/hooks/useStudents'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
@@ -86,6 +87,24 @@ export function TuitionsPage() {
 
   function handlePay(tuition: Tuition) {
     payApiMutation.mutate(tuition.id)
+  }
+
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const uploadBoleto = useUploadTuitionBoleto()
+  const uploadReceipt = useUploadTuitionReceipt()
+
+  function handleBoletoUpload(tuitionId: string, file: File) {
+    uploadBoleto.mutate({ id: tuitionId, file }, {
+      onSuccess: () => toast.success('Boleto anexado'),
+      onError: () => toast.error('Erro ao anexar boleto'),
+    })
+  }
+
+  function handleReceiptUpload(tuitionId: string, file: File) {
+    uploadReceipt.mutate({ id: tuitionId, file }, {
+      onSuccess: () => toast.success('Comprovante anexado'),
+      onError: () => toast.error('Erro ao anexar comprovante'),
+    })
   }
 
   const columns: Column<Tuition & { studentName?: string }>[] = [
@@ -185,11 +204,42 @@ export function TuitionsPage() {
         data={filtered}
         rowKey={(t) => t.id}
         actions={(t) => (
-          t.status !== 'paid' ? (
-            <Button size="sm" variant="outline" onClick={() => setConfirmPay(t)}>
-              Registrar pagamento
+          <div className="flex items-center gap-1">
+            {t.status !== 'paid' && (
+              <Button size="sm" variant="outline" onClick={() => setConfirmPay(t)}>
+                Registrar pagamento
+              </Button>
+            )}
+            <input
+              ref={(el) => { fileInputRefs.current[`boleto-${t.id}`] = el }}
+              type="file"
+              accept=".pdf,image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) handleBoletoUpload(t.id, file)
+                e.target.value = ''
+              }}
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              title="Anexar boleto"
+              onClick={() => fileInputRefs.current[`boleto-${t.id}`]?.click()}
+            >
+              <FileText className="h-4 w-4" />
             </Button>
-          ) : undefined
+            {t.boletoUrl && (
+              <Button size="sm" variant="ghost" title="Ver boleto" onClick={() => window.open(t.boletoUrl!, '_blank')}>
+                <FileText className="h-4 w-4" />
+              </Button>
+            )}
+            {t.receiptUrl && (
+              <Button size="sm" variant="ghost" title="Ver comprovante" onClick={() => window.open(t.receiptUrl!, '_blank')}>
+                <Receipt className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         )}
         emptyMessage="Nenhuma mensalidade encontrada"
         caption="Lista de mensalidades"

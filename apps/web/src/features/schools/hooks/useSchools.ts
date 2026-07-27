@@ -24,6 +24,17 @@ export function useCreateSchool() {
   })
 }
 
+export function useSchool(id: string) {
+  return useQuery({
+    queryKey: ['schools', id],
+    queryFn: async () => {
+      const res = await api.get<School>(`/schools/${id}`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
+
 export function useSchools() {
   return useQuery({
     queryKey: ['schools'],
@@ -70,6 +81,20 @@ export function useChangeSchoolPassword() {
     mutationFn: async ({ id, password }: { id: string; password: string }) => {
       await api.put(`/schools/${id}/password`, { password })
     },
+  })
+}
+
+export function useUploadSchoolLogo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<School>(`/schools/${id}/logo`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
   })
 }
 

@@ -14,6 +14,18 @@ const mockSchoolMetrics = {
     overdue: { count: 10, total: '7500' },
   },
   upcomingTuitions: [],
+  attendanceRate: 85,
+  academicPerformance: { average: '7.5', passRate: 85, totalGrades: 120 },
+  classOccupancy: [],
+  studentsByStatus: { active: 38, inactive: 2, transferred: 1, cancelled: 1 },
+  teachersByStatus: { ativo: 7, inativo: 1, licenca: 0 },
+  recentActivity: [],
+  alerts: {
+    lowAttendanceStudents: [],
+    overdueTuitions: 2,
+    studentsWithoutGuardians: [],
+    studentsWithoutIdDocument: [],
+  },
 }
 
 const mockAdminMetrics = {

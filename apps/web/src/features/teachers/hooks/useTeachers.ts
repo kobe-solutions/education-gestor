@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
-import type { Teacher } from '@education-gestor/types'
+import type { Teacher, TeacherDocument } from '@education-gestor/types'
 
 export type TeacherCreateInput = Pick<Teacher,
   'name' | 'email' |
@@ -109,6 +109,60 @@ export function useChangeMyPassword() {
     mutationFn: async (password: string) => {
       await api.put('/teachers/me/password', { password })
     },
+  })
+}
+
+export function useUploadTeacherPhoto(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<Teacher>(`/teachers/${id}/photo`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teachers', id] })
+      qc.invalidateQueries({ queryKey: ['teachers'] })
+    },
+  })
+}
+
+export function useTeacherDocuments(teacherId: string) {
+  return useQuery({
+    queryKey: ['teachers', teacherId, 'documents'],
+    queryFn: async () => {
+      const res = await api.get<TeacherDocument[]>(`/teachers/${teacherId}/documents`)
+      return res.data
+    },
+    enabled: !!teacherId,
+  })
+}
+
+export function useUploadTeacherDocument(teacherId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ file, type }: { file: File; type: string }) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<TeacherDocument>(
+        `/teachers/${teacherId}/documents?type=${type}`,
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } },
+      )).data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers', teacherId, 'documents'] }),
+  })
+}
+
+export function useDeleteTeacherDocument(teacherId: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (docId: string) => {
+      await api.delete(`/teachers/${teacherId}/documents/${docId}`)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers', teacherId, 'documents'] }),
   })
 }
 

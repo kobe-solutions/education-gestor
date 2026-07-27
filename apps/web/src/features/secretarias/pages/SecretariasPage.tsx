@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useSearchParams } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Eye,
   EyeOff,
+  Camera,
 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { toast } from '../../../lib/toast'
@@ -36,6 +37,7 @@ import {
   useChangeSecretariaPassword,
   useChangeSchoolPassword,
   useToggleSecretariaFinancialVisibility,
+  useUploadSecretariaLogo,
 } from '../hooks/useSecretarias'
 import { useSchools } from '../../schools/hooks/useSchools'
 import { useApiMutation } from '../../../hooks/useApiMutation'
@@ -115,6 +117,8 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
   const { data: schools = [], isLoading: loadingSchools } = useSecretariaSchools(expanded ? secretaria.id : '')
   const { data: allSchools } = useSchools()
   const toggleFinancial = useToggleSecretariaFinancialVisibility()
+  const uploadLogo = useUploadSecretariaLogo()
+  const logoInputRef = useRef<HTMLInputElement>(null)
   const linkSchool = useLinkSchool(secretaria.id)
   const unlinkSchool = useUnlinkSchool(secretaria.id)
 
@@ -159,7 +163,30 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
       {/* Card header */}
       <div className="p-5">
         <div className="flex items-start gap-4">
-          <Avatar name={secretaria.name} size={48} />
+          <div className="relative group shrink-0">
+            <Avatar name={secretaria.name} photoUrl={secretaria.logoUrl} size={48} />
+            <button
+              type="button"
+              className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              <Camera className="h-4 w-4 text-white" />
+            </button>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                uploadLogo.mutate({ id: secretaria.id, file }, {
+                  onSuccess: () => toast.success('Logo atualizada'),
+                  onError: () => toast.error('Erro ao enviar logo'),
+                })
+              }}
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div>

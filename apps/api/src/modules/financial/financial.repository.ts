@@ -21,6 +21,10 @@ export async function findAllTuitionsRepository(
     dueDate: tuitions.dueDate,
     paidAt: tuitions.paidAt,
     status: tuitions.status,
+    boletoUrl: tuitions.boletoUrl,
+    boletoFileSize: tuitions.boletoFileSize,
+    receiptUrl: tuitions.receiptUrl,
+    receiptFileSize: tuitions.receiptFileSize,
     createdAt: tuitions.createdAt,
     updatedAt: tuitions.updatedAt,
   }
@@ -45,6 +49,10 @@ export async function findTuitionsByStudentRepository(schoolId: string, studentI
       dueDate: tuitions.dueDate,
       paidAt: tuitions.paidAt,
       status: tuitions.status,
+      boletoUrl: tuitions.boletoUrl,
+      boletoFileSize: tuitions.boletoFileSize,
+      receiptUrl: tuitions.receiptUrl,
+      receiptFileSize: tuitions.receiptFileSize,
       createdAt: tuitions.createdAt,
       updatedAt: tuitions.updatedAt,
     })
@@ -62,6 +70,10 @@ export async function findTuitionByIdRepository(schoolId: string, id: string) {
       dueDate: tuitions.dueDate,
       paidAt: tuitions.paidAt,
       status: tuitions.status,
+      boletoUrl: tuitions.boletoUrl,
+      boletoFileSize: tuitions.boletoFileSize,
+      receiptUrl: tuitions.receiptUrl,
+      receiptFileSize: tuitions.receiptFileSize,
       createdAt: tuitions.createdAt,
       updatedAt: tuitions.updatedAt,
     })
@@ -89,6 +101,10 @@ export async function createTuitionRepository(input: CreateTuitionRepositoryInpu
       dueDate: tuitions.dueDate,
       paidAt: tuitions.paidAt,
       status: tuitions.status,
+      boletoUrl: tuitions.boletoUrl,
+      boletoFileSize: tuitions.boletoFileSize,
+      receiptUrl: tuitions.receiptUrl,
+      receiptFileSize: tuitions.receiptFileSize,
       createdAt: tuitions.createdAt,
       updatedAt: tuitions.updatedAt,
     })
@@ -99,11 +115,15 @@ export async function createTuitionRepository(input: CreateTuitionRepositoryInpu
 export async function updateTuitionRepository(
   schoolId: string,
   id: string,
-  input: { amount?: number; dueDate?: string },
+  input: { amount?: number; dueDate?: string; boletoUrl?: string; boletoFileSize?: number; receiptUrl?: string; receiptFileSize?: number },
 ) {
-  const setValues: { amount?: string; dueDate?: string; updatedAt: Date } = { updatedAt: new Date() }
+  const setValues: { amount?: string; dueDate?: string; boletoUrl?: string; boletoFileSize?: number; receiptUrl?: string; receiptFileSize?: number; updatedAt: Date } = { updatedAt: new Date() }
   if (input.amount !== undefined) setValues.amount = input.amount.toString()
   if (input.dueDate !== undefined) setValues.dueDate = input.dueDate
+  if (input.boletoUrl !== undefined) setValues.boletoUrl = input.boletoUrl
+  if (input.boletoFileSize !== undefined) setValues.boletoFileSize = input.boletoFileSize
+  if (input.receiptUrl !== undefined) setValues.receiptUrl = input.receiptUrl
+  if (input.receiptFileSize !== undefined) setValues.receiptFileSize = input.receiptFileSize
 
   const [tuition] = await db
     .update(tuitions)
@@ -117,6 +137,10 @@ export async function updateTuitionRepository(
       dueDate: tuitions.dueDate,
       paidAt: tuitions.paidAt,
       status: tuitions.status,
+      boletoUrl: tuitions.boletoUrl,
+      boletoFileSize: tuitions.boletoFileSize,
+      receiptUrl: tuitions.receiptUrl,
+      receiptFileSize: tuitions.receiptFileSize,
       createdAt: tuitions.createdAt,
       updatedAt: tuitions.updatedAt,
     })
@@ -137,6 +161,10 @@ export async function markTuitionAsPaidRepository(schoolId: string, id: string) 
       dueDate: tuitions.dueDate,
       paidAt: tuitions.paidAt,
       status: tuitions.status,
+      boletoUrl: tuitions.boletoUrl,
+      boletoFileSize: tuitions.boletoFileSize,
+      receiptUrl: tuitions.receiptUrl,
+      receiptFileSize: tuitions.receiptFileSize,
       createdAt: tuitions.createdAt,
       updatedAt: tuitions.updatedAt,
     })

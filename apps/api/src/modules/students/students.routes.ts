@@ -3,6 +3,7 @@ import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { extFromMime, validateImageFile, validateDocumentFile } from '../../lib/validators'
 import {
   createStudentBodySchema,
   updateStudentBodySchema,
@@ -31,20 +32,6 @@ import { logAudit } from '../../lib/audit'
 import type { TenantPayload } from '../../middlewares/authorize'
 
 const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
-
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const ALLOWED_DOC_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
-const MAX_FILE_SIZE = 10 * 1024 * 1024
-
-function extFromMime(mime: string) {
-  const map: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-    'application/pdf': 'pdf',
-  }
-  return map[mime] ?? 'bin'
-}
 
 export async function studentsRoutes(app: FastifyInstance) {
   app.get('/students', { preHandler }, async (request, reply) => {
@@ -119,12 +106,10 @@ export async function studentsRoutes(app: FastifyInstance) {
       const { id } = request.params as { id: string }
       const data = await request.file()
       if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
-      if (!ALLOWED_IMAGE_TYPES.includes(data.mimetype))
-        return reply.status(400).send({ message: 'Formato inválido. Use JPEG, PNG ou WebP.' })
 
       const buffer = await data.toBuffer()
-      if (buffer.length > MAX_FILE_SIZE)
-        return reply.status(400).send({ message: 'Arquivo muito grande. Máximo 10MB.' })
+      const validation = validateImageFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
 
       return reply.send(await uploadStudentPhotoService(
         getSchoolId(request), id, buffer, data.mimetype, extFromMime(data.mimetype),
@@ -226,12 +211,10 @@ export async function studentsRoutes(app: FastifyInstance) {
 
       const data = await request.file()
       if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
-      if (!ALLOWED_DOC_TYPES.includes(data.mimetype))
-        return reply.status(400).send({ message: 'Formato inválido. Use PDF, JPEG ou PNG.' })
 
       const buffer = await data.toBuffer()
-      if (buffer.length > MAX_FILE_SIZE)
-        return reply.status(400).send({ message: 'Arquivo muito grande. Máximo 10MB.' })
+      const validation = validateDocumentFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
 
       const doc = await uploadDocumentService(
         getSchoolId(request), id, buffer, data.filename, type, data.mimetype, buffer.length, extFromMime(data.mimetype),
