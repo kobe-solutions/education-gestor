@@ -1,10 +1,16 @@
-import { eq, count, sum, and, gte, lte, sql, desc } from 'drizzle-orm'
+import { eq, count, sum, and, gte, lte, sql, desc, avg } from 'drizzle-orm'
 import { db } from '../../db'
-import { students, teachers, schoolClasses, tuitions, secretarias, schools, auditLogs } from '../../db/schema'
+import {
+  students, teachers, schoolClasses, tuitions, secretarias, schools, auditLogs,
+  grades, attendances, classStudents, studentDocuments,
+} from '../../db/schema'
 
 export async function getSchoolMetricsRepository(schoolId: string) {
   const today = new Date().toISOString().slice(0, 10)
   const in7Days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+
+  // ── Basic counts ──────────────────────────────────────────────────────
 
   const [studentsCount] = await db
     .select({ count: count() })
@@ -20,6 +26,8 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     .select({ count: count() })
     .from(schoolClasses)
     .where(eq(schoolClasses.schoolId, schoolId))
+
+  // ── Tuitions ──────────────────────────────────────────────────────────
 
   const tuitionStats = await db
     .select({
@@ -53,9 +61,157 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     .orderBy(tuitions.dueDate)
     .limit(10)
 
+  // ── Attendance rate (last 30 days) ────────────────────────────────────
+
+  const [attendanceRow] = await db
+    .select({
+      total: count(),
+      present: sql<number>`count(case when ${attendances.present} is true then 1 end)`,
+    })
+    .from(attendances)
+    .where(
+      and(
+        eq(attendances.schoolId, schoolId),
+        gte(attendances.date, thirtyDaysAgo),
+      ),
+    )
+
+  // ── Academic performance ──────────────────────────────────────────────
+
+  const [gradeRow] = await db
+    .select({
+      average: avg(grades.value),
+      total: count(),
+      passed: sql<number>`count(case when ${grades.value}::numeric >= 6 then 1 end)`,
+    })
+    .from(grades)
+    .where(eq(grades.schoolId, schoolId))
+
+  // ── Students by class (occupancy) ─────────────────────────────────────
+
+  const classOccupancy = await db
+    .select({
+      className: schoolClasses.name,
+      studentCount: count(classStudents.studentId),
+      maxStudents: schoolClasses.maxStudents,
+    })
+    .from(schoolClasses)
+    .leftJoin(classStudents, eq(schoolClasses.id, classStudents.classId))
+    .where(eq(schoolClasses.schoolId, schoolId))
+    .groupBy(schoolClasses.id, schoolClasses.name, schoolClasses.maxStudents)
+    .orderBy(desc(count(classStudents.studentId)))
+
+  // ── Students by enrollment status ─────────────────────────────────────
+
+  const studentsByStatusRows = await db
+    .select({ status: students.enrollmentStatus, count: count() })
+    .from(students)
+    .where(eq(students.schoolId, schoolId))
+    .groupBy(students.enrollmentStatus)
+
+  // ── Teachers by employment status ─────────────────────────────────────
+
+  const teachersByStatusRows = await db
+    .select({ status: teachers.employmentStatus, count: count() })
+    .from(teachers)
+    .where(eq(teachers.schoolId, schoolId))
+    .groupBy(teachers.employmentStatus)
+
+  // ── Recent school activity ────────────────────────────────────────────
+
+  const recentActivity = await db
+    .select({
+      id: auditLogs.id,
+      userId: auditLogs.userId,
+      userRole: auditLogs.userRole,
+      action: auditLogs.action,
+      entity: auditLogs.entity,
+      entityId: auditLogs.entityId,
+      createdAt: auditLogs.createdAt,
+    })
+    .from(auditLogs)
+    .where(eq(auditLogs.schoolId, schoolId))
+    .orderBy(desc(auditLogs.createdAt))
+    .limit(10)
+
+  // ── Alerts ────────────────────────────────────────────────────────────
+
+  const lowAttendanceStudents = await db
+    .select({
+      studentId: attendances.studentId,
+      studentName: students.name,
+      absenceCount: sql<number>`count(case when ${attendances.present} is false then 1 end)`,
+    })
+    .from(attendances)
+    .innerJoin(students, eq(attendances.studentId, students.id))
+    .where(
+      and(
+        eq(attendances.schoolId, schoolId),
+        gte(attendances.date, thirtyDaysAgo),
+      ),
+    )
+    .groupBy(attendances.studentId, students.name)
+    .having(sql`count(case when ${attendances.present} is false then 1 end) >= 3`)
+
+  const [overdueCount] = await db
+    .select({ count: count() })
+    .from(tuitions)
+    .where(
+      and(
+        eq(tuitions.schoolId, schoolId),
+        eq(tuitions.status, 'overdue'),
+      ),
+    )
+
+  const studentsWithoutGuardians = await db
+    .select({ studentId: students.id, studentName: students.name })
+    .from(students)
+    .where(
+      and(
+        eq(students.schoolId, schoolId),
+        sql`${students.id} not in (select student_id from guardians)`,
+      ),
+    )
+    .orderBy(students.name)
+
+  const studentsWithoutIdDocument = await db
+    .select({ studentId: students.id, studentName: students.name })
+    .from(students)
+    .where(
+      and(
+        eq(students.schoolId, schoolId),
+        sql`${students.id} not in (select student_id from student_documents where school_id = ${sql.param(schoolId)} and type = 'identidade')`,
+      ),
+    )
+    .orderBy(students.name)
+
+  // ── Build response ────────────────────────────────────────────────────
+
   const pending = tuitionStats.find((t) => t.status === 'pending')
   const paid = tuitionStats.find((t) => t.status === 'paid')
   const overdue = tuitionStats.find((t) => t.status === 'overdue')
+
+  const studentsByStatus: Record<string, number> = { active: 0, inactive: 0, transferred: 0, cancelled: 0 }
+  for (const row of studentsByStatusRows) {
+    if (row.status in studentsByStatus) {
+      studentsByStatus[row.status] = row.count
+    }
+  }
+
+  const teachersByStatus: Record<string, number> = { ativo: 0, inativo: 0, licenca: 0 }
+  for (const row of teachersByStatusRows) {
+    if (row.status in teachersByStatus) {
+      teachersByStatus[row.status] = row.count
+    }
+  }
+
+  const attendanceRate = attendanceRow.total > 0
+    ? Math.round((attendanceRow.present / attendanceRow.total) * 100)
+    : null
+
+  const passRate = gradeRow.total > 0
+    ? Math.round((gradeRow.passed / gradeRow.total) * 100)
+    : null
 
   return {
     studentsCount: studentsCount.count,
@@ -67,38 +223,70 @@ export async function getSchoolMetricsRepository(schoolId: string) {
       overdue: { count: overdue?.count ?? 0, total: overdue?.total ?? '0' },
     },
     upcomingTuitions: upcoming,
+    attendanceRate,
+    academicPerformance: {
+      average: gradeRow.average ? Number(gradeRow.average).toFixed(1) : null,
+      passRate,
+      totalGrades: gradeRow.total,
+    },
+    classOccupancy: classOccupancy.map((c) => ({
+      className: c.className,
+      studentCount: c.studentCount,
+      maxStudents: c.maxStudents,
+    })),
+    studentsByStatus,
+    teachersByStatus,
+    recentActivity: recentActivity.map((a) => ({
+      id: a.id,
+      userId: a.userId,
+      userRole: a.userRole,
+      action: a.action,
+      entity: a.entity,
+      entityId: a.entityId,
+      createdAt: a.createdAt.toISOString(),
+    })),
+    alerts: {
+      lowAttendanceStudents: lowAttendanceStudents.map((s) => ({
+        studentId: s.studentId,
+        studentName: s.studentName,
+        absenceCount: s.absenceCount,
+      })),
+      overdueTuitions: overdueCount.count,
+      studentsWithoutGuardians: studentsWithoutGuardians.map((s) => ({
+        studentId: s.studentId,
+        studentName: s.studentName,
+      })),
+      studentsWithoutIdDocument: studentsWithoutIdDocument.map((s) => ({
+        studentId: s.studentId,
+        studentName: s.studentName,
+      })),
+    },
   }
 }
 
 export async function getAdminMetricsRepository() {
-  // Secretarias
   const [secretariasTotal] = await db.select({ count: count() }).from(secretarias)
   const [secretariasActive] = await db
     .select({ count: count() })
     .from(secretarias)
     .where(eq(secretarias.active, true))
 
-  // Schools
   const [schoolsCount] = await db.select({ count: count() }).from(schools)
 
-  // Students — total + by enrollment status
   const [studentsTotal] = await db.select({ count: count() }).from(students)
   const studentsByStatusRows = await db
     .select({ status: students.enrollmentStatus, count: count() })
     .from(students)
     .groupBy(students.enrollmentStatus)
 
-  // Teachers — total + by employment status
   const [teachersTotal] = await db.select({ count: count() }).from(teachers)
   const teachersByStatusRows = await db
     .select({ status: teachers.employmentStatus, count: count() })
     .from(teachers)
     .groupBy(teachers.employmentStatus)
 
-  // Classes
   const [classesCount] = await db.select({ count: count() }).from(schoolClasses)
 
-  // Tuitions — platform-wide financial overview
   const tuitionStats = await db
     .select({
       status: tuitions.status,
@@ -112,7 +300,6 @@ export async function getAdminMetricsRepository() {
   const paid = tuitionStats.find((t) => t.status === 'paid')
   const overdue = tuitionStats.find((t) => t.status === 'overdue')
 
-  // Top 5 schools by student count
   const topSchoolsRows = await db
     .select({
       id: schools.id,
@@ -125,7 +312,6 @@ export async function getAdminMetricsRepository() {
     .orderBy(desc(count(students.id)))
     .limit(5)
 
-  // Recent activity — last 10 audit log entries
   const recentActivity = await db
     .select({
       id: auditLogs.id,
@@ -140,19 +326,17 @@ export async function getAdminMetricsRepository() {
     .orderBy(desc(auditLogs.createdAt))
     .limit(10)
 
-  // Students by status helper
-  const studentsByStatus = { active: 0, inactive: 0, transferred: 0, cancelled: 0 }
+  const studentsByStatus: Record<string, number> = { active: 0, inactive: 0, transferred: 0, cancelled: 0 }
   for (const row of studentsByStatusRows) {
     if (row.status in studentsByStatus) {
-      studentsByStatus[row.status as keyof typeof studentsByStatus] = row.count
+      studentsByStatus[row.status] = row.count
     }
   }
 
-  // Teachers by status helper
-  const teachersByStatus = { ativo: 0, inativo: 0, licenca: 0 }
+  const teachersByStatus: Record<string, number> = { ativo: 0, inativo: 0, licenca: 0 }
   for (const row of teachersByStatusRows) {
     if (row.status in teachersByStatus) {
-      teachersByStatus[row.status as keyof typeof teachersByStatus] = row.count
+      teachersByStatus[row.status] = row.count
     }
   }
 

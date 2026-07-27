@@ -36,6 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback((newToken: string) => {
     localStorage.setItem('token', newToken)
+    queryClient.clear()
+    sessionStorage.clear()
     setToken(newToken)
     setPayload(parseToken(newToken))
   }, [])

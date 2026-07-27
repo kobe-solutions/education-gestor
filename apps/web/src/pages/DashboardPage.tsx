@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Navigate } from 'react-router'
 import {
   Users,
@@ -16,6 +17,10 @@ import {
   ShieldCheck,
   TrendingUp,
   Presentation,
+  AlertTriangle,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { useDashboard, isAdminDashboard } from '../features/dashboard/hooks/useDashboard'
 import { useAuth } from '../contexts/AuthContext'
@@ -78,7 +83,7 @@ function DashMetric({ icon: Icon, value, label, sub, tone }: DashMetricProps) {
   return (
     <div
       className="flex flex-col gap-3 p-4 rounded-xl transition-all duration-200
-        hover:shadow-[var(--shadow-md)] hover:-translate-y-0.5"
+        hover:shadow-(--shadow-md) hover:-translate-y-0.5"
       style={{
         background: 'hsl(var(--card))',
         border: `1px solid ${t.borderColor}`,
@@ -459,6 +464,20 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
   const { blocked: financialBlocked } = useFinancialBlocked()
   const isProfessor = payload?.role === 'professor'
 
+  const ALERT_PAGE_SIZE = 10
+  const [guardianPage, setGuardianPage] = useState(1)
+  const [docPage, setDocPage] = useState(1)
+  const guardianTotalPages = Math.max(1, Math.ceil(data.alerts.studentsWithoutGuardians.length / ALERT_PAGE_SIZE))
+  const docTotalPages = Math.max(1, Math.ceil(data.alerts.studentsWithoutIdDocument.length / ALERT_PAGE_SIZE))
+  const guardianPaginated = data.alerts.studentsWithoutGuardians.slice(
+    (guardianPage - 1) * ALERT_PAGE_SIZE,
+    guardianPage * ALERT_PAGE_SIZE,
+  )
+  const docPaginated = data.alerts.studentsWithoutIdDocument.slice(
+    (docPage - 1) * ALERT_PAGE_SIZE,
+    docPage * ALERT_PAGE_SIZE,
+  )
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -498,6 +517,180 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
           <DashMetric icon={BookOpen} value={data.classesCount} label="Turmas" tone="slate" />
         </div>
       </section>
+
+      {/* ── Rendimento acadêmico ─────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Rendimento acadêmico"
+          subtitle="Frequência e desempenho escolar"
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          <DashMetric
+            icon={CalendarClock}
+            value={data.attendanceRate !== null ? `${data.attendanceRate}%` : '—'}
+            label="Frequência (30 dias)"
+            sub={data.attendanceRate !== null ? undefined : 'Sem registros'}
+            tone="amber"
+          />
+          <DashMetric
+            icon={TrendingUp}
+            value={data.academicPerformance.average ?? '—'}
+            label="Média geral"
+            sub={data.academicPerformance.average ? `${data.academicPerformance.totalGrades} notas` : undefined}
+            tone="indigo"
+          />
+          <DashMetric
+            icon={CheckCircle2}
+            value={data.academicPerformance.passRate !== null ? `${data.academicPerformance.passRate}%` : '—'}
+            label="Aprovação"
+            sub={data.academicPerformance.passRate !== null ? undefined : 'Sem notas'}
+            tone="emerald"
+          />
+        </div>
+      </section>
+
+      {/* ── Distribuição ────────────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader title="Distribuição" subtitle="Situação de alunos e professores" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div
+            className="rounded-xl p-5 space-y-3"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Alunos
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Ativos', value: data.studentsByStatus.active, tone: 'emerald' as ToneKey },
+                { label: 'Inativos', value: data.studentsByStatus.inactive, tone: 'slate' as ToneKey },
+                { label: 'Transferidos', value: data.studentsByStatus.transferred, tone: 'amber' as ToneKey },
+                { label: 'Cancelados', value: data.studentsByStatus.cancelled, tone: 'red' as ToneKey },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2"
+                  style={{ background: TONE_CONFIG[s.tone].iconBg }}
+                >
+                  <span className="text-lg font-bold tabular-nums" style={{ color: TONE_CONFIG[s.tone].valueColor }}>
+                    {s.value}
+                  </span>
+                  <span className="text-[11px] font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    {s.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div
+            className="rounded-xl p-5 space-y-3"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Professores
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Ativos', value: data.teachersByStatus.ativo, tone: 'emerald' as ToneKey },
+                { label: 'Inativos', value: data.teachersByStatus.inativo, tone: 'slate' as ToneKey },
+                { label: 'Licença', value: data.teachersByStatus.licenca, tone: 'amber' as ToneKey },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="flex items-center gap-2 rounded-lg px-3 py-2"
+                  style={{ background: TONE_CONFIG[s.tone].iconBg }}
+                >
+                  <span className="text-lg font-bold tabular-nums" style={{ color: TONE_CONFIG[s.tone].valueColor }}>
+                    {s.value}
+                  </span>
+                  <span className="text-[11px] font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    {s.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Turmas ──────────────────────────────────────────────────────── */}
+      {data.classOccupancy.length > 0 && (
+        <section className="space-y-4">
+          <SectionHeader title="Turmas" subtitle="Ocupação das turmas" />
+          <div
+            className="rounded-xl overflow-hidden"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                    {['Turma', 'Alunos', 'Vagas', 'Ocupação'].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                        style={{ color: 'hsl(var(--muted-foreground))' }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.classOccupancy.map((c) => {
+                    const pct = c.maxStudents > 0 ? Math.round((c.studentCount / c.maxStudents) * 100) : 0
+                    return (
+                      <tr
+                        key={c.className}
+                        className="transition-colors duration-150 hover:bg-accent"
+                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
+                      >
+                        <td className="px-5 py-3 font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                          {c.className}
+                        </td>
+                        <td className="px-5 py-3 tabular-nums" style={{ color: 'hsl(var(--foreground))' }}>
+                          {c.studentCount}
+                        </td>
+                        <td className="px-5 py-3 tabular-nums" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                          {c.maxStudents}
+                        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 rounded-full" style={{ background: 'hsl(var(--border))' }}>
+                              <div
+                                className="h-2 rounded-full transition-all"
+                                style={{
+                                  width: `${Math.min(pct, 100)}%`,
+                                  background: pct >= 90 ? '#EF4444' : pct >= 75 ? '#F59E0B' : '#22C55E',
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                              {pct}%
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      )}
 
       {!financialBlocked && (
         <section className="space-y-4">
@@ -606,6 +799,380 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         </div>
       </section>
       )}
+
+      {/* ── Alertas ──────────────────────────────────────────────────────── */}
+      <section className="space-y-4">
+        <SectionHeader title="Alertas" subtitle="Pontos que precisam de atenção" />
+        <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 ${!financialBlocked ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
+          {!financialBlocked && (
+          <Link
+            to="/financial"
+            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-center rounded-md shrink-0"
+                style={{ width: 32, height: 32, background: TONE_CONFIG.red.iconBg, color: TONE_CONFIG.red.iconColor }}
+              >
+                <AlertCircle size={16} strokeWidth={2.2} />
+              </div>
+              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.red.valueColor }}>
+                {data.alerts.overdueTuitions}
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Mensalidades atrasadas
+            </span>
+          </Link>
+          )}
+          <a
+            href="#alert-sem-responsavel"
+            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-center rounded-md shrink-0"
+                style={{ width: 32, height: 32, background: TONE_CONFIG.amber.iconBg, color: TONE_CONFIG.amber.iconColor }}
+              >
+                <AlertTriangle size={16} strokeWidth={2.2} />
+              </div>
+              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.amber.valueColor }}>
+                {data.alerts.studentsWithoutGuardians.length}
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Sem responsável
+            </span>
+          </a>
+          <a
+            href="#alert-sem-documento"
+            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-center rounded-md shrink-0"
+                style={{ width: 32, height: 32, background: TONE_CONFIG.amber.iconBg, color: TONE_CONFIG.amber.iconColor }}
+              >
+                <FileText size={16} strokeWidth={2.2} />
+              </div>
+              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.amber.valueColor }}>
+                {data.alerts.studentsWithoutIdDocument.length}
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Sem doc. identidade
+            </span>
+          </a>
+          <a
+            href="#alert-3-faltas"
+            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
+            style={{
+              background: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className="flex items-center justify-center rounded-md shrink-0"
+                style={{ width: 32, height: 32, background: TONE_CONFIG.amber.iconBg, color: TONE_CONFIG.amber.iconColor }}
+              >
+                <Users size={16} strokeWidth={2.2} />
+              </div>
+              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.amber.valueColor }}>
+                {data.alerts.lowAttendanceStudents.length}
+              </span>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Com 3+ faltas (30d)
+            </span>
+          </a>
+        </div>
+        {/* ── Tabela: Alunos 3+ faltas ─────────────────────────────────── */}
+        <div id="alert-3-faltas">
+          {data.alerts.lowAttendanceStudents.length > 0 && (
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                      {['Aluno', 'Faltas (30d)'].map((h) => (
+                        <th
+                          key={h}
+                          className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: 'hsl(var(--muted-foreground))' }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.alerts.lowAttendanceStudents.map((s) => (
+                      <tr
+                        key={s.studentId}
+                        className="transition-colors duration-150 hover:bg-accent"
+                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
+                      >
+                        <td className="px-5 py-3">
+                          <Link
+                            to={`/students/${s.studentId}`}
+                            className="font-semibold hover:underline"
+                            style={{ color: 'hsl(var(--foreground))' }}
+                          >
+                            {s.studentName}
+                          </Link>
+                        </td>
+                        <td className="px-5 py-3">
+                          <span
+                            className="inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold"
+                            style={{ background: TONE_CONFIG.red.iconBg, color: TONE_CONFIG.red.iconColor }}
+                          >
+                            {s.absenceCount} falta{s.absenceCount !== 1 ? 's' : ''}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Tabela: Alunos sem responsável ───────────────────────────── */}
+        <div id="alert-sem-responsavel">
+          {data.alerts.studentsWithoutGuardians.length > 0 && (
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
+                <AlertTriangle size={14} style={{ color: TONE_CONFIG.amber.iconColor }} />
+                <span className="text-xs font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  Alunos sem responsável cadastrado
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                      {['Aluno'].map((h) => (
+                        <th
+                          key={h}
+                          className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: 'hsl(var(--muted-foreground))' }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {guardianPaginated.map((s) => (
+                      <tr
+                        key={s.studentId}
+                        className="transition-colors duration-150 hover:bg-accent"
+                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
+                      >
+                        <td className="px-5 py-3">
+                          <Link
+                            to={`/students/${s.studentId}`}
+                            className="font-semibold hover:underline"
+                            style={{ color: 'hsl(var(--foreground))' }}
+                          >
+                            {s.studentName}
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {guardianTotalPages > 1 && (
+                <div
+                  className="flex items-center justify-between px-5 py-2.5 border-t"
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    Mostrando 1–{Math.min(ALERT_PAGE_SIZE, data.alerts.studentsWithoutGuardians.length)} de{' '}
+                    {data.alerts.studentsWithoutGuardians.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={guardianPage <= 1}
+                      onClick={() => setGuardianPage((p) => Math.max(1, p - 1))}
+                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
+                      style={{ color: 'hsl(var(--muted-foreground))' }}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    {Array.from({ length: guardianTotalPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === guardianTotalPages || Math.abs(p - guardianPage) <= 1)
+                      .map((p, idx, arr) => (
+                        <span key={p} className="flex items-center gap-1">
+                          {idx > 0 && arr[idx - 1] !== p - 1 && (
+                            <span className="px-1 text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>...</span>
+                          )}
+                          <button
+                            onClick={() => setGuardianPage(p)}
+                            className="min-w-[26px] h-[26px] rounded text-xs font-medium transition-colors hover:bg-accent"
+                            style={{
+                              background: p === guardianPage ? 'hsl(var(--primary))' : 'transparent',
+                              color: p === guardianPage ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                            }}
+                          >
+                            {p}
+                          </button>
+                        </span>
+                      ))}
+                    <button
+                      disabled={guardianPage >= guardianTotalPages}
+                      onClick={() => setGuardianPage((p) => Math.min(guardianTotalPages, p + 1))}
+                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
+                      style={{ color: 'hsl(var(--muted-foreground))' }}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Tabela: Alunos sem documento ─────────────────────────────── */}
+        <div id="alert-sem-documento">
+          {data.alerts.studentsWithoutIdDocument.length > 0 && (
+            <div
+              className="rounded-xl overflow-hidden"
+              style={{
+                background: 'hsl(var(--card))',
+                border: '1px solid hsl(var(--border))',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
+                <FileText size={14} style={{ color: TONE_CONFIG.amber.iconColor }} />
+                <span className="text-xs font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  Alunos sem documento de identidade
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                      {['Aluno'].map((h) => (
+                        <th
+                          key={h}
+                          className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
+                          style={{ color: 'hsl(var(--muted-foreground))' }}
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {docPaginated.map((s) => (
+                      <tr
+                        key={s.studentId}
+                        className="transition-colors duration-150 hover:bg-accent"
+                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
+                      >
+                        <td className="px-5 py-3">
+                          <Link
+                            to={`/students/${s.studentId}`}
+                            className="font-semibold hover:underline"
+                            style={{ color: 'hsl(var(--foreground))' }}
+                          >
+                            {s.studentName}
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {docTotalPages > 1 && (
+                <div
+                  className="flex items-center justify-between px-5 py-2.5 border-t"
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                    Mostrando 1–{Math.min(ALERT_PAGE_SIZE, data.alerts.studentsWithoutIdDocument.length)} de{' '}
+                    {data.alerts.studentsWithoutIdDocument.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      disabled={docPage <= 1}
+                      onClick={() => setDocPage((p) => Math.max(1, p - 1))}
+                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
+                      style={{ color: 'hsl(var(--muted-foreground))' }}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    {Array.from({ length: docTotalPages }, (_, i) => i + 1)
+                      .filter((p) => p === 1 || p === docTotalPages || Math.abs(p - docPage) <= 1)
+                      .map((p, idx, arr) => (
+                        <span key={p} className="flex items-center gap-1">
+                          {idx > 0 && arr[idx - 1] !== p - 1 && (
+                            <span className="px-1 text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>...</span>
+                          )}
+                          <button
+                            onClick={() => setDocPage(p)}
+                            className="min-w-[26px] h-[26px] rounded text-xs font-medium transition-colors hover:bg-accent"
+                            style={{
+                              background: p === docPage ? 'hsl(var(--primary))' : 'transparent',
+                              color: p === docPage ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
+                            }}
+                          >
+                            {p}
+                          </button>
+                        </span>
+                      ))}
+                    <button
+                      disabled={docPage >= docTotalPages}
+                      onClick={() => setDocPage((p) => Math.min(docTotalPages, p + 1))}
+                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
+                      style={{ color: 'hsl(var(--muted-foreground))' }}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
     </div>
   )
 }

@@ -26,9 +26,8 @@ import {
 import { useStudentTuitions } from '../../financial/hooks/useFinancial'
 import { useStudentClasses } from '../../classes/hooks/useClasses'
 import { TuitionStatusBadge } from '../../financial/components/TuitionStatusBadge'
-import { useFinancialVisibility } from '../../../contexts/FinancialVisibilityContext'
 import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
-import { fmtBRL, formatDateBR, maskDoc } from '../../../lib/format'
+import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { toast } from '../../../lib/toast'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
@@ -68,7 +67,6 @@ export function StudentDetailPage() {
   const { data: student, isLoading } = useStudent(id!)
   const { data: guardians } = useStudentGuardians(id!)
   const { data: tuitions } = useStudentTuitions(id!)
-  const { hideFinancialData } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const { data: medical } = useStudentMedical(id!)
   const { data: studentClasses = [] } = useStudentClasses(id!)
@@ -242,11 +240,11 @@ export function StudentDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">CPF</p>
-                  <p className="text-sm font-medium mt-0.5">{hideFinancialData ? maskDoc(student.cpf) : (student.cpf || '—')}</p>
+                  <p className="text-sm font-medium mt-0.5">{student.cpf || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">RG</p>
-                  <p className="text-sm font-medium mt-0.5">{hideFinancialData ? maskDoc(student.rg) : (student.rg || '—')}</p>
+                  <p className="text-sm font-medium mt-0.5">{student.rg || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Tipo sanguíneo</p>
@@ -365,7 +363,7 @@ export function StudentDetailPage() {
                           {g.relationship}
                           {g.phone ? ` · ${g.phone}` : ''}
                           {g.email ? ` · ${g.email}` : ''}
-                          {g.cpf ? ` · CPF: ${hideFinancialData ? maskDoc(g.cpf) : g.cpf}` : ''}
+                          {g.cpf ? ` · CPF: ${g.cpf}` : ''}
                         </p>
                         <div className="flex gap-1.5 pt-1">
                           {g.isResponsible && (
