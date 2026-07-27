@@ -30,6 +30,7 @@ export async function createSecretariaRepository(input: CreateSecretariaReposito
       address: secretarias.address,
       responsible: secretarias.responsible,
       active: secretarias.active,
+      showFinancial: secretarias.showFinancial,
       role: secretarias.role,
       createdAt: secretarias.createdAt,
     })
@@ -101,6 +102,10 @@ export async function findSchoolsBySecretariaIdRepository(secretariaId: string) 
       name: schools.name,
       slug: schools.slug,
       email: schools.email,
+      director: schools.director,
+      coordinator: schools.coordinator,
+      phone: schools.phone,
+      address: schools.address,
       createdAt: schools.createdAt,
     })
     .from(secretariaSchools)
@@ -130,6 +135,7 @@ export async function updateSecretariaRepository(id: string, data: UpdateSecreta
       address: secretarias.address,
       responsible: secretarias.responsible,
       active: secretarias.active,
+      showFinancial: secretarias.showFinancial,
       role: secretarias.role,
       createdAt: secretarias.createdAt,
     })
@@ -139,6 +145,35 @@ export async function updateSecretariaRepository(id: string, data: UpdateSecreta
 
 export async function deleteSecretariaRepository(id: string) {
   await db.delete(secretarias).where(eq(secretarias.id, id))
+}
+
+export async function toggleSecretariaFinancialVisibilityRepository(id: string) {
+  const [secretaria] = await db
+    .select({ showFinancial: secretarias.showFinancial })
+    .from(secretarias)
+    .where(eq(secretarias.id, id))
+    .limit(1)
+
+  if (!secretaria) return null
+
+  const [updated] = await db
+    .update(secretarias)
+    .set({ showFinancial: !secretaria.showFinancial, updatedAt: new Date() })
+    .where(eq(secretarias.id, id))
+    .returning({
+      id: secretarias.id,
+      name: secretarias.name,
+      email: secretarias.email,
+      phone: secretarias.phone,
+      address: secretarias.address,
+      responsible: secretarias.responsible,
+      active: secretarias.active,
+      showFinancial: secretarias.showFinancial,
+      role: secretarias.role,
+      createdAt: secretarias.createdAt,
+    })
+
+  return updated
 }
 
 export async function updateSecretariaPasswordRepository(id: string, passwordHash: string) {
@@ -158,6 +193,7 @@ export async function listSecretariasRepository() {
       address: secretarias.address,
       responsible: secretarias.responsible,
       active: secretarias.active,
+      showFinancial: secretarias.showFinancial,
       role: secretarias.role,
       createdAt: secretarias.createdAt,
     })

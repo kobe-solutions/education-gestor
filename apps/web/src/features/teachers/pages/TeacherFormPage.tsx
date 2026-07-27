@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Badge } from '../../../components/ui/badge'
 import { useTeacher, useCreateTeacher, useUpdateTeacher, useChangeTeacherPassword } from '../hooks/useTeachers'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useSecretariaSchools } from '../../secretarias/hooks/useSecretarias'
 
 function Opt() {
   return <span className="ml-1 text-[10px] font-normal text-muted-foreground">(opcional)</span>
@@ -212,8 +214,36 @@ export function TeacherFormPage() {
     senhaForm.reset()
   }
 
+  // ── Guard: secretaria sem escolas não pode criar ──────────────────────────
+
+  const { payload } = useAuth()
+  const isSecretaria = payload?.role === 'secretaria'
+  const secretariaId = isSecretaria ? (payload as Record<string, unknown>).secretariaId as string : undefined
+  const { data: linkedSchools, isLoading: loadingSchools } = useSecretariaSchools(secretariaId ?? '')
+  const showBlocked = !isEdit && isSecretaria && !loadingSchools && linkedSchools?.length === 0
+
   if (isLoading && isEdit) {
     return <p className="text-sm text-muted-foreground">Carregando...</p>
+  }
+
+  if (showBlocked) {
+    return (
+      <div className="max-w-xl mx-auto mt-20 text-center space-y-4">
+        <div className="text-5xl">🏫</div>
+        <h2 className="text-xl font-semibold">Nenhuma escola vinculada</h2>
+        <p className="text-muted-foreground">
+          Sua secretaria não está vinculada a nenhuma escola. Entre em contato com um administrador
+          para vincular sua secretaria a pelo menos uma escola antes de cadastrar professores.
+        </p>
+        <Button variant="outline" onClick={() => navigate('/teachers')}>
+          Voltar para professores
+        </Button>
+      </div>
+    )
+  }
+
+  if (loadingSchools && !isEdit && isSecretaria) {
+    return <p className="text-sm text-muted-foreground">Verificando permissões...</p>
   }
 
   return (

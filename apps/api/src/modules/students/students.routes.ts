@@ -67,13 +67,16 @@ export async function studentsRoutes(app: FastifyInstance) {
   app.post('/students', { preHandler }, async (request, reply) => {
     try {
       const body = createStudentBodySchema.parse(request.body)
-      const student = await createStudentService(getSchoolId(request), body)
       const user = request.user as TenantPayload
+      const student = await createStudentService(getSchoolId(request), body, { role: user.role, secretariaId: (user as Record<string, unknown>).secretariaId as string | undefined })
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'CREATE', 'student', student.id)
       return reply.status(201).send(student)
     } catch (e) {
       if (e instanceof Error && e.message === 'Enrollment code already in use') {
         return reply.status(409).send({ message: e.message })
+      }
+      if (e instanceof Error && e.message === 'Secretaria não possui escolas vinculadas') {
+        return reply.status(403).send({ message: e.message })
       }
       throw e
     }

@@ -42,13 +42,16 @@ export async function teachersRoutes(app: FastifyInstance) {
   app.post('/teachers', { preHandler: writePreHandler }, async (request, reply) => {
     try {
       const body = createTeacherBodySchema.parse(request.body)
-      const teacher = await createTeacherService(getSchoolId(request), body)
       const user = request.user as TenantPayload
+      const teacher = await createTeacherService(getSchoolId(request), body, { role: user.role, secretariaId: (user as Record<string, unknown>).secretariaId as string | undefined })
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'CREATE', 'teacher', teacher.id)
       return reply.status(201).send(teacher)
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher already exists with this email') {
         return reply.status(409).send({ message: error.message })
+      }
+      if (error instanceof Error && error.message === 'Secretaria não possui escolas vinculadas') {
+        return reply.status(403).send({ message: error.message })
       }
       throw error
     }

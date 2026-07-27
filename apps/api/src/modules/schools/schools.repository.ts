@@ -11,6 +11,7 @@ const schoolFields = {
   coordinator: schools.coordinator,
   phone: schools.phone,
   address: schools.address,
+  showFinancial: schools.showFinancial,
   createdAt: schools.createdAt,
 }
 
@@ -102,6 +103,24 @@ export async function updateSchoolRepository(
     .returning(schoolFields)
 
   return school
+}
+
+export async function toggleSchoolFinancialVisibilityRepository(id: string) {
+  const [school] = await db
+    .select({ showFinancial: schools.showFinancial })
+    .from(schools)
+    .where(eq(schools.id, id))
+    .limit(1)
+
+  if (!school) return null
+
+  const [updated] = await db
+    .update(schools)
+    .set({ showFinancial: !school.showFinancial, updatedAt: new Date() })
+    .where(eq(schools.id, id))
+    .returning(schoolFields)
+
+  return updated
 }
 
 export async function updateSchoolPasswordRepository(id: string, passwordHash: string) {

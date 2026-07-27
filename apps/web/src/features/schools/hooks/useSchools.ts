@@ -64,3 +64,22 @@ export function useDeleteSchool() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
   })
 }
+
+export function useChangeSchoolPassword() {
+  return useMutation({
+    mutationFn: async ({ id, password }: { id: string; password: string }) => {
+      await api.put(`/schools/${id}/password`, { password })
+    },
+  })
+}
+
+export function useToggleSchoolFinancialVisibility() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await api.patch<School>(`/schools/${id}/financial-visibility`)
+      return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
+  })
+}

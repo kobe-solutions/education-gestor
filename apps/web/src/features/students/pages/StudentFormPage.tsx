@@ -32,6 +32,10 @@ import {
   useDeleteDocument,
 } from '../hooks/useStudents'
 import { useClasses, useStudentClasses, useAddStudentToClass } from '../../classes/hooks/useClasses'
+import { useFinancialVisibility } from '../../../contexts/FinancialVisibilityContext'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useSecretariaSchools } from '../../secretarias/hooks/useSecretarias'
+import { maskDoc } from '../../../lib/format'
 
 function Opt() {
   return <span className="ml-1 text-[10px] font-normal text-muted-foreground">(opcional)</span>
@@ -99,6 +103,7 @@ export function StudentFormPage() {
   const { id } = useParams<{ id?: string }>()
   const navigate = useNavigate()
   const isEdit = !!id
+  const { hideFinancialData } = useFinancialVisibility()
 
   const { data: student, isLoading } = useStudent(id ?? '')
   const { data: guardians } = useStudentGuardians(id ?? '')
@@ -148,6 +153,14 @@ export function StudentFormPage() {
   const docInputRef = useRef<HTMLInputElement>(null)
   const [docType, setDocType] = useState('outros')
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false)
+
+  // ── Guard: secretaria sem escolas não pode criar ──────────────────────────
+
+  const { payload } = useAuth()
+  const isSecretaria = payload?.role === 'secretaria'
+  const secretariaId = isSecretaria ? (payload as Record<string, unknown>).secretariaId as string : undefined
+  const { data: linkedSchools, isLoading: loadingSchools } = useSecretariaSchools(secretariaId ?? '')
+  const showBlocked = !isEdit && isSecretaria && !loadingSchools && linkedSchools?.length === 0
 
   // ── Formulário: dados pessoais ─────────────────────────────────────────────
 
@@ -264,6 +277,26 @@ export function StudentFormPage() {
 
   if (isLoading && isEdit) {
     return <p className="text-sm text-muted-foreground">Carregando...</p>
+  }
+
+  if (showBlocked) {
+    return (
+      <div className="max-w-xl mx-auto mt-20 text-center space-y-4">
+        <div className="text-5xl">🏫</div>
+        <h2 className="text-xl font-semibold">Nenhuma escola vinculada</h2>
+        <p className="text-muted-foreground">
+          Sua secretaria não está vinculada a nenhuma escola. Entre em contato com um administrador
+          para vincular sua secretaria a pelo menos uma escola antes de cadastrar alunos.
+        </p>
+        <Button variant="outline" onClick={() => navigate('/students')}>
+          Voltar para alunos
+        </Button>
+      </div>
+    )
+  }
+
+  if (loadingSchools && !isEdit && isSecretaria) {
+    return <p className="text-sm text-muted-foreground">Verificando permissões...</p>
   }
 
   return (
@@ -594,7 +627,7 @@ export function StudentFormPage() {
                 <div key={g.id} className="flex items-start justify-between border rounded-sm px-3 py-2">
                   <div>
                     <p className="text-sm font-medium">{g.name}</p>
-                    <p className="text-xs text-muted-foreground">{g.relationship}{g.phone ? ` · ${g.phone}` : ''}{g.cpf ? ` · CPF: ${g.cpf}` : ''}</p>
+                    <p className="text-xs text-muted-foreground">{g.relationship}{g.phone ? ` · ${g.phone}` : ''}{g.cpf ? ` · CPF: ${hideFinancialData ? maskDoc(g.cpf) : g.cpf}` : ''}</p>
                     <div className="flex gap-1 mt-1">
                       {g.isResponsible && <Badge variant="outline" className="text-[10px] h-4 px-1">Responsável</Badge>}
                       {g.isAuthorizedPickup && <Badge variant="secondary" className="text-[10px] h-4 px-1">Autorizado a buscar</Badge>}
