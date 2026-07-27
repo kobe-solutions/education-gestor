@@ -2,6 +2,7 @@ import { eq, count } from 'drizzle-orm'
 import { db } from '../../db'
 import { secretariaSchools } from '../../db/schema/secretarias'
 import { hashPassword, verifyPassword } from '../../lib/crypto'
+import { deleteFile, extractKeyFromUrl, uploadFile } from '../../lib/storage'
 import {
   createTeacherRepository,
   findTeacherByEmailRepository,
@@ -116,5 +117,25 @@ export async function removeTeacherSubjectService(schoolId: string, teacherId: s
   const teacher = await findTeacherByIdRepository(schoolId, teacherId)
   if (!teacher) throw new Error('Teacher not found')
   await removeSubjectFromTeacherRepository(teacherId, subjectId)
+}
+
+export async function uploadTeacherPhotoService(
+  schoolId: string,
+  teacherId: string,
+  buffer: Buffer,
+  mimeType: string,
+  ext: string,
+) {
+  const teacher = await findTeacherByIdRepository(schoolId, teacherId)
+  if (!teacher) throw new Error('Teacher not found')
+
+  if (teacher.photoUrl) {
+    await deleteFile(extractKeyFromUrl(teacher.photoUrl)).catch(() => null)
+  }
+
+  const key = `schools/${schoolId}/teachers/${teacherId}/photo.${ext}`
+  const url = await uploadFile(key, buffer, mimeType)
+
+  return updateTeacherRepository(schoolId, teacherId, { photoUrl: url })
 }
 

@@ -12,14 +12,75 @@ import {
   updateTeacherService,
   deleteTeacherService,
   changeTeacherPasswordService,
+  uploadTeacherPhotoService,
   addTeacherSubjectService,
   removeTeacherSubjectService,
 } from './teachers.service'
+
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
+function extFromMime(mime: string) {
+  const map: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
+  return map[mime] ?? 'jpg'
+}
 
 const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
 const writePreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
 
 export async function teachersRoutes(app: FastifyInstance) {
+  // ── Self-service (professor) ──────────────────────────────────────────────────
+
+  app.put('/teachers/me', { preHandler: readPreHandler }, async (request, reply) => {
+    try {
+      const teacherId = (request.user as TenantPayload).userId
+      const body = updateTeacherBodySchema.parse(request.body)
+      return reply.send(await updateTeacherService(getSchoolId(request), teacherId, body))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.put('/teachers/me/password', { preHandler: readPreHandler }, async (request, reply) => {
+    try {
+      const teacherId = (request.user as TenantPayload).userId
+      const body = changePasswordBodySchema.parse(request.body)
+      await changeTeacherPasswordService(getSchoolId(request), teacherId, body.password)
+      return reply.status(204).send()
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.post('/teachers/me/photo', { preHandler: readPreHandler }, async (request, reply) => {
+    try {
+      const teacherId = (request.user as TenantPayload).userId
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+      if (!ALLOWED_IMAGE_TYPES.includes(data.mimetype))
+        return reply.status(400).send({ message: 'Formato inválido. Use JPEG, PNG ou WebP.' })
+
+      const buffer = await data.toBuffer()
+      if (buffer.length > MAX_FILE_SIZE)
+        return reply.status(400).send({ message: 'Arquivo muito grande. Máximo 10MB.' })
+
+      return reply.send(await uploadTeacherPhotoService(
+        getSchoolId(request), teacherId, buffer, data.mimetype, extFromMime(data.mimetype),
+      ))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
   app.get('/teachers', { preHandler: readPreHandler }, async (request, reply) => {
     const { page = '1', limit = '50' } = request.query as { page?: string; limit?: string }
     const limitN = Math.min(parseInt(limit, 10) || 50, 200)
