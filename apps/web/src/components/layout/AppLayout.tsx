@@ -111,11 +111,18 @@ const navItems: NavItem[] = [
     matchPaths: ['/settings', '/subjects', '/academic-periods'],
   },
   {
-    to: '/admin',
-    label: 'Administração',
+    to: '/secretarias',
+    label: 'Secretarias',
     icon: Building2,
     roles: ['admin'],
-    matchPaths: ['/admin', '/secretarias'],
+    matchPaths: ['/secretarias'],
+  },
+  {
+    to: '/schools',
+    label: 'Escolas',
+    icon: School,
+    roles: ['admin', 'secretaria'],
+    matchPaths: ['/schools', '/my-schools'],
   },
   {
     to: '/admin/activity',
@@ -123,13 +130,6 @@ const navItems: NavItem[] = [
     icon: Activity,
     roles: ['admin'],
     matchPaths: ['/admin/activity'],
-  },
-  {
-    to: '/schools-hub',
-    label: 'Escolas',
-    icon: School,
-    roles: ['secretaria'],
-    matchPaths: ['/schools-hub', '/schools', '/my-schools'],
   },
 ]
 

@@ -133,7 +133,6 @@ export function App() {
 
                 {/* Admin */}
                 <Route element={<PrivateRoute allowedRoles={['admin']} />}>
-                  <Route path="/admin" element={<Suspense fallback={<PageLoader />}><HubAdminPage /></Suspense>} />
                   <Route path="/admin/activity" element={<Suspense fallback={<PageLoader />}><AdminActivityPage /></Suspense>} />
                   <Route path="/secretarias" element={<Suspense fallback={<PageLoader />}><SecretariasPage /></Suspense>} />
                 </Route>

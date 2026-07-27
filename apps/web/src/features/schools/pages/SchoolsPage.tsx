@@ -139,6 +139,7 @@ function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }:
         <Separator className="my-4" />
 
         <div className="flex items-center gap-2 flex-wrap">
+          {!isSecretaria && (
           <div className="flex items-center gap-2 mr-2">
             <Switch
               checked={school.showFinancial}
@@ -149,7 +150,9 @@ function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }:
             <Label htmlFor={`school-financial-${school.id}`} className="text-xs cursor-pointer">
               {school.showFinancial ? <Eye size={14} /> : <EyeOff size={14} />}
             </Label>
+            {school.showFinancial ? 'Informações financeiras visíveis' : 'Informações financeiras ocultas'}
           </div>
+          )}
           <Button
             variant="outline"
             size="sm"

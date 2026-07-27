@@ -16,6 +16,36 @@ export interface UpcomingTuition {
   status: 'pending' | 'overdue'
 }
 
+export interface ClassOccupancy {
+  className: string
+  studentCount: number
+  maxStudents: number
+}
+
+export interface LowAttendanceStudent {
+  studentId: string
+  studentName: string
+  absenceCount: number
+}
+
+export interface AlertStudent {
+  studentId: string
+  studentName: string
+}
+
+export interface Alerts {
+  lowAttendanceStudents: LowAttendanceStudent[]
+  overdueTuitions: number
+  studentsWithoutGuardians: AlertStudent[]
+  studentsWithoutIdDocument: AlertStudent[]
+}
+
+export interface AcademicPerformance {
+  average: string | null
+  passRate: number | null
+  totalGrades: number
+}
+
 export interface SchoolDashboard {
   studentsCount: number
   teachersCount: number
@@ -26,6 +56,13 @@ export interface SchoolDashboard {
     overdue: TuitionStat
   }
   upcomingTuitions: UpcomingTuition[]
+  attendanceRate: number | null
+  academicPerformance: AcademicPerformance
+  classOccupancy: ClassOccupancy[]
+  studentsByStatus: { active: number; inactive: number; transferred: number; cancelled: number }
+  teachersByStatus: { ativo: number; inativo: number; licenca: number }
+  recentActivity: ActivityEntry[]
+  alerts: Alerts
 }
 
 export interface TopSchool {

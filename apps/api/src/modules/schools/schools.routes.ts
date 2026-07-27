@@ -15,6 +15,7 @@ import {
 } from './schools.service'
 import { createSchoolBodySchema, updateSchoolBodySchema, changePasswordBodySchema } from './schools.schema'
 
+const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
 const secretariaOnly = [authenticate, injectTenant, authorizeRoles(['secretaria'])]
 const adminOrSecretaria = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria'])]
 
@@ -99,12 +100,11 @@ export async function schoolsRoutes(app: FastifyInstance) {
     }
   })
 
-  app.patch('/schools/:id/financial-visibility', { preHandler: adminOrSecretaria }, async (request: FastifyRequest, reply: FastifyReply) => {
+  app.patch('/schools/:id/financial-visibility', { preHandler: adminOnly }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { id } = request.params as { id: string }
       const user = request.user as JwtPayload
-      const secretariaId = user.role === 'secretaria' ? (user as SecretariaPayload).secretariaId : undefined
-      const result = await toggleSchoolFinancialVisibilityService(id, { role: user.role, secretariaId })
+      const result = await toggleSchoolFinancialVisibilityService(id)
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'UPDATE', 'school', id)
       return reply.send(result)
     } catch (error) {
