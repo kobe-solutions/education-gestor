@@ -4,6 +4,7 @@ import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles, type JwtPayload } from '../../middlewares/authorize'
 import { logAudit } from '../../lib/audit'
 import { createSecretariaBodySchema, updateSecretariaBodySchema, addSchoolBodySchema } from './secretarias.schema'
+import { validateImageFile, extFromMime } from '../../lib/validators'
 import {
   createSecretariaService,
   updateSecretariaService,
@@ -14,6 +15,7 @@ import {
   listSecretariasService,
   changeSecretariaPasswordService,
   toggleSecretariaFinancialVisibilityService,
+  uploadSecretariaLogoService,
 } from './secretarias.service'
 import { changePasswordBodySchema } from '../schools/schools.schema'
 
@@ -102,6 +104,25 @@ export async function secretariasRoutes(app: FastifyInstance) {
       }
     },
   )
+
+  app.post('/secretarias/:id/logo', { preHandler: [authenticate, injectTenant, authorizeRoles(['admin'])] }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+
+      const buffer = await data.toBuffer()
+      const validation = validateImageFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+
+      return reply.send(await uploadSecretariaLogoService(id, buffer, data.mimetype, extFromMime(data.mimetype)))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Secretaria not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
 
   app.delete(
     '/secretarias/:id',

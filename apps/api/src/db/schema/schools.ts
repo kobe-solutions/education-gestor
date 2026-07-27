@@ -11,6 +11,7 @@ export const schools = pgTable('schools', {
   coordinator: text('coordinator'),
   phone: text('phone'),
   address: text('address'),
+  logoUrl: text('logo_url'),
   showFinancial: boolean('show_financial').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

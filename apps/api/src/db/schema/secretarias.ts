@@ -10,6 +10,7 @@ export const secretarias = pgTable('secretarias', {
   phone: text('phone'),
   address: text('address'),
   responsible: text('responsible'),
+  logoUrl: text('logo_url'),
   active: boolean('active').notNull().default(true),
   showFinancial: boolean('show_financial').notNull().default(true),
   createdAt: timestamp('created_at').notNull().defaultNow(),

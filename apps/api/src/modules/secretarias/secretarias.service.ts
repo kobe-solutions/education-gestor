@@ -1,4 +1,5 @@
 import { hashPassword } from '../../lib/crypto'
+import { uploadFile, deleteFile, extractKeyFromUrl } from '../../lib/storage'
 import {
   createSecretariaRepository,
   findSecretariaByEmailRepository,
@@ -48,6 +49,7 @@ type UpdateSecretariaServiceInput = {
   phone?: string | null
   address?: string | null
   responsible?: string | null
+  logoUrl?: string
   active?: boolean
 }
 
@@ -132,4 +134,23 @@ export async function listSchoolsBySecretariaService(secretariaId: string) {
   }
 
   return findSchoolsBySecretariaIdRepository(secretariaId)
+}
+
+export async function uploadSecretariaLogoService(
+  id: string,
+  buffer: Buffer,
+  mimeType: string,
+  ext: string,
+) {
+  const secretaria = await findSecretariaByIdRepository(id)
+  if (!secretaria) throw new Error('Secretaria not found')
+
+  if (secretaria.logoUrl) {
+    await deleteFile(extractKeyFromUrl(secretaria.logoUrl)).catch(() => null)
+  }
+
+  const key = `secretarias/${id}/logo.${ext}`
+  const url = await uploadFile(key, buffer, mimeType)
+
+  return updateSecretariaRepository(id, { logoUrl: url })
 }

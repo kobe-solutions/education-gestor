@@ -109,6 +109,20 @@ export function useChangeSchoolPassword() {
   })
 }
 
+export function useUploadSecretariaLogo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<Secretaria>(`/secretarias/${id}/logo`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['secretarias'] }),
+  })
+}
+
 export function useToggleSecretariaFinancialVisibility() {
   const qc = useQueryClient()
   return useMutation({

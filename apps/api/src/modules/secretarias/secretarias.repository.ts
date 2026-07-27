@@ -29,6 +29,7 @@ export async function createSecretariaRepository(input: CreateSecretariaReposito
       phone: secretarias.phone,
       address: secretarias.address,
       responsible: secretarias.responsible,
+      logoUrl: secretarias.logoUrl,
       active: secretarias.active,
       showFinancial: secretarias.showFinancial,
       role: secretarias.role,
@@ -60,6 +61,7 @@ export async function findSecretariaByIdRepository(id: string) {
       id: secretarias.id,
       name: secretarias.name,
       email: secretarias.email,
+      logoUrl: secretarias.logoUrl,
       role: secretarias.role,
       createdAt: secretarias.createdAt,
     })
@@ -119,6 +121,7 @@ type UpdateSecretariaRepositoryInput = {
   phone?: string | null
   address?: string | null
   responsible?: string | null
+  logoUrl?: string | null
   active?: boolean
 }
 
@@ -134,6 +137,7 @@ export async function updateSecretariaRepository(id: string, data: UpdateSecreta
       phone: secretarias.phone,
       address: secretarias.address,
       responsible: secretarias.responsible,
+      logoUrl: secretarias.logoUrl,
       active: secretarias.active,
       showFinancial: secretarias.showFinancial,
       role: secretarias.role,
@@ -167,13 +171,14 @@ export async function toggleSecretariaFinancialVisibilityRepository(id: string) 
       phone: secretarias.phone,
       address: secretarias.address,
       responsible: secretarias.responsible,
+      logoUrl: secretarias.logoUrl,
       active: secretarias.active,
       showFinancial: secretarias.showFinancial,
       role: secretarias.role,
       createdAt: secretarias.createdAt,
     })
 
-  return updated
+  return secretaria
 }
 
 export async function updateSecretariaPasswordRepository(id: string, passwordHash: string) {
@@ -192,6 +197,7 @@ export async function listSecretariasRepository() {
       phone: secretarias.phone,
       address: secretarias.address,
       responsible: secretarias.responsible,
+      logoUrl: secretarias.logoUrl,
       active: secretarias.active,
       showFinancial: secretarias.showFinancial,
       role: secretarias.role,

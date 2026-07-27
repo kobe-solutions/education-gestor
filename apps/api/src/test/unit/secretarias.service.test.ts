@@ -19,6 +19,7 @@ const mockSecretaria = {
   role: 'secretaria',
   phone: null as string | null,
   address: null as string | null,
+  logoUrl: null as string | null,
   responsible: null as string | null,
   active: true,
   showFinancial: true,

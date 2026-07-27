@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, date, numeric, index } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, date, numeric, integer, index } from 'drizzle-orm/pg-core'
 import { schools } from './schools'
 import { students } from './students'
 
@@ -14,6 +14,10 @@ export const tuitions = pgTable('tuitions', {
   dueDate: date('due_date').notNull(),
   paidAt: timestamp('paid_at'),
   status: text('status').notNull().default('pending'),
+  boletoUrl: text('boleto_url'),
+  boletoFileSize: integer('boleto_file_size'),
+  receiptUrl: text('receipt_url'),
+  receiptFileSize: integer('receipt_file_size'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({

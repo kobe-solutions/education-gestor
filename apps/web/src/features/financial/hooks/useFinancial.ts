@@ -65,3 +65,31 @@ export function useRegisterPayment() {
     },
   })
 }
+
+export function useUploadTuitionBoleto() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<Tuition>(`/tuitions/${id}/boleto`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tuitions'] }),
+  })
+}
+
+export function useUploadTuitionReceipt() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, file }: { id: string; file: File }) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<Tuition>(`/tuitions/${id}/receipt`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['tuitions'] }),
+  })
+}

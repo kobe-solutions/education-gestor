@@ -31,6 +31,7 @@ export interface School {
   coordinator: string | null
   phone: string | null
   address: string | null
+  logoUrl: string | null
   showFinancial: boolean
   createdAt: string
 }
@@ -48,6 +49,7 @@ export type EnrollmentStatus = 'active' | 'inactive' | 'transferred' | 'cancelle
 export type BloodType = 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-'
 export type Sex = 'M' | 'F' | 'outro'
 export type DocumentType = 'historico' | 'boletim' | 'identidade' | 'outros'
+export type TeacherDocumentType = 'diploma' | 'certificado' | 'registro' | 'outros'
 
 export interface Student {
   id: string
@@ -113,6 +115,17 @@ export interface StudentDocument {
   studentId: string
   name: string
   type: DocumentType
+  fileUrl: string
+  fileSize: number | null
+  mimeType: string | null
+  createdAt: string
+}
+
+export interface TeacherDocument {
+  id: string
+  teacherId: string
+  name: string
+  type: TeacherDocumentType
   fileUrl: string
   fileSize: number | null
   mimeType: string | null
@@ -239,6 +252,10 @@ export interface Tuition {
   dueDate: string
   paidAt: string | null
   status: 'pending' | 'paid' | 'overdue'
+  boletoUrl: string | null
+  boletoFileSize: number | null
+  receiptUrl: string | null
+  receiptFileSize: number | null
   createdAt: string
   updatedAt: string
 }
@@ -250,6 +267,7 @@ export interface Secretaria {
   phone: string | null
   address: string | null
   responsible: string | null
+  logoUrl: string | null
   active: boolean
   showFinancial: boolean
   role: 'secretaria'

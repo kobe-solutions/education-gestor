@@ -3,6 +3,7 @@ import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { validateDocumentFile, extFromMime } from '../../lib/validators'
 import { createTuitionBodySchema, updateTuitionBodySchema } from './financial.schema'
 import {
   listTuitionsService,
@@ -10,6 +11,8 @@ import {
   createTuitionService,
   updateTuitionService,
   registerPaymentService,
+  uploadTuitionBoletoService,
+  uploadTuitionReceiptService,
 } from './financial.service'
 import { logAudit } from '../../lib/audit'
 import type { TenantPayload } from '../../middlewares/authorize'
@@ -76,6 +79,48 @@ export async function financialRoutes(app: FastifyInstance) {
       if (error instanceof Error) {
         if (error.message === 'Tuition not found') return reply.status(404).send({ message: error.message })
         if (error.message === 'Tuition already paid') return reply.status(409).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.post('/tuitions/:id/boleto', { preHandler }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+
+      const buffer = await data.toBuffer()
+      const validation = validateDocumentFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+
+      return reply.send(await uploadTuitionBoletoService(
+        getSchoolId(request), id, buffer, data.mimetype, extFromMime(data.mimetype),
+      ))
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Tuition not found') return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.post('/tuitions/:id/receipt', { preHandler }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+
+      const buffer = await data.toBuffer()
+      const validation = validateDocumentFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+
+      return reply.send(await uploadTuitionReceiptService(
+        getSchoolId(request), id, buffer, data.mimetype, extFromMime(data.mimetype),
+      ))
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Tuition not found') return reply.status(404).send({ message: error.message })
       }
       throw error
     }

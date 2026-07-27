@@ -32,6 +32,7 @@ import { cn } from '../../lib/utils'
 import { SIDEBAR_BG, ACCENT_COLOR } from '../../lib/colors'
 import { Avatar } from '../Avatar'
 import { useTeacher } from '../../features/teachers/hooks/useTeachers'
+import { useSchool } from '../../features/schools/hooks/useSchools'
 
 interface NavItem {
   to: string
@@ -228,6 +229,10 @@ export function AppLayout() {
   const { data: teacherProfile } = useTeacher(role === 'professor' ? payload!.userId : '')
   const userPhotoUrl = role === 'professor' ? teacherProfile?.photoUrl : undefined
 
+  const schoolId = payload && 'schoolId' in payload ? (payload as { schoolId: string }).schoolId : undefined
+  const { data: schoolProfile } = useSchool(schoolId ?? '')
+  const schoolLogoUrl = role === 'gestor' ? schoolProfile?.logoUrl : undefined
+
   useEffect(() => {
     setMobileDrawerOpen(false)
   }, [location.pathname])
@@ -270,15 +275,21 @@ export function AppLayout() {
   function renderSidebarContent() {
     return (
       <>
-        {/* Logo */}
+        {/* Logo / School branding */}
         <div className="flex items-center gap-2.5 px-4 shrink-0" style={{ height: 'var(--header-h)' }}>
-          <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
-            <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
-            <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
-            <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
-            <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
-          </svg>
-          <span className="font-bold text-sm truncate text-white">Painel Geral</span>
+          {schoolLogoUrl ? (
+            <img src={schoolLogoUrl} alt="" className="h-8 w-8 rounded object-contain shrink-0" />
+          ) : (
+            <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
+              <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
+              <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
+              <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
+              <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
+            </svg>
+          )}
+          <span className="font-bold text-sm truncate text-white">
+            {schoolProfile?.name ?? 'Painel Geral'}
+          </span>
         </div>
 
         {/* Nav items */}
@@ -343,7 +354,7 @@ export function AppLayout() {
             }}
           >
             {userPhotoUrl ? (
-              <img src={userPhotoUrl} alt={userName} className="shrink-0 rounded-full object-cover" style={{ width: 36, height: 36 }} />
+              <img src={userPhotoUrl} alt={userName} className="shrink-0 rounded-full object-cover p-2" style={{ width: 36, height: 36 }} />
             ) : (
               <div
                 className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
@@ -395,13 +406,17 @@ export function AppLayout() {
       >
         <div className="flex items-center justify-between px-4 shrink-0" style={{ height: 'var(--header-h)' }}>
           <div className="flex items-center gap-2.5">
-            <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS">
-              <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
-              <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
-              <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
-              <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
-            </svg>
-            <span className="font-bold text-sm text-white">Painel Geral</span>
+            {schoolLogoUrl ? (
+              <img src={schoolLogoUrl} alt="" className="h-8 w-8 rounded object-contain shrink-0" />
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS">
+                <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
+                <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
+                <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
+                <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
+              </svg>
+            )}
+            <span className="font-bold text-sm text-white">{schoolProfile?.name ?? 'Painel Geral'}</span>
           </div>
           <Button
             variant="ghost"

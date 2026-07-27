@@ -1,4 +1,5 @@
 import { hashPassword } from '../../lib/crypto'
+import { uploadFile, deleteFile, extractKeyFromUrl } from '../../lib/storage'
 import {
   createSchoolRepository,
   findSchoolByEmailRepository,
@@ -125,5 +126,24 @@ export async function deleteSchoolService(id: string, requester: RequesterInfo) 
   if (!school) throw new Error('School not found')
   await assertOwnership(id, requester)
   await deleteSchoolRepository(id)
+}
+
+export async function uploadSchoolLogoServices(
+  id: string,
+  buffer: Buffer,
+  mimeType: string,
+  ext: string,
+) {
+  const school = await findSchoolByIdRepository(id)
+  if (!school) throw new Error('School not found')
+
+  if (school.logoUrl) {
+    await deleteFile(extractKeyFromUrl(school.logoUrl)).catch(() => null)
+  }
+
+  const key = `schools/${id}/logo.${ext}`
+  const url = await uploadFile(key, buffer, mimeType)
+
+  return updateSchoolRepository(id, { logoUrl: url })
 }
 

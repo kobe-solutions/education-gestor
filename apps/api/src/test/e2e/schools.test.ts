@@ -34,6 +34,7 @@ const mockSchool = {
   coordinator: null,
   phone: null,
   address: null,
+  logoUrl: null,
   showFinancial: true,
   createdAt: new Date(),
 }

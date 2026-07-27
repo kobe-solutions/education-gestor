@@ -1,8 +1,9 @@
+import { useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Upload, FileText, Trash2, Camera } from 'lucide-react'
 import { toast } from '../../../lib/toast'
 import { useUnsavedChanges } from '../../../lib/useUnsavedChanges'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs'
@@ -12,7 +13,17 @@ import { Label } from '../../../components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Badge } from '../../../components/ui/badge'
-import { useTeacher, useCreateTeacher, useUpdateTeacher, useChangeTeacherPassword } from '../hooks/useTeachers'
+import {
+  useTeacher,
+  useCreateTeacher,
+  useUpdateTeacher,
+  useChangeTeacherPassword,
+  useUploadTeacherPhoto,
+  useTeacherDocuments,
+  useUploadTeacherDocument,
+  useDeleteTeacherDocument,
+} from '../hooks/useTeachers'
+import { Avatar } from '../../../components/Avatar'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useSecretariaSchools } from '../../secretarias/hooks/useSecretarias'
 
@@ -165,6 +176,34 @@ export function TeacherFormPage() {
 
   const senhaForm = useForm<SenhaForm>({ resolver: zodResolver(senhaSchema), mode: 'onBlur' })
 
+  // ── Photo & Documents ──────────────────────────────────────────────────
+  const photoInputRef = useRef<HTMLInputElement>(null)
+  const uploadPhoto = useUploadTeacherPhoto(id ?? '')
+  const { data: documents = [] } = useTeacherDocuments(id ?? '')
+  const uploadDocument = useUploadTeacherDocument(id ?? '')
+  const deleteDocument = useDeleteTeacherDocument(id ?? '')
+  const docInputRef = useRef<HTMLInputElement>(null)
+  const [docType, setDocType] = useState('outros')
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    uploadPhoto.mutate(file, {
+      onSuccess: () => toast.success('Foto atualizada'),
+      onError: () => toast.error('Erro ao enviar foto'),
+    })
+  }
+
+  function handleDocUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    uploadDocument.mutate({ file, type: docType }, {
+      onSuccess: () => toast.success('Documento anexado'),
+      onError: () => toast.error('Erro ao enviar documento'),
+    })
+    e.target.value = ''
+  }
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   async function onSavePessoal(data: PessoalForm) {
@@ -277,6 +316,7 @@ export function TeacherFormPage() {
             <TabsTrigger value="endereco" disabled={!isEdit}>Endereço</TabsTrigger>
             <TabsTrigger value="profissional" disabled={!isEdit}>Dados Profissionais</TabsTrigger>
             <TabsTrigger value="formacao" disabled={!isEdit}>Formação</TabsTrigger>
+            <TabsTrigger value="documentos" disabled={!isEdit}>Documentos</TabsTrigger>
             <TabsTrigger value="financeiro" disabled={!isEdit}>Dados Bancários & Senha</TabsTrigger>
           </TabsList>
         </div>
@@ -284,6 +324,32 @@ export function TeacherFormPage() {
         {/* ── Aba 1: Dados Pessoais ──────────────────────────────────────── */}
         <TabsContent value="pessoal">
           <form onSubmit={pessoalForm.handleSubmit(onSavePessoal)} className="space-y-4">
+            {isEdit && (
+              <Card className="md:col-span-1 p-5 flex flex-col items-center justify-start gap-4 h-fit">
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center w-full">
+                  Foto
+                </div>
+                <div className="relative group">
+                  <Avatar name={teacher?.name ?? ''} photoUrl={teacher?.photoUrl} size={96} className="rounded-full" />
+                  <button
+                    type="button"
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={uploadPhoto.isPending}
+                  >
+                    <Camera className="h-6 w-6 text-white" />
+                  </button>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handlePhotoChange}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">JPEG, PNG ou WebP. Máximo 10MB.</p>
+              </Card>
+            )}
             <Card>
               <CardHeader><CardTitle className="text-sm">Identificação pessoal</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -510,7 +576,63 @@ export function TeacherFormPage() {
           </form>
         </TabsContent>
 
-        {/* ── Aba 5: Dados Financeiros ───────────────────────────────────── */}
+        {/* ── Aba 5: Documentos ─────────────────────────────────────────── */}
+        <TabsContent value="documentos">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">Documentos e anexos</CardTitle>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={docType}
+                    onChange={(e) => setDocType(e.target.value)}
+                    className="h-8 text-xs px-2 rounded-md border"
+                    style={{ border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
+                  >
+                    <option value="diploma">Diploma</option>
+                    <option value="certificado">Certificado</option>
+                    <option value="registro">Registro Profissional</option>
+                    <option value="outros">Outros</option>
+                  </select>
+                  <Button size="sm" variant="outline" onClick={() => docInputRef.current?.click()} disabled={uploadDocument.isPending}>
+                    <Upload className="h-3.5 w-3.5" />
+                    {uploadDocument.isPending ? 'Enviando...' : 'Anexar'}
+                  </Button>
+                  <input ref={docInputRef} type="file" accept=".pdf,image/*" className="hidden" onChange={handleDocUpload} />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {(!documents || documents.length === 0) && (
+                <p className="text-xs text-muted-foreground text-center py-8">Nenhum documento anexado</p>
+              )}
+              {documents?.map((doc) => (
+                <div key={doc.id} className="flex items-center justify-between border rounded-sm px-3 py-2">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div>
+                      <p className="text-sm">{doc.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {doc.type}
+                        {doc.fileSize ? ` · ${(doc.fileSize / 1024).toFixed(0)} KB` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => window.open(doc.fileUrl, '_blank')}>
+                      Ver
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => deleteDocument.mutate(doc.id)}>
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Aba 6: Dados Financeiros ───────────────────────────────────── */}
         <TabsContent value="financeiro" className="space-y-4">
           <form onSubmit={financeiroForm.handleSubmit(onSaveFinanceiro)} className="space-y-4">
             <Card>

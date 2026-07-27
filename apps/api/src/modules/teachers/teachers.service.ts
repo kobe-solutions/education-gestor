@@ -13,6 +13,10 @@ import {
   updateTeacherPasswordRepository,
   addSubjectToTeacherRepository,
   removeSubjectFromTeacherRepository,
+  createTeacherDocumentRepository,
+  findTeacherDocumentsByTeacherRepository,
+  findTeacherDocumentByIdRepository,
+  deleteTeacherDocumentRepository,
 } from './teachers.repository'
 import type { CreateTeacherBody, UpdateTeacherBody } from './teachers.schema'
 
@@ -98,6 +102,11 @@ export async function updateTeacherService(schoolId: string, id: string, input: 
 export async function deleteTeacherService(schoolId: string, id: string) {
   const teacher = await findTeacherByIdRepository(schoolId, id)
   if (!teacher) throw new Error('Teacher not found')
+
+  if (teacher.photoUrl) {
+    await deleteFile(extractKeyFromUrl(teacher.photoUrl)).catch(() => null)
+  }
+
   await deleteTeacherRepository(schoolId, id)
 }
 
@@ -137,5 +146,44 @@ export async function uploadTeacherPhotoService(
   const url = await uploadFile(key, buffer, mimeType)
 
   return updateTeacherRepository(schoolId, teacherId, { photoUrl: url })
+}
+
+// ─── Documentos do Professor ─────────────────────────────────────────────────
+
+export async function listTeacherDocumentsService(schoolId: string, teacherId: string) {
+  const teacher = await findTeacherByIdRepository(schoolId, teacherId)
+  if (!teacher) throw new Error('Teacher not found')
+  return findTeacherDocumentsByTeacherRepository(schoolId, teacherId)
+}
+
+export async function uploadTeacherDocumentService(
+  schoolId: string,
+  teacherId: string,
+  buffer: Buffer,
+  name: string,
+  type: string,
+  mimeType: string,
+  fileSize: number,
+  ext: string,
+) {
+  const teacher = await findTeacherByIdRepository(schoolId, teacherId)
+  if (!teacher) throw new Error('Teacher not found')
+
+  const docId = crypto.randomUUID()
+  const key = `schools/${schoolId}/teachers/${teacherId}/documents/${docId}.${ext}`
+  const fileUrl = await uploadFile(key, buffer, mimeType)
+
+  return createTeacherDocumentRepository({ schoolId, teacherId, name, type, fileUrl, fileSize, mimeType })
+}
+
+export async function deleteTeacherDocumentService(schoolId: string, teacherId: string, docId: string) {
+  const teacher = await findTeacherByIdRepository(schoolId, teacherId)
+  if (!teacher) throw new Error('Teacher not found')
+
+  const doc = await findTeacherDocumentByIdRepository(docId)
+  if (!doc || doc.teacherId !== teacherId) throw new Error('Document not found')
+
+  await deleteFile(extractKeyFromUrl(doc.fileUrl)).catch(() => null)
+  await deleteTeacherDocumentRepository(docId)
 }
 

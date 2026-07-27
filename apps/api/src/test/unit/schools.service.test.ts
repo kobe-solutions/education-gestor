@@ -22,6 +22,7 @@ const mockSchool = {
   coordinator: null as string | null,
   phone: null as string | null,
   address: null as string | null,
+  logoUrl: null as string | null,
   showFinancial: true,
   createdAt: new Date(),
   updatedAt: new Date(),

@@ -11,9 +11,11 @@ import {
   updateSchoolService,
   changeSchoolPasswordService,
   toggleSchoolFinancialVisibilityService,
+  uploadSchoolLogoServices,
   deleteSchoolService,
 } from './schools.service'
 import { createSchoolBodySchema, updateSchoolBodySchema, changePasswordBodySchema } from './schools.schema'
+import { validateImageFile, extFromMime } from '../../lib/validators'
 
 const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
 const secretariaOnly = [authenticate, injectTenant, authorizeRoles(['secretaria'])]
@@ -111,6 +113,25 @@ export async function schoolsRoutes(app: FastifyInstance) {
       if (error instanceof Error) {
         if (error.message === 'School not found') return reply.status(404).send({ message: error.message })
         if (error.message === 'Forbidden') return reply.status(403).send({ message: 'Sem permissão' })
+      }
+      throw error
+    }
+  })
+
+  app.post('/schools/:id/logo', { preHandler: adminOrSecretariaOrSchool }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+
+      const buffer = await data.toBuffer()
+      const validation = validateImageFile(data.mimetype, buffer.length)
+      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+
+      return reply.send(await uploadSchoolLogoServices(id, buffer, data.mimetype, extFromMime(data.mimetype)))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'School not found') {
+        return reply.status(404).send({ message: error.message })
       }
       throw error
     }

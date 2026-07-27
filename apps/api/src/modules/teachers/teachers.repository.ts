@@ -1,6 +1,6 @@
 import { eq, and, count, isNull } from 'drizzle-orm'
 import { db } from '../../db'
-import { teachers, teacherSubjects, subjects } from '../../db/schema'
+import { teachers, teacherSubjects, subjects, teacherDocuments } from '../../db/schema'
 
 type CreateTeacherInput = {
   schoolId: string
@@ -203,4 +203,41 @@ export async function findTeachersByEmailRepository(email: string) {
     })
     .from(teachers)
     .where(eq(teachers.email, email))
+}
+
+// ─── Documentos do Professor ──────────────────────────────────────────────────
+
+type CreateTeacherDocumentInput = {
+  schoolId: string
+  teacherId: string
+  name: string
+  type: string
+  fileUrl: string
+  fileSize?: number
+  mimeType?: string
+}
+
+export async function createTeacherDocumentRepository(input: CreateTeacherDocumentInput) {
+  const [doc] = await db.insert(teacherDocuments).values(input).returning()
+  return doc
+}
+
+export async function findTeacherDocumentsByTeacherRepository(schoolId: string, teacherId: string) {
+  return db
+    .select()
+    .from(teacherDocuments)
+    .where(and(eq(teacherDocuments.schoolId, schoolId), eq(teacherDocuments.teacherId, teacherId)))
+}
+
+export async function findTeacherDocumentByIdRepository(id: string) {
+  const [doc] = await db
+    .select()
+    .from(teacherDocuments)
+    .where(eq(teacherDocuments.id, id))
+    .limit(1)
+  return doc
+}
+
+export async function deleteTeacherDocumentRepository(id: string) {
+  await db.delete(teacherDocuments).where(eq(teacherDocuments.id, id))
 }

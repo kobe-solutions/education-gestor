@@ -11,6 +11,7 @@ const schoolFields = {
   coordinator: schools.coordinator,
   phone: schools.phone,
   address: schools.address,
+  logoUrl: schools.logoUrl,
   showFinancial: schools.showFinancial,
   createdAt: schools.createdAt,
 }
@@ -94,6 +95,7 @@ export async function updateSchoolRepository(
     coordinator?: string | null
     phone?: string | null
     address?: string | null
+    logoUrl?: string | null
   },
 ) {
   const [school] = await db

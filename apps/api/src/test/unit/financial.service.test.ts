@@ -79,6 +79,10 @@ const mockTuition = {
   dueDate: '2025-05-10',
   paidAt: null,
   status: 'pending',
+  boletoUrl: null,
+  boletoFileSize: null,
+  receiptUrl: null,
+  receiptFileSize: null,
   createdAt: new Date(),
   updatedAt: new Date(),
 }
