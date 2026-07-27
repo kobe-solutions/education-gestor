@@ -90,3 +90,40 @@ export function useChangeTeacherPassword(id: string) {
     },
   })
 }
+
+// ─── Self-service (professor) ───────────────────────────────────────────────
+
+export function useUpdateMyProfile() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: TeacherUpdateInput) =>
+      (await api.put<Teacher>('/teachers/me', data)).data,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teachers'] })
+    },
+  })
+}
+
+export function useChangeMyPassword() {
+  return useMutation({
+    mutationFn: async (password: string) => {
+      await api.put('/teachers/me/password', { password })
+    },
+  })
+}
+
+export function useUploadMyPhoto() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<Teacher>('/teachers/me/photo', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teachers'] })
+    },
+  })
+}

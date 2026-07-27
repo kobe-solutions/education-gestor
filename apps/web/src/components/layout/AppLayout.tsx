@@ -20,10 +20,8 @@ import {
   ClipboardCheck,
   Eye,
   EyeOff,
-  ChevronLeft,
-  ChevronRight,
+  UserCircle,
 } from 'lucide-react'
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useFinancialVisibility } from '../../contexts/FinancialVisibilityContext'
@@ -33,6 +31,7 @@ import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
 import { SIDEBAR_BG, ACCENT_COLOR } from '../../lib/colors'
 import { Avatar } from '../Avatar'
+import { useTeacher } from '../../features/teachers/hooks/useTeachers'
 
 interface NavItem {
   to: string
@@ -77,6 +76,13 @@ const navItems: NavItem[] = [
     icon: ClipboardCheck,
     roles: ['professor'],
     matchPaths: ['/professor/attendance'],
+  },
+  {
+    to: '/professor/profile',
+    label: 'Meu Perfil',
+    icon: UserCircle,
+    roles: ['professor'],
+    matchPaths: ['/professor/profile'],
   },
   {
     to: '/people',
@@ -180,11 +186,10 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const SIDEBAR_EXPANDED_W = 240
-const SIDEBAR_COLLAPSED_W = 72
+const SIDEBAR_W = 240
 
-function SidebarLink({ to, icon: Icon, label, active, collapsed }: { to: string; icon: React.ElementType; label: string; active: boolean; collapsed: boolean }) {
-  const link = (
+function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
+  return (
     <Link
       to={to}
       className={cn(
@@ -192,7 +197,6 @@ function SidebarLink({ to, icon: Icon, label, active, collapsed }: { to: string;
         active
           ? 'text-white'
           : 'text-gray-400 hover:text-white hover:bg-white/5',
-        collapsed && 'justify-center px-0',
       )}
       style={active ? { background: ACCENT_COLOR + '15' } : undefined}
     >
@@ -206,26 +210,11 @@ function SidebarLink({ to, icon: Icon, label, active, collapsed }: { to: string;
         className="h-5 w-5 shrink-0"
         style={active ? { color: ACCENT_COLOR } : undefined}
       />
-      {!collapsed && (
-        <span className={cn('text-sm font-medium truncate', active && 'font-semibold')}>
-          {label}
-        </span>
-      )}
+      <span className={cn('text-sm font-medium truncate', active && 'font-semibold')}>
+        {label}
+      </span>
     </Link>
   )
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{link}</TooltipTrigger>
-        <TooltipContent side="right" className="text-xs">
-          {label}
-        </TooltipContent>
-      </Tooltip>
-    )
-  }
-
-  return link
 }
 
 export function AppLayout() {
@@ -234,19 +223,10 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    return localStorage.getItem('sidebarCollapsed') === 'true'
-  })
-
-  function toggleSidebar() {
-    setSidebarCollapsed((prev) => {
-      const next = !prev
-      localStorage.setItem('sidebarCollapsed', String(next))
-      return next
-    })
-  }
 
   const role = payload?.role
+  const { data: teacherProfile } = useTeacher(role === 'professor' ? payload!.userId : '')
+  const userPhotoUrl = role === 'professor' ? teacherProfile?.photoUrl : undefined
 
   useEffect(() => {
     setMobileDrawerOpen(false)
@@ -287,20 +267,18 @@ export function AppLayout() {
   const userName = payload?.name ?? ''
   const userEmail = payload && 'email' in payload ? (payload as { email?: string }).email : ''
 
-  function renderSidebarContent(isMobile = false) {
-    const collapsed = !isMobile && sidebarCollapsed
-
+  function renderSidebarContent() {
     return (
       <>
         {/* Logo */}
-        <div className={cn('flex items-center gap-2.5 px-4 shrink-0', collapsed && 'justify-center px-0')} style={{ height: 'var(--header-h)' }}>
+        <div className="flex items-center gap-2.5 px-4 shrink-0" style={{ height: 'var(--header-h)' }}>
           <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
             <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
             <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
             <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
             <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
           </svg>
-          {!collapsed && <span className="font-bold text-sm truncate text-white">Painel Geral</span>}
+          <span className="font-bold text-sm truncate text-white">Painel Geral</span>
         </div>
 
         {/* Nav items */}
@@ -312,44 +290,23 @@ export function AppLayout() {
               icon={item.icon}
               label={item.label}
               active={activeItem?.to === item.to}
-              collapsed={collapsed}
             />
           ))}
         </nav>
 
         {/* Bottom section */}
         <div className="px-3 pb-3 flex flex-col gap-2">
-          {/* Collapse toggle — desktop only */}
-          {!isMobile && (
-            <Button
-              variant="outline"
-              size="default"
-              className={cn(
-                'bg-transparent text-primary hover:bg-primary/10',
-                collapsed ? 'w-full justify-center px-0' : 'w-full justify-start gap-3',
-              )}
-              style={{ borderColor: 'hsl(var(--primary))' }}
-              onClick={toggleSidebar}
-              aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
-            >
-              {collapsed ? <ChevronRight size={18} /> : <><ChevronLeft size={18} /><span className="text-sm font-medium">Recolher</span></>}
-            </Button>
-          )}
-
           {/* Financial visibility toggle — admin only */}
           {role === 'admin' && (
           <Button
             variant="outline"
             size="default"
-            className={cn(
-              'bg-transparent hover:bg-primary/10',
-              collapsed ? 'w-full justify-center px-0' : 'w-full justify-start gap-3',
-            )}
+            className="w-full justify-start gap-3 bg-transparent hover:bg-primary/10"
             style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
             onClick={toggleFinancialVisibility}
           >
             {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
-            {!collapsed && <span className="text-sm font-medium">{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</span>}
+            <span className="text-sm font-medium">{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</span>
           </Button>
           )}
 
@@ -357,70 +314,51 @@ export function AppLayout() {
           <Button
             variant="outline"
             size="default"
-            className={cn(
-              'bg-transparent text-primary hover:bg-primary/10',
-              collapsed ? 'w-full justify-center px-0' : 'w-full justify-start gap-3',
-            )}
+            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
             style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={toggleTheme}
           >
             {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            {!collapsed && <span className="text-sm font-medium">Alternar tema</span>}
+            <span className="text-sm font-medium">Alternar tema</span>
           </Button>
 
           {/* Logout */}
           <Button
             variant="outline"
             size="default"
-            className={cn(
-              'bg-transparent text-primary hover:bg-primary/10',
-              collapsed ? 'w-full justify-center px-0' : 'w-full justify-start gap-3',
-            )}
+            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
             style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={handleLogout}
           >
             <LogOut size={18} />
-            {!collapsed && <span className="text-sm font-medium">Sair</span>}
+            <span className="text-sm font-medium">Sair</span>
           </Button>
 
           {/* User card */}
-          {collapsed ? (
-            <div
-              className="flex items-center justify-center rounded-xl px-0 py-2 mt-1"
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
-              }}
-            >
-              <div
-                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-                style={{ width: 32, height: 32, background: ACCENT_COLOR }}
-              >
-                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-              </div>
-            </div>
-          ) : (
-            <div
-              className="flex items-center gap-3 rounded-xl px-3 py-3 mt-1"
-              style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
-              }}
-            >
+          <div
+            className="flex items-center gap-3 rounded-xl px-3 py-3 mt-1"
+            style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            {userPhotoUrl ? (
+              <img src={userPhotoUrl} alt={userName} className="shrink-0 rounded-full object-cover" style={{ width: 36, height: 36 }} />
+            ) : (
               <div
                 className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
                 style={{ width: 36, height: 36, background: ACCENT_COLOR }}
               >
                 {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{userName}</p>
-                {userEmail && (
-                  <p className="text-xs text-gray-500 truncate">{userEmail}</p>
-                )}
-              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{userName}</p>
+              {userEmail && (
+                <p className="text-xs text-gray-500 truncate">{userEmail}</p>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </>
     )
@@ -430,9 +368,9 @@ export function AppLayout() {
     <div className="flex h-screen" style={{ background: 'hsl(var(--background))' }}>
       {/* Desktop sidebar */}
       <aside
-        className={cn('hidden md:flex flex-col shrink-0 transition-all duration-200', sidebarCollapsed && 'items-center')}
+        className="hidden md:flex flex-col shrink-0"
         style={{
-          width: sidebarCollapsed ? SIDEBAR_COLLAPSED_W : SIDEBAR_EXPANDED_W,
+          width: SIDEBAR_W,
           background: SIDEBAR_BG,
         }}
       >
@@ -483,7 +421,6 @@ export function AppLayout() {
               icon={item.icon}
               label={item.label}
               active={activeItem?.to === item.to}
-              collapsed={false}
             />
           ))}
         </nav>
@@ -536,12 +473,16 @@ export function AppLayout() {
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            <div
-              className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-              style={{ width: 36, height: 36, background: ACCENT_COLOR }}
-            >
-              {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-            </div>
+            {userPhotoUrl ? (
+              <img src={userPhotoUrl} alt={userName} className="shrink-0 rounded-full object-cover" style={{ width: 36, height: 36 }} />
+            ) : (
+              <div
+                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
+                style={{ width: 36, height: 36, background: ACCENT_COLOR }}
+              >
+                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white truncate">{userName}</p>
               {userEmail && (
@@ -613,6 +554,7 @@ export function AppLayout() {
 
             <Avatar
               name={userName}
+              photoUrl={userPhotoUrl}
               size={40}
             />
           </div>

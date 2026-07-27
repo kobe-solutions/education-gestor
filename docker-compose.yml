@@ -1,4 +1,40 @@
 services:
+  # S3-compatible storage (simula AWS S3 / DO Spaces em dev)
+  minio:
+    image: minio/minio:latest
+    container_name: education-gestor-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ['CMD', 'mc', 'ready', 'local']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  init-minio:
+    image: minio/mc:latest
+    container_name: education-gestor-init-minio
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        echo 'Creating MinIO alias...' &&
+        mc alias set local http://minio:9000 minioadmin minioadmin &&
+        echo 'Creating bucket...' &&
+        mc mb local/education-gestor --ignore-existing &&
+        echo 'Setting bucket to public...' &&
+        mc anonymous set public local/education-gestor &&
+        echo 'MinIO setup complete.'
+      "
+
   # Banco de dados
   db:
     image: postgres:16
@@ -45,6 +81,12 @@ services:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/education_gestor
       DATABASE_URL_TEST: postgresql://postgres:postgres@db-test:5432/education_gestor_test
       JWT_SECRET: supersecretkey_change_in_production_minimum_32_chars
+      DO_SPACES_ENDPOINT: http://minio:9000
+      DO_SPACES_BUCKET: education-gestor
+      DO_SPACES_REGION: us-east-1
+      DO_SPACES_KEY: minioadmin
+      DO_SPACES_SECRET: minioadmin
+      DO_SPACES_CDN_URL: http://localhost:9000/education-gestor
     ports:
       - '3333:3333'
     volumes:
@@ -55,6 +97,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init-minio:
+        condition: service_completed_successfully
     command: pnpm --filter api dev
 
   # Frontend (Vite)
@@ -79,3 +123,4 @@ services:
 
 volumes:
   postgres_data:
+  minio_data:

@@ -35,7 +35,8 @@ const columns: Column<Student>[] = [
         style={{ background: 'hsl(var(--primary))' }}
       >
         {s.photoUrl ? (
-          <img src={s.photoUrl} alt={s.name} className="w-8 h-8 rounded-full object-cover" loading="lazy" decoding="async" />
+          <img src={s.photoUrl} alt={s.name} className="w-8 h-8 rounded-full object-cover" loading="lazy" decoding="async"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
         ) : (
           getInitials(s.name)
         )}

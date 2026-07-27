@@ -2,16 +2,20 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { env } from '../env'
 
-const isConfigured = !!(env.DO_SPACES_KEY && env.DO_SPACES_SECRET && env.DO_SPACES_ENDPOINT)
+const endpoint = env.DO_SPACES_ENDPOINT || env.MINIO_ENDPOINT
+const bucket = env.DO_SPACES_BUCKET || env.MINIO_BUCKET
+const region = env.DO_SPACES_REGION || env.MINIO_REGION
+const accessKeyId = env.DO_SPACES_KEY || env.MINIO_KEY
+const secretAccessKey = env.DO_SPACES_SECRET || env.MINIO_SECRET
+
+const isConfigured = !!(accessKeyId && secretAccessKey && endpoint)
 
 const s3 = isConfigured
   ? new S3Client({
-      endpoint: env.DO_SPACES_ENDPOINT,
-      region: env.DO_SPACES_REGION,
-      credentials: {
-        accessKeyId: env.DO_SPACES_KEY!,
-        secretAccessKey: env.DO_SPACES_SECRET!,
-      },
+      endpoint,
+      region,
+      forcePathStyle: true,
+      credentials: { accessKeyId, secretAccessKey },
     })
   : null
 
@@ -20,36 +24,35 @@ export async function uploadFile(
   body: Buffer,
   contentType: string,
 ): Promise<string> {
-  if (!s3 || !env.DO_SPACES_BUCKET) {
-    throw new Error('Storage not configured. Set DO_SPACES_* env vars.')
+  if (!s3 || !bucket) {
+    throw new Error('Storage not configured. Set DO_SPACES_* or MINIO_* env vars.')
   }
 
   await s3.send(
     new PutObjectCommand({
-      Bucket: env.DO_SPACES_BUCKET,
+      Bucket: bucket,
       Key: key,
       Body: body,
       ContentType: contentType,
-      ACL: 'public-read',
     }),
   )
 
-  const baseUrl = env.DO_SPACES_CDN_URL ?? `${env.DO_SPACES_ENDPOINT}/${env.DO_SPACES_BUCKET}`
+  const baseUrl = env.DO_SPACES_CDN_URL ?? env.MINIO_PUBLIC_URL ?? `${endpoint}/${bucket}`
   return `${baseUrl}/${key}`
 }
 
 export async function deleteFile(key: string): Promise<void> {
-  if (!s3 || !env.DO_SPACES_BUCKET) return
+  if (!s3 || !bucket) return
 
   await s3.send(
     new DeleteObjectCommand({
-      Bucket: env.DO_SPACES_BUCKET,
+      Bucket: bucket,
       Key: key,
     }),
   )
 }
 
 export function extractKeyFromUrl(url: string): string {
-  const baseUrl = env.DO_SPACES_CDN_URL ?? `${env.DO_SPACES_ENDPOINT}/${env.DO_SPACES_BUCKET}`
+  const baseUrl = env.DO_SPACES_CDN_URL ?? env.MINIO_PUBLIC_URL ?? `${endpoint}/${bucket}`
   return url.replace(`${baseUrl}/`, '')
 }
