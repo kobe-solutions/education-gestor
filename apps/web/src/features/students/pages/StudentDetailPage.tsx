@@ -24,6 +24,7 @@ import {
   useStudentMedical,
 } from '../hooks/useStudents'
 import { useStudentTuitions } from '../../financial/hooks/useFinancial'
+import { useStudentClasses } from '../../classes/hooks/useClasses'
 import { TuitionStatusBadge } from '../../financial/components/TuitionStatusBadge'
 import { useFinancialVisibility } from '../../../contexts/FinancialVisibilityContext'
 import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
