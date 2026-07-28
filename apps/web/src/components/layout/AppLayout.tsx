@@ -72,6 +72,13 @@ const navItems: NavItem[] = [
     matchPaths: ['/professor/performance'],
   },
   {
+    to: '/professor/grades',
+    label: 'Notas',
+    icon: BookOpen,
+    roles: ['professor'],
+    matchPaths: ['/professor/grades'],
+  },
+  {
     to: '/professor/attendance',
     label: 'Frequência',
     icon: ClipboardCheck,

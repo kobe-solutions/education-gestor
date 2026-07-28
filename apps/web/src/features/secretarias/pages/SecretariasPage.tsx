@@ -22,6 +22,8 @@ import {
   Eye,
   EyeOff,
   Camera,
+  Search,
+  X,
 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { toast } from '../../../lib/toast'
@@ -42,12 +44,10 @@ import {
 import { useSchools } from '../../schools/hooks/useSchools'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
-import { SearchInput } from '../../../components/SearchInput'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Switch } from '../../../components/ui/switch'
 import { Separator } from '../../../components/ui/separator'
-import { PageHead } from '../../../components/PageHead'
 import {
   Dialog,
   DialogContent,
@@ -67,7 +67,6 @@ import { StatusBadge } from '../../../components/StatusBadge'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Avatar } from '../../../components/Avatar'
 import { ACCENT_COLOR, TONE_CONFIG } from '../../../lib/colors'
-import { cn } from '../../../lib/utils'
 
 const createSchema = z.object({
   name: z.string().min(2, 'Nome muito curto'),
@@ -94,15 +93,6 @@ const passwordSchema = z.object({
 type CreateFormData = z.infer<typeof createSchema>
 type EditFormData = z.infer<typeof editSchema>
 type PasswordFormData = z.infer<typeof passwordSchema>
-
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-}
 
 interface SecretariaCardProps {
   secretaria: Secretaria
@@ -154,17 +144,17 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md"
+      className="rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
       style={{
         background: 'hsl(var(--card))',
         border: `1px solid ${t.borderColor}`,
+        boxShadow: 'var(--shadow-sm)',
       }}
     >
-      {/* Card header */}
-      <div className="p-5">
+      <div className="p-5 sm:p-6">
         <div className="flex items-start gap-4">
           <div className="relative group shrink-0">
-            <Avatar name={secretaria.name} photoUrl={secretaria.logoUrl} size={48} />
+            <Avatar name={secretaria.name} photoUrl={secretaria.logoUrl} size={52} />
             <button
               type="button"
               className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
@@ -190,7 +180,7 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="font-semibold text-base leading-tight" style={{ color: 'hsl(var(--foreground))' }}>
+                <h3 className="font-bold text-lg leading-tight" style={{ color: 'hsl(var(--foreground))' }}>
                   {secretaria.name}
                 </h3>
                 <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
@@ -200,26 +190,26 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
               <StatusBadge status={String(secretaria.active)} kind="active" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 mt-4">
-              <div className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                <Mail size={14} className="shrink-0" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 mt-4">
+              <div className="flex items-center gap-2.5 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                <Mail size={14} className="shrink-0" style={{ color: ACCENT_COLOR }} />
                 <span className="truncate">{secretaria.email}</span>
               </div>
               {secretaria.responsible && (
-                <div className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  <User size={14} className="shrink-0" />
+                <div className="flex items-center gap-2.5 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  <User size={14} className="shrink-0" style={{ color: ACCENT_COLOR }} />
                   <span className="truncate">{secretaria.responsible}</span>
                 </div>
               )}
               {secretaria.phone && (
-                <div className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  <Phone size={14} className="shrink-0" />
+                <div className="flex items-center gap-2.5 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  <Phone size={14} className="shrink-0" style={{ color: ACCENT_COLOR }} />
                   <span>{secretaria.phone}</span>
                 </div>
               )}
               {secretaria.address && (
-                <div className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  <MapPin size={14} className="shrink-0" />
+                <div className="flex items-center gap-2.5 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  <MapPin size={14} className="shrink-0" style={{ color: ACCENT_COLOR }} />
                   <span className="truncate">{secretaria.address}</span>
                 </div>
               )}
@@ -229,7 +219,6 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
 
         <Separator className="my-4" />
 
-        {/* Actions */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-2 mr-2">
             <Switch
@@ -238,8 +227,9 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
               disabled={toggleFinancial.isPending}
               id={`sec-financial-${secretaria.id}`}
             />
-            <Label htmlFor={`sec-financial-${secretaria.id}`} className="text-xs cursor-pointer">
+            <Label htmlFor={`sec-financial-${secretaria.id}`} className="text-xs cursor-pointer flex items-center gap-1">
               {secretaria.showFinancial ? <Eye size={14} /> : <EyeOff size={14} />}
+              <span style={{ color: 'hsl(var(--muted-foreground))' }}>Financeiro</span>
             </Label>
           </div>
           <Button
@@ -280,10 +270,9 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
         </div>
       </div>
 
-      {/* Expanded: schools */}
       {expanded && (
         <div
-          className="px-5 py-4 border-t"
+          className="p-5 sm:p-6 border-t transition-all duration-300 animate-in fade-in slide-in-from-top-2"
           style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--muted) / 0.3)' }}
         >
           <div className="flex items-center justify-between mb-3">
@@ -294,9 +283,12 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
           </div>
 
           {loadingSchools ? (
-            <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Carregando...</p>
+            <div className="flex items-center gap-3 py-3">
+              <div className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" />
+              <span className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>Carregando...</span>
+            </div>
           ) : schools.length === 0 ? (
-            <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+            <p className="text-sm py-3" style={{ color: 'hsl(var(--muted-foreground))' }}>
               Nenhuma escola vinculada a esta secretaria.
             </p>
           ) : (
@@ -304,7 +296,7 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
               {schools.map((school) => (
                 <div
                   key={school.id}
-                  className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5"
+                  className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-accent/50"
                   style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -350,7 +342,6 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
             </div>
           )}
 
-          {/* Link new school */}
           {availableSchools.length > 0 && (
             <div className="flex items-end gap-2">
               <div className="flex-1 space-y-1">
@@ -425,6 +416,7 @@ export function SecretariasPage() {
   )
 
   const activeCount = secretarias.filter((s) => s.active).length
+  const inactiveCount = secretarias.length - activeCount
 
   const {
     register: registerCreate,
@@ -507,133 +499,212 @@ export function SecretariasPage() {
     ? extractErrorMessage(updateApiMutation.error, 'Erro ao atualizar secretaria')
     : null
 
-  const activeValue = watchEdit('active')
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <PageHead
-        title="Secretarias"
-        subtitle={`${secretarias.length} secretarias cadastradas`}
-        actions={
-          <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Nova secretaria
-          </Button>
-        }
-      />
-
-      {/* Stats cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div
-          className="rounded-xl p-4 flex items-center gap-4"
-          style={{
-            background: 'hsl(var(--card))',
-            border: `1px solid ${TONE_CONFIG.indigo.borderColor}`,
-          }}
-        >
+    <div className="space-y-8">
+      {/* Hero Section */}
+      <div
+        className="relative overflow-hidden rounded-2xl p-6 sm:p-8"
+        style={{
+          background: 'linear-gradient(135deg, hsl(245 58% 51% / 0.12), hsl(245 58% 51% / 0.04))',
+          border: '1px solid hsl(245 58% 51% / 0.15)',
+        }}
+      >
+        <div className="absolute top-0 right-0 w-64 h-64 opacity-[0.04] pointer-events-none">
           <div
-            className="flex items-center justify-center rounded-lg shrink-0"
-            style={{ width: 44, height: 44, background: TONE_CONFIG.indigo.iconBg, color: TONE_CONFIG.indigo.iconColor }}
-          >
-            <Building2 size={20} />
-          </div>
-          <div>
-            <p className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: TONE_CONFIG.indigo.valueColor }}>
-              {secretarias.length}
-            </p>
-            <p className="text-xs font-medium mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Total de secretarias
-            </p>
-          </div>
+            className="absolute top-0 right-0 w-48 h-48 rounded-full"
+            style={{ background: 'radial-gradient(circle, hsl(245 58% 51%), transparent)' }}
+          />
         </div>
+        <div className="relative">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div
+                  className="flex items-center justify-center rounded-lg p-2"
+                  style={{ background: TONE_CONFIG.indigo.iconBg, color: TONE_CONFIG.indigo.iconColor }}
+                >
+                  <Building2 size={20} />
+                </div>
+                <h1
+                  className="font-bold leading-tight"
+                  style={{ fontSize: 24, color: 'hsl(var(--foreground))', letterSpacing: '-0.02em' }}
+                >
+                  Secretarias
+                </h1>
+              </div>
+              <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                Gerencie as secretarias regionais de ensino
+              </p>
+            </div>
+            <Button size="sm" onClick={() => setCreateOpen(true)} className="shrink-0 shadow-sm">
+              <Plus className="h-4 w-4 mr-1.5" />
+              Nova secretaria
+            </Button>
+          </div>
 
-        <div
-          className="rounded-xl p-4 flex items-center gap-4"
-          style={{
-            background: 'hsl(var(--card))',
-            border: `1px solid ${TONE_CONFIG.emerald.borderColor}`,
-          }}
-        >
-          <div
-            className="flex items-center justify-center rounded-lg shrink-0"
-            style={{ width: 44, height: 44, background: TONE_CONFIG.emerald.iconBg, color: TONE_CONFIG.emerald.iconColor }}
-          >
-            <ShieldCheck size={20} />
-          </div>
-          <div>
-            <p className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: TONE_CONFIG.emerald.valueColor }}>
-              {activeCount}
-            </p>
-            <p className="text-xs font-medium mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Secretarias ativas
-            </p>
-          </div>
-        </div>
+          {/* Stats inline */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+            <div
+              className="rounded-xl p-4 flex items-center gap-4 bg-card"
+              style={{
+                border: `1px solid ${TONE_CONFIG.indigo.borderColor}`,
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div
+                className="flex items-center justify-center rounded-lg shrink-0"
+                style={{ width: 44, height: 44, background: TONE_CONFIG.indigo.iconBg, color: TONE_CONFIG.indigo.iconColor }}
+              >
+                <Building2 size={20} />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: 'hsl(var(--foreground))' }}>
+                  {secretarias.length}
+                </p>
+                <p className="text-xs font-medium mt-1.5 uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  Total
+                </p>
+              </div>
+            </div>
 
-        <div
-          className="rounded-xl p-4 flex items-center gap-4"
-          style={{
-            background: 'hsl(var(--card))',
-            border: `1px solid ${TONE_CONFIG.slate.borderColor}`,
-          }}
-        >
-          <div
-            className="flex items-center justify-center rounded-lg shrink-0"
-            style={{ width: 44, height: 44, background: TONE_CONFIG.slate.iconBg, color: TONE_CONFIG.slate.iconColor }}
-          >
-            <User size={20} />
-          </div>
-          <div>
-            <p className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: TONE_CONFIG.slate.valueColor }}>
-              {secretarias.length - activeCount}
-            </p>
-            <p className="text-xs font-medium mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Secretarias inativas
-            </p>
+            <div
+              className="rounded-xl p-4 flex items-center gap-4 bg-card"
+              style={{
+                border: `1px solid ${TONE_CONFIG.emerald.borderColor}`,
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div
+                className="flex items-center justify-center rounded-lg shrink-0"
+                style={{ width: 44, height: 44, background: TONE_CONFIG.emerald.iconBg, color: TONE_CONFIG.emerald.iconColor }}
+              >
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: TONE_CONFIG.emerald.valueColor }}>
+                  {activeCount}
+                </p>
+                <p className="text-xs font-medium mt-1.5 uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  Ativas
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="rounded-xl p-4 flex items-center gap-4 bg-card"
+              style={{
+                border: `1px solid ${TONE_CONFIG.slate.borderColor}`,
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div
+                className="flex items-center justify-center rounded-lg shrink-0"
+                style={{ width: 44, height: 44, background: TONE_CONFIG.slate.iconBg, color: TONE_CONFIG.slate.iconColor }}
+              >
+                <User size={20} />
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold tabular-nums leading-none" style={{ color: 'hsl(var(--foreground))' }}>
+                  {inactiveCount}
+                </p>
+                <p className="text-xs font-medium mt-1.5 uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  Inativas
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Search */}
-      <div className="max-w-sm">
-        <SearchInput
-          value={search}
-          onChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('q'); else next.set('q', v); return next }) }}
-          placeholder="Buscar por nome..."
-        />
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: 'hsl(var(--muted-foreground))' }} />
+          <Input
+            type="text"
+            placeholder="Buscar por nome..."
+            value={search}
+            onChange={(e) => {
+              const v = e.target.value
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev)
+                if (!v) next.delete('q')
+                else next.set('q', v)
+                return next
+              })
+            }}
+            className="pl-9 h-9 text-sm"
+          />
+          {search && (
+            <button
+              onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('q'); return next })}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        {search && (
+          <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+            {filtered.length} de {secretarias.length} resultado(s)
+          </p>
+        )}
       </div>
 
-      {/* List */}
+      {/* Loading */}
       {isLoading && (
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="rounded-xl h-32 animate-pulse"
-              style={{ background: 'hsl(var(--muted))' }}
-            />
+              className="rounded-xl overflow-hidden"
+              style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+            >
+              <div className="p-5 sm:p-6 animate-pulse">
+                <div className="flex items-start gap-4">
+                  <div className="w-[52px] h-[52px] rounded-full" style={{ background: 'hsl(var(--muted))' }} />
+                  <div className="flex-1 space-y-3">
+                    <div className="h-5 w-48 rounded-md" style={{ background: 'hsl(var(--muted))' }} />
+                    <div className="h-3 w-32 rounded-sm" style={{ background: 'hsl(var(--muted))' }} />
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+                      <div className="h-4 rounded-sm" style={{ background: 'hsl(var(--muted))' }} />
+                      <div className="h-4 rounded-sm" style={{ background: 'hsl(var(--muted))' }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       )}
 
+      {/* Empty state */}
       {!isLoading && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div
             className="flex items-center justify-center rounded-full"
-            style={{ width: 56, height: 56, background: 'hsl(var(--accent))' }}
+            style={{ width: 64, height: 64, background: TONE_CONFIG.indigo.iconBg }}
           >
-            <Building2 size={24} className="text-muted-foreground" />
+            <Building2 size={28} style={{ color: TONE_CONFIG.indigo.iconColor }} />
           </div>
-          <p className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-            {search ? 'Nenhuma secretaria encontrada' : 'Nenhuma secretaria cadastrada'}
-          </p>
-          <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            {search ? 'Tente alterar o termo de busca' : 'Clique em "Nova secretaria" para começar'}
-          </p>
+          <div className="text-center">
+            <p className="font-semibold text-lg" style={{ color: 'hsl(var(--foreground))' }}>
+              {search ? 'Nenhuma secretaria encontrada' : 'Nenhuma secretaria cadastrada'}
+            </p>
+            <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              {search ? 'Tente alterar o termo de busca' : 'Clique em "Nova secretaria" para começar'}
+            </p>
+          </div>
+          {!search && (
+            <Button variant="outline" size="sm" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Nova secretaria
+            </Button>
+          )}
         </div>
       )}
 
+      {/* List */}
       {!isLoading && filtered.length > 0 && (
         <div className="space-y-4">
           {filtered.map((s) => (
@@ -757,7 +828,7 @@ export function SecretariasPage() {
               <Label htmlFor="secretaria-active">Ativo</Label>
               <Switch
                 id="secretaria-active"
-                checked={activeValue}
+                checked={watchEdit('active')}
                 onCheckedChange={(checked) => setEditValue('active', checked)}
               />
             </div>
