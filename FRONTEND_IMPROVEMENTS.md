@@ -1107,6 +1107,19 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 - ✅ **Item 8.1**: Criado `lib/colors.ts` com tokens centralizados (`TONE_CONFIG`, `SHIFT_CONFIG`, `LEVEL_COLORS`, `SIDEBAR_BG`, `ACCENT_COLOR`) — atualizados 5 arquivos para importar do módulo centralizado
 - ✅ **Item 6.16**: Renomeado aba "Financeiro" para "Dados Bancários & Senha" em TeacherFormPage
 
+### Itens implementados nesta sessão (2026-07-28)
+- ✅ **Item 3.3 [P1]**: Sidebar colapsável — toggle no sidebar com persistência em localStorage (`iris-sidebar-collapsed`). Colapsada (72px) exibe apenas ícones com tooltips; expandida (240px) mostra labels completos. CSS vars `--sidebar-w` e `--sidebar-expanded-w` adicionadas ao `index.css`.
+- ✅ **Item 3.21 [P2]**: Adicionado slot `tabs` ao componente `PageHead` — permite renderizar `<TabsList>` dentro do cabeçalho da página.
+- ✅ **Item 5.12 [P2]**: Filtros avançados no StudentsPage — adicionados filtros por sexo (Masculino/Feminino/Outro) e faixa etária (idade mínima/máxima).
+- ✅ **Item 6.36 [P3]**: Máscara de moeda BRL no campo `amount` do TuitionsPage — formatação automática `R$ X.XXX,XX` com funções `maskBRL`/`unmaskBRL`.
+- ✅ **Item 5.2 (melhoria)**: AttendancePage — adicionado `<Tabs>` com abas "Registro de Frequência" e "Resumo & Histórico". TabsList responsivo: empilha vertical em mobile, horizontal em desktop.
+
+### Itens já implementados (codebase anterior — documentados agora)
+- ✅ **Item 3.18 [P3]**: LoginPage já possui botão olhinho (`Eye`/`EyeOff`) para alternar visibilidade da senha
+- ✅ **Item 5.11 [P1]**: TeacherFormPage já possui upload de foto via `useUploadTeacherPhoto` com preview e botão de câmera
+- ✅ **Item 3.13 [P2]**: SchedulingPage já usa `calc(100vh - var(--header-h) - 2rem)` em vez de altura hardcoded
+- ✅ **Item 6.24 [P2]**: `TooltipProvider` já está no `main.tsx` (root), não mais inline no SeriesPage
+
 ### Itens implementados nesta sessão (2026-07-25 — P0+P1)
 - ✅ **Item 2.1 [P0]**: Criado componente `DataTable` (`components/DataTable.tsx`) com suporte a colunas, ações, loading, empty state, aria-label. Migradas 8 páginas do padrão legacy `Surface + .tbl` para `DataTable`: StudentsPage, TeachersPage, TuitionsPage, SubjectsPage, SchoolsPage, StudentReportPage (grades table), StudentDetailPage (tuitions table), AdminActivityPage
 - ✅ **Item 5.1 [P0]**: Boletim do aluno expandido — adicionadas média por disciplina, média geral, situação final (Aprovado/Reprovado) por disciplina e geral, card de resumo no topo

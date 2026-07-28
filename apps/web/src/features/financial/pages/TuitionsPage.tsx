@@ -22,6 +22,24 @@ import { SearchInput } from '../../../components/SearchInput'
 import { DataTable, type Column } from '../../../components/DataTable'
 import type { Tuition } from '@education-gestor/types'
 
+function maskBRL(value: string) {
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return ''
+  const raw = parseInt(digits, 10)
+  const formatted = (raw / 100).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+  })
+  return formatted
+}
+
+function unmaskBRL(value: string) {
+  const cleaned = value.replace(/[R$\s.]/g, '').replace(',', '.')
+  const num = parseFloat(cleaned)
+  return isNaN(num) ? 0 : num
+}
+
 const tuitionSchema = z.object({
   studentId: z.string().min(1, 'Selecione o aluno'),
   amount: z.coerce.number().positive('Valor deve ser positivo'),
@@ -48,7 +66,7 @@ export function TuitionsPage() {
   const createApiMutation = useApiMutation({
     mutationFn: (data: TuitionForm) => createMutation.mutateAsync(data),
     successMessage: 'Mensalidade criada',
-    onSuccess: () => { setDialogOpen(false); reset() },
+    onSuccess: () => { setDialogOpen(false); reset(); setAmountDisplay('') },
   })
 
   const payApiMutation = useApiMutation({
@@ -67,6 +85,8 @@ export function TuitionsPage() {
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TuitionForm>({
     resolver: zodResolver(tuitionSchema),
   })
+
+  const [amountDisplay, setAmountDisplay] = useState('')
 
   const studentIdValue = watch('studentId')
 
@@ -269,7 +289,7 @@ export function TuitionsPage() {
         </div>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={(v) => !v && setDialogOpen(false)}>
+      <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) { setDialogOpen(false); setAmountDisplay('') }}}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Nova mensalidade</DialogTitle>
@@ -291,7 +311,17 @@ export function TuitionsPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Valor (R$)</Label>
-              <Input type="number" step="0.01" placeholder="500.00" {...register('amount')} />
+              <Input
+                placeholder="R$ 500,00"
+                value={amountDisplay}
+                onChange={(e) => {
+                  const raw = e.target.value
+                  const masked = maskBRL(raw.replace(/[R$\s.]/g, '').replace(',', '.'))
+                  setAmountDisplay(masked)
+                  setValue('amount', unmaskBRL(masked))
+                }}
+                onFocus={(e) => { if (!amountDisplay) setAmountDisplay('R$ 0,00') }}
+              />
               {errors.amount && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.amount.message}</p>}
             </div>
             <div className="space-y-1.5">

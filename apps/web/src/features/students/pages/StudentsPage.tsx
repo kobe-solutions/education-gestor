@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, UserPlus, Upload } from 'lucide-react'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
+import { useClasses } from '../../classes/hooks/useClasses'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
@@ -72,6 +73,7 @@ export function StudentsPage() {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const { data, isLoading } = useStudents({ page, limit: PAGE_SIZE })
+  const { data: classes = [] } = useClasses()
   const students = data?.data
   const total = data?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -87,7 +89,21 @@ export function StudentsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
   const statusFilter = searchParams.get('status') ?? 'all'
+  const sexFilter = searchParams.get('sex') ?? 'all'
+  const minAge = searchParams.get('minAge') ?? ''
+  const maxAge = searchParams.get('maxAge') ?? ''
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+
+  function calcAge(birthDate: string | null): number | null {
+    if (!birthDate) return null
+    const birth = new Date(birthDate + 'T12:00:00')
+    if (isNaN(birth.getTime())) return null
+    const today = new Date()
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+    return age
+  }
 
   const filtered = students?.filter((s) => {
     const matchesSearch =
@@ -95,7 +111,11 @@ export function StudentsPage() {
       s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.enrollmentCode.toLowerCase().includes(search.toLowerCase())
     const matchesStatus = statusFilter === 'all' || s.enrollmentStatus === statusFilter
-    return matchesSearch && matchesStatus
+    const matchesSex = sexFilter === 'all' || s.sex === sexFilter
+    const age = calcAge(s.birthDate)
+    const matchesMinAge = !minAge || (age !== null && age >= parseInt(minAge))
+    const matchesMaxAge = !maxAge || (age !== null && age <= parseInt(maxAge))
+    return matchesSearch && matchesStatus && matchesSex && matchesMinAge && matchesMaxAge
   }) ?? []
 
   const startItem = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
@@ -140,7 +160,7 @@ export function StudentsPage() {
         }
       />
 
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-3 flex-wrap items-end">
         <div className="w-full max-w-sm">
           <SearchInput
             value={search}
@@ -148,15 +168,8 @@ export function StudentsPage() {
             placeholder="Buscar por nome ou matrícula…"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('status'); else next.set('status', v); return next }) }}
-          items={[
-            { value: 'all', label: 'Todos' },
-            { value: 'active', label: 'Ativo' },
-            { value: 'inactive', label: 'Inativo' },
-            { value: 'transferred', label: 'Transferido' },
-            { value: 'cancelled', label: 'Cancelado' },
-          ]}>
-          <SelectTrigger className="w-[160px]">
+        <Select value={statusFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('status'); else next.set('status', v); return next }) }}>
+          <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Situação" />
           </SelectTrigger>
           <SelectContent>
@@ -167,6 +180,37 @@ export function StudentsPage() {
             <SelectItem value="cancelled">Cancelado</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={sexFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('sex'); else next.set('sex', v); return next }) }}>
+          <SelectTrigger className="w-[130px]">
+            <SelectValue placeholder="Sexo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            <SelectItem value="M">Masculino</SelectItem>
+            <SelectItem value="F">Feminino</SelectItem>
+            <SelectItem value="outro">Outro</SelectItem>
+          </SelectContent>
+        </Select>
+        <input
+          type="number"
+          min={0}
+          max={120}
+          placeholder="Idade min"
+          value={minAge}
+          onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('minAge'); else next.set('minAge', e.target.value); return next })}
+          className="h-9 w-24 px-2.5 text-xs rounded-md border outline-hidden"
+          style={{ border: '1px solid hsl(var(--input))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
+        />
+        <input
+          type="number"
+          min={0}
+          max={120}
+          placeholder="Idade max"
+          value={maxAge}
+          onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('maxAge'); else next.set('maxAge', e.target.value); return next })}
+          className="h-9 w-24 px-2.5 text-xs rounded-md border outline-hidden"
+          style={{ border: '1px solid hsl(var(--input))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
+        />
       </div>
 
       <DataTable

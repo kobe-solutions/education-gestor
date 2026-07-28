@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import {
   Users,
@@ -21,6 +21,8 @@ import {
   Eye,
   EyeOff,
   UserCircle,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -31,6 +33,7 @@ import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
 import { SIDEBAR_BG, ACCENT_COLOR } from '../../lib/colors'
 import { Avatar } from '../Avatar'
+import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import { useTeacher } from '../../features/teachers/hooks/useTeachers'
 import { useSchool } from '../../features/schools/hooks/useSchools'
 
@@ -194,21 +197,22 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const SIDEBAR_W = 240
+const SIDEBAR_COLLAPSED_KEY = 'iris-sidebar-collapsed'
 
-function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
-  return (
+function SidebarLink({ to, icon: Icon, label, active, collapsed }: { to: string; icon: React.ElementType; label: string; active: boolean; collapsed: boolean }) {
+  const link = (
     <Link
       to={to}
       className={cn(
         'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-all duration-150 relative',
+        collapsed ? 'justify-center px-0' : '',
         active
           ? 'text-white'
           : 'text-gray-400 hover:text-white hover:bg-white/5',
       )}
       style={active ? { background: ACCENT_COLOR + '15' } : undefined}
     >
-      {active && (
+      {active && !collapsed && (
         <div
           className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-6 rounded-r-full"
           style={{ background: ACCENT_COLOR }}
@@ -218,11 +222,24 @@ function SidebarLink({ to, icon: Icon, label, active }: { to: string; icon: Reac
         className="h-5 w-5 shrink-0"
         style={active ? { color: ACCENT_COLOR } : undefined}
       />
-      <span className={cn('text-sm font-medium truncate', active && 'font-semibold')}>
-        {label}
-      </span>
+      {!collapsed && (
+        <span className={cn('text-sm font-medium truncate', active && 'font-semibold')}>
+          {label}
+        </span>
+      )}
     </Link>
   )
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={12}>{label}</TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return link
 }
 
 export function AppLayout() {
@@ -231,6 +248,15 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true')
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
+      return next
+    })
+  }, [])
 
   const role = payload?.role
   const { data: teacherProfile } = useTeacher(role === 'professor' ? payload!.userId : '')
@@ -283,7 +309,7 @@ export function AppLayout() {
     return (
       <>
         {/* Logo / School branding */}
-        <div className="flex items-center gap-2.5 px-4 shrink-0" style={{ height: 'var(--header-h)' }}>
+        <div className={cn('flex items-center shrink-0', sidebarCollapsed ? 'justify-center px-0' : 'gap-2.5 px-4')} style={{ height: 'var(--header-h)' }}>
           {schoolLogoUrl ? (
             <img src={schoolLogoUrl} alt="" className="h-8 w-8 rounded object-contain shrink-0" />
           ) : (
@@ -294,9 +320,11 @@ export function AppLayout() {
               <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
             </svg>
           )}
-          <span className="font-bold text-sm truncate text-white">
-            {schoolProfile?.name ?? 'Painel Geral'}
-          </span>
+          {!sidebarCollapsed && (
+            <span className="font-bold text-sm truncate text-white">
+              {schoolProfile?.name ?? 'Painel Geral'}
+            </span>
+          )}
         </div>
 
         {/* Nav items */}
@@ -308,51 +336,94 @@ export function AppLayout() {
               icon={item.icon}
               label={item.label}
               active={activeItem?.to === item.to}
+              collapsed={sidebarCollapsed}
             />
           ))}
         </nav>
 
         {/* Bottom section */}
         <div className="px-3 pb-3 flex flex-col gap-2">
-          {/* Financial visibility toggle — admin only */}
-          {role === 'admin' && (
+          {/* Collapse toggle */}
           <Button
             variant="outline"
-            size="default"
-            className="w-full justify-start gap-3 bg-transparent hover:bg-primary/10"
-            style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
-            onClick={toggleFinancialVisibility}
+            size={sidebarCollapsed ? 'icon' : 'default'}
+            className={cn(
+              'bg-transparent text-gray-400 hover:text-white hover:bg-white/5',
+              sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
+            )}
+            style={{ borderColor: 'hsl(var(--primary) / 0.3)' }}
+            onClick={toggleSidebar}
+            title={sidebarCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+            aria-label={sidebarCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
           >
-            {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
-            <span className="text-sm font-medium">{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</span>
+            {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            {!sidebarCollapsed && <span className="text-sm font-medium">Recolher</span>}
           </Button>
+
+          {/* Financial visibility toggle — admin only */}
+          {role === 'admin' && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={sidebarCollapsed ? 'icon' : 'default'}
+                className={cn(
+                  'bg-transparent hover:bg-primary/10',
+                  sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
+                )}
+                style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
+                onClick={toggleFinancialVisibility}
+              >
+                {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
+                {!sidebarCollapsed && <span className="text-sm font-medium">{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</span>}
+              </Button>
+            </TooltipTrigger>
+            {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</TooltipContent>}
+          </Tooltip>
           )}
 
           {/* Theme toggle */}
-          <Button
-            variant="outline"
-            size="default"
-            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
-            style={{ borderColor: 'hsl(var(--primary))' }}
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            <span className="text-sm font-medium">Alternar tema</span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={sidebarCollapsed ? 'icon' : 'default'}
+                className={cn(
+                  'bg-transparent text-primary hover:bg-primary/10',
+                  sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
+                )}
+                style={{ borderColor: 'hsl(var(--primary))' }}
+                onClick={toggleTheme}
+              >
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                {!sidebarCollapsed && <span className="text-sm font-medium">Alternar tema</span>}
+              </Button>
+            </TooltipTrigger>
+            {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>Alternar tema</TooltipContent>}
+          </Tooltip>
 
           {/* Logout */}
-          <Button
-            variant="outline"
-            size="default"
-            className="w-full justify-start gap-3 bg-transparent text-primary hover:bg-primary/10"
-            style={{ borderColor: 'hsl(var(--primary))' }}
-            onClick={handleLogout}
-          >
-            <LogOut size={18} />
-            <span className="text-sm font-medium">Sair</span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size={sidebarCollapsed ? 'icon' : 'default'}
+                className={cn(
+                  'bg-transparent text-primary hover:bg-primary/10',
+                  sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
+                )}
+                style={{ borderColor: 'hsl(var(--primary))' }}
+                onClick={handleLogout}
+              >
+                <LogOut size={18} />
+                {!sidebarCollapsed && <span className="text-sm font-medium">Sair</span>}
+              </Button>
+            </TooltipTrigger>
+            {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>Sair</TooltipContent>}
+          </Tooltip>
 
           {/* User card */}
+          {!sidebarCollapsed && (
           <div
             className="flex items-center gap-3 rounded-xl px-3 py-3 mt-1"
             style={{
@@ -377,6 +448,7 @@ export function AppLayout() {
               )}
             </div>
           </div>
+          )}
         </div>
       </>
     )
@@ -386,9 +458,9 @@ export function AppLayout() {
     <div className="flex h-screen" style={{ background: 'hsl(var(--background))' }}>
       {/* Desktop sidebar */}
       <aside
-        className="hidden md:flex flex-col shrink-0"
+        className="hidden md:flex flex-col shrink-0 transition-all duration-200"
         style={{
-          width: SIDEBAR_W,
+          width: sidebarCollapsed ? 'var(--sidebar-w)' : 'var(--sidebar-expanded-w)',
           background: SIDEBAR_BG,
         }}
       >
@@ -443,6 +515,7 @@ export function AppLayout() {
               icon={item.icon}
               label={item.label}
               active={activeItem?.to === item.to}
+              collapsed={false}
             />
           ))}
         </nav>

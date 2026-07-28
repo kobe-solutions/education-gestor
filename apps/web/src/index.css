@@ -210,6 +210,8 @@
 
   /* Layout */
   --header-h: 60px;
+  --sidebar-w: 72px;
+  --sidebar-expanded-w: 240px;
 
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, hsl(245, 58%, 51%) 0%, hsl(245, 58%, 61%) 100%);
