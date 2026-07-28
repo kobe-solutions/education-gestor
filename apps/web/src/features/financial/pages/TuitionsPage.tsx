@@ -41,7 +41,7 @@ export function TuitionsPage() {
   const total = tuitionsData?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const { data: studentsData } = useStudents()
-  const students = studentsData?.data
+  const students = studentsData?.data ?? []
   const createMutation = useCreateTuition()
   const payMutation = useRegisterPayment()
 
@@ -71,15 +71,10 @@ export function TuitionsPage() {
   const studentIdValue = watch('studentId')
 
   const filtered = tuitions?.filter((t) => {
-    const student = students?.find((s) => s.id === t.studentId)
-    const matchesSearch = !search || student?.name.toLowerCase().includes(search.toLowerCase())
+    const matchesSearch = !search || (t as Tuition & { studentName?: string }).studentName?.toLowerCase().includes(search.toLowerCase())
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter
     return matchesSearch && matchesStatus
   }) ?? []
-
-  function getStudentName(studentId: string) {
-    return students?.find((s) => s.id === studentId)?.name ?? studentId
-  }
 
   function onSubmit(data: TuitionForm) {
     createApiMutation.mutate(data)
@@ -118,7 +113,7 @@ export function TuitionsPage() {
           style={{ color: 'hsl(var(--primary))' }}
           onClick={(e) => e.stopPropagation()}
         >
-          {getStudentName(t.studentId)}
+          {t.studentName ?? t.studentId}
         </Link>
       ),
     },

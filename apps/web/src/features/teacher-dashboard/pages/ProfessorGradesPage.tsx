@@ -270,7 +270,7 @@ export function ProfessorGradesPage() {
             variant="outline"
             size="sm"
             className="w-full h-full min-h-[72px] flex-col gap-1.5 items-center justify-center"
-            onClick={() => toast.info('Funcionalidade de importação em lote será implementada em breve!')}
+            onClick={() => toast.success('Funcionalidade de importação em lote será implementada em breve!')}
           >
             <FileSpreadsheet size={18} className="text-muted-foreground" />
             <span className="text-[11px] font-medium text-muted-foreground leading-tight text-center">

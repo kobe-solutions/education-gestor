@@ -7,6 +7,7 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
+COPY packages/shared/package.json ./packages/shared/
 COPY packages/types/package.json ./packages/types/
 RUN pnpm install --frozen-lockfile
 
@@ -15,6 +16,7 @@ FROM base AS dev
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
 
 # ── Build de produção ────────────────────────────────────────────────────────
@@ -31,8 +33,11 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=builder /app/apps/api/src/db/migrations ./apps/api/src/db/migrations
 COPY --from=builder /app/apps/web/dist ./apps/web/dist
 COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/package.json
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
+RUN sed -i 's|"./src/index.ts"|"./dist/index.js"|' packages/shared/package.json
 ENV NODE_ENV=production
 EXPOSE 3333
 CMD ["node", "apps/api/dist/server.js"]

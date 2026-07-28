@@ -1,6 +1,6 @@
 import { eq, and, count } from 'drizzle-orm'
 import { db } from '../../db'
-import { tuitions } from '../../db/schema'
+import { tuitions, students } from '../../db/schema'
 
 type CreateTuitionRepositoryInput = {
   schoolId: string
@@ -13,23 +13,24 @@ export async function findAllTuitionsRepository(
   schoolId: string,
   { limit = 100, offset = 0 }: { limit?: number; offset?: number } = {},
 ) {
-  const tuitionFields = {
-    id: tuitions.id,
-    schoolId: tuitions.schoolId,
-    studentId: tuitions.studentId,
-    amount: tuitions.amount,
-    dueDate: tuitions.dueDate,
-    paidAt: tuitions.paidAt,
-    status: tuitions.status,
-    boletoUrl: tuitions.boletoUrl,
-    boletoFileSize: tuitions.boletoFileSize,
-    receiptUrl: tuitions.receiptUrl,
-    receiptFileSize: tuitions.receiptFileSize,
-    createdAt: tuitions.createdAt,
-    updatedAt: tuitions.updatedAt,
-  }
   const [data, [countResult]] = await Promise.all([
-    db.select(tuitionFields).from(tuitions)
+    db.select({
+      id: tuitions.id,
+      schoolId: tuitions.schoolId,
+      studentId: tuitions.studentId,
+      studentName: students.name,
+      amount: tuitions.amount,
+      dueDate: tuitions.dueDate,
+      paidAt: tuitions.paidAt,
+      status: tuitions.status,
+      boletoUrl: tuitions.boletoUrl,
+      boletoFileSize: tuitions.boletoFileSize,
+      receiptUrl: tuitions.receiptUrl,
+      receiptFileSize: tuitions.receiptFileSize,
+      createdAt: tuitions.createdAt,
+      updatedAt: tuitions.updatedAt,
+    }).from(tuitions)
+      .leftJoin(students, eq(tuitions.studentId, students.id))
       .where(eq(tuitions.schoolId, schoolId))
       .orderBy(tuitions.dueDate)
       .limit(limit).offset(offset),

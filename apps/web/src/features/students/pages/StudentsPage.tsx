@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, UserPlus } from 'lucide-react'
+import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, UserPlus, Upload } from 'lucide-react'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
@@ -127,10 +127,16 @@ export function StudentsPage() {
             : `${filtered.length} aluno${filtered.length !== 1 ? 's' : ''} encontrado${filtered.length !== 1 ? 's' : ''}`
         }
         actions={
-          <Button size="sm" onClick={() => navigate('/students/new')}>
-            <Plus className="h-4 w-4 mr-1" />
-            Novo aluno
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => navigate('/students/import')}>
+              <Upload className="h-4 w-4 mr-1" />
+              Importar
+            </Button>
+            <Button size="sm" onClick={() => navigate('/students/new')}>
+              <Plus className="h-4 w-4 mr-1" />
+              Novo aluno
+            </Button>
+          </div>
         }
       />
 
