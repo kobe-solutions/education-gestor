@@ -248,6 +248,7 @@ export interface Tuition {
   id: string
   schoolId: string
   studentId: string
+  studentName?: string
   amount: string
   dueDate: string
   paidAt: string | null

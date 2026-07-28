@@ -1,4 +1,4 @@
-import { eq, and, sql, count, isNull } from 'drizzle-orm'
+import { eq, and, sql, count, isNull, inArray } from 'drizzle-orm'
 import { db } from '../../db'
 import { students } from '../../db/schema'
 
@@ -74,9 +74,9 @@ export async function findExistingCpfRepository(schoolId: string, cpfs: string[]
       and(
         eq(students.schoolId, schoolId),
         isNull(students.deletedAt),
-        sql`cpf = ANY(${filtered}::text[])`,
+        inArray(students.cpf, filtered),
       ),
     )
 
-  return new Set(rows.map((r) => r.cpf).filter(Boolean))
+  return new Set(rows.map((r) => r.cpf).filter((c): c is string => !!c))
 }
