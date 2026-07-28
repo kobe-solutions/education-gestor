@@ -30,6 +30,7 @@ import {
 } from './students.service'
 import { logAudit } from '../../lib/audit'
 import type { TenantPayload } from '../../middlewares/authorize'
+import { importStudentsService } from './import-students.service'
 
 const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
 
@@ -64,6 +65,42 @@ export async function studentsRoutes(app: FastifyInstance) {
       }
       if (e instanceof Error && e.message === 'Secretaria não possui escolas vinculadas') {
         return reply.status(403).send({ message: e.message })
+      }
+      throw e
+    }
+  })
+
+  // ── Importação em lote ──────────────────────────────────────────────────────
+
+  app.post('/students/import', { preHandler }, async (request, reply) => {
+    try {
+      const data = await request.file()
+      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+
+      const buffer = await data.toBuffer()
+      const MAX_IMPORT_SIZE = 10 * 1024 * 1024
+      if (buffer.length > MAX_IMPORT_SIZE) {
+        return reply.status(400).send({ message: 'Arquivo muito grande. Máximo 10MB.' })
+      }
+
+      const fileName = data.filename
+      const ext = fileName.toLowerCase().split('.').pop()
+      if (ext !== 'csv' && ext !== 'xlsx' && ext !== 'xls') {
+        return reply.status(400).send({ message: 'Formato inválido. Use CSV ou XLSX.' })
+      }
+
+      const user = request.user as TenantPayload
+      const schoolId = getSchoolId(request)
+      const result = await importStudentsService(
+        schoolId,
+        buffer,
+        fileName,
+        { userId: user.userId, userRole: user.role, schoolId },
+      )
+      return reply.send(result)
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('Formato')) {
+        return reply.status(400).send({ message: e.message })
       }
       throw e
     }
