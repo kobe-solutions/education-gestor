@@ -44,6 +44,7 @@ const ProfessorDashboardPage = lazy(() => import('./features/teacher-dashboard/p
 const ClassPerformancePage = lazy(() => import('./features/teacher-dashboard/pages/ClassPerformancePage').then(m => ({ default: m.ClassPerformancePage })))
 const TeacherAttendancePage = lazy(() => import('./features/teacher-dashboard/pages/AttendancePage').then(m => ({ default: m.AttendancePage })))
 const MyClassesPage = lazy(() => import('./features/teacher-dashboard/pages/MyClassesPage').then(m => ({ default: m.MyClassesPage })))
+const ProfessorGradesPage = lazy(() => import('./features/teacher-dashboard/pages/ProfessorGradesPage').then(m => ({ default: m.ProfessorGradesPage })))
 const ProfessorProfilePage = lazy(() => import('./features/teacher-dashboard/pages/ProfessorProfilePage').then(m => ({ default: m.ProfessorProfilePage })))
 const GestorAttendancePage = lazy(() => import('./features/academic/pages/AttendancePage').then(m => ({ default: m.AttendancePage })))
 const GradesPage = lazy(() => import('./features/academic/pages/GradesPage').then(m => ({ default: m.GradesPage })))
@@ -122,6 +123,7 @@ export function App() {
                 <Route element={<PrivateRoute allowedRoles={['professor']} />}>
                   <Route path="/professor" element={<Suspense fallback={<PageLoader />}><ProfessorDashboardPage /></Suspense>} />
                   <Route path="/professor/classes" element={<Suspense fallback={<PageLoader />}><MyClassesPage /></Suspense>} />
+                  <Route path="/professor/grades" element={<Suspense fallback={<PageLoader />}><ProfessorGradesPage /></Suspense>} />
                   <Route path="/professor/performance" element={<Suspense fallback={<PageLoader />}><ClassPerformancePage /></Suspense>} />
                   <Route path="/professor/attendance" element={<Suspense fallback={<PageLoader />}><TeacherAttendancePage /></Suspense>} />
                   <Route path="/professor/profile" element={<Suspense fallback={<PageLoader />}><ProfessorProfilePage /></Suspense>} />
