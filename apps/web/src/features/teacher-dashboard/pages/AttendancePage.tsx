@@ -983,14 +983,21 @@ export function AttendancePage() {
         }
         className="w-full"
       >
-        <TabsList className="w-full bg-background border border-border p-1" aria-label="Abas de frequência">
-          <TabsTrigger value="registro">
-            <Calendar className="size-4 mr-1" />
-            Registro de Frequência
+        <TabsList className="grid w-full grid-cols-2 rounded-xl border border-border bg-background p-1 h-12">
+          <TabsTrigger
+            value="registro"
+            className="flex items-center justify-center gap-2 rounded-lg"
+          >
+            <Calendar className="size-4" />
+            <span>Registro</span>
           </TabsTrigger>
-          <TabsTrigger value="resumo">
-            <TrendingUp className="size-4 mr-1" />
-            Resumo & Histórico
+        
+          <TabsTrigger
+            value="resumo"
+            className="flex items-center justify-center gap-2 rounded-lg"
+          >
+            <TrendingUp className="size-4" />
+            <span>Resumo</span>
           </TabsTrigger>
         </TabsList>
 
