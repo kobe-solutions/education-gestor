@@ -1,4 +1,5 @@
-import { pgTable, uuid, timestamp, date, boolean, numeric, index, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, timestamp, date, boolean, numeric, index, uniqueIndex, check } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 import { schools } from './schools'
 import { schoolClasses } from './schoolClasses'
 import { students } from './students'
@@ -33,6 +34,7 @@ export const grades = pgTable('grades', {
   studentPeriodIdx: index('grades_student_period_idx').on(table.studentId, table.academicPeriodId),
   classIdx: index('grades_class_idx').on(table.classId),
   uniqueGrade: uniqueIndex('grades_unique_idx').on(table.schoolId, table.classId, table.studentId, table.subjectId, table.academicPeriodId),
+  gradeValueCheck: check('grades_value_check', sql`${table.value} >= 0 AND ${table.value} <= 10`),
 }))
 
 export const attendances = pgTable('attendances', {
