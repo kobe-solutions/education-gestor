@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router'
-import { Activity, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Activity } from 'lucide-react'
 import { useAdminActivity, type ActivityItem } from '../hooks/useAdminActivity'
 import { PageHead } from '../../../components/PageHead'
-import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../../components/ui/tooltip'
@@ -145,25 +144,6 @@ export function AdminActivityPage() {
   })
 
   const total = data?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
-  const startItem = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
-  const endItem = Math.min(page * PAGE_SIZE, total)
-
-  function getPageNumbers() {
-    const pages: (number | '...')[] = []
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i)
-    } else {
-      pages.push(1)
-      if (page > 3) pages.push('...')
-      const start = Math.max(2, page - 1)
-      const end = Math.min(totalPages - 1, page + 1)
-      for (let i = start; i <= end; i++) pages.push(i)
-      if (page < totalPages - 2) pages.push('...')
-      pages.push(totalPages)
-    }
-    return pages
-  }
 
   const updateFilter = (key: string, value: string | null) => {
     setSearchParams((prev) => {
@@ -230,51 +210,13 @@ export function AdminActivityPage() {
           emptyIcon={Activity}
           caption="Log de atividades"
           loading={isLoading}
+          pagination={{
+            page,
+            pageSize: PAGE_SIZE,
+            total,
+            onPageChange: setPage,
+          }}
         />
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <span className="text-xs text-muted-foreground">
-              Mostrando {startItem}–{endItem} de {total} registro{total !== 1 ? 's' : ''}
-            </span>
-            <div className="flex items-center gap-1">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page <= 1}
-                aria-label="Página anterior"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              {getPageNumbers().map((p, i) =>
-                p === '...' ? (
-                  <span key={`dots-${i}`} className="px-1 text-xs text-muted-foreground">
-                    ...
-                  </span>
-                ) : (
-                  <Button
-                    key={p}
-                    size="sm"
-                    variant={p === page ? 'default' : 'outline'}
-                    onClick={() => setPage(p)}
-                  >
-                    {p}
-                  </Button>
-                ),
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page >= totalPages}
-                aria-label="Próxima página"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
     </TooltipProvider>
   )

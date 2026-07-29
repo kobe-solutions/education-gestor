@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
 import { useTeachers, useDeleteTeacher } from '../hooks/useTeachers'
 import { toast } from '../../../lib/toast'
@@ -19,6 +19,7 @@ const columns: Column<Teacher>[] = [
   {
     key: 'name',
     label: 'Nome',
+    sortable: true,
     render: (t) => (
       <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
         {t.name}
@@ -57,10 +58,11 @@ const columns: Column<Teacher>[] = [
 export function TeachersPage() {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
+  const [sortColumn, setSortColumn] = useState<string | null>('name')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>('asc')
   const { data, isLoading } = useTeachers({ page, limit: PAGE_SIZE })
   const teachers = data?.data
   const total = data?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const deleteMutation = useDeleteTeacher()
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
@@ -69,6 +71,12 @@ export function TeachersPage() {
   const filtered = teachers?.filter((t) =>
     t.name.toLowerCase().includes(search.toLowerCase()),
   ) ?? []
+
+  function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
+    setSortColumn(direction ? column : null)
+    setSortDirection(direction)
+    setPage(1)
+  }
 
   return (
     <div className="space-y-5">
@@ -123,35 +131,18 @@ export function TeachersPage() {
         emptyMessage={search ? `Nenhum professor encontrado para "${search}".` : 'Nenhum professor cadastrado.'}
         caption="Lista de professores"
         loading={isLoading}
+        pagination={{
+          page,
+          pageSize: PAGE_SIZE,
+          total,
+          onPageChange: setPage,
+        }}
+        sort={{
+          column: sortColumn,
+          direction: sortDirection,
+          onSortChange: handleSortChange,
+        }}
       />
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Página {page} de {totalPages}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page <= 1}
-              aria-label="Página anterior"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page >= totalPages}
-              aria-label="Próxima página"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
 
       <ConfirmDialog
         open={!!deleteTarget}
