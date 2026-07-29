@@ -1,4 +1,4 @@
-import { BookMarked, Calendar } from 'lucide-react'
+import { BookMarked, Calendar, Clock } from 'lucide-react'
 import { HubCard } from '../components/HubCard'
 import { PageHead } from '../components/PageHead'
 
@@ -21,6 +21,12 @@ export function HubSettingsPage() {
           icon={Calendar}
           title="Períodos Letivos"
           description="Defina os anos e períodos letivos (bimestres, trimestres) com datas de início e fim."
+        />
+        <HubCard
+          to="/class-periods"
+          icon={Clock}
+          title="Períodos de Aula"
+          description="Configure os blocos de horário do turno escolar (ex: 1º tempo, 2º tempo)."
         />
       </div>
     </div>

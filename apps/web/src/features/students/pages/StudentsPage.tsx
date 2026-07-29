@@ -72,7 +72,21 @@ const columns: Column<Student>[] = [
 export function StudentsPage() {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
-  const { data, isLoading } = useStudents({ page, limit: PAGE_SIZE })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const search = searchParams.get('q') ?? ''
+  const statusFilter = searchParams.get('status') ?? 'all'
+  const sexFilter = searchParams.get('sex') ?? 'all'
+  const minAge = searchParams.get('minAge') ?? ''
+  const maxAge = searchParams.get('maxAge') ?? ''
+  const { data, isLoading } = useStudents({
+    page,
+    limit: PAGE_SIZE,
+    search,
+    status: statusFilter,
+    sex: sexFilter,
+    minAge: minAge ? Number(minAge) : undefined,
+    maxAge: maxAge ? Number(maxAge) : undefined,
+  })
   const { data: classes = [] } = useClasses()
   const students = data?.data
   const total = data?.total ?? 0
@@ -86,12 +100,6 @@ export function StudentsPage() {
     onError: () => setDeleteTarget(null),
   })
 
-  const [searchParams, setSearchParams] = useSearchParams()
-  const search = searchParams.get('q') ?? ''
-  const statusFilter = searchParams.get('status') ?? 'all'
-  const sexFilter = searchParams.get('sex') ?? 'all'
-  const minAge = searchParams.get('minAge') ?? ''
-  const maxAge = searchParams.get('maxAge') ?? ''
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   function calcAge(birthDate: string | null): number | null {
@@ -105,18 +113,7 @@ export function StudentsPage() {
     return age
   }
 
-  const filtered = students?.filter((s) => {
-    const matchesSearch =
-      !search ||
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.enrollmentCode.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || s.enrollmentStatus === statusFilter
-    const matchesSex = sexFilter === 'all' || s.sex === sexFilter
-    const age = calcAge(s.birthDate)
-    const matchesMinAge = !minAge || (age !== null && age >= parseInt(minAge))
-    const matchesMaxAge = !maxAge || (age !== null && age <= parseInt(maxAge))
-    return matchesSearch && matchesStatus && matchesSex && matchesMinAge && matchesMaxAge
-  }) ?? []
+  const filtered = students ?? []
 
   const startItem = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
   const endItem = Math.min(page * PAGE_SIZE, total)
@@ -164,11 +161,12 @@ export function StudentsPage() {
         <div className="w-full max-w-sm">
           <SearchInput
             value={search}
-            onChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('q'); else next.set('q', v); return next }) }}
+            onChange={(v) => { setPage(1); setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('q'); else next.set('q', v); return next }) }}
             placeholder="Buscar por nome ou matrícula…"
+            name="student-search"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('status'); else next.set('status', v); return next }) }}>
+        <Select value={statusFilter} onValueChange={(v) => { setPage(1); setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('status'); else next.set('status', v); return next }) }}>
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Situação" />
           </SelectTrigger>

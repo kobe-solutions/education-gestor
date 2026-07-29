@@ -129,6 +129,38 @@ export function useClassPeriods() {
   })
 }
 
+export function useCreateClassPeriod() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: { name: string; startTime: string; endTime: string; order: number }) => {
+      const res = await api.post<ClassPeriod>('/class-periods', data)
+      return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['class-periods'] }),
+  })
+}
+
+export function useUpdateClassPeriod() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<{ name: string; startTime: string; endTime: string; order: number }> }) => {
+      const res = await api.put<ClassPeriod>(`/class-periods/${id}`, data)
+      return res.data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['class-periods'] }),
+  })
+}
+
+export function useDeleteClassPeriod() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/class-periods/${id}`)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['class-periods'] }),
+  })
+}
+
 export function useCreateAcademicPeriod() {
   const qc = useQueryClient()
   return useMutation({
