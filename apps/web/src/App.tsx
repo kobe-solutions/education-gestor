@@ -50,6 +50,7 @@ const ProfessorProfilePage = lazy(() => import('./features/teacher-dashboard/pag
 const GestorAttendancePage = lazy(() => import('./features/academic/pages/AttendancePage').then(m => ({ default: m.AttendancePage })))
 const GradesPage = lazy(() => import('./features/academic/pages/GradesPage').then(m => ({ default: m.GradesPage })))
 const AcademicPeriodsPage = lazy(() => import('./features/classes/pages/AcademicPeriodsPage').then(m => ({ default: m.AcademicPeriodsPage })))
+const ClassPeriodsPage = lazy(() => import('./features/classes/pages/ClassPeriodsPage').then(m => ({ default: m.ClassPeriodsPage })))
 
 function PageLoader() {
   return (
@@ -92,6 +93,7 @@ export function App() {
                   <Route path="/education-levels/:levelId/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />
                   <Route path="/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />
                   <Route path="/academic-periods" element={<Navigate to="/academic-years" replace />} />
+                  <Route path="/class-periods" element={<Suspense fallback={<PageLoader />}><ClassPeriodsPage /></Suspense>} />
                 </Route>
 
                 {/* Hubs de navegação — gestor e secretaria */}

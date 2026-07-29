@@ -5,15 +5,28 @@ import type { Student, Guardian, StudentMedical, StudentDocument } from '@educat
 
 // ─── Alunos ────────────────────────────────────────────────────────────────────
 
-export function useStudents(params?: { page?: number; limit?: number }) {
+export function useStudents(params?: { page?: number; limit?: number; search?: string; status?: string; sex?: string; minAge?: number; maxAge?: number }) {
   const { schoolKey, enabled } = useSchoolKey()
   const page = params?.page ?? 1
   const limit = params?.limit ?? 50
+  const search = params?.search?.trim() || undefined
+  const status = params?.status && params.status !== 'all' ? params.status : undefined
+  const sex = params?.sex && params.sex !== 'all' ? params.sex : undefined
+  const minAge = params?.minAge ? Number(params.minAge) : undefined
+  const maxAge = params?.maxAge ? Number(params.maxAge) : undefined
   return useQuery({
-    queryKey: ['students', schoolKey, { page, limit }],
+    queryKey: ['students', schoolKey, { page, limit, search, status, sex, minAge, maxAge }],
     queryFn: async () => {
       const res = await api.get<{ data: Student[]; total: number }>('/students', {
-        params: { page, limit },
+        params: {
+          page,
+          limit,
+          ...(search ? { search } : {}),
+          ...(status ? { status } : {}),
+          ...(sex ? { sex } : {}),
+          ...(minAge ? { minAge } : {}),
+          ...(maxAge ? { maxAge } : {}),
+        },
       })
       const body = res.data
       return { data: body.data, total: body.total }

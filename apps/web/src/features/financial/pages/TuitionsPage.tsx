@@ -54,7 +54,10 @@ export function TuitionsPage() {
   const { hideFinancialData } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const [page, setPage] = useState(1)
-  const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE })
+  const [searchParams, setSearchParams] = useSearchParams()
+  const statusFilter = searchParams.get('status') ?? 'all'
+  const search = searchParams.get('q') ?? ''
+  const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE, status: statusFilter })
   const tuitions = tuitionsData?.data
   const total = tuitionsData?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
@@ -78,9 +81,6 @@ export function TuitionsPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [confirmPay, setConfirmPay] = useState<Tuition | null>(null)
-  const [searchParams, setSearchParams] = useSearchParams()
-  const search = searchParams.get('q') ?? ''
-  const statusFilter = searchParams.get('status') ?? 'all'
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TuitionForm>({
     resolver: zodResolver(tuitionSchema),
@@ -199,8 +199,13 @@ export function TuitionsPage() {
 
         <select
           value={statusFilter}
-          onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value || e.target.value === 'all') next.delete('status'); else next.set('status', e.target.value); return next }) }}
-          className="px-3 py-2.5 text-sm rounded-md outline-hidden"
+          onChange={(e) => {
+            setPage(1)
+            setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value || e.target.value === 'all') next.delete('status'); else next.set('status', e.target.value); return next })
+          }}
+          name="status"
+          aria-label="Filtrar por status"
+          className="px-3 py-2.5 text-sm rounded-md outline-hidden cursor-pointer hover:border-primary"
           style={{
             border: '1px solid hsl(var(--muted-foreground) / 0.3)',
             background: 'hsl(var(--card))',

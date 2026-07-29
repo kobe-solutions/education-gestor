@@ -103,6 +103,7 @@ export function TeachersPage() {
               size="icon"
               title="Editar"
               aria-label="Editar"
+              data-testid={`teacher-edit-${t.id}`}
               onClick={() => navigate(`/teachers/${t.id}/edit`)}
             >
               <Pencil size={14} className="text-muted-foreground" />
@@ -112,6 +113,7 @@ export function TeachersPage() {
               size="icon"
               title="Excluir"
               aria-label="Excluir"
+              data-testid={`teacher-delete-${t.id}`}
               onClick={() => setDeleteTarget(t.id)}
             >
               <Trash2 size={14} className="text-destructive" />

@@ -114,7 +114,7 @@ export function EducationLevelsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Níveis de Ensino</h1>
-        <Button size="sm" onClick={handleCreate}>
+        <Button size="sm" onClick={handleCreate} data-testid="new-education-level-button">
           <Plus className="h-4 w-4" />
           Novo nível
         </Button>
