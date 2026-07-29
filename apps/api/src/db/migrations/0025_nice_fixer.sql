@@ -1,0 +1,1 @@
+ALTER TABLE "grades" ADD CONSTRAINT "grades_value_check" CHECK ("grades"."value" >= 0 AND "grades"."value" <= 10);
