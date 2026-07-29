@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Plus, Pencil, Trash2, ChevronLeft, ChevronRight, UserPlus, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, UserPlus, Upload } from 'lucide-react'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
 import { useClasses } from '../../classes/hooks/useClasses'
 import { useApiMutation } from '../../../hooks/useApiMutation'
@@ -47,6 +47,7 @@ const columns: Column<Student>[] = [
   {
     key: 'name',
     label: 'Nome',
+    sortable: true,
     render: (s) => (
       <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
         {s.name}
@@ -72,6 +73,8 @@ const columns: Column<Student>[] = [
 export function StudentsPage() {
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
+  const [sortColumn, setSortColumn] = useState<string | null>('name')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>('asc')
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
   const statusFilter = searchParams.get('status') ?? 'all'
@@ -90,7 +93,6 @@ export function StudentsPage() {
   const { data: classes = [] } = useClasses()
   const students = data?.data
   const total = data?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const deleteMutation = useDeleteStudent()
 
   const deleteApiMutation = useApiMutation({
@@ -115,23 +117,10 @@ export function StudentsPage() {
 
   const filtered = students ?? []
 
-  const startItem = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1
-  const endItem = Math.min(page * PAGE_SIZE, total)
-
-  function getPageNumbers() {
-    const pages: (number | '...')[] = []
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i)
-    } else {
-      pages.push(1)
-      if (page > 3) pages.push('...')
-      const start = Math.max(2, page - 1)
-      const end = Math.min(totalPages - 1, page + 1)
-      for (let i = start; i <= end; i++) pages.push(i)
-      if (page < totalPages - 2) pages.push('...')
-      pages.push(totalPages)
-    }
-    return pages
+  function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
+    setSortColumn(direction ? column : null)
+    setSortDirection(direction)
+    setPage(1)
   }
 
   return (
@@ -243,49 +232,18 @@ export function StudentsPage() {
         emptyIcon={UserPlus}
         caption="Lista de alunos"
         loading={isLoading}
+        pagination={{
+          page,
+          pageSize: PAGE_SIZE,
+          total,
+          onPageChange: setPage,
+        }}
+        sort={{
+          column: sortColumn,
+          direction: sortDirection,
+          onSortChange: handleSortChange,
+        }}
       />
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Mostrando {startItem}–{endItem} de {total} aluno{total !== 1 ? 's' : ''}
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page <= 1}
-              aria-label="Página anterior"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            {getPageNumbers().map((p, i) =>
-              p === '...' ? (
-                <span key={`dots-${i}`} className="px-1 text-xs text-muted-foreground">...</span>
-              ) : (
-                <Button
-                  key={p}
-                  size="sm"
-                  variant={p === page ? 'default' : 'outline'}
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </Button>
-              ),
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page >= totalPages}
-              aria-label="Próxima página"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
 
       <ConfirmDialog
         open={!!deleteTarget}

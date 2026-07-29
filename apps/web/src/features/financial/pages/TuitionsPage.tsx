@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, ChevronLeft, ChevronRight, EyeOff, FileText, Receipt } from 'lucide-react'
+import { Plus, EyeOff, FileText, Receipt } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from '../../../lib/toast'
 import { useTuitions, useCreateTuition, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
@@ -54,13 +54,14 @@ export function TuitionsPage() {
   const { hideFinancialData } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const [page, setPage] = useState(1)
+  const [sortColumn, setSortColumn] = useState<string | null>('dueDate')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>('asc')
   const [searchParams, setSearchParams] = useSearchParams()
   const statusFilter = searchParams.get('status') ?? 'all'
   const search = searchParams.get('q') ?? ''
   const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE, status: statusFilter })
   const tuitions = tuitionsData?.data
   const total = tuitionsData?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const { data: studentsData } = useStudents()
   const students = studentsData?.data ?? []
   const createMutation = useCreateTuition()
@@ -95,6 +96,12 @@ export function TuitionsPage() {
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter
     return matchesSearch && matchesStatus
   }) ?? []
+
+  function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
+    setSortColumn(direction ? column : null)
+    setSortDirection(direction)
+    setPage(1)
+  }
 
   function onSubmit(data: TuitionForm) {
     createApiMutation.mutate(data)
@@ -140,6 +147,7 @@ export function TuitionsPage() {
     {
       key: 'dueDate',
       label: 'Vencimento',
+      sortable: true,
       render: (t) => formatDateBR(t.dueDate),
     },
     {
@@ -264,35 +272,18 @@ export function TuitionsPage() {
         emptyMessage="Nenhuma mensalidade encontrada"
         caption="Lista de mensalidades"
         loading={isLoading}
+        pagination={{
+          page,
+          pageSize: PAGE_SIZE,
+          total,
+          onPageChange: setPage,
+        }}
+        sort={{
+          column: sortColumn,
+          direction: sortDirection,
+          onSortChange: handleSortChange,
+        }}
       />
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Página {page} de {totalPages}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page <= 1}
-              aria-label="Página anterior"
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={page >= totalPages}
-              aria-label="Próxima página"
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
 
       <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) { setDialogOpen(false); setAmountDisplay('') }}}>
         <DialogContent>

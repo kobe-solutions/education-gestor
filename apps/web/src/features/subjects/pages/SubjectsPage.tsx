@@ -50,6 +50,8 @@ export function SubjectsPage() {
 
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
+  const [sortColumn, setSortColumn] = useState<string | null>('name')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>('asc')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Subject | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
@@ -59,6 +61,13 @@ export function SubjectsPage() {
   const filtered = subjects?.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()),
   )
+
+  // TODO: SubjectsPage precisa de paginação server-side quando passar de ~50 itens.
+  // useSubjects hoje retorna array simples. Adicionar `useSubjects({ page, limit })` no backend.
+  function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
+    setSortColumn(direction ? column : null)
+    setSortDirection(direction)
+  }
 
   function handleCreate() {
     setEditing(undefined)
@@ -154,6 +163,7 @@ export function SubjectsPage() {
           {
             key: 'name',
             label: 'Nome',
+            sortable: true,
             render: (s) => (
               <span className="font-semibold" style={{ color: 'hsl(var(--primary))' }}>
                 {s.name}
@@ -186,6 +196,11 @@ export function SubjectsPage() {
         emptyMessage="Nenhuma disciplina cadastrada"
         caption="Lista de disciplinas"
         loading={isLoading}
+        sort={{
+          column: sortColumn,
+          direction: sortDirection,
+          onSortChange: handleSortChange,
+        }}
       />
 
       <Dialog open={dialogOpen} onOpenChange={(v) => !v && handleClose()}>
