@@ -59,6 +59,8 @@ export function TuitionsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const statusFilter = searchParams.get('status') ?? 'all'
   const search = searchParams.get('q') ?? ''
+  const dateFrom = searchParams.get('dateFrom') ?? ''
+  const dateTo = searchParams.get('dateTo') ?? ''
   const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE, status: statusFilter })
   const tuitions = tuitionsData?.data
   const total = tuitionsData?.total ?? 0
@@ -94,7 +96,9 @@ export function TuitionsPage() {
   const filtered = tuitions?.filter((t) => {
     const matchesSearch = !search || (t as Tuition & { studentName?: string }).studentName?.toLowerCase().includes(search.toLowerCase())
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter
-    return matchesSearch && matchesStatus
+    const matchesDateFrom = !dateFrom || t.dueDate >= dateFrom
+    const matchesDateTo = !dateTo || t.dueDate <= dateTo
+    return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo
   }) ?? []
 
   function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
@@ -196,7 +200,7 @@ export function TuitionsPage() {
         }
       />
 
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-3 flex-wrap items-end">
         <div className="w-full max-w-sm">
           <SearchInput
             value={search}
@@ -225,6 +229,31 @@ export function TuitionsPage() {
           <option value="paid">Pago</option>
           <option value="overdue">Atrasado</option>
         </select>
+
+        <div className="flex items-center gap-2">
+          <label className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>De</label>
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              setPage(1)
+              setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('dateFrom'); else next.set('dateFrom', e.target.value); return next })
+            }}
+            className="h-9 w-40 text-xs"
+            aria-label="Data inicial"
+          />
+          <label className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>Até</label>
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={(e) => {
+              setPage(1)
+              setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('dateTo'); else next.set('dateTo', e.target.value); return next })
+            }}
+            className="h-9 w-40 text-xs"
+            aria-label="Data final"
+          />
+        </div>
       </div>
 
       <DataTable
