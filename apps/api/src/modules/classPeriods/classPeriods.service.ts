@@ -46,5 +46,15 @@ export async function updateClassPeriodService(
 export async function deleteClassPeriodService(schoolId: string, id: string) {
   const existing = await findClassPeriodByIdRepository(schoolId, id)
   if (!existing) throw new Error('Class period not found')
-  await deleteClassPeriodRepository(schoolId, id)
+  try {
+    await deleteClassPeriodRepository(schoolId, id)
+  } catch (error: unknown) {
+    const pgError = error as { code?: string; constraint?: string }
+    if (pgError.code === '23503' || (pgError.constraint && pgError.constraint.includes('timetable_slots'))) {
+      throw new Error(
+        'Não é possível excluir este período pois existem horários na grade vinculados a ele. Remova os horários primeiro ou edite o período em vez de excluí-lo.',
+      )
+    }
+    throw error
+  }
 }

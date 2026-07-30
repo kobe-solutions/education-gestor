@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { toast } from 'sonner'
 import { queryClient } from './queryClient'
+import { extractErrorMessage } from './errors'
 
 export const api = axios.create({
   baseURL: '/api',
@@ -22,8 +23,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status
-    const data = error.response?.data
-    const message = data?.message
 
     if (status === 401) {
       localStorage.removeItem('token')
@@ -34,9 +33,12 @@ api.interceptors.response.use(
     }
 
     if (status === 403) {
-      toast.error(message ?? 'Acesso negado. Você não tem permissão para esta ação.')
+      toast.error(extractErrorMessage(error, 'Acesso negado. Você não tem permissão para esta ação.'))
     } else if (status && status >= 500) {
-      toast.error(message ?? 'Erro interno do servidor. Tente novamente mais tarde.')
+      toast.error(extractErrorMessage(error, 'Erro interno do servidor. Tente novamente mais tarde.'))
+    } else if (status && status >= 400 && status < 500) {
+      const msg = extractErrorMessage(error)
+      if (msg) toast.error(msg)
     }
 
     return Promise.reject(error)

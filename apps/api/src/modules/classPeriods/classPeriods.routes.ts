@@ -57,8 +57,13 @@ export async function classPeriodsRoutes(app: FastifyInstance) {
       await deleteClassPeriodService(getSchoolId(request), id)
       return reply.status(204).send()
     } catch (error) {
-      if (error instanceof Error && error.message === 'Class period not found') {
-        return reply.status(404).send({ message: error.message })
+      if (error instanceof Error) {
+        if (error.message === 'Class period not found') {
+          return reply.status(404).send({ message: error.message })
+        }
+        if (error.message.includes('Não é possível excluir')) {
+          return reply.status(409).send({ message: error.message })
+        }
       }
       throw error
     }

@@ -440,8 +440,8 @@ export function HubPeoplePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-5">
           <QuickAction icon={Search} label="Buscar aluno" description="Encontrar por nome ou matrícula" onClick={() => navigate('/students')} tone="indigo" />
           <QuickAction icon={UserPlus} label="Matricular em turma" description="Alocar aluno em uma turma" onClick={() => navigate('/scheduling/students')} tone="emerald" />
-          <QuickAction icon={FileText} label="Importar planilha" description="Cadastro em lote via CSV" onClick={() => navigate('/students')} tone="amber" />
-          <QuickAction icon={BookOpen} label="Relatório de alunos" description="Boletins e relatórios gerais" onClick={() => navigate('/students')} tone="red" />
+          <QuickAction icon={FileText} label="Importar planilha" description="Cadastro em lote via CSV" onClick={() => navigate('/students/import')} tone="amber" />
+          <QuickAction icon={BookOpen} label="Relatório de alunos" description="Boletins e relatórios gerais" onClick={() => navigate('/students?tab=reports')} tone="red" />
         </div>
       </div>
 

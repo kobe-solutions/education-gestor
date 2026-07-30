@@ -95,7 +95,7 @@ const queryClient = new QueryClient({
 
 **Benefícios**: menos refetches em navegação rápida entre páginas hub, melhor UX em rede ruim, evita refetch após login (queries da tela anterior).
 
-### 2.3 [P0] Centralizar tratamento de erro HTTP no `api.ts`
+### 2.3 [P0] Centralizar tratamento de erro HTTP no `api.ts` ✅ IMPLEMENTADO
 
 **Arquivo**: `apps/web/src/lib/api.ts`
 
@@ -104,10 +104,11 @@ const queryClient = new QueryClient({
 2. Toast de erro fica a cargo de **cada `mutate({ onError: ... })`** — código repetido ~25 vezes.
 3. Não há interceptor para mapear 403 (sem permissão) nem 5xx.
 
-**Sugestão**:
-- Substituir `window.location.href` por uma `queryClient.clear()` + `<Navigate to="/login" />` via context.
-- Criar `lib/api.ts` que injeta o `queryClient` no `onResponseError` e dispara `toast.error(message)` automaticamente para mutações; deixa 4xx/5xx de query cair no `error` do `useQuery`.
-- Mapear `err.response?.data?.message ?? 'Erro inesperado'` num helper `extractErrorMessage(err)`.
+**Implementado**:
+- 401 já faz `queryClient.clear()` + `sessionStorage.clear()` + `localStorage.removeItem('token')` antes do redirect
+- Interceptor usa `extractErrorMessage(err)` do `lib/errors.ts` para mensagens consistentes
+- Adicionado tratamento para 4xx (exibindo mensagem do backend via toast)
+- Toast de erro automático para 403, 4xx e 5xx no interceptor, reduzindo repetição nos hooks
 
 ### 2.4 ~~[P1] Mover `ApiError`/`extractErrorMessage` para `lib/`~~ ✅ IMPLEMENTADO
 
@@ -526,20 +527,23 @@ Bell icon + popover com:
 - Eventos da escola (provas, reuniões, feriados)
 - Cores por tipo
 
-### 5.8 [P1] Importação de alunos via planilha
+### 5.8 [P1] Importação de alunos via planilha ✅ IMPLEMENTADO
 
-`HubPessoasPage` tem atalho "Importar planilha" (linha 319) que aponta para `/students` (não faz nada). Implementar:
-- Upload de `.xlsx`/`.csv`
-- Preview
-- Validação linha a linha
-- Confirmação
+`HubPessoasPage` tem atalho "Importar planilha" que aponta para `/students/import`. **Implementado:**
+- `ImportStudentsPage.tsx` completa com upload drag-and-drop de `.xlsx`/`.csv`/`.xls`
+- Validação de formato e tamanho (10MB)
+- Preview com resultado por linha (importado/erro)
+- Filtro por status na tabela de detalhes
+- Download de modelo CSV
+- Rota `/students/import` integrada no App.tsx
+- Link corrigido no HubPeoplePage: `/students` → `/students/import`
 
-### 5.9 [P1] Exportação de relatórios (alunos, mensalidades, etc.)
+### 5.9 [P1] Exportação de relatórios (alunos, mensalidades, etc.) ✅ IMPLEMENTADO
 
-Botão "Exportar relatório" em `DashboardPage` (linha 93) não tem handler. Implementar:
-- CSV / PDF
-- Filtros aplicados
-- Salvar localmente
+Botão "Exportar relatório" em `DashboardPage` — **implementado:**
+- `exportDashboardReport()` gera CSV com métricas do dashboard (alunos, professores, turmas, mensalidades)
+- Suporta admin (dados cross-tenant) e school (dados da escola)
+- Download do CSV com BOM para acentos, nome do arquivo com data
 
 ### 5.10 [P1] Geração de boleto / Pix para mensalidade
 
@@ -557,9 +561,9 @@ Hoje: só busca textual. Adicionar:
 - Por data de matrícula (range)
 - Por sexo, faixa etária
 
-### 5.13 [P2] Filtros em `TuitionsPage` por data
+### 5.13 [P2] Filtros em `TuitionsPage` por data ✅ IMPLEMENTADO
 
-Só filtra por status e nome. Adicionar range de vencimento.
+Adicionado filtro por range de vencimento (`dateFrom`/`dateTo`) via inputs de data no cabeçalho da página, ao lado do seletor de status. Filtragem client-side com suporte a paginação.
 
 ### 5.14 [P2] Detalhe expandido do aluno (aba "Histórico")
 
@@ -658,9 +662,9 @@ useEffect(() => {
 
 Se houver `token` antigo (storage) e o user entrar de novo, navega antes da hora. Limpar storage no mount.
 
-### 6.4 [P1] `StudentFormPage` — aba "Matrícula" só acessível após salvar
+### 6.4 [P1] `StudentFormPage` — aba "Matrícula" só acessível após salvar ✅ IMPLEMENTADO
 
-A aba é `disabled={!isEdit}`, mas a UX fica estranha porque o usuário tem que salvar dados pessoais antes de poder adicionar turma. Considerar permitir turmas já no cadastro (pelo menos criar `student` mínimo: `name`).
+A aba é `disabled={!isEdit}`, mas a UX fica estranha porque o usuário tem que salvar dados pessoais antes de poder adicionar turma. **Implementado:** aba Matrícula agora está sempre habilitada; durante criação exibe mensagem para salvar dados pessoais primeiro.
 
 ### 6.5 [P1] `StudentFormPage` — `onSaveFamilia` envia só campos de família, mas também campos pessoais
 
@@ -680,21 +684,13 @@ Linha 8-9: `requireSchool?: boolean`. Todas as chamadas omitem. Decidir o compor
 
 A navegação `<span ... onClick={() => navigate('/classes')}>` leva à lista geral. Provavelmente devia abrir detalhes (`/series/:id`) ou `/classes?serieId=...`. Quebrar cabeçalho de URL não é descobrível.
 
-### 6.9 [P1] `EstruturaTurmasPage` filtra por aluno mas o `defaultOpen` quebra
+### 6.9 [P1] `ClassStructurePage` filtra por aluno mas o `defaultOpen` quebra ✅ IMPLEMENTADO
 
-```tsx
-{seriesWithClasses
-  .sort(...)
-  .map(({ serie, classes }, idx) => (
-    <SerieGroup ... defaultOpen={idx === 0} />
-  ))}
-```
+Só a primeira série do primeiro nível abria. Se a primeira série estivesse vazia, abria um grupo vazio. **Fix:** `defaultOpen` agora só é `true` quando `classes.length > 0`.
 
-Só a primeira série do primeiro nível abre. Se o usuário filtrar por aluno, a primeira série pode estar vazia. Usar `defaultOpen` apenas quando há matches.
+### 6.10 [P1] `MySchoolsPage` — layout usa `Card` shadcn em vez de `Surface` IRIS ✅ IMPLEMENTADO
 
-### 6.10 [P1] `MySchoolsPage` — não tem `requireSchool` flag (não precisa), mas o layout mistura botões
-
-`Card` do shadcn sem consistência com o resto do app (que usa `Surface` IRIS). Padronizar com `Surface`.
+`Card` do shadcn substituído por `Surface` IRIS para consistência visual com o resto do app.
 
 ### 6.11 [P1] `SchoolsPage` — `EditDialog` reaparece após fechar quando reabre Create ✅ IMPLEMENTADO
 
@@ -1047,10 +1043,19 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 
 ---
 
-**Última atualização**: 2026-07-25
+**Última atualização**: 2026-07-30
 **Status**: iterativo — itens sendo implementados progressivamente.
+### Itens implementados nesta sessão (2026-07-30)
+- ✅ **Item 5.8 [P1]**: Link "Importar planilha" no HubPeoplePage corrigido — `/students` → `/students/import`
+- ✅ **Item 5.9 [P1]**: Função `exportDashboardReport()` no DashboardPage — gera CSV com métricas da escola/admin, botão com ícone Download
+- ✅ **Item 5.13 [P2]**: Filtro por range de data (vencimento) no TuitionsPage — inputs `dateFrom`/`dateTo` client-side
+- ✅ **Item 6.4 [P1]**: Aba "Matrícula" do StudentFormPage sempre habilitada; durante criação exibe mensagem para salvar primeiro
+- ✅ **Item 6.9 [P1]**: `ClassStructurePage` — `defaultOpen` condicional: só abre primeira série se ela tiver turmas (`classes.length > 0`)
+- ✅ **Item 6.10 [P1]**: `MySchoolsPage` — substituído `Card` shadcn por `Surface` IRIS para consistência visual
+- ✅ **Item 2.3 [P0]**: `api.ts` — interceptor usa `extractErrorMessage()`, adicionado toast para erros 4xx, tratamento de erro mais consistente
 
 ### Itens implementados nesta sessão (2026-07-23)
+
 - ✅ **Tailwind CSS v4**: Migração completa (v3 → v4) com `@tailwindcss/vite`, configuração CSS-based, `tw-animate-css`
 - ✅ **Dark mode**: Implementado com `ThemeContext`, toggle Sun/Moon, persistência localStorage
 - ✅ **Dashboard admin**: Expandido de 2 para 6 KPIs cross-tenant + financeiro + top escolas + atividade

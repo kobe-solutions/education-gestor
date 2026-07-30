@@ -21,7 +21,7 @@ export const timetableSlots = pgTable(
       .references(() => academicYears.id),
     classPeriodId: uuid('class_period_id')
       .notNull()
-      .references(() => classPeriods.id),
+      .references(() => classPeriods.id, { onDelete: 'cascade' }),
     subjectId: uuid('subject_id')
       .notNull()
       .references(() => subjects.id),

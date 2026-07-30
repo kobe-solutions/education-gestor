@@ -19,10 +19,11 @@ import {
   Presentation,
   AlertTriangle,
   FileText,
+  Download,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { useDashboard, isAdminDashboard } from '../features/dashboard/hooks/useDashboard'
+import { useDashboard, isAdminDashboard, type DashboardData, type AdminDashboard, type SchoolDashboard } from '../features/dashboard/hooks/useDashboard'
 import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
 import { useFinancialVisibility } from '../contexts/FinancialVisibilityContext'
@@ -66,6 +67,57 @@ function DashboardSkeleton({ cardCount }: { cardCount: number }) {
       </div>
     </div>
   )
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+
+function exportDashboardReport(data: DashboardData) {
+  const isAdmin = isAdminDashboard(data)
+  const rows: string[][] = []
+  const headers: string[] = []
+
+  if (isAdmin) {
+    const d = data as AdminDashboard
+    headers.push('Métrica', 'Valor')
+    rows.push(['Secretarias', String(d.secretariasCount)])
+    rows.push(['Secretarias Ativas', String(d.secretariasActive)])
+    rows.push(['Escolas', String(d.schoolsCount)])
+    rows.push(['Alunos', String(d.studentsCount)])
+    rows.push(['Professores', String(d.teachersCount)])
+    rows.push(['Turmas', String(d.classesCount)])
+    rows.push(['Mensalidades Pendentes', `${d.tuitions.pending.count} (${fmtBRL(d.tuitions.pending.total)})`])
+    rows.push(['Mensalidades Pagas', `${d.tuitions.paid.count} (${fmtBRL(d.tuitions.paid.total)})`])
+    rows.push(['Mensalidades Atrasadas', `${d.tuitions.overdue.count} (${fmtBRL(d.tuitions.overdue.total)})`])
+  } else {
+    const d = data as SchoolDashboard
+    headers.push('Métrica', 'Valor')
+    rows.push(['Alunos', String(d.studentsCount)])
+    rows.push(['Professores', String(d.teachersCount)])
+    rows.push(['Turmas', String(d.classesCount)])
+    rows.push(['Alunos Ativos', String(d.studentsByStatus.active)])
+    rows.push(['Alunos Inativos', String(d.studentsByStatus.inactive)])
+    rows.push(['Prof. Ativos', String(d.teachersByStatus.ativo)])
+    rows.push(['Mensalidades Pendentes', `${d.tuitions.pending.count} (${fmtBRL(d.tuitions.pending.total)})`])
+    rows.push(['Mensalidades Pagas', `${d.tuitions.paid.count} (${fmtBRL(d.tuitions.paid.total)})`])
+    rows.push(['Mensalidades Atrasadas', `${d.tuitions.overdue.count} (${fmtBRL(d.tuitions.overdue.total)})`])
+    rows.push(['Taxa de Presença', d.attendanceRate != null ? `${d.attendanceRate}%` : '—'])
+    rows.push(['Média Geral', d.academicPerformance.average ?? '—'])
+    rows.push(['Taxa de Aprovação', d.academicPerformance.passRate != null ? `${d.academicPerformance.passRate}%` : '—'])
+  }
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')),
+  ].join('\n')
+
+  const bom = '\uFEFF'
+  const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `relatorio-${isAdmin ? 'admin' : 'escola'}-${new Date().toISOString().slice(0, 10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 // ── Metric card ──────────────────────────────────────────────────────────────
@@ -502,7 +554,8 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
               </Button>
             </Link>
           )}
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={() => exportDashboardReport(data)}>
+            <Download size={14} className="mr-1" />
             Exportar relatório
           </Button>
         </div>

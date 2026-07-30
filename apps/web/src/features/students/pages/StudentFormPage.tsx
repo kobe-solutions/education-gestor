@@ -378,7 +378,7 @@ export function StudentFormPage() {
             <TabsTrigger value="familia" disabled={!isEdit}>Família & Responsável</TabsTrigger>
             <TabsTrigger value="saude" disabled={!isEdit}>Ficha Médica</TabsTrigger>
             <TabsTrigger value="documentos" disabled={!isEdit}>Documentos</TabsTrigger>
-            <TabsTrigger value="matricula" disabled={!isEdit}>Matrícula & Turmas</TabsTrigger>
+            <TabsTrigger value="matricula">Matrícula & Turmas</TabsTrigger>
           </TabsList>
         </div>
 
@@ -730,6 +730,18 @@ export function StudentFormPage() {
 
         {/* ── Aba 5: Matrícula ───────────────────────────────────────────── */}
         <TabsContent value="matricula">
+          {!isEdit ? (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <BookOpen className="h-10 w-10 text-muted-foreground/40" />
+                <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>Salve os dados pessoais primeiro</p>
+                <p className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                  Após criar o aluno, você poderá gerenciar matrícula e turmas aqui.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+          <>
           <Card>
             <CardHeader><CardTitle className="text-sm">Dados de matrícula</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -821,6 +833,8 @@ export function StudentFormPage() {
               </div>
             </CardContent>
           </Card>
+          </>
+          )}
         </TabsContent>
       </Tabs>
     </div>

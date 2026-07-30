@@ -3,7 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { useSchoolContext } from '../../../contexts/SchoolContext'
 import { useSecretariaSchools } from '../hooks/useSecretarias'
 import type { SecretariaPayload } from '@education-gestor/types'
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
+import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { StatusBadge } from '../../../components/StatusBadge'
 
@@ -34,24 +34,20 @@ export function MySchoolsPage() {
         {schools?.map((school) => {
           const isActive = activeSchoolId === school.id
           return (
-            <Card key={school.id} className={isActive ? 'border-primary' : undefined}>
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="text-base">{school.name}</CardTitle>
-                  {isActive && <StatusBadge status="true" kind="active" />}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">{school.email}</p>
-                <Button
-                  size="sm"
-                  variant={isActive ? 'secondary' : 'default'}
-                  onClick={() => handleAccess(school.id, school.name)}
-                >
-                  {isActive ? 'Escola ativa' : 'Acessar'}
-                </Button>
-              </CardContent>
-            </Card>
+            <Surface key={school.id} className={'p-4 ' + (isActive ? 'border-primary' : '')}>
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <h3 className="text-base font-semibold" style={{ color: 'hsl(var(--foreground))' }}>{school.name}</h3>
+                {isActive && <StatusBadge status="true" kind="active" />}
+              </div>
+              <p className="text-sm mb-3" style={{ color: 'hsl(var(--muted-foreground))' }}>{school.email}</p>
+              <Button
+                size="sm"
+                variant={isActive ? 'secondary' : 'default'}
+                onClick={() => handleAccess(school.id, school.name)}
+              >
+                {isActive ? 'Escola ativa' : 'Acessar'}
+              </Button>
+            </Surface>
           )
         })}
       </div>
