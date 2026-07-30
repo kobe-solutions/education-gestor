@@ -219,7 +219,7 @@ export function ClassPeriodsPage() {
           deleteApiMutation.mutate(deleteTarget!)
         }}
         onCancel={() => setDeleteTarget(null)}
-        description="Este período será removido. Turmas e horários vinculados podem ser afetados."
+        description="Este período será removido. Todos os horários da grade que usam este período também serão excluídos automaticamente."
       />
     </div>
   )
