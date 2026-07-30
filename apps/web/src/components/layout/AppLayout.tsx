@@ -124,6 +124,13 @@ const navItems: NavItem[] = [
     matchPaths: ['/academic-years'],
   },
   {
+    to: '/school-events',
+    label: 'Eventos escolares',
+    icon: CalendarDays,
+    roles: ['gestor', 'professor', 'secretaria'],
+    matchPaths: ['/school-events'],
+  },
+  {
     to: '/settings',
     label: 'Configurações',
     icon: Settings2,

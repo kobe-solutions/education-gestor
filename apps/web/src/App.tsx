@@ -51,6 +51,7 @@ const GestorAttendancePage = lazy(() => import('./features/academic/pages/Attend
 const GradesPage = lazy(() => import('./features/academic/pages/GradesPage').then(m => ({ default: m.GradesPage })))
 const AcademicPeriodsPage = lazy(() => import('./features/classes/pages/AcademicPeriodsPage').then(m => ({ default: m.AcademicPeriodsPage })))
 const ClassPeriodsPage = lazy(() => import('./features/classes/pages/ClassPeriodsPage').then(m => ({ default: m.ClassPeriodsPage })))
+const SchoolEventsPage = lazy(() => import('./features/school-events/pages/SchoolEventsPage').then(m => ({ default: m.SchoolEventsPage })))
 
 function PageLoader() {
   return (
@@ -119,6 +120,7 @@ export function App() {
                 {/* Hubs de navegação — gestor, professor e secretaria */}
                 <Route element={<PrivateRoute allowedRoles={['gestor', 'professor', 'secretaria']} />}>
                   <Route path="/academic" element={<Suspense fallback={<PageLoader />}><AcademicHubPage /></Suspense>} />
+                  <Route path="/school-events" element={<Suspense fallback={<PageLoader />}><SchoolEventsPage /></Suspense>} />
                   <Route path="/classes/:id" element={<Suspense fallback={<PageLoader />}><ClassDetailPage /></Suspense>} />
                   <Route path="/classes/:id/timetable" element={<Suspense fallback={<PageLoader />}><TimetablePage /></Suspense>} />
                 </Route>
