@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
@@ -86,6 +86,17 @@ export function SubjectsPage() {
     setErrors({})
     setDialogOpen(true)
   }
+
+  useEffect(() => {
+    if (editing) {
+      setForm({
+        name: editing.name,
+        code: editing.code ?? '',
+        weeklyHours: String(editing.weeklyHours),
+      })
+      setErrors({})
+    }
+  }, [editing])
 
   function handleDelete(id: string) {
     setDeleteTarget(id)

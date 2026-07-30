@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, Link } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -145,6 +145,13 @@ export function LoginPage() {
           {errors.password && (
             <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.password.message}</p>
           )}
+          <Link
+            to="/forgot-password"
+            className="text-xs self-end"
+            style={{ color: 'hsl(var(--muted-foreground))' }}
+          >
+            Esqueci minha senha
+          </Link>
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer">

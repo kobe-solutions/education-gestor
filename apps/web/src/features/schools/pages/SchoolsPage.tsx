@@ -78,13 +78,14 @@ function slugify(text: string) {
 
 interface SchoolCardProps {
   school: School
+  canManage: boolean
   isSecretaria: boolean
   onEdit: (school: School) => void
   onDelete: (id: string) => void
   onResetPassword: (school: School) => void
 }
 
-function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }: SchoolCardProps) {
+function SchoolCard({ school, canManage, isSecretaria, onEdit, onDelete, onResetPassword }: SchoolCardProps) {
   const toggleFinancial = useToggleSchoolFinancialVisibility()
   const uploadLogo = useUploadSchoolLogo()
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -141,14 +142,14 @@ function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }:
               </div>
               {school.director && (
                 <div className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  <User size={14} className="shrink-0" />
-                  <span className="truncate">Dir: {school.director}</span>
+                  <Avatar name={school.director} size={20} className="shrink-0" />
+                  <span className="truncate">{school.director}</span>
                 </div>
               )}
               {school.coordinator && (
                 <div className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  <BookOpen size={14} className="shrink-0" />
-                  <span className="truncate">Coord: {school.coordinator}</span>
+                  <Avatar name={school.coordinator} size={20} className="shrink-0" />
+                  <span className="truncate">{school.coordinator}</span>
                 </div>
               )}
               {school.phone && (
@@ -170,7 +171,7 @@ function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }:
         <Separator className="my-4" />
 
         <div className="flex items-center gap-2 flex-wrap">
-          {!isSecretaria && (
+          {canManage && (
           <div className="flex items-center gap-2 mr-2">
             <Switch
               checked={school.showFinancial}
@@ -192,7 +193,7 @@ function SchoolCard({ school, isSecretaria, onEdit, onDelete, onResetPassword }:
             <KeyRound size={14} className="mr-1.5" />
             Resetar senha
           </Button>
-          {isSecretaria && (
+          {canManage && (
             <>
               <Button
                 variant="outline"
@@ -238,16 +239,20 @@ export function SchoolsPage() {
   const editForm = useForm<EditForm>({ resolver: zodResolver(editSchema) })
   const passwordForm = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) })
   const slugManuallyEdited = useRef(false)
+  const editSlugManuallyEdited = useRef(false)
 
   const filtered = schools?.filter((s) =>
     s.name.toLowerCase().includes(search.toLowerCase()),
   )
 
+  const isAdmin = payload?.role === 'admin'
   const isSecretaria = payload?.role === 'secretaria'
+  const canManage = isAdmin || isSecretaria
 
   function handleEdit(school: School) {
     setCreateOpen(false)
     createForm.reset()
+    editSlugManuallyEdited.current = false
     setEditing(school)
     editForm.reset({
       name: school.name,
@@ -334,7 +339,7 @@ export function SchoolsPage() {
         title="Escolas"
         subtitle={`${schools?.length ?? 0} escolas cadastradas`}
         actions={
-          isSecretaria ? (
+          canManage ? (
             <Button size="sm" onClick={handleCreate}>
               <Plus className="h-4 w-4 mr-1" />
               Nova escola
@@ -460,6 +465,7 @@ export function SchoolsPage() {
             <SchoolCard
               key={s.id}
               school={s}
+              canManage={canManage}
               isSecretaria={isSecretaria}
               onEdit={handleEdit}
               onDelete={(id) => setDeleteTarget(id)}
@@ -570,14 +576,29 @@ export function SchoolsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Nome *</Label>
-                <Input {...editForm.register('name')} />
+                <Input
+                  {...editForm.register('name')}
+                  onChange={(e) => {
+                    editForm.setValue('name', e.target.value)
+                    if (!editSlugManuallyEdited.current) {
+                      editForm.setValue('slug', slugify(e.target.value))
+                    }
+                  }}
+                />
                 {editForm.formState.errors.name && (
                   <p className="text-xs text-destructive">{editForm.formState.errors.name.message}</p>
                 )}
               </div>
               <div className="space-y-1">
                 <Label>Slug *</Label>
-                <Input {...editForm.register('slug')} />
+                <Input
+                  placeholder="ex: escola-modelo"
+                  {...editForm.register('slug')}
+                  onChange={(e) => {
+                    editSlugManuallyEdited.current = true
+                    editForm.setValue('slug', e.target.value)
+                  }}
+                />
                 {editForm.formState.errors.slug && (
                   <p className="text-xs text-destructive">{editForm.formState.errors.slug.message}</p>
                 )}
