@@ -1,15 +1,13 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
+import { SECRETARIA_PUBLIC_PATHS } from '../lib/routes'
 import type { UserRole } from '@education-gestor/types'
 
 interface PrivateRouteProps {
   allowedRoles?: UserRole[]
   requireSchool?: boolean
 }
-
-// Rotas que não redirecionam secretaria sem escola selecionada
-const SECRETARIA_PUBLIC_PATHS = ['/', '/my-schools', '/schools-hub', '/secretarias']
 
 export function PrivateRoute({ allowedRoles, requireSchool }: PrivateRouteProps) {
   const { token, payload } = useAuth()

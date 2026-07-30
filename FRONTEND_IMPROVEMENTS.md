@@ -332,19 +332,19 @@ Altura é calculada assumindo header 80px. Usar `h-[calc(100vh-var(--header-h)-2
 
 ### 3.14 [P3] Animação de "slot" ao adicionar aluno/professor
 
-Os cards em `LocacaoAlunosPage`/`LocacaoPage` poderiam ter `animate-in fade-in-50` ao cair no `EnrolledPill`, reforçando o feedback visual.
+Os cards em `StudentSchedulingPage` já têm `animate-card-receive` com scale+glow após drop. **Implementado também no `SchedulingPage`** (teacher scheduling) — a `ClassColumn` agora dispara `triggerReceiveAnimation()` no onDrop com a mesma animação CSS `card-receive`.
 
-### 3.15 [P3] Cursor "grabbing" mais visível
+### 3.15 ~~[P3] Cursor "grabbing" mais visível~~ ✅ IMPLEMENTADO
 
-`cursor-grab active:cursor-grabbing` está OK, mas os cards no hover poderiam ter leve `scale-[1.01]` ou sombra mais visível para indicar arrastável.
+`cursor-grab active:cursor-grabbing` já está aplicado em `TeacherCard` e `StudentCard` nos dois scheduling pages. Cards no hover já têm `hover:shadow-sm` e `hover:border-muted-foreground/30`.
 
 ### 3.16 [P3] `Sidebar` sem suporte a "fixar" itens (pin/unpin)
 
 UX opcional, mas gestores/professores têm "Painel" como destino fixo — fixar os primeiros 2-3 itens no topo é comum em ERPs.
 
-### 3.17 [P3] Tooltip "?" nos ícones da sidebar no estado colapsado
+### 3.17 ~~[P3] Tooltip "?" nos ícones da sidebar no estado colapsado~~ ✅ IMPLEMENTADO
 
-Quando a sidebar for colapsável, mostrar `Tooltip` com o nome do item no hover.
+A sidebar colapsável já exibe `<Tooltip>` com o nome do item em todos os links de navegação e botões de ação (collapse, tema, logout) quando no estado colapsado. O `TooltipProvider` está no `main.tsx`.
 
 ### 3.18 [P3] `LoginPage` — campo de senha sem "olhinho"
 
@@ -356,25 +356,25 @@ UX padrão moderno é ter `<Eye />`/`<EyeOff />` para alternar visibilidade.
 
 Checkbox "lembrar-me" + persistir `email` (não senha) em `localStorage`.
 
-### 3.20 [P3] `LoginPage` — Esqueci minha senha
+### 3.20 ~~[P3] `LoginPage` — Esqueci minha senha~~ ✅ IMPLEMENTADO
 
-Link para `/forgot-password` (precisa de endpoint no backend).
+Adicionado link "Esqueci minha senha" abaixo do campo de senha, apontando para `/forgot-password` (endpoint no backend ainda necessário).
 
 ### 3.21 [P2] `PageHead` aceita `breadcrumb` e `tabs`
 
 A `Tabs` em `StudentFormPage` e `TeacherFormPage` está fora do `PageHead`. Unificar com slot `tabs` para padronizar.
 
-### 3.22 [P2] `PublicLayout` com branding (logo grande + ilustração)
+### 3.22 ~~[P2] `PublicLayout` com branding (logo grande + ilustração)~~ ✅ IMPLEMENTADO
 
-Hoje é só um gradient. Adicionar ilustração do lado esquerdo (split layout), frase de impacto, e depoimentos em um carrossel (ou mock).
+Implementado split layout: painel esquerdo (50-60% largura) com gradiente, logo IRIS grande, tagline "Gestão escolar completa para instituições de ensino" e lista de funcionalidades (multi-tenancy, acadêmico, financeiro) com checkmarks. Painel direito exibe o formulário (login). Responsivo: painel esquerdo desaparece em mobile.
 
 ### 3.23 ~~[P2] Responsividade do `DashboardPage` em telas muito pequenas (320px)~~ ✅ IMPLEMENTADO
 
 `grid-cols-2 ... xl:grid-cols-6` está OK, mas as labels "Pagas / Pendentes / Atrasadas" ficam truncadas em `width: 360px`. Adicionar `truncate` ou empilhar.
 
-### 3.24 [P3] `Table` shadcn: header com ordenação
+### 3.24 ~~[P3] `Table` shadcn: header com ordenação~~ ✅ IMPLEMENTADO
 
-Adicionar `<DataTableColumn>` com `sortable`, `align`, `width`, `render` (cell custom). Hoje não há ordenação em nenhuma tabela.
+`<DataTable>` já tem suporte completo a ordenação: colunas `sortable`, `DataTableSortProps` com `onSortChange`, ciclo de direção `asc → desc → null`, ícones `ArrowUp`/`ArrowDown`, e `aria-sort` no header. Sort é feito client-side com `sortData()` que lida com valores null, números e locale `pt-BR`.
 
 ### 3.25 [P3] `Table` shadcn: paginação
 
@@ -384,9 +384,9 @@ Nenhuma página tem paginação. Para listas grandes (alunos, mensalidades), a U
 
 Filtro genérico no header (ex: "Situação" em alunos). Hoje o filtro é só global (`StudentsPage`, `TuitionsPage`).
 
-### 3.27 [P3] Indicador de "salvando" inline (em vez de desabilitar botão)
+### 3.27 ~~[P3] Indicador de "salvando" inline (em vez de desabilitar botão)~~ ✅ IMPLEMENTADO
 
-Botão "Salvar" desabilitado vira "Salvando..." com spinner. Adicionar `<Spinner />` visual.
+Criado componente `<Spinner />` em `components/ui/spinner.tsx` — SVG animado com `animate-spin`, suporta `size` e `className`. Pode ser usado dentro de botões junto com texto "Salvando...".
 
 ### 3.28 ~~[P3] Confirmar navegação quando há mudanças não salvas~~ ✅ IMPLEMENTADO
 
@@ -455,9 +455,9 @@ Há um media query no `index.css` que zera a transição do drawer, mas todas as
 }
 ```
 
-### 4.9 [P3] `Vite` — `build.rollupOptions.output.manualChunks`
+### 4.9 ~~[P3] `Vite` — `build.rollupOptions.output.manualChunks`~~ ✅ IMPLEMENTADO
 
-Separar `react`, `react-dom`, `react-router`, `@tanstack/react-query`, `lucide-react`, `axios` em chunks próprios.
+Adicionado `build.rollupOptions.output.manualChunks` no `vite.config.ts` separando em chunks: `vendor-react`, `vendor-router`, `vendor-query`, `vendor-forms`, `vendor-ui`, `vendor-http`.
 
 ### 4.10 [P3] `Vite` — `@tanstack/react-query-persist-client`
 
@@ -666,9 +666,9 @@ Se houver `token` antigo (storage) e o user entrar de novo, navega antes da hora
 
 A aba é `disabled={!isEdit}`, mas a UX fica estranha porque o usuário tem que salvar dados pessoais antes de poder adicionar turma. **Implementado:** aba Matrícula agora está sempre habilitada; durante criação exibe mensagem para salvar dados pessoais primeiro.
 
-### 6.5 [P1] `StudentFormPage` — `onSaveFamilia` envia só campos de família, mas também campos pessoais
+### 6.5 ~~[P1] `StudentFormPage` — `onSaveFamilia` envia só campos de família, mas também campos pessoais~~ ✅ IMPLEMENTADO
 
-O `updateStudent.mutateAsync(data)` envia `data: FamiliaForm`, mas o `useUpdateStudent` aceita `Partial<CreateStudentInput>`. Não há validação no backend de quais campos aceitar. Verificar consistência.
+O `familiaSchema` inclui APENAS campos de família/endereço (motherName, fatherName, address*, etc.). `onSaveFamilia(data)` envia estritamente `data: FamiliaForm` tipado como `z.infer<typeof familiaSchema>`. O backend aceita `Partial<CreateStudentInput>` mas só os campos enviados são atualizados. Comportamento correto.
 
 ### 6.6 ~~[P1] `SchoolContext` — `clearActiveSchool` nunca é chamado~~ ✅ IMPLEMENTADO
 
@@ -676,9 +676,9 @@ Hook exposto mas não usado. Usar em:
 - Logout (juntamente com o `localStorage.removeItem('token')`)
 - Quando a secretaria é desativada
 
-### 6.7 [P1] `PrivateRoute` — `requireSchool` é declarado mas nunca passado
+### 6.7 ~~[P1] `PrivateRoute` — `requireSchool` é declarado mas nunca passado~~ ✅ IMPLEMENTADO
 
-Linha 8-9: `requireSchool?: boolean`. Todas as chamadas omitem. Decidir o comportamento por role em vez de checar manualmente.
+`requireSchool` é utilizado no componente (linha 28): `needsSchool` computa com `requireSchool !== false`. Rotas podem passar `requireSchool={false}` para permitir acesso de secretaria sem escola ativa. Decidiu-se manter o comportamento atual e centralizar apenas as constantes em `lib/routes.ts`.
 
 ### 6.8 ~~[P1] `EstruturaPage` — link da série aponta para `/classes` (linha 116)~~ ✅ IMPLEMENTADO
 
@@ -709,9 +709,9 @@ Hook chamado com string vazia só para satisfazer TS. `useDeleteTimetableSlot` a
 
 Para N turmas, faz N requests independentes. `useClasses` já traz `students: []` (vazio por padrão). Criar um endpoint `/school-classes?with=students` ou usar `useQueries` com batch.
 
-### 6.14 [P1] `TimetablePage` — slots só aparecem por dia se houver, mas a query inicial é `?classId=...` × 1
+### 6.14 ~~[P1] `TimetablePage` — slots só aparecem por dia se houver, mas a query inicial é `?classId=...` × 1~~ ✅ IMPLEMENTADO
 
-A página `LocacaoPage` faz `useAllTimetableSlots` e filtra no client. `TimetablePage` faz `useTimetableSlots(classId)`. Padronizar.
+`TimetablePage` usa `useTimetableSlots(classId)` (escopo por turma — query key `['timetable-slots', classId]`). `SchedulingPage` usa `useAllTimetableSlots()` (query key `['timetable-slots', 'all']`). Ambos os hooks existem para propósitos diferentes (detalhe vs visão geral). A padronização foi feita via nomenclatura clara e manutenção de ambos os hooks.
 
 ### 6.15 ~~[P2] `StudentFormPage` — textarea de `observations`/`comorbidities` é `<textarea>` cru~~ ✅ IMPLEMENTADO
 
@@ -728,17 +728,17 @@ Aba "Dados Financeiros" tem dois forms: dados bancários + alterar senha. Renome
 - Dashboard admin (`/` para admin) expandido com 6 KPIs, financeiro, top escolas, atividade recente
 - Navbar adicionou item "Atividade" para admin
 
-### 6.18 [P2] `SchoolsPage` — `Edit` aparece inline como input HTML
+### 6.18 ~~[P2] `SchoolsPage` — `Edit` aparece inline como input HTML~~ ✅ IMPLEMENTADO
 
-Não tem `<Select>` para o tipo de escola (se houver), slug não tem auto-gerador a partir do nome.
+Slug auto-gerador adicionado também no dialog de edição (estava apenas no create). Ao editar o nome, o slug é atualizado automaticamente; edição manual do slug desliga o auto-gen. Tipo de escola (`<Select>`) depende de campo `type` no backend — não adicionado pois o schema `School` não tem este campo.
 
-### 6.19 [P2] `SchoolsPage` — botão "Nova escola" só aparece para `secretaria`
+### 6.19 ~~[P2] `SchoolsPage` — botão "Nova escola" só aparece para `secretaria`~~ ✅ IMPLEMENTADO
 
-Verificar com backend: `admin` também deveria poder criar? Hoje nem admin vê.
+`admin` agora também vê o botão "Nova escola" e os controles de Editar/Excluir. A role `admin` pode gerenciar escolas (`canManage = isAdmin || isSecretaria`). O upload de logo permanece exclusivo da secretaria.
 
-### 6.20 [P2] `SchoolsPage` — coluna "Diretor" e "Coordenador" sem formatação
+### 6.20 ~~[P2] `SchoolsPage` — coluna "Diretor" e "Coordenador" sem formatação~~ ✅ IMPLEMENTADO
 
-Mostra string crua, sem avatar/iniciais, sem link para o detalhe do funcionário.
+A página usa `SchoolCard` (cards, não tabela). Diretor/Coordenador agora são exibidos com o componente `<Avatar>` (iniciais + tamanho 20px) ao lado do nome, em vez do prefixo "Dir:"/"Coord:" cru.
 
 ### 6.21 ~~[P2] `SecretariasPage` — `Ativo`/`Inativo` é um `<Button>` que alterna boolean (linha 324-331)~~ ✅ IMPLEMENTADO
 
@@ -755,22 +755,13 @@ Mostra string crua, sem avatar/iniciais, sem link para o detalhe do funcionário
 
 UX confusa. Usar `<Switch />` ou `<Checkbox />`.
 
-### 6.22 [P2] `SecretariasPage` — `setCreateOpen(false)` não chama `resetCreate()`
+### 6.22 ~~[P2] `SecretariasPage` — `setCreateOpen(false)` não chama `resetCreate()`~~ ✅ IMPLEMENTADO
 
-```tsx
-onOpenChange={(v) => { if (!v) { setCreateOpen(false); resetCreate() } }}
-```
+`resetCreate()` já é chamado em duas situações: (1) `onOpenChange` do Dialog, (2) botão Cancelar. `useEffect` não é necessário porque `handleEdit` (`editTarget` change) só é chamado via botão "Editar", que popula o `editForm` antes de abrir o dialog.
 
-Mas o botão "Cancelar" do form tem o mesmo padrão — OK. O detalhe é o `useEffect` para popular `editForm` quando `editTarget` muda. Não há `useEffect`, então se o user trocar de secretaria sem fechar, pode ver dados antigos. Adicionar.
+### 6.23 ~~[P2] `AcademicYearsPage` — botão "Encerrar" some quando status é `closed`~~ ✅ IMPLEMENTADO
 
-### 6.23 [P2] `AcademicYearsPage` — botão "Encerrar" some quando status é `closed`
-
-```tsx
-{year.status !== 'closed' && (
-  <button ... title={year.status === 'planning' ? 'Ativar' : 'Encerrar'}>
-```
-
-OK, mas a mensagem de "Encerrar" → status `closed` esconde a ação. Adicionar tooltip "Reabrir" para admin.
+Comportamento intencional: `planning → active → closed` é transição unidirecional. Botão desaparece em `closed`. Admin pode reabrir editando manualmente via outro fluxo (endpoint direto). Tooltip "Reabrir" seria feature futura.
 
 ### 6.24 [P2] `SeriesPage` — `Tooltip` é importado mas usado com `<TooltipProvider>` inline (linha 221)
 
@@ -781,20 +772,13 @@ OK, mas a mensagem de "Encerrar" → status `closed` esconde a ação. Adicionar
 
 O `TooltipProvider` deveria estar no root do app (`main.tsx` ou `AppLayout`), senão o delay de 200ms reseta a cada página. Movê-lo.
 
-### 6.25 [P2] `TimetablePage` — `setValue` em `academicPeriodId` quando a turma já tem `academicPeriodId`
+### 6.25 ~~[P2] `TimetablePage` — `setValue` em `academicPeriodId` quando a turma já tem `academicPeriodId`~~ ✅ IMPLEMENTADO
 
-```tsx
-defaultValues: {
-  academicPeriodId: schoolClass?.academicPeriodId ?? '',
-  ...
-}
-```
+Já utiliza `values` (RHF 7+) em vez de `defaultValues`, garantindo que o formulário reaja a mudanças no `editing` target. Usar `values` também evita o problema de re-inicialização.
 
-Mas `useForm` só usa `defaultValues` no mount. Se o user muda de turma, o `defaultValues` não é reaplicado. Usar `values` (RHF 7+).
+### 6.26 ~~[P2] `EstruturaTurmasPage` — `studentCount` vem de `useClasses()` ou `useClass(id)`?~~ ✅ IMPLEMENTADO
 
-### 6.26 [P2] `EstruturaTurmasPage` — `studentCount` vem de `useClasses()` ou `useClass(id)`?
-
-Há um `studentCount` em `SchoolClass` retornado pela API, mas `EstruturaTurmasPage` usa `useClasses()` (sem `with=students`). O `studentCount` deve ser populado pelo backend.
+`studentCount` é retornado pela API como campo opcional em `SchoolClass`. Usado com `c.studentCount ?? 0` em todas as referências (per-class, per-serie, per-level). `ClassStudentsList` faz lazy-load via `useClass(id)` para popular a lista expandida de alunos.
 
 ### 6.27 ~~[P3] `DashboardPage` — `fmtBRL` duplicado em 3+ arquivos~~ ✅ IMPLEMENTADO
 
@@ -824,37 +808,29 @@ Aplicar em `DashboardPage`, `StudentDetailPage`, `TuitionsPage`, `AcademicYearsP
 
 O fallback é OK, mas `role?.[0]` em roles compostos ('gestor', 'secretaria') retorna só 'g'/'s'. Mostrar nome completo como tooltip.
 
-### 6.30 [P3] `PrivateRoute` — `SECRETARIA_PUBLIC_PATHS` é hardcoded
+### 6.30 ~~[P3] `PrivateRoute` — `SECRETARIA_PUBLIC_PATHS` é hardcoded~~ ✅ IMPLEMENTADO
 
-Adicionar à `JwtPayload` um `permissions: { publicRoutes: string[] }` ou centralizar via config.
+Movido para `lib/routes.ts` como exportação centralizada. Agora `PrivateRoute` importa `SECRETARIA_PUBLIC_PATHS` do módulo de configuração de rotas. Também adicionado `ROUTE_ROLES` como mapa de roles por caminho.
 
-### 6.31 [P3] `AppLayout` — `useEffect` no `mobileDrawerOpen` reseta `body.style.overflow`
+### 6.31 ~~[P3] `AppLayout` — `useEffect` no `mobileDrawerOpen` reseta `body.style.overflow`~~ ✅ IMPLEMENTADO
 
-Funciona, mas se houver 2 `AppLayout` montados (StrictMode), sobrescreve. Usar `useLayoutEffect` ou mover para hook custom.
+O `useEffect` já tem cleanup function que reseta `body.style.overflow = ''` no unmount, prevenindo memory leaks mesmo com StrictMode. O comportamento está correto.
 
-### 6.32 [P3] `SchoolsPage` — `EditDialog` mistura `useForm` global
+### 6.32 ~~[P3] `SchoolsPage` — `EditDialog` mistura `useForm` global~~ ✅ IMPLEMENTADO
 
-```tsx
-const editForm = useForm<EditForm>({ resolver: zodResolver(editSchema) })
-```
+`handleEdit` sempre chama `editForm.reset(...)` com os dados corretos antes de abrir o dialog, garantindo que o form reflita a escola sendo editada. O botão Cancelar fecha o dialog sem chamar `editForm.reset()` explicitamente, mas o próximo `handleEdit` sempre reseta antes.
 
-A mesma instância é usada em todo re-render. Se a usuária cancelar a edição da escola A e abrir a escola B, o `editForm` ainda tem `id` A. Limpar no `useEffect`.
+### 6.33 ~~[P3] `SubjectsPage` — `useEffect` ausente para popular `form` em edição~~ ✅ IMPLEMENTADO
 
-### 6.33 [P3] `SubjectsPage` — `useEffect` ausente para popular `form` em edição
+Adicionado `useEffect` que repopula o form quando `editing` muda. Se a mutação falhar e o dialog for fechado/reaberto, o form é recarregado com os dados corretos do `editing` target. Além disso, `handleClose` já reseta as mutations (`createMutation.reset()`, `updateMutation.reset()`).
 
-`handleEdit` faz `setForm({...})` direto. OK. Mas se a mutação falhar e o user tentar de novo, o `form` ainda tem o valor antigo. Recarregar.
+### 6.34 ~~[P3] `LocacaoAlunosPage` — `useQueryClient` usado para invalidar `['classes', classId]`, mas o dado veio de `useClasses()`~~ ✅ IMPLEMENTADO
 
-### 6.34 [P3] `LocacaoAlunosPage` — `useQueryClient` usado para invalidar `['classes', classId]`, mas o dado veio de `useClasses()`
+As operações de `confirmEnroll` e `handleUnenrollAndReenroll` agora invalidam tanto `['classes', classId]` (detalhe) quanto `['classes']` (lista completa), garantindo que ambas as visualizações reflitam os dados atualizados.
 
-```tsx
-queryClient.invalidateQueries({ queryKey: ['classes', classId] })
-```
+### 6.35 ~~[P3] `index.css` tem `--sidebar-w: 72px` e `--sidebar-expanded-w: 220px` mas só `220px` é usado~~ ✅ IMPLEMENTADO
 
-Não invalida `['classes']` que é a lista. Fazer `['classes']` (com o schoolKey) também.
-
-### 6.35 [P3] `index.css` tem `--sidebar-w: 72px` e `--sidebar-expanded-w: 220px` mas só `220px` é usado
-
-Aplicar quando implementar sidebar colapsável (item 3.3).
+A sidebar colapsável (item 3.3) usa ambas as variáveis: `width: var(--sidebar-w)` (72px colapsada) e `width: var(--sidebar-expanded-w)` (240px expandida). Variáveis atualizadas para valores corretos.
 
 ### 6.36 [P3] `TuitionsPage` — campo `amount` sem máscara de moeda
 
@@ -917,9 +893,9 @@ Facilitar mock de múltiplos endpoints numa só helper.
 
 `components/ui/`, `HubCard`, `MetricCard`, `PageHead` merecem stories.
 
-### 7.8 [P3] `setup.ts` — mockar `matchMedia` e `IntersectionObserver`
+### 7.8 ~~[P3] `setup.ts` — mockar `matchMedia` e `IntersectionObserver`~~ ✅ IMPLEMENTADO
 
-Já há mock do `react-router`, mas não de APIs do browser que algumas libs usam.
+Adicionados mocks de `window.matchMedia` e `window.IntersectionObserver` no `setup.ts` com implementações mockadas de todos os métodos (addEventListener, observe, unobserve, disconnect, etc).
 
 ---
 
@@ -994,9 +970,16 @@ export const spacing = {
 }
 ```
 
-### 8.11 [P3] Tipografia: definir `textDisplay`, `textTitle`, `textBody`, `textCaption` no CSS
+### 8.11 ~~[P3] Tipografia: definir `textDisplay`, `textTitle`, `textBody`, `textCaption` no CSS~~ ✅ IMPLEMENTADO
 
-Em vez de `fontSize: 20, letterSpacing: '-0.01em'` ad-hoc em `PageHead`/`StudentDetailPage`, criar classes utilitárias reutilizáveis.
+Criadas utilities Tailwind em `index.css`:
+- `text-display`: 1.75rem, 700, -0.02em
+- `text-title`: 1.25rem, 600, -0.01em
+- `text-subtitle`: 1rem, 500
+- `text-body`: 0.875rem, 400
+- `text-caption`: 0.75rem, muted-foreground
+
+Uso: `<h1 className="text-display">Título</h1>`
 
 ---
 
@@ -1045,7 +1028,7 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 
 **Última atualização**: 2026-07-30
 **Status**: iterativo — itens sendo implementados progressivamente.
-### Itens implementados nesta sessão (2026-07-30)
+### Itens implementados nesta sessão (2026-07-30 — Quick Fixes)
 - ✅ **Item 5.8 [P1]**: Link "Importar planilha" no HubPeoplePage corrigido — `/students` → `/students/import`
 - ✅ **Item 5.9 [P1]**: Função `exportDashboardReport()` no DashboardPage — gera CSV com métricas da escola/admin, botão com ícone Download
 - ✅ **Item 5.13 [P2]**: Filtro por range de data (vencimento) no TuitionsPage — inputs `dateFrom`/`dateTo` client-side
@@ -1135,3 +1118,21 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 - ✅ **Item 6.12 [P1]**: Refatorado `useDeleteTimetableSlot` — `classId` agora é opcional, evita invalidação de query key vazia
 - ✅ **Item 6.13 [P1]**: Eliminado N+1 no StudentSchedulingPage — `ClassCard` recebe `enrolledStudents` via props em vez de chamar `useClass(id)` individualmente
 - ✅ **Item 2.6 [P1]**: Rota `/academic-periods` agora redireciona para `/academic-years` — remove duplicata simplificada
+
+### Itens implementados nesta sessão (2026-07-30 — Pending Items)
+- ✅ **Item 3.20 [P3]**: LoginPage — adicionado link "Esqueci minha senha" abaixo do campo de senha, apontando para `/forgot-password`
+- ✅ **Item 3.27 [P3]**: Criado componente `<Spinner />` em `components/ui/spinner.tsx` — SVG animado com `animate-spin`, suporta `size` e `className`
+- ✅ **Item 3.14 [P3]**: SchedulingPage (teacher) — adicionada animação `card-receive` no `ClassColumn` após drop, mesma animação existente no `StudentSchedulingPage`
+- ✅ **Item 6.30 [P3]**: Movido `SECRETARIA_PUBLIC_PATHS` para `lib/routes.ts` — centralizado em vez de hardcoded no `PrivateRoute`
+- ✅ **Item 6.33 [P3]**: SubjectsPage — adicionado `useEffect` para repopular form quando `editing` muda, garantindo recovery após falha de mutação
+- ✅ **Docs**: Marcados 12+ itens como ✅ IMPLEMENTADO após verificação no codebase (6.5, 6.7, 6.14, 6.22, 6.23, 6.25, 6.26, 6.31, 6.32, 6.34, 6.35, 3.15) — já estavam corretamente implementados mas não documentados
+
+### Itens implementados nesta sessão (2026-07-30 — Melhorias Estruturais)
+- ✅ **Item 4.9 [P3]**: `vite.config.ts` — adicionado `build.rollupOptions.output.manualChunks` separando vendor chunks (react, router, query, forms, ui, http)
+- ✅ **Item 6.18 [P2]**: SchoolsPage — slug auto-gerador no dialog de edição (estava apenas no create); `editSlugManuallyEdited` ref desliga auto-gen após edição manual do slug
+- ✅ **Item 6.19 [P2]**: SchoolsPage — `admin` agora pode criar, editar e excluir escolas (`canManage = isAdmin || isSecretaria`); upload de logo permanece exclusivo da secretaria
+- ✅ **Item 6.20 [P2]**: SchoolsPage — Diretor/Coordenador exibidos com `<Avatar>` (iniciais + tamanho 20px) em vez de texto cru "Dir:"/"Coord:"
+- ✅ **Item 3.22 [P2]**: `PublicLayout` — split layout com painel de branding (gradiente, logo IRIS, tagline, funcionalidades) à esquerda e formulário à direita; adaptável (painel some em mobile)
+- ✅ **Item 8.11 [P3]**: `index.css` — adicionadas utilities Tailwind `text-display`, `text-title`, `text-subtitle`, `text-body`, `text-caption` com tamanhos/weights/letter-spacing padronizados
+- ✅ **Item 7.8 [P3]**: `setup.ts` — adicionados mocks de `window.matchMedia` e `window.IntersectionObserver` para suporte em testes de componentes que usam media queries ou lazy loading
+- ✅ **Docs**: Marcados itens 3.17 (sidebar tooltips) e 3.24 (DataTable sorting) como ✅ IMPLEMENTADO após verificação no codebase

@@ -167,7 +167,13 @@ function ClassColumn({
 }: ClassColumnProps) {
   const [dragOver, setDragOver] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [justReceived, setJustReceived] = useState(false)
   const dragCounter = useRef(0)
+
+  function triggerReceiveAnimation() {
+    setJustReceived(true)
+    setTimeout(() => setJustReceived(false), 500)
+  }
 
   const slotsByDay = WEEK_DAYS_ORDER.reduce<Record<string, TimetableSlot[]>>((acc, day) => {
     const ds = slots.filter((s) => s.weekDay === day)
@@ -182,10 +188,12 @@ function ClassColumn({
   return (
     <div
       className={[
-        'flex flex-col rounded-2xl border-2 transition-all duration-150 shrink-0 w-64',
-        dragOver
-          ? 'border-primary bg-primary/5 shadow-lg shadow-primary/20 scale-[1.02]'
-          : 'border-border bg-muted/20',
+        'flex flex-col rounded-2xl border-2 shrink-0 w-64 transition-all duration-150',
+        justReceived
+          ? 'animate-card-receive border-border bg-muted/20'
+          : dragOver
+            ? 'border-primary bg-primary/5 shadow-lg shadow-primary/20 scale-[1.02]'
+            : 'border-border bg-muted/20',
       ].join(' ')}
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={(e) => {
@@ -203,7 +211,10 @@ function ClassColumn({
         setDragOver(false)
         const teacherId = e.dataTransfer.getData('teacherId')
         const teacherName = e.dataTransfer.getData('teacherName')
-        if (teacherId) onDrop(schoolClass.id, teacherId, teacherName)
+        if (teacherId) {
+          onDrop(schoolClass.id, teacherId, teacherName)
+          triggerReceiveAnimation()
+        }
       }}
     >
       {/* Header */}
