@@ -183,6 +183,13 @@
       "when": 1785334134538,
       "tag": "0025_nice_fixer",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1785438607569,
+      "tag": "0026_mixed_santa_claus",
+      "breakpoints": true
     }
   ]
 }
