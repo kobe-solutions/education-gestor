@@ -4,8 +4,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { TableSkeleton } from './skeletons'
 import { EmptyState } from './EmptyState'
 import { DataTablePagination, type DataTablePaginationProps } from './DataTablePagination'
+import { cn } from '../lib/utils'
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+
+export interface ColumnFilter {
+  /** Opções exibidas no seletor do header. `null` = sem filtro (Todos) */
+  options: { value: string; label: string }[]
+  /** Valor ativo do filtro. `null` = todos */
+  value: string | null
+  /** Notifica o pai para atualizar o filtro. Se definido, renderiza o seletor no header. */
+  onFilterChange?: (value: string | null) => void
+  /** Label da opção "sem filtro". Default: 'Todos' */
+  placeholder?: string
+}
 
 export interface Column<T> {
   key: string
@@ -19,6 +31,8 @@ export interface Column<T> {
   sortable?: boolean
   /** Chave usada na ordenação. Se não definida, usa `key` */
   sortKey?: string
+  /** Filtro por coluna renderizado no header. Default: sem filtro */
+  filter?: ColumnFilter
 }
 
 export interface SortState {
@@ -148,38 +162,64 @@ export function DataTable<T>({
                   const dir = isActive ? sort.direction : null
                   const ariaSort: 'ascending' | 'descending' | 'none' =
                     dir === 'asc' ? 'ascending' : dir === 'desc' ? 'descending' : 'none'
+                  const canFilter = col.filter?.onFilterChange != null
+                  const canSort = col.sortable && sort?.onSortChange != null
 
-                  if (col.sortable && sort?.onSortChange) {
+                  let labelNode: ReactNode
+                  if (canSort) {
                     const handleClick = () => {
                       const next = nextDirection(sort.direction, col.key, sort.column)
                       sort.onSortChange?.(col.key, next)
                     }
                     const SortIcon = !isActive ? ArrowUpDown : dir === 'asc' ? ArrowUp : ArrowDown
-                    return (
-                      <TableHead
-                        key={col.key}
-                        className={col.headerClassName}
-                        style={{ width: col.width, textAlign: col.align }}
-                        aria-sort={ariaSort}
+                    labelNode = (
+                      <button
+                        type="button"
+                        onClick={handleClick}
+                        className="inline-flex items-center gap-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm -mx-1 px-1"
                       >
-                        <button
-                          type="button"
-                          onClick={handleClick}
-                          className="inline-flex items-center gap-1 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm -mx-1 px-1"
-                        >
-                          {col.label}
-                          <SortIcon className="h-3 w-3 opacity-60" aria-hidden="true" />
-                        </button>
-                      </TableHead>
+                        {col.label}
+                        <SortIcon className="h-3 w-3 opacity-60" aria-hidden="true" />
+                      </button>
                     )
+                  } else {
+                    labelNode = col.label
                   }
+
                   return (
                     <TableHead
                       key={col.key}
                       className={col.headerClassName}
                       style={{ width: col.width, textAlign: col.align }}
+                      aria-sort={canSort ? ariaSort : undefined}
                     >
-                      {col.label}
+                      <div className={cn('flex flex-col', canFilter ? 'items-start gap-1' : undefined)}>
+                        {labelNode}
+                        {canFilter && col.filter && (
+                          <select
+                            aria-label={`Filtrar por ${col.label}`}
+                            value={col.filter.value ?? 'all'}
+                            onChange={(e) => {
+                              const v = e.target.value
+                              col.filter?.onFilterChange?.(v && v !== 'all' ? v : null)
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="h-6 w-full max-w-[120px] px-1 text-[11px] rounded border outline-hidden cursor-pointer"
+                            style={{
+                              borderColor: 'hsl(var(--input))',
+                              background: 'hsl(var(--card))',
+                              color: 'hsl(var(--foreground))',
+                            }}
+                          >
+                            <option value="all">{col.filter.placeholder ?? 'Todos'}</option>
+                            {col.filter.options.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
                     </TableHead>
                   )
                 })}
