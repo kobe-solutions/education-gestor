@@ -112,7 +112,7 @@ describe('POST /teachers', () => {
 
   it('retorna 409 se email já existe', async () => {
     vi.mocked(teachersService.createTeacherService).mockRejectedValue(
-      new Error('Teacher already exists with this email'),
+      new Error('Já existe um professor cadastrado com este e-mail'),
     )
 
     const response = await app.inject({

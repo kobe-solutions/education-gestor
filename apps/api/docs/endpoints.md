@@ -173,7 +173,7 @@ Erros:
 - `400` Validation error
 - `401` Unauthorized
 - `403` Forbidden
-- `409` Teacher already exists with this email
+- `409` Já existe um professor cadastrado com este e-mail
 
 ## POST /school-classes
 

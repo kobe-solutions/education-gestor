@@ -35,7 +35,7 @@ export async function createTeacherService(schoolId: string, input: CreateTeache
   }
   const normalizedEmail = input.email.toLowerCase().trim()
   const existing = await findTeacherByEmailRepository(schoolId, normalizedEmail)
-  if (existing) throw new Error('Teacher already exists with this email')
+  if (existing) throw new Error('Já existe um professor cadastrado com este e-mail')
 
   return createTeacherRepository({
     schoolId,

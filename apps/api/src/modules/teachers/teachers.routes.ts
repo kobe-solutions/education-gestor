@@ -123,7 +123,7 @@ export async function teachersRoutes(app: FastifyInstance) {
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'CREATE', 'teacher', teacher.id)
       return reply.status(201).send(teacher)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Teacher already exists with this email') {
+      if (error instanceof Error && error.message === 'Já existe um professor cadastrado com este e-mail') {
         return reply.status(409).send({ message: error.message })
       }
       if (error instanceof Error && error.message === 'Secretaria não possui escolas vinculadas') {
