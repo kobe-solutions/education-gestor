@@ -47,8 +47,9 @@ export async function eventsRoutes(app: FastifyInstance) {
       )
       return reply.status(201).send(event)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Event not found') {
-        return reply.status(404).send({ message: error.message })
+      if (error instanceof Error) {
+        if (error.message === 'Event not found') return reply.status(404).send({ message: error.message })
+        if (error.message === 'Event already exists at this time') return reply.status(409).send({ message: error.message })
       }
       throw error
     }
@@ -68,8 +69,9 @@ export async function eventsRoutes(app: FastifyInstance) {
       )
       return reply.send(event)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Event not found') {
-        return reply.status(404).send({ message: error.message })
+      if (error instanceof Error) {
+        if (error.message === 'Event not found') return reply.status(404).send({ message: error.message })
+        if (error.message === 'Event already exists at this time') return reply.status(409).send({ message: error.message })
       }
       throw error
     }
