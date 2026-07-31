@@ -78,7 +78,7 @@ export async function academicYearsRoutes(app: FastifyInstance) {
         if (error.message === 'Academic year not found') {
           return reply.status(404).send({ message: error.message })
         }
-        if (error.message === 'Another academic year is already active') {
+        if (error.message === 'Já existe um ano letivo ativo nesta escola') {
           return reply.status(409).send({ message: error.message })
         }
       }

@@ -61,11 +61,10 @@ export async function updateAcademicYearStatusService(
   const existing = await findAcademicYearByIdRepository(schoolId, id)
   if (!existing) throw new Error('Academic year not found')
 
-  // Só um ano pode estar ativo por escola
   if (status === 'active') {
     const currentActive = await findActiveAcademicYearRepository(schoolId)
     if (currentActive && currentActive.id !== id) {
-      throw new Error('Another academic year is already active')
+      throw new Error('Já existe um ano letivo ativo nesta escola')
     }
   }
 
