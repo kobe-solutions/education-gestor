@@ -172,7 +172,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/MessageResponse'
               example:
-                message: Teacher already exists with this email
+                message: Já existe um professor cadastrado com este e-mail
 
   /school-classes:
     post:

@@ -76,7 +76,7 @@ describe('createTeacherService', () => {
 
     await expect(
       createTeacherService('school-id', { name: 'Novo', email: 'ana@escola.com', password: 'senha123!' }),
-    ).rejects.toThrow('Teacher already exists with this email')
+    ).rejects.toThrow('Já existe um professor cadastrado com este e-mail')
 
     expect(repo.createTeacherRepository).not.toHaveBeenCalled()
   })
