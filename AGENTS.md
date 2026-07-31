@@ -217,6 +217,7 @@ docker compose logs -f web
 | `classPeriods` | classPeriods | Períodos das turmas (horários) |
 | `timetable` | timetableSlots | Grade horária |
 | `calendarEvents` | calendarEvents | Eventos do calendário |
+| `events` | events | Calendário de eventos da escola (title, category, date, startTime, endTime, allDay, location, description) |
 | `teacherDashboard` | — | Painel e dados agregados do professor |
 | `audit` | auditLogs | `GET /audit-logs` (gestor/admin) |
 

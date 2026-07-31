@@ -9,6 +9,7 @@ export * from "./schoolClasses";
 export * from "./academicYears";
 export * from "./academicPeriods";
 export * from "./calendarEvents";
+export * from "./events";
 export * from "./classRelations";
 export * from "./academic";
 export * from "./financial";
