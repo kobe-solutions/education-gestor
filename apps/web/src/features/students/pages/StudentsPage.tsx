@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Plus, Pencil, Trash2, UserPlus, Upload } from 'lucide-react'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
-import { useClasses } from '../../classes/hooks/useClasses'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
@@ -25,7 +24,7 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const columns: Column<Student>[] = [
+const columnsBase: Column<Student>[] = [
   {
     key: 'avatar',
     label: '',
@@ -90,10 +89,36 @@ export function StudentsPage() {
     minAge: minAge ? Number(minAge) : undefined,
     maxAge: maxAge ? Number(maxAge) : undefined,
   })
-  const { data: classes = [] } = useClasses()
   const students = data?.data
   const total = data?.total ?? 0
   const deleteMutation = useDeleteStudent()
+
+  const columns = useMemo<Column<Student>[]>(() =>
+    columnsBase.map((col) => {
+      if (col.key !== 'enrollmentStatus') return col
+      return {
+        ...col,
+        filter: {
+          options: [
+            { value: 'active', label: 'Ativo' },
+            { value: 'inactive', label: 'Inativo' },
+            { value: 'transferred', label: 'Transferido' },
+            { value: 'cancelled', label: 'Cancelado' },
+          ],
+          value: statusFilter === 'all' ? null : statusFilter,
+          onFilterChange: (v) => {
+            setPage(1)
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev)
+              if (!v || v === 'all') next.delete('status')
+              else next.set('status', v)
+              return next
+            })
+          },
+        },
+      }
+    }),
+  [statusFilter, setSearchParams])
 
   const deleteApiMutation = useApiMutation({
     mutationFn: (id: string) => deleteMutation.mutateAsync(id),
@@ -155,18 +180,6 @@ export function StudentsPage() {
             name="student-search"
           />
         </div>
-        <Select value={statusFilter} onValueChange={(v) => { setPage(1); setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('status'); else next.set('status', v); return next }) }}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Situação" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Ativo</SelectItem>
-            <SelectItem value="inactive">Inativo</SelectItem>
-            <SelectItem value="transferred">Transferido</SelectItem>
-            <SelectItem value="cancelled">Cancelado</SelectItem>
-          </SelectContent>
-        </Select>
         <Select value={sexFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('sex'); else next.set('sex', v); return next }) }}>
           <SelectTrigger className="w-[130px]">
             <SelectValue placeholder="Sexo" />

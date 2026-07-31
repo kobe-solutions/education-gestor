@@ -1,12 +1,9 @@
 import { useState, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Plus, EyeOff, FileText, Receipt } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from '../../../lib/toast'
-import { useTuitions, useCreateTuition, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
-import { useStudents } from '../../students/hooks/useStudents'
+import { useTuitions, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
+import { TuitionCreateDialog } from '../components/TuitionCreateDialog'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { useApiMutation } from '../../../hooks/useApiMutation'
@@ -15,38 +12,10 @@ import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
-import { Label } from '../../../components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { SearchInput } from '../../../components/SearchInput'
 import { DataTable, type Column } from '../../../components/DataTable'
 import type { Tuition } from '@education-gestor/types'
-
-function maskBRL(value: string) {
-  const digits = value.replace(/\D/g, '')
-  if (!digits) return ''
-  const raw = parseInt(digits, 10)
-  const formatted = (raw / 100).toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 2,
-  })
-  return formatted
-}
-
-function unmaskBRL(value: string) {
-  const cleaned = value.replace(/[R$\s.]/g, '').replace(',', '.')
-  const num = parseFloat(cleaned)
-  return isNaN(num) ? 0 : num
-}
-
-const tuitionSchema = z.object({
-  studentId: z.string().min(1, 'Selecione o aluno'),
-  amount: z.coerce.number().positive('Valor deve ser positivo'),
-  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
-})
-
-type TuitionForm = z.infer<typeof tuitionSchema>
 
 const PAGE_SIZE = 15
 
@@ -64,16 +33,7 @@ export function TuitionsPage() {
   const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE, status: statusFilter })
   const tuitions = tuitionsData?.data
   const total = tuitionsData?.total ?? 0
-  const { data: studentsData } = useStudents()
-  const students = studentsData?.data ?? []
-  const createMutation = useCreateTuition()
   const payMutation = useRegisterPayment()
-
-  const createApiMutation = useApiMutation({
-    mutationFn: (data: TuitionForm) => createMutation.mutateAsync(data),
-    successMessage: 'Mensalidade criada',
-    onSuccess: () => { setDialogOpen(false); reset(); setAmountDisplay('') },
-  })
 
   const payApiMutation = useApiMutation({
     mutationFn: (id: string) => payMutation.mutateAsync(id),
@@ -84,14 +44,6 @@ export function TuitionsPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [confirmPay, setConfirmPay] = useState<Tuition | null>(null)
-
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TuitionForm>({
-    resolver: zodResolver(tuitionSchema),
-  })
-
-  const [amountDisplay, setAmountDisplay] = useState('')
-
-  const studentIdValue = watch('studentId')
 
   const filtered = tuitions?.filter((t) => {
     const matchesSearch = !search || (t as Tuition & { studentName?: string }).studentName?.toLowerCase().includes(search.toLowerCase())
@@ -105,10 +57,6 @@ export function TuitionsPage() {
     setSortColumn(direction ? column : null)
     setSortDirection(direction)
     setPage(1)
-  }
-
-  function onSubmit(data: TuitionForm) {
-    createApiMutation.mutate(data)
   }
 
   function handlePay(tuition: Tuition) {
@@ -314,53 +262,7 @@ export function TuitionsPage() {
         }}
       />
 
-      <Dialog open={dialogOpen} onOpenChange={(v) => { if (!v) { setDialogOpen(false); setAmountDisplay('') }}}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Nova mensalidade</DialogTitle>
-            <DialogDescription className="sr-only">Criar uma nova mensalidade para um aluno</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Aluno</Label>
-              <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}
-                items={students?.map((s) => ({ value: s.id, label: s.name }))}>
-                <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
-                <SelectContent>
-                  {students?.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.studentId && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.studentId.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label>Valor (R$)</Label>
-              <Input
-                placeholder="R$ 500,00"
-                value={amountDisplay}
-                onChange={(e) => {
-                  const raw = e.target.value
-                  const masked = maskBRL(raw.replace(/[R$\s.]/g, '').replace(',', '.'))
-                  setAmountDisplay(masked)
-                  setValue('amount', unmaskBRL(masked))
-                }}
-                onFocus={(e) => { if (!amountDisplay) setAmountDisplay('R$ 0,00') }}
-              />
-              {errors.amount && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.amount.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label>Vencimento</Label>
-              <Input type="date" {...register('dueDate')} />
-              {errors.dueDate && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.dueDate.message}</p>}
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={createApiMutation.isPending}>Salvar</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <TuitionCreateDialog open={dialogOpen} onOpenChange={setDialogOpen} />
 
       <Dialog open={!!confirmPay} onOpenChange={(v) => !v && setConfirmPay(null)}>
         <DialogContent>

@@ -187,9 +187,11 @@ Cada tab recebe `studentId` e os hooks necessários. Página vira ~80 linhas.
 
 Mover `YearDialog` e `PeriodDialog` para `features/classes/components/`.
 
-### 2.13 [P3] Dividir `TuitionsPage.tsx` (261 linhas)
+### 2.13 ~~[P3] Dividir `TuitionsPage.tsx` (261 linhas)~~ ✅ IMPLEMENTADO
 
 Mover `TuitionCreateDialog` para `features/financial/components/`.
+
+**Implementado (2026-07-31)**: extraído `features/financial/components/TuitionCreateDialog.tsx` (form + máscara BRL + schema Zod + `useApiMutation`), página passou a usar `<TuitionCreateDialog open={dialogOpen} onOpenChange={setDialogOpen} />` — ~50 linhas removidas do arquivo da página.
 
 ### 2.14 ~~[P2] Adicionar `ErrorBoundary` por rota~~ ✅ IMPLEMENTADO
 
@@ -238,7 +240,7 @@ Elimina ~80+ blocos `onMouseEnter`/`onMouseLeave` e melhora acessibilidade (esta
 - Sidebar desktop e mobile usam o mesmo componente
 - Reduz ~100 linhas de duplicação
 
-### 3.3 [P1] Sidebar colapsável (recolhida → só ícones)
+### 3.3 ~~[P1] Sidebar colapsável (recolhida → só ícones)~~ ✅ IMPLEMENTADO
 
 A constante `SIDEBAR_W = 220` está fixa, mas o `index.css` já define:
 ```css
@@ -249,6 +251,8 @@ A constante `SIDEBAR_W = 220` está fixa, mas o `index.css` já define:
 Nunca chega a ser usada essa versão colapsada. Implementar toggle com persistência em `localStorage` (já há padrão via `SchoolContext`/`AuthContext`).
 
 **Benefício**: telas largas ganham mais área para o conteúdo; telas pequenas continuam OK com o drawer.
+
+**Implementado**: toggle no `AppLayout` com persistência em `localStorage` (`iris-sidebar-collapsed`). Colapsada (72px) exibe só ícones com `Tooltip`; expandida (240px) mostra labels. (Ver sessão 2026-07-28.)
 
 ### 3.4 [P1] Cabeçalho do mobile: alinhar logo + selector ✅ IMPLEMENTADO
 
@@ -346,11 +350,13 @@ UX opcional, mas gestores/professores têm "Painel" como destino fixo — fixar 
 
 A sidebar colapsável já exibe `<Tooltip>` com o nome do item em todos os links de navegação e botões de ação (collapse, tema, logout) quando no estado colapsado. O `TooltipProvider` está no `main.tsx`.
 
-### 3.18 [P3] `LoginPage` — campo de senha sem "olhinho"
+### 3.18 ~~[P3] `LoginPage` — campo de senha sem "olhinho"~~ ✅ IMPLEMENTADO
 
 UX padrão moderno é ter `<Eye />`/`<EyeOff />` para alternar visibilidade.
 
 **Nota**: O bug de autofill do navegador (background amarelo/alterado) foi corrigido via CSS `:-webkit-autofill` com `box-shadow` inset e `-webkit-text-fill-color` para light e dark mode.
+
+**Implementado**: `LoginPage` já possui botão olhinho (`Eye`/`EyeOff`) alternando o `type` do input de senha.
 
 ### 3.19 ~~[P3] `LoginPage` — lembrar-me~~ ✅ IMPLEMENTADO
 
@@ -376,13 +382,20 @@ Implementado split layout: painel esquerdo (50-60% largura) com gradiente, logo 
 
 `<DataTable>` já tem suporte completo a ordenação: colunas `sortable`, `DataTableSortProps` com `onSortChange`, ciclo de direção `asc → desc → null`, ícones `ArrowUp`/`ArrowDown`, e `aria-sort` no header. Sort é feito client-side com `sortData()` que lida com valores null, números e locale `pt-BR`.
 
-### 3.25 [P3] `Table` shadcn: paginação
+### 3.25 ~~[P3] `Table` shadcn: paginação~~ ✅ IMPLEMENTADO
 
 Nenhuma página tem paginação. Para listas grandes (alunos, mensalidades), a UI fica lenta. Integrar com o backend se ele retornar `total` (já retorna para `/students` e `/teachers`).
 
-### 3.26 [P3] `Table` shadcn: filtro por coluna
+**Implementado**: componente `DataTablePagination` (com `getPageNumbers`, página anterior/próxima, "X por página") integrado ao `DataTable` via prop `pagination`. Usado em `StudentsPage`, `TeachersPage`, `TuitionsPage` e `AdminActivityPage` com `pageSize`/`total` vindos do backend.
+
+### 3.26 ~~[P3] `Table` shadcn: filtro por coluna~~ ✅ IMPLEMENTADO
 
 Filtro genérico no header (ex: "Situação" em alunos). Hoje o filtro é só global (`StudentsPage`, `TuitionsPage`).
+
+**Implementado (2026-07-31)**:
+- `Column<T>` ganhou a prop `filter?: ColumnFilter` (`options`, `value`, `onFilterChange`, `placeholder`).
+- O `DataTable` renderiza um `<select>` compacto no header quando `onFilterChange` está definido, com `aria-label="Filtrar por <label>"`, e preserva ordenação na mesma coluna.
+- Aplicado em `StudentsPage` (Situação — substitui o select global do toolbar) e `TeachersPage` (Situação — novo filtro por status).
 
 ### 3.27 ~~[P3] Indicador de "salvando" inline (em vez de desabilitar botão)~~ ✅ IMPLEMENTADO
 
@@ -520,12 +533,14 @@ Bell icon + popover com:
 - Alunos com frequência crítica
 - Avisos da secretaria
 
-### 5.7 [P1] Calendário de eventos
+### 5.7 ~~[P1] Calendário de eventos~~ ✅ IMPLEMENTADO
 
 `Calendar Events` está no CLAUDE.md como módulo mas não tem página. Criar `features/calendar/`:
 - Visualização mês/semana
 - Eventos da escola (provas, reuniões, feriados)
 - Cores por tipo
+
+**Implementado**: `features/school-events/` com `SchoolEventsPage` — calendário semanal (grade por hora), mini-calendário de navegação mensal, eventos all-day, cores por categoria (Prova, Olimpíada, Vestibular, ENEM, Institucional), criação e detalhe via dialog. Rota `/school-events` (gestor/professor/secretaria) e item na sidebar. Backend: entidade `events` com escopo por `schoolId` (branch `feature/calendar-events`).
 
 ### 5.8 [P1] Importação de alunos via planilha ✅ IMPLEMENTADO
 
@@ -549,9 +564,11 @@ Botão "Exportar relatório" em `DashboardPage` — **implementado:**
 
 `TuitionsPage` permite registrar pagamento manual, mas falta o ciclo completo: gerar código de barras / Pix copia-e-cola + link público para responsável pagar.
 
-### 5.11 [P1] Foto do professor
+### 5.11 ~~[P1] Foto do professor~~ ✅ IMPLEMENTADO
 
 Hook `photoUrl` no tipo `Teacher` mas **nenhuma rota** faz upload. Adicionar `PUT /teachers/:id/photo` no backend (se já não existir) e UI em `TeacherFormPage` (igual à aba de foto do aluno).
+
+**Implementado**: `useUploadTeacherPhoto` (backend `POST /teachers/:id/photo`) com preview e botão de câmera na `TeacherFormPage`; professor também tem self-service (`POST /teachers/me/photo`).
 
 ### 5.12 [P2] Filtros avançados em `StudentsPage`
 
@@ -763,7 +780,7 @@ UX confusa. Usar `<Switch />` ou `<Checkbox />`.
 
 Comportamento intencional: `planning → active → closed` é transição unidirecional. Botão desaparece em `closed`. Admin pode reabrir editando manualmente via outro fluxo (endpoint direto). Tooltip "Reabrir" seria feature futura.
 
-### 6.24 [P2] `SeriesPage` — `Tooltip` é importado mas usado com `<TooltipProvider>` inline (linha 221)
+### 6.24 ~~[P2] `SeriesPage` — `Tooltip` é importado mas usado com `<TooltipProvider>` inline (linha 221)~~ ✅ IMPLEMENTADO
 
 ```tsx
 <TooltipProvider>
@@ -771,6 +788,8 @@ Comportamento intencional: `planning → active → closed` é transição unidi
 ```
 
 O `TooltipProvider` deveria estar no root do app (`main.tsx` ou `AppLayout`), senão o delay de 200ms reseta a cada página. Movê-lo.
+
+**Implementado**: `TooltipProvider` está no `main.tsx` (root), não mais inline no `SeriesPage`.
 
 ### 6.25 ~~[P2] `TimetablePage` — `setValue` em `academicPeriodId` quando a turma já tem `academicPeriodId`~~ ✅ IMPLEMENTADO
 
@@ -832,23 +851,27 @@ As operações de `confirmEnroll` e `handleUnenrollAndReenroll` agora invalidam 
 
 A sidebar colapsável (item 3.3) usa ambas as variáveis: `width: var(--sidebar-w)` (72px colapsada) e `width: var(--sidebar-expanded-w)` (240px expandida). Variáveis atualizadas para valores corretos.
 
-### 6.36 [P3] `TuitionsPage` — campo `amount` sem máscara de moeda
+### 6.36 ~~[P3] `TuitionsPage` — campo `amount` sem máscara de moeda~~ ✅ IMPLEMENTADO
 
 `<Input type="number" step="0.01" ... />` permite digitar `,` em vez de `.`. Aplicar máscara BRL.
+
+**Implementado**: máscara BRL (`maskBRL`/`unmaskBRL`) formatando `R$ X.XXX,XX` no campo de valor do dialog de criação (extraído para `TuitionCreateDialog` na sessão de 2026-07-31).
 
 ### 6.37 ~~[P3] `SchoolsPage` — `slug` não tem auto-gerador~~ ✅ IMPLEMENTADO
 
 Ao digitar "Escola Modelo", o slug deveria sugerir "escola-modelo". Auto-gerar no `onChange` de `name`.
 
-### 6.38 [P3] `ClassDetailPage` — `useClass` traz `students: []` pequeno. Para turmas grandes, paginar.
+### 6.38 ~~[P3] `ClassDetailPage` — `useClass` traz `students: []` pequeno. Para turmas grandes, paginar.~~ ✅ N/A — RESOLVIDO
 
 Para 50+ alunos, a página fica lenta. Paginar ou virtualizar (`@tanstack/react-virtual`).
+
+**Resolvido (2026-07-31)**: `ClassDetailPage` não renderiza mais lista de alunos (exibe apenas a grade horária semanal). A listagem de alunos por turma vive na `ClassStructurePage` (`ClassStudentsList`), que faz **lazy-load** via `useClass(classId)` apenas quando a linha da turma é expandida — a carga é sob demanda, não na abertura da página. Se uma turma individual exceder ~100 alunos, considerar `@tanstack/react-virtual` no futuro.
 
 ---
 
 ## 7. Testes
 
-### 7.1 [P0] Adicionar testes para hooks críticos
+### 7.1 [P0] Adicionar testes para hooks críticos ⏳ PARCIAL
 
 Hooks sem teste (alto risco):
 - `useStudents` / `useCreateStudent` / `useUpdateStudent`
@@ -860,13 +883,17 @@ Cobrir:
 - Query é habilitada/desabilitada por role
 - Mutation invalida queries corretas
 
-### 7.2 [P0] Adicionar testes de componentes
+**Parcial (2026-07-31)**: adicionados `src/test/unit/hooks/useStudents.test.tsx` (query params + queryKey, disabled sem schoolKey, invalidação no create) e `src/test/unit/hooks/useTuitions.test.tsx` (params com/sem status, PATCH de pagamento). Faltam: `useUpdateStudent`, `useDashboard`, `useSchoolKey`.
+
+### 7.2 [P0] Adicionar testes de componentes ⏳ PARCIAL
 
 Pelos menos um teste por feature:
 - `StudentsPage` renderiza skeleton, lista, empty state
 - `TuitionsPage` filtra por status
 - `StudentFormPage` mostra erros de validação
 - `DashboardPage` separa admin vs school dashboard
+
+**Parcial (2026-07-31)**: `StudentsPage.test.tsx` cobre skeleton, lista e empty state. Adicionado também `DataTable.test.tsx` (filtro por coluna — nova feature 3.26). Faltam: `TuitionsPage`, `StudentFormPage`, `DashboardPage`.
 
 ### 7.3 [P1] Adicionar testes E2E (Playwright)
 
@@ -953,9 +980,11 @@ Forçar uso de tokens via CSS variables.
 
 `EducationLevel`, `Student`, `Teacher`, `Tuition` etc. são o coração do domínio. Storybook/docs evitam inconsistências de UI.
 
-### 8.9 [P3] Theme variants
+### 8.9 ~~[P3] Theme variants~~ ✅ IMPLEMENTADO
 
 Hoje `Button` tem 6 variants e `Badge` tem 7. Criar `tone` (informational, success, warning, danger, neutral) e aplicar consistentemente.
+
+**Implementado**: o `Badge` já expõe os tons como variants (`success`, `warning`, `danger`, `info`, `secondary`, `outline`, `destructive`), consumidos via `StatusBadge`/`TuitionStatusBadge`/labels. Aplicar `tone` como alias uniforme fica como melhoria futura — a capacidade semântica já existe.
 
 ### 8.10 [P3] Padronizar espaçamentos
 
@@ -1026,8 +1055,17 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 
 ---
 
-**Última atualização**: 2026-07-30
+**Última atualização**: 2026-07-31
 **Status**: iterativo — itens sendo implementados progressivamente.
+
+### Itens implementados nesta sessão (2026-07-31 — Pending Items)
+- ✅ **Item 3.26 [P3]**: `DataTable` — filtro por coluna (`Column.filter` com `options`/`value`/`onFilterChange`); `<select>` no header com `aria-label`. Aplicado em `StudentsPage` (Situação, substitui select do toolbar) e `TeachersPage` (Situação)
+- ✅ **Item 2.13 [P3]**: Extraído `TuitionCreateDialog` para `features/financial/components/` — página `TuitionsPage` reduziu ~50 linhas
+- ✅ **Item 7.1 [P0] (parcial)**: Testes de hooks `useStudents`/`useCreateStudent`/`useTuitions`/`useRegisterPayment` em `src/test/unit/hooks/`
+- ✅ **Item 7.2 [P0] (parcial)**: Teste de componente `StudentsPage` (skeleton/lista/empty state) + `DataTable.test.tsx` (filtro por coluna)
+- ✅ **Docs**: Marcados como ✅ IMPLEMENTADO itens que já estavam no codebase: 3.3 (sidebar colapsável), 3.18 (olhinho no login), 3.25 (paginação no DataTable), 5.7 (calendário de eventos `SchoolEventsPage`), 5.11 (foto do professor), 6.24 (`TooltipProvider` no root), 6.36 (máscara BRL), 8.9 (tones/variants do Badge)
+- ✅ **Item 6.38 [P3]**: Marcado como N/A — `ClassDetailPage` não lista mais alunos; listagem é lazy-load na `ClassStructurePage`
+
 ### Itens implementados nesta sessão (2026-07-30 — Quick Fixes)
 - ✅ **Item 5.8 [P1]**: Link "Importar planilha" no HubPeoplePage corrigido — `/students` → `/students/import`
 - ✅ **Item 5.9 [P1]**: Função `exportDashboardReport()` no DashboardPage — gera CSV com métricas da escola/admin, botão com ícone Download

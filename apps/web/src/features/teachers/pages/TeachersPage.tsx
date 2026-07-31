@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
@@ -15,7 +15,7 @@ import type { Teacher } from '@education-gestor/types'
 
 const PAGE_SIZE = 15
 
-const columns: Column<Teacher>[] = [
+const columnsBase: Column<Teacher>[] = [
   {
     key: 'name',
     label: 'Nome',
@@ -66,11 +66,40 @@ export function TeachersPage() {
   const deleteMutation = useDeleteTeacher()
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
+  const statusFilter = searchParams.get('status') ?? 'all'
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
-  const filtered = teachers?.filter((t) =>
-    t.name.toLowerCase().includes(search.toLowerCase()),
-  ) ?? []
+  const columns = useMemo<Column<Teacher>[]>(() =>
+    columnsBase.map((col) => {
+      if (col.key !== 'employmentStatus') return col
+      return {
+        ...col,
+        filter: {
+          options: [
+            { value: 'ativo', label: 'Ativo' },
+            { value: 'inativo', label: 'Inativo' },
+            { value: 'licenca', label: 'Licença' },
+          ],
+          value: statusFilter === 'all' ? null : statusFilter,
+          onFilterChange: (v) => {
+            setPage(1)
+            setSearchParams((prev) => {
+              const next = new URLSearchParams(prev)
+              if (!v || v === 'all') next.delete('status')
+              else next.set('status', v)
+              return next
+            })
+          },
+        },
+      }
+    }),
+  [statusFilter, setSearchParams])
+
+  const filtered = teachers?.filter((t) => {
+    const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase())
+    const matchesStatus = statusFilter === 'all' || t.employmentStatus === statusFilter
+    return matchesSearch && matchesStatus
+  }) ?? []
 
   function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
     setSortColumn(direction ? column : null)
