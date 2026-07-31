@@ -190,6 +190,13 @@
       "when": 1785438607569,
       "tag": "0026_mixed_santa_claus",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1785463568761,
+      "tag": "0027_bouncy_vermin",
+      "breakpoints": true
     }
   ]
 }
