@@ -29,6 +29,11 @@ import {
 } from "../../../components/ui/select";
 import { cn } from "../../../lib/utils";
 import { useSchoolKey } from "../../../lib/useSchoolKey";
+import { toast } from "sonner";
+import {
+  useCreateSchoolEvent,
+  useSchoolEvents,
+} from "../hooks/useSchoolEvents";
 
 type EventCategory =
   "Prova" | "Olimpíada" | "Vestibular" | "ENEM" | "Institucional";
@@ -36,7 +41,7 @@ type EventCategory =
 type SchoolEvent = {
   id: string;
   title: string;
-  category: EventCategory;
+  category: string;
   start: Date;
   end?: Date;
   allDay?: boolean;
@@ -86,12 +91,6 @@ const months = [
   "dezembro",
 ];
 
-function at(date: Date, hour: number, minute = 0) {
-  const result = new Date(date);
-  result.setHours(hour, minute, 0, 0);
-  return result;
-}
-
 function startOfWeek(date: Date) {
   const result = new Date(date);
   result.setHours(0, 0, 0, 0);
@@ -120,65 +119,61 @@ function formatTime(date: Date) {
   });
 }
 
-function createInitialEvents(reference: Date): SchoolEvent[] {
-  const sunday = startOfWeek(reference);
+function normalizeDateInput(value: string) {
+  const date = value.trim();
+  const brazilianDate = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(date);
+  if (brazilianDate) {
+    const [, dayText, monthText, yearText] = brazilianDate;
+    const day = Number(dayText);
+    const month = Number(monthText);
+    const year = Number(yearText);
+    const parsed = new Date(year, month - 1, day);
+    if (
+      parsed.getFullYear() === year &&
+      parsed.getMonth() === month - 1 &&
+      parsed.getDate() === day
+    ) {
+      return `${yearText}-${monthText}-${dayText}`;
+    }
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+  return null;
+}
+
+function formatBrazilianDateInput(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function toLocalDate(date: string, time = "00:00") {
+  const normalizedDate = normalizeDateInput(date) ?? date;
+  const [year, month, day] = normalizedDate.split("-").map(Number);
+  const [hour, minute] = time.split(":").map(Number);
+  return new Date(year, month - 1, day, hour, minute);
+}
+
+function toDateString(date: Date) {
   return [
-    {
-      id: "1",
-      title: "Semana de avaliações – 2º bimestre",
-      category: "Prova",
-      start: at(addDays(sunday, 1), 0),
-      allDay: true,
-    },
-    {
-      id: "2",
-      title: "Inscrições OBA",
-      category: "Olimpíada",
-      start: at(addDays(sunday, 2), 0),
-      allDay: true,
-    },
-    {
-      id: "3",
-      title: "Simulado ENEM",
-      category: "ENEM",
-      start: at(addDays(sunday, 3), 8),
-      end: at(addDays(sunday, 3), 12),
-      location: "Bloco B",
-    },
-    {
-      id: "4",
-      title: "Prova de Matemática",
-      category: "Prova",
-      start: at(addDays(sunday, 1), 9),
-      end: at(addDays(sunday, 1), 10, 40),
-      location: "Sala 12",
-    },
-    {
-      id: "5",
-      title: "Palestra: escolhas profissionais",
-      category: "Vestibular",
-      start: at(addDays(sunday, 4), 14),
-      end: at(addDays(sunday, 4), 15, 30),
-      location: "Auditório",
-    },
-    {
-      id: "6",
-      title: "Feira de ciências",
-      category: "Institucional",
-      start: at(addDays(sunday, 5), 13),
-      end: at(addDays(sunday, 5), 17),
-      location: "Pátio central",
-    },
-  ];
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function categoryStyle(category: string) {
+  return categoryStyles[category as EventCategory] ?? {
+    dot: "bg-slate-500",
+    event:
+      "border-slate-500 bg-slate-500/15 text-slate-700 dark:text-slate-300",
+  };
 }
 
 export function SchoolEventsPage() {
   const { payload } = useAuth();
   const { schoolKey, enabled } = useSchoolKey();
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [eventsBySchool, setEventsBySchool] = useState<
-    Record<string, SchoolEvent[]>
-  >(() => ({}));
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<SchoolEvent | null>(null);
   const [form, setForm] = useState({
@@ -194,6 +189,12 @@ export function SchoolEventsPage() {
   const role = payload?.role;
   const canManage = role === "gestor" || role === "secretaria";
   const weekStart = startOfWeek(currentDate);
+  const weekEnd = addDays(weekStart, 6);
+  const { data: eventRecords = [], isLoading } = useSchoolEvents(
+    toDateString(weekStart),
+    toDateString(weekEnd),
+  );
+  const createEvent = useCreateSchoolEvent();
   const days = Array.from({ length: 7 }, (_, index) =>
     addDays(weekStart, index),
   );
@@ -210,8 +211,23 @@ export function SchoolEventsPage() {
   const isTodayVisible = days.some((day) => sameDay(day, new Date()));
   const scopeName = role === "secretaria" ? "escola selecionada" : "sua escola";
 
-  const scopeId = schoolKey ?? "unselected";
-  const events = eventsBySchool[scopeId] ?? createInitialEvents(currentDate);
+  const events = useMemo<SchoolEvent[]>(
+    () =>
+      eventRecords.map((event) => ({
+        id: event.id,
+        title: event.title,
+        category: event.category,
+        start: toLocalDate(event.date, event.startTime ?? "00:00"),
+        end:
+          event.endTime && !event.allDay
+            ? toLocalDate(event.date, event.endTime)
+            : undefined,
+        allDay: event.allDay,
+        location: event.location ?? undefined,
+        description: event.description ?? undefined,
+      })),
+    [eventRecords],
+  );
   const sortedEvents = useMemo(
     () => [...events].sort((a, b) => a.start.getTime() - b.start.getTime()),
     [events],
@@ -234,38 +250,28 @@ export function SchoolEventsPage() {
     });
   }
 
-  function handleCreate() {
-    if (!form.title || !form.date) return;
-    const [year, month, day] = form.date.split("-").map(Number);
-    const [startHour, startMinute] = form.startTime.split(":").map(Number);
-    const [endHour, endMinute] = form.endTime.split(":").map(Number);
-    const start = new Date(
-      year,
-      month - 1,
-      day,
-      form.allDay ? 0 : startHour,
-      form.allDay ? 0 : startMinute,
-    );
-    const end = form.allDay
-      ? undefined
-      : new Date(year, month - 1, day, endHour, endMinute);
-    setEventsBySchool((current) => ({
-      ...current,
-      [scopeId]: [
-        ...(current[scopeId] ?? createInitialEvents(start)),
-        {
-          id: crypto.randomUUID(),
-          title: form.title,
-          category: form.category,
-          start,
-          end,
-          allDay: form.allDay,
-          location: form.location || undefined,
-          description: form.description || undefined,
-        },
-      ],
-    }));
-    setCurrentDate(start);
+  async function handleCreate() {
+    if (!form.title || !form.date || !enabled || !schoolKey) return;
+    const normalizedDate = normalizeDateInput(form.date);
+    if (!normalizedDate) {
+      toast.error("Data inválida. Use o formato DD/MM/AAAA.");
+      return;
+    }
+    try {
+      await createEvent.mutateAsync({
+        title: form.title,
+        category: form.category,
+        date: normalizedDate,
+        startTime: form.allDay ? null : form.startTime,
+        endTime: form.allDay ? null : form.endTime,
+        allDay: form.allDay,
+        location: form.location || null,
+        description: form.description || null,
+      });
+    } catch {
+      return;
+    }
+    setCurrentDate(toLocalDate(normalizedDate));
     setIsDialogOpen(false);
     resetForm();
   }
@@ -427,6 +433,10 @@ export function SchoolEventsPage() {
                 </p>
               </div>
             </div>
+          ) : isLoading ? (
+            <div className="flex h-full min-h-80 items-center justify-center p-6 text-sm text-muted-foreground">
+              Carregando eventos...
+            </div>
           ) : (
             <>
               <div className="sticky top-0 z-10 grid min-w-180 grid-cols-[64px_repeat(7,minmax(100px,1fr))] border-b bg-background">
@@ -456,38 +466,6 @@ export function SchoolEventsPage() {
                   </div>
                 ))}
               </div>
-              <div className="grid min-w-180 grid-cols-[64px_repeat(7,minmax(100px,1fr))] border-b bg-background">
-                <div className="border-r px-2 py-2 text-right text-[10px] text-muted-foreground">
-                  Dia todo
-                </div>
-                {days.map((day) => (
-                  <div
-                    key={day.toISOString()}
-                    className={cn(
-                      "min-h-12 border-r p-1 last:border-r-0",
-                      sameDay(day, new Date()) && "bg-primary/4",
-                    )}
-                  >
-                    {sortedEvents
-                      .filter(
-                        (event) => event.allDay && sameDay(event.start, day),
-                      )
-                      .map((event) => (
-                        <button
-                          key={event.id}
-                          type="button"
-                          onClick={() => setSelectedEvent(event)}
-                          className={cn(
-                            "mb-1 w-full truncate rounded border-l-2 px-1.5 py-1 text-left text-[11px] font-medium",
-                            categoryStyles[event.category].event,
-                          )}
-                        >
-                          {event.title}
-                        </button>
-                      ))}
-                  </div>
-                ))}
-              </div>
               <div
                 className="relative grid min-w-180 grid-cols-[64px_repeat(7,minmax(100px,1fr))]"
                 style={{ height: `${hours.length * 72}px` }}
@@ -502,19 +480,49 @@ export function SchoolEventsPage() {
                     </div>
                   ))}
                 </div>
-                {days.map((day, index) => (
-                  <div
-                    key={day.toISOString()}
-                    className={cn(
-                      "relative border-r last:border-r-0",
-                      sameDay(day, new Date()) && "bg-primary/4",
-                    )}
-                    style={{ gridColumnStart: index + 2 }}
-                  >
-                    {hours.map((hour) => (
-                      <div key={hour} className="h-18 border-b" />
-                    ))}
-                    {sortedEvents
+                {days.map((day, index) => {
+                  const allDayEvents = sortedEvents.filter(
+                    (event) => event.allDay && sameDay(event.start, day),
+                  );
+
+                  return (
+                    <div
+                      key={day.toISOString()}
+                      className={cn(
+                        "relative border-r last:border-r-0",
+                        sameDay(day, new Date()) && "bg-primary/4",
+                      )}
+                      style={{ gridColumnStart: index + 2 }}
+                    >
+                      {allDayEvents.length > 0 && (
+                        <div className="absolute inset-1 z-0 flex gap-1">
+                          {allDayEvents.map((event) => (
+                            <button
+                              key={event.id}
+                              type="button"
+                              onClick={() => setSelectedEvent(event)}
+                              className={cn(
+                                "h-full min-w-0 flex-1 overflow-hidden rounded border-l-2 px-1.5 py-1 text-left text-[11px] font-medium shadow-sm",
+                                categoryStyle(event.category).event,
+                              )}
+                            >
+                              <span className="block truncate">
+                                {event.title}
+                              </span>
+                              <span className="mt-1 block text-[10px] font-normal opacity-75">
+                                Dia todo
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {hours.map((hour) => (
+                        <div
+                          key={hour}
+                          className="relative z-10 h-18 border-b pointer-events-none"
+                        />
+                      ))}
+                      {sortedEvents
                       .filter(
                         (event) => !event.allDay && sameDay(event.start, day),
                       )
@@ -535,8 +543,8 @@ export function SchoolEventsPage() {
                             type="button"
                             onClick={() => setSelectedEvent(event)}
                             className={cn(
-                              "absolute inset-x-1 overflow-hidden rounded border-l-2 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm",
-                              categoryStyles[event.category].event,
+                              "absolute inset-x-1 z-20 overflow-hidden rounded border-l-2 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm",
+                              categoryStyle(event.category).event,
                             )}
                             style={{
                               top: `${(startMinutes / 60) * 72}px`,
@@ -553,8 +561,9 @@ export function SchoolEventsPage() {
                           </button>
                         );
                       })}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
               {!isTodayVisible && (
                 <p className="p-3 text-center text-xs text-muted-foreground">
@@ -617,10 +626,16 @@ export function SchoolEventsPage() {
                 <Label htmlFor="event-date">Data</Label>
                 <Input
                   id="event-date"
-                  type="date"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="DD/MM/AAAA"
+                  maxLength={10}
                   value={form.date}
                   onChange={(event) =>
-                    setForm({ ...form, date: event.target.value })
+                    setForm({
+                      ...form,
+                      date: formatBrazilianDateInput(event.target.value),
+                    })
                   }
                 />
               </div>
@@ -687,8 +702,11 @@ export function SchoolEventsPage() {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreate} disabled={!form.title || !form.date}>
-              Cadastrar evento
+            <Button
+              onClick={handleCreate}
+              disabled={!form.title || !form.date || createEvent.isPending}
+            >
+              {createEvent.isPending ? "Cadastrando..." : "Cadastrar evento"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -240,7 +240,7 @@ function SidebarLink({ to, icon: Icon, label, active, collapsed }: { to: string;
   if (collapsed) {
     return (
       <Tooltip>
-        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipTrigger render={link} />
         <TooltipContent side="right" sideOffset={12}>{label}</TooltipContent>
       </Tooltip>
     )
@@ -370,7 +370,8 @@ export function AppLayout() {
           {/* Financial visibility toggle — admin only */}
           {role === 'admin' && (
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger
+              render={
               <Button
                 variant="outline"
                 size={sidebarCollapsed ? 'icon' : 'default'}
@@ -384,14 +385,16 @@ export function AppLayout() {
                 {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
                 {!sidebarCollapsed && <span className="text-sm font-medium">{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</span>}
               </Button>
-            </TooltipTrigger>
+              }
+            />
             {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</TooltipContent>}
           </Tooltip>
           )}
 
           {/* Theme toggle */}
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger
+              render={
               <Button
                 variant="outline"
                 size={sidebarCollapsed ? 'icon' : 'default'}
@@ -405,13 +408,15 @@ export function AppLayout() {
                 {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                 {!sidebarCollapsed && <span className="text-sm font-medium">Alternar tema</span>}
               </Button>
-            </TooltipTrigger>
+              }
+            />
             {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>Alternar tema</TooltipContent>}
           </Tooltip>
 
           {/* Logout */}
           <Tooltip>
-            <TooltipTrigger asChild>
+            <TooltipTrigger
+              render={
               <Button
                 variant="outline"
                 size={sidebarCollapsed ? 'icon' : 'default'}
@@ -425,7 +430,8 @@ export function AppLayout() {
                 <LogOut size={18} />
                 {!sidebarCollapsed && <span className="text-sm font-medium">Sair</span>}
               </Button>
-            </TooltipTrigger>
+              }
+            />
             {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>Sair</TooltipContent>}
           </Tooltip>
 

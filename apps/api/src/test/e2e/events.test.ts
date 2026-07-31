@@ -211,6 +211,21 @@ describe('POST /events', () => {
     })
     expect(res.statusCode).toBe(400)
   })
+
+  it('retorna 409 quando há conflito de horário', async () => {
+    vi.mocked(eventsService.createEventService).mockRejectedValue(
+      new Error('Event already exists at this time'),
+    )
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/events',
+      headers: { authorization: `Bearer ${gestorToken}` },
+      body: { title: 'Evento', category: 'outro', date: '2025-07-15' },
+    })
+
+    expect(res.statusCode).toBe(409)
+  })
 })
 
 describe('PUT /events/:id', () => {
@@ -241,6 +256,21 @@ describe('PUT /events/:id', () => {
     })
 
     expect(res.statusCode).toBe(404)
+  })
+
+  it('retorna 409 ao atualizar com conflito de horário', async () => {
+    vi.mocked(eventsService.updateEventService).mockRejectedValue(
+      new Error('Event already exists at this time'),
+    )
+
+    const res = await app.inject({
+      method: 'PUT',
+      url: `/events/${IDS.event}`,
+      headers: { authorization: `Bearer ${gestorToken}` },
+      body: { startTime: '10:00', endTime: '11:00' },
+    })
+
+    expect(res.statusCode).toBe(409)
   })
 })
 

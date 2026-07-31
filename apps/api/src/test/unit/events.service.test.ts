@@ -25,7 +25,10 @@ const mockEvent = {
   updatedAt: new Date(),
 }
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  vi.mocked(repo.findAllEventsRepository).mockResolvedValue([])
+})
 
 describe('listEventsService', () => {
   it('retorna eventos da escola', async () => {
@@ -114,6 +117,36 @@ describe('createEventService', () => {
       }),
     )
   })
+
+  it('bloqueia evento com horário sobreposto na mesma data', async () => {
+    vi.mocked(repo.findAllEventsRepository).mockResolvedValue([mockEvent])
+
+    await expect(
+      createEventService('school-id', {
+        title: 'Nova atividade',
+        category: 'atividade',
+        date: '2025-07-15',
+        startTime: '10:00',
+        endTime: '11:00',
+        allDay: false,
+      }),
+    ).rejects.toThrow('Event already exists at this time')
+
+    expect(repo.createEventRepository).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia evento de dia todo quando já há evento no dia', async () => {
+    vi.mocked(repo.findAllEventsRepository).mockResolvedValue([mockEvent])
+
+    await expect(
+      createEventService('school-id', {
+        title: 'Feriado',
+        category: 'feriado',
+        date: '2025-07-15',
+        allDay: true,
+      }),
+    ).rejects.toThrow('Event already exists at this time')
+  })
 })
 
 describe('updateEventService', () => {
@@ -125,7 +158,9 @@ describe('updateEventService', () => {
     const result = await updateEventService('school-id', 'event-id', { title: 'Festival de Inverno 2025' })
 
     expect(result.title).toBe('Festival de Inverno 2025')
-    expect(repo.updateEventRepository).toHaveBeenCalledWith('school-id', 'event-id', expect.anything())
+    expect(repo.updateEventRepository).toHaveBeenCalledWith('school-id', 'event-id', {
+      title: 'Festival de Inverno 2025',
+    })
   })
 
   it('lança erro quando evento não existe na escola', async () => {
@@ -134,6 +169,25 @@ describe('updateEventService', () => {
     await expect(updateEventService('school-id', 'nao-existe', { title: 'X' })).rejects.toThrow(
       'Event not found',
     )
+    expect(repo.updateEventRepository).not.toHaveBeenCalled()
+  })
+
+  it('bloqueia atualização que gera sobreposição', async () => {
+    vi.mocked(repo.findEventByIdRepository).mockResolvedValue({
+      ...mockEvent,
+      id: 'event-atual',
+      startTime: '07:00',
+      endTime: '08:00',
+    })
+    vi.mocked(repo.findAllEventsRepository).mockResolvedValue([mockEvent])
+
+    await expect(
+      updateEventService('school-id', 'event-atual', {
+        startTime: '10:00',
+        endTime: '11:00',
+      }),
+    ).rejects.toThrow('Event already exists at this time')
+
     expect(repo.updateEventRepository).not.toHaveBeenCalled()
   })
 })
