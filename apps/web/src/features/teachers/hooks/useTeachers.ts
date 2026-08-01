@@ -83,6 +83,32 @@ export function useDeleteTeacher() {
   })
 }
 
+export function useAddTeacherSubject(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (subjectId: string) => {
+      await api.post(`/teachers/${id}/subjects`, { subjectId })
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teachers', id] })
+      qc.invalidateQueries({ queryKey: ['teachers'] })
+    },
+  })
+}
+
+export function useRemoveTeacherSubject(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (subjectId: string) => {
+      await api.delete(`/teachers/${id}/subjects/${subjectId}`)
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teachers', id] })
+      qc.invalidateQueries({ queryKey: ['teachers'] })
+    },
+  })
+}
+
 export function useChangeTeacherPassword(id: string) {
   return useMutation({
     mutationFn: async (password: string) => {

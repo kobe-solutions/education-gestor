@@ -51,6 +51,12 @@ export type Sex = 'M' | 'F' | 'outro'
 export type DocumentType = 'historico' | 'boletim' | 'identidade' | 'outros'
 export type TeacherDocumentType = 'diploma' | 'certificado' | 'registro' | 'outros'
 
+export interface TeacherSubject {
+  id: string
+  name: string
+  code: string | null
+}
+
 export interface Student {
   id: string
   schoolId: string
@@ -173,6 +179,7 @@ export interface Teacher {
   pixKey: string | null
   createdAt: string
   updatedAt: string
+  subjects: TeacherSubject[]
 }
 
 export interface SchoolClass {
