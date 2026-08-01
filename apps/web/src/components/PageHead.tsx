@@ -7,10 +7,11 @@ interface PageHeadProps {
   subtitle?: string
   actions?: React.ReactNode
   backTo?: string | (() => void)
+  breadcrumb?: React.ReactNode
   tabs?: React.ReactNode
 }
 
-export function PageHead({ title, subtitle, actions, backTo, tabs }: PageHeadProps) {
+export function PageHead({ title, subtitle, actions, backTo, breadcrumb, tabs }: PageHeadProps) {
   const navigate = useNavigate()
 
   const handleBack = () => {
@@ -24,6 +25,7 @@ export function PageHead({ title, subtitle, actions, backTo, tabs }: PageHeadPro
 
   return (
     <div className="space-y-3">
+      {breadcrumb}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div className="flex items-start gap-2">
           {backTo && (

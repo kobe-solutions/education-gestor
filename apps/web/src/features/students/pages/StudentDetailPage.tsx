@@ -12,6 +12,7 @@ import {
   MapPin,
   HeartPulse,
   BookOpen,
+  History,
 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -29,6 +30,8 @@ import { TuitionStatusBadge } from '../../financial/components/TuitionStatusBadg
 import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { toast } from '../../../lib/toast'
+import { Timeline, type TimelineEntry } from '../../../components/Timeline'
+import { ENROLLMENT_STATUS_LABELS } from '../../../lib/labels'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -130,6 +133,53 @@ export function StudentDetailPage() {
       </div>
     )
   }
+
+  const historyEntries: TimelineEntry[] = [
+    {
+      id: 'created:1',
+      date: student.createdAt,
+      title: 'Aluno cadastrado',
+      description: `Matrícula ${student.enrollmentCode}${student.internalCode ? ` · Cód. ${student.internalCode}` : ''}`,
+      icon: User,
+      tone: 'primary',
+    },
+    ...(student.enrollmentDate
+      ? [{
+          id: 'enrolled:1',
+          date: student.enrollmentDate,
+          title: 'Ingresso registrado',
+          description: `Situação: ${ENROLLMENT_STATUS_LABELS[student.enrollmentStatus]}`,
+          icon: BookOpen,
+          tone: 'success',
+        } as TimelineEntry]
+      : []),
+    ...(guardians ?? []).map<TimelineEntry>((g, idx) => ({
+      id: `guardian:${idx}`,
+      date: g.createdAt,
+      title: 'Responsável adicionado',
+      description: `${g.name} (${g.relationship})`,
+      icon: Users,
+      tone: 'muted',
+    })),
+    ...(studentClasses.length > 0
+      ? [{
+          id: 'classes:1',
+          date: student.updatedAt,
+          title: 'Turmas vinculadas',
+          description: studentClasses.map((c) => c.name).join(', '),
+          icon: BookOpen,
+          tone: 'muted',
+        } as TimelineEntry]
+      : []),
+    ...(tuitions ?? []).map<TimelineEntry>((t, idx) => ({
+      id: `tuition:${idx}`,
+      date: t.paidAt ?? t.createdAt,
+      title: t.paidAt ? 'Mensalidade paga' : 'Mensalidade registrada',
+      description: `${formatDateBR(t.dueDate)} · ${fmtBRL(t.amount)} · ${t.paidAt ? 'Paga' : t.status === 'overdue' ? 'Em atraso' : 'Pendente'}`,
+      icon: CreditCard,
+      tone: t.paidAt ? 'success' : t.status === 'overdue' ? 'warning' : 'muted',
+    })),
+  ]
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -477,6 +527,19 @@ export function StudentDetailPage() {
                 </CardContent>
               </Card>
             )}
+
+          {/* Histórico */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <History className="h-4 w-4 text-primary" />
+                Histórico
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Timeline entries={historyEntries} />
+            </CardContent>
+          </Card>
 
           {!financialBlocked && (
           <Card>

@@ -12,6 +12,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+export { AuthContext }
 function parseToken(token: string): JwtPayload | null {
   try {
     return jwtDecode<JwtPayload>(token)
