@@ -183,7 +183,12 @@ export function DataTable<T>({
                       </button>
                     )
                   } else {
-                    labelNode = col.label
+                    labelNode =
+                      col.label == null || col.label === '' ? (
+                        <span className="sr-only">{col.key === '__actions' ? 'Ações' : col.key}</span>
+                      ) : (
+                        col.label
+                      )
                   }
 
                   return (

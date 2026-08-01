@@ -181,7 +181,7 @@ export function StudentsPage() {
           />
         </div>
         <Select value={sexFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('sex'); else next.set('sex', v); return next }) }}>
-          <SelectTrigger className="w-[130px]">
+          <SelectTrigger aria-label="Filtrar por sexo" className="w-[130px]">
             <SelectValue placeholder="Sexo" />
           </SelectTrigger>
           <SelectContent>
