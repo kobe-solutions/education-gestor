@@ -9,6 +9,8 @@ interface SchoolContextValue {
 
 const SchoolContext = createContext<SchoolContextValue | null>(null)
 
+export { SchoolContext }
+
 export function SchoolProvider({ children }: { children: ReactNode }) {
   const [activeSchoolId, setActiveSchoolId] = useState<string | null>(
     () => sessionStorage.getItem('activeSchoolId'),

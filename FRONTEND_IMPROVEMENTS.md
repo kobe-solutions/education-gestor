@@ -164,7 +164,7 @@ Hoje temos:
 
 Centralizar em `packages/types/src/labels.ts` (ou gerar de um único `Zod` enum).
 
-### 2.11 [P3] Dividir `StudentFormPage.tsx` (761 linhas)
+### 2.11 ~~[P3] Dividir `StudentFormPage.tsx` (761 linhas)~~ ✅ IMPLEMENTADO
 
 `StudentFormPage` mistura:
 - lógica de foto (upload, dialog)
@@ -183,9 +183,13 @@ Centralizar em `packages/types/src/labels.ts` (ou gerar de um único `Zod` enum)
 
 Cada tab recebe `studentId` e os hooks necessários. Página vira ~80 linhas.
 
-### 2.12 [P3] Dividir `AcademicYearsPage.tsx` (599 linhas) similar ao item 2.11
+**Implementado (2026-07-31)**: extraídos `PessoalTab` (schema `pessoalSchema` + `PessoalForm` + upload de foto + `useUnsavedChanges(form.formState.isDirty)`), `FamiliaTab` (`familiaSchema`/`guardianSchema`, toggle `showGuardianForm`), `MedicalTab` (`medicalSchema`/`MedicalForm`), `DocumentsTab` (usa `DOCUMENT_TYPE_LABELS`), `MatriculaTab` (usa `ENROLLMENT_STATUS_LABELS`). `StudentFormPage.tsx` reescrito de 842 → ~250 linhas, com `Breadcrumbs` no topo. Typecheck OK.
+
+### 2.12 ~~[P3] Dividir `AcademicYearsPage.tsx` (599 linhas) similar ao item 2.11~~ ✅ IMPLEMENTADO
 
 Mover `YearDialog` e `PeriodDialog` para `features/classes/components/`.
+
+**Implementado (2026-07-31)**: criados `features/classes/components/YearDialog.tsx`, `PeriodDialog.tsx` e `PeriodsSection.tsx` (imports corrigidos para `../../../components/ui/...`). `AcademicYearsPage.tsx` reescrito de 591 → ~190 linhas. Typecheck OK.
 
 ### 2.13 ~~[P3] Dividir `TuitionsPage.tsx` (261 linhas)~~ ✅ IMPLEMENTADO
 
@@ -330,9 +334,11 @@ Hoje o avatar leva ao clique → nada (`<div>` no `AppLayout.tsx`). Criar menu:
 
 `api.ts` remove só `localStorage.token` no 401. O `SchoolContext` mantém `sessionStorage` de uma escola que pode não existir mais. Limpar tudo no `logout()`.
 
-### 3.13 [P2] `LocacaoAlunosPage` e `LocacaoPage` usam `h-[calc(100vh-5rem)]` hardcoded
+### 3.13 ~~[P2] `LocacaoAlunosPage` e `LocacaoPage` usam `h-[calc(100vh-5rem)]` hardcoded~~ ✅ IMPLEMENTADO
 
 Altura é calculada assumindo header 80px. Usar `h-[calc(100vh-var(--header-h)-2rem)]` como em `LocacaoPage` e centralizar no token.
+
+**Implementado (2026-07-31)**: `StudentSchedulingPage.tsx` linha 364 trocado de `h-[calc(100vh-5rem)]` para `style={{ height: 'calc(100vh - var(--header-h) - 2rem)' }}` — ambos os scheduling pages (teacher e aluno) agora usam o token `--header-h`. Nenhuma ocorrência de `h-[calc(100vh-...)]` restante no codebase.
 
 ### 3.14 [P3] Animação de "slot" ao adicionar aluno/professor
 
@@ -366,9 +372,11 @@ Checkbox "lembrar-me" + persistir `email` (não senha) em `localStorage`.
 
 Adicionado link "Esqueci minha senha" abaixo do campo de senha, apontando para `/forgot-password` (endpoint no backend ainda necessário).
 
-### 3.21 [P2] `PageHead` aceita `breadcrumb` e `tabs`
+### 3.21 ~~[P2] `PageHead` aceita `breadcrumb` e `tabs`~~ ✅ IMPLEMENTADO
 
 A `Tabs` em `StudentFormPage` e `TeacherFormPage` está fora do `PageHead`. Unificar com slot `tabs` para padronizar.
+
+**Implementado (2026-07-31)**: `PageHead.tsx` ganhou prop `breadcrumb?: React.ReactNode` (renderizada antes do bloco de título/ações) e prop `tabs` (já existente). `StudentFormPage` usa `<PageHead breadcrumb={<Breadcrumbs ... />}>`.
 
 ### 3.22 ~~[P2] `PublicLayout` com branding (logo grande + ilustração)~~ ✅ IMPLEMENTADO
 
@@ -582,9 +590,11 @@ Hoje: só busca textual. Adicionar:
 
 Adicionado filtro por range de vencimento (`dateFrom`/`dateTo`) via inputs de data no cabeçalho da página, ao lado do seletor de status. Filtragem client-side com suporte a paginação.
 
-### 5.14 [P2] Detalhe expandido do aluno (aba "Histórico")
+### 5.14 ~~[P2] Detalhe expandido do aluno (aba "Histórico")~~ ✅ IMPLEMENTADO
 
 Mostrar timeline de mudanças de status, transferências, ocorrências, observações.
+
+**Implementado (2026-07-31)**: criado `components/Timeline.tsx` reutilizável (interface `TimelineEntry`, tons `TimelineTone`, ícones por id `created:`/`class:`/`payment:`/`document:`/`status:`, helper `fmtDate` que aceita timestamp ou `YYYY-MM-DD`). `StudentDetailPage.tsx` monta `historyEntries` a partir de `createdAt`, `enrollmentDate`, responsáveis, turmas e mensalidades e renderiza o card "Histórico" na coluna direita, antes de Mensalidades. Typecheck OK.
 
 ### 5.15 ~~[P2] Auditoria visual~~ ✅ IMPLEMENTADO
 
@@ -871,7 +881,7 @@ Para 50+ alunos, a página fica lenta. Paginar ou virtualizar (`@tanstack/react-
 
 ## 7. Testes
 
-### 7.1 [P0] Adicionar testes para hooks críticos ⏳ PARCIAL
+### 7.1 ~~[P0] Adicionar testes para hooks críticos~~ ✅ IMPLEMENTADO
 
 Hooks sem teste (alto risco):
 - `useStudents` / `useCreateStudent` / `useUpdateStudent`
@@ -883,7 +893,7 @@ Cobrir:
 - Query é habilitada/desabilitada por role
 - Mutation invalida queries corretas
 
-**Parcial (2026-07-31)**: adicionados `src/test/unit/hooks/useStudents.test.tsx` (query params + queryKey, disabled sem schoolKey, invalidação no create) e `src/test/unit/hooks/useTuitions.test.tsx` (params com/sem status, PATCH de pagamento). Faltam: `useUpdateStudent`, `useDashboard`, `useSchoolKey`.
+**Implementado (2026-07-31)**: `useStudents.test.tsx` (query params + queryKey, disabled sem schoolKey, invalidação no create), `useStudentsUpdate.test.tsx` (`useUpdateStudent` chama PUT e invalida lista+detalhe, `useDeleteStudent` chama DELETE e invalida lista), `useTuitions.test.tsx` (params com/sem status, PATCH de pagamento), `useDashboard.test.tsx` (queryKey com schoolKey, disabled, `isAdminDashboard`), `useSchoolKey.test.tsx` (todas as roles + secretaria com/sem escola ativa via `createProviders`).
 
 ### 7.2 [P0] Adicionar testes de componentes ⏳ PARCIAL
 
@@ -893,7 +903,7 @@ Pelos menos um teste por feature:
 - `StudentFormPage` mostra erros de validação
 - `DashboardPage` separa admin vs school dashboard
 
-**Parcial (2026-07-31)**: `StudentsPage.test.tsx` cobre skeleton, lista e empty state. Adicionado também `DataTable.test.tsx` (filtro por coluna — nova feature 3.26). Faltam: `TuitionsPage`, `StudentFormPage`, `DashboardPage`.
+**Parcial (2026-07-31)**: `StudentsPage.test.tsx` cobre skeleton, lista e empty state. Adicionado também `DataTable.test.tsx` (filtro por coluna — nova feature 3.26). `TuitionsPage.test.tsx` (lista, empty state, dados financeiros ocultos via localStorage, bloqueio da escola) e `DashboardPage.test.tsx` (painel da escola p/ gestor, painel admin, secretaria sem escola, redirect do professor). Faltam: `StudentFormPage`.
 
 ### 7.3 [P1] Adicionar testes E2E (Playwright)
 
@@ -912,9 +922,11 @@ Cobrir fluxos:
 
 Para o design system IRIS, garantir que mudanças CSS não quebrem screenshots.
 
-### 7.6 [P2] `renderWithProviders` aceita `mockApi` e `mockAuth`
+### 7.6 ~~[P2] `renderWithProviders` aceita `mockApi` e `mockAuth`~~ ✅ IMPLEMENTADO
 
 Facilitar mock de múltiplos endpoints numa só helper.
+
+**Implementado (2026-07-31)**: `src/test/render.tsx` reescrito com opções `mockApi` (handlers `(url, config?) => Promise<{data}>` por método), `mockAuth` (token/payload) e `mockSchool` (escola ativa). Exportado `createProviders` (reutilizável com `render`/`renderHook`) e `applyMockApi`. `AuthContext` e `SchoolContext` exportados para testes. `createProviders` também envolve `FinancialVisibilityProvider`. 11 arquivos / 42 testes passando.
 
 ### 7.7 [P3] Storybook para componentes
 
@@ -1057,6 +1069,17 @@ A maioria do design system está montada, mas valeria a pena adicionar:
 
 **Última atualização**: 2026-07-31
 **Status**: iterativo — itens sendo implementados progressivamente.
+
+### Itens implementados nesta sessão (2026-07-31 — Pending Items v2)
+- ✅ **Item 3.13 [P2]**: `StudentSchedulingPage` trocado `h-[calc(100vh-5rem)]` por `calc(100vh - var(--header-h) - 2rem)` — nenhuma altura hardcoded restante nos scheduling pages
+- ✅ **Item 3.21 [P2]**: `PageHead` aceita `breadcrumb?: React.ReactNode` (renderizada antes do bloco de título/ações) + slot `tabs`
+- ✅ **Item 2.11 [P3]**: `StudentFormPage.tsx` dividido em `features/students/components/tabs/` (`PessoalTab`, `FamiliaTab`, `MedicalTab`, `DocumentsTab`, `MatriculaTab`) — página 842 → ~250 linhas
+- ✅ **Item 2.12 [P3]**: `AcademicYearsPage.tsx` dividido — `YearDialog`, `PeriodDialog`, `PeriodsSection` em `features/classes/components/` — página 591 → ~190 linhas
+- ✅ **Item 5.14 [P2]**: Card "Histórico" (timeline) no `StudentDetailPage` via novo componente reutilizável `components/Timeline.tsx`
+- ✅ **Item 7.1 [P0]**: Completados testes de hooks `useUpdateStudent`, `useDeleteStudent`, `useDashboard`, `useSchoolKey` (todas as roles)
+- ✅ **Item 7.2 [P0] (parcial)**: Adicionados `TuitionsPage.test.tsx` (lista/empty/oculto/bloqueado) e `DashboardPage.test.tsx` (escola/admin/sem escola/redirect professor)
+- ✅ **Item 7.6 [P2]**: `renderWithProviders` com `mockApi`/`mockAuth`/`mockSchool` + helper `createProviders` exportado; `FinancialVisibilityProvider` no wrapper
+- ✅ **Validação**: `pnpm --filter web test` → 11 arquivos / 42 testes passando; `pnpm --filter web exec tsc --noEmit` limpo
 
 ### Itens implementados nesta sessão (2026-07-31 — Pending Items)
 - ✅ **Item 3.26 [P3]**: `DataTable` — filtro por coluna (`Column.filter` com `options`/`value`/`onFilterChange`); `<select>` no header com `aria-label`. Aplicado em `StudentsPage` (Situação, substitui select do toolbar) e `TeachersPage` (Situação)

@@ -361,7 +361,7 @@ export function StudentSchedulingPage() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-5rem)] grid-cols-[288px_1fr] gap-4 overflow-hidden min-w-0">
+    <div className="grid grid-cols-[288px_1fr] gap-4 overflow-hidden min-w-0" style={{ height: 'calc(100vh - var(--header-h) - 2rem)' }}>
 
       {/* ── Sidebar: Alunos ──────────────────────────────────────────────── */}
       <aside className="flex flex-col gap-3 min-h-0 overflow-hidden">
