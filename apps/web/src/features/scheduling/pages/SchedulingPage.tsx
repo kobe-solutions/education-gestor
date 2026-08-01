@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { GripVertical, Plus, X, ChevronDown, ChevronUp, Zap, ArrowLeft } from 'lucide-react'
+import { useState, useRef, useMemo } from 'react'
+import { GripVertical, Plus, X, ChevronDown, ChevronUp, Zap, ArrowLeft, TriangleAlert } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { PageHead } from '../../../components/PageHead'
 import { useAllTeachers } from '../../teachers/hooks/useTeachers'
@@ -15,6 +15,7 @@ import {
 } from '../../timetable/hooks/useTimetable'
 import type { TimetableSlot } from '../../timetable/hooks/useTimetable'
 import { useApiMutation } from '../../../hooks/useApiMutation'
+import { computeConflictingSlotIds, findSlotConflicts } from '../lib/conflicts'
 import { Button } from '../../../components/ui/button'
 import { SearchInput } from '../../../components/SearchInput'
 import { Label } from '../../../components/ui/label'
@@ -123,10 +124,11 @@ function TeacherCard({ teacher, colorIdx, assignmentCount, isSelected, onSelect 
 interface SlotPillProps {
   slot: TimetableSlot
   colorIdx: number
+  conflicting?: boolean
   onRemove: () => void
 }
 
-function SlotPill({ slot, colorIdx, onRemove }: SlotPillProps) {
+function SlotPill({ slot, colorIdx, conflicting = false, onRemove }: SlotPillProps) {
   const color = TEACHER_COLORS[colorIdx]
   return (
     <div className={`group relative flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium ${color.light}`}>
@@ -137,6 +139,13 @@ function SlotPill({ slot, colorIdx, onRemove }: SlotPillProps) {
         <p className="truncate leading-tight" style={{ maxWidth: 100 }}>{slot.subject.name}</p>
         <p className="text-[10px] opacity-70 font-normal">{slot.classPeriod.startTime}–{slot.classPeriod.endTime}</p>
       </div>
+      {conflicting && (
+        <TriangleAlert
+          className="h-3.5 w-3.5 shrink-0 text-red-500"
+          aria-label="Conflito de horário"
+          data-tooltip="Este professor já está alocado em outro horário sobreposto"
+        />
+      )}
       <Button
         variant="ghost"
         size="icon"
@@ -156,13 +165,14 @@ interface ClassColumnProps {
   slots: TimetableSlot[]
   selectedTeacher: { id: string; name: string } | null
   teacherColorMap: Record<string, number>
+  conflictingSlotIds: Set<string>
   onDrop: (classId: string, teacherId: string, teacherName: string) => void
   onClickAdd: (classId: string, prefillTeacherId?: string, prefillTeacherName?: string) => void
   onDeleteSlot: (slotId: string, classId: string) => void
 }
 
 function ClassColumn({
-  schoolClass, slots, selectedTeacher, teacherColorMap,
+  schoolClass, slots, selectedTeacher, teacherColorMap, conflictingSlotIds,
   onDrop, onClickAdd, onDeleteSlot,
 }: ClassColumnProps) {
   const [dragOver, setDragOver] = useState(false)
@@ -262,6 +272,7 @@ function ClassColumn({
                       key={slot.id}
                       slot={slot}
                       colorIdx={teacherColorMap[slot.teacherId] ?? 0}
+                      conflicting={conflictingSlotIds.has(slot.id)}
                       onRemove={() => onDeleteSlot(slot.id, slot.classId)}
                     />
                   ))}
@@ -351,6 +362,12 @@ export function SchedulingPage() {
     teachers.map((t) => [t.id, allSlots.filter((s) => s.teacherId === t.id).length])
   )
 
+  // Conflitos de horário entre slots existentes (mesmo professor, mesmo dia, horário sobreposto)
+  const conflictingSlotIds = useMemo(
+    () => computeConflictingSlotIds(allSlots, classPeriods),
+    [allSlots, classPeriods],
+  )
+
   const filteredTeachers = teachers.filter((t) =>
     t.name.toLowerCase().includes(teacherSearch.toLowerCase())
   )
@@ -389,6 +406,17 @@ export function SchedulingPage() {
   function handleDeleteSlot(slotId: string, classId: string) {
     deleteSlotApiMutation.mutate(slotId)
   }
+
+  const assignConflicts = useMemo(() => {
+    if (!assignTarget || !formTeacher || !formDay || !formClassPeriodId) return []
+    return findSlotConflicts(allSlots, classPeriods, {
+      teacherId: formTeacher,
+      weekDay: formDay,
+      classPeriodId: formClassPeriodId,
+    })
+  }, [allSlots, classPeriods, assignTarget, formTeacher, formDay, formClassPeriodId])
+
+  const hasAssignConflict = assignConflicts.length > 0
 
   return (
     <div className="flex flex-col gap-4" style={{ height: 'calc(100vh - var(--header-h) - 2rem)' }}>
@@ -496,6 +524,7 @@ export function SchedulingPage() {
                   slots={classSlots}
                   selectedTeacher={selectedTeacher}
                   teacherColorMap={teacherColorMap}
+                  conflictingSlotIds={conflictingSlotIds}
                   onDrop={handleDrop}
                   onClickAdd={openAssignForm}
                   onDeleteSlot={handleDeleteSlot}
@@ -588,9 +617,28 @@ export function SchedulingPage() {
             </div>
           </div>
 
+          {hasAssignConflict && (
+            <div className="flex items-start gap-2 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2.5">
+              <TriangleAlert className="h-4 w-4 shrink-0 mt-0.5 text-red-500" />
+              <div>
+                <p className="text-xs font-semibold text-red-600 dark:text-red-400">
+                  Conflito de horário
+                </p>
+                <p className="text-xs text-red-600/80 dark:text-red-400/80 mt-0.5">
+                  Este professor já está alocado{' '}
+                  {assignConflicts.map((c) => {
+                    const cls = classes.find((x) => x.id === c.classId)
+                    return cls?.name ?? 'em outra turma'
+                  }).join(', ')}{' '}
+                  no mesmo horário. Escolha outro dia ou período.
+                </p>
+              </div>
+            </div>
+          )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setAssignTarget(null)}>Cancelar</Button>
-            <Button onClick={handleAssign} disabled={createSlotApiMutation.isPending}>
+            <Button onClick={handleAssign} disabled={createSlotApiMutation.isPending || hasAssignConflict}>
               {createSlotApiMutation.isPending ? 'Alocando...' : 'Alocar'}
             </Button>
           </DialogFooter>
