@@ -88,16 +88,6 @@ export function useRemoveStudentFromClass(classId: string) {
   })
 }
 
-export function useAddTeacherToClass(classId: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (teacherId: string) => {
-      await api.post(`/school-classes/${classId}/teachers`, { id: teacherId })
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['classes', classId] }),
-  })
-}
-
 export function useAcademicPeriods() {
   return useQuery({
     queryKey: ['academic-periods'],
