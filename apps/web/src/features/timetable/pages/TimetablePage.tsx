@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { ArrowLeft, Plus, Trash2, Pencil } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, Pencil, List, CalendarDays } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -14,6 +14,7 @@ import {
   WEEK_DAYS_ORDER,
 } from '../hooks/useTimetable'
 import type { TimetableSlot } from '../hooks/useTimetable'
+import { WeekGrid } from '../components/WeekGrid'
 import { useClass, useClassPeriods } from '../../classes/hooks/useClasses'
 import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
@@ -81,6 +82,7 @@ export function TimetablePage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<TimetableSlot | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [view, setView] = useState<'list' | 'week'>('list')
 
   const formValues: SlotForm = editing ? {
     classPeriodId: editing.classPeriodId,
@@ -169,7 +171,27 @@ export function TimetablePage() {
           )}
         </div>
         {canManage && (
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <div className="flex items-center rounded-md border p-0.5">
+              <Button
+                variant={view === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setView('list')}
+                aria-pressed={view === 'list'}
+              >
+                <List className="h-4 w-4" />
+                <span className="ml-1 hidden sm:inline">Lista</span>
+              </Button>
+              <Button
+                variant={view === 'week' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setView('week')}
+                aria-pressed={view === 'week'}
+              >
+                <CalendarDays className="h-4 w-4" />
+                <span className="ml-1 hidden sm:inline">Semana</span>
+              </Button>
+            </div>
             <Button size="sm" onClick={handleCreate}>
               <Plus className="h-4 w-4" />
               Novo horário
@@ -190,6 +212,19 @@ export function TimetablePage() {
             {canManage
               ? 'Nenhum horário cadastrado. Clique em "Novo horário" para começar.'
               : 'Nenhum horário cadastrado para esta turma.'}
+          </CardContent>
+        </Card>
+      ) : view === 'week' ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Grade Semanal</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <WeekGrid
+              slots={slots ?? []}
+              classPeriods={classPeriods}
+              onSlotClick={canManage ? handleEdit : undefined}
+            />
           </CardContent>
         </Card>
       ) : (

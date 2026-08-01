@@ -2,72 +2,59 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useCreateTuition } from '../hooks/useFinancial'
-import { useStudents } from '../../students/hooks/useStudents'
+import { useUpdateTuition } from '../hooks/useFinancial'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../../components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { maskBRL, unmaskBRL } from '../lib/brlMask'
+import type { Tuition } from '@education-gestor/types'
 
 const tuitionSchema = z.object({
-  studentId: z.string().min(1, 'Selecione o aluno'),
   amount: z.coerce.number().positive('Valor deve ser positivo'),
   dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida'),
 })
 
 type TuitionForm = z.infer<typeof tuitionSchema>
 
-interface TuitionCreateDialogProps {
-  open: boolean
+interface TuitionEditDialogProps {
+  tuition: Tuition | null
   onOpenChange: (open: boolean) => void
 }
 
-export function TuitionCreateDialog({ open, onOpenChange }: TuitionCreateDialogProps) {
-  const { data: studentsData } = useStudents()
-  const students = studentsData?.data ?? []
-  const createMutation = useCreateTuition()
-
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TuitionForm>({
+export function TuitionEditDialog({ tuition, onOpenChange }: TuitionEditDialogProps) {
+  const updateMutation = useUpdateTuition()
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<TuitionForm>({
     resolver: zodResolver(tuitionSchema),
+    values: tuition
+      ? { amount: unmaskBRL(maskBRL(String(tuition.amount))), dueDate: tuition.dueDate }
+      : undefined,
   })
 
-  const [amountDisplay, setAmountDisplay] = useState('')
-  const studentIdValue = watch('studentId')
+  const [amountDisplay, setAmountDisplay] = useState(tuition ? maskBRL(String(tuition.amount)) : '')
 
-  const createApiMutation = useApiMutation({
-    mutationFn: (data: TuitionForm) => createMutation.mutateAsync(data),
-    successMessage: 'Mensalidade criada',
-    onSuccess: () => { onOpenChange(false); reset(); setAmountDisplay('') },
+  const editApiMutation = useApiMutation({
+    mutationFn: (data: TuitionForm) => {
+      if (!tuition) throw new Error('Nenhuma mensalidade selecionada')
+      return updateMutation.mutateAsync({ id: tuition.id, data })
+    },
+    successMessage: 'Mensalidade atualizada',
+    onSuccess: () => { onOpenChange(false); reset() },
   })
 
   function onSubmit(data: TuitionForm) {
-    createApiMutation.mutate(data)
+    editApiMutation.mutate(data)
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) { onOpenChange(false); reset(); setAmountDisplay('') } }}>
+    <Dialog open={!!tuition} onOpenChange={(v) => { if (!v) { onOpenChange(false); reset() } }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nova mensalidade</DialogTitle>
-          <DialogDescription className="sr-only">Criar uma nova mensalidade para um aluno</DialogDescription>
+          <DialogTitle>Editar mensalidade</DialogTitle>
+          <DialogDescription className="sr-only">Editar valor e vencimento de uma mensalidade</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label>Aluno</Label>
-            <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}
-              items={students?.map((s) => ({ value: s.id, label: s.name }))}>
-              <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
-              <SelectContent>
-                {students?.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.studentId && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.studentId.message}</p>}
-          </div>
           <div className="space-y-1.5">
             <Label>Valor (R$)</Label>
             <Input
@@ -90,7 +77,7 @@ export function TuitionCreateDialog({ open, onOpenChange }: TuitionCreateDialogP
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-            <Button type="submit" disabled={createApiMutation.isPending}>Salvar</Button>
+            <Button type="submit" disabled={editApiMutation.isPending}>Salvar</Button>
           </DialogFooter>
         </form>
       </DialogContent>

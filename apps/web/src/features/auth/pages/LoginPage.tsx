@@ -136,8 +136,8 @@ export function LoginPage() {
               variant="ghost"
               size="icon"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
               className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4"
-              tabIndex={-1}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>

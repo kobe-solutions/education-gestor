@@ -14,7 +14,6 @@ import { studentsRoutes } from "./modules/students/students.routes";
 import { schoolClassesRoutes } from "./modules/classes/schoolClasses.routes";
 import { academicYearsRoutes } from "./modules/academicYears/academicYears.routes";
 import { academicPeriodsRoutes } from "./modules/academicPeriods/academicPeriods.routes";
-import { calendarEventsRoutes } from "./modules/calendarEvents/calendarEvents.routes";
 import { eventsRoutes } from "./modules/events/events.routes";
 import { academicRoutes } from "./modules/academic/academic.routes";
 import { financialRoutes } from "./modules/financial/financial.routes";
@@ -43,7 +42,6 @@ export function buildApp() {
   app.register(schoolClassesRoutes);
   app.register(academicYearsRoutes);
   app.register(academicPeriodsRoutes);
-  app.register(calendarEventsRoutes);
   app.register(eventsRoutes);
   app.register(academicRoutes);
   app.register(financialRoutes);

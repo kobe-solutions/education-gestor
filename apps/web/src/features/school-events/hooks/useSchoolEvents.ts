@@ -44,3 +44,22 @@ export function useCreateSchoolEvent() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['school-events'] }),
   })
 }
+
+export function useUpdateSchoolEvent() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, input }: { id: string; input: SchoolEventInput }) =>
+      (await api.put<SchoolEventRecord>(`/events/${id}`, input)).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['school-events'] }),
+  })
+}
+
+export function useDeleteSchoolEvent() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/events/${id}`)
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['school-events'] }),
+  })
+}

@@ -49,7 +49,6 @@ const ProfessorGradesPage = lazy(() => import('./features/teacher-dashboard/page
 const ProfessorProfilePage = lazy(() => import('./features/teacher-dashboard/pages/ProfessorProfilePage').then(m => ({ default: m.ProfessorProfilePage })))
 const GestorAttendancePage = lazy(() => import('./features/academic/pages/AttendancePage').then(m => ({ default: m.AttendancePage })))
 const GradesPage = lazy(() => import('./features/academic/pages/GradesPage').then(m => ({ default: m.GradesPage })))
-const AcademicPeriodsPage = lazy(() => import('./features/classes/pages/AcademicPeriodsPage').then(m => ({ default: m.AcademicPeriodsPage })))
 const ClassPeriodsPage = lazy(() => import('./features/classes/pages/ClassPeriodsPage').then(m => ({ default: m.ClassPeriodsPage })))
 const SchoolEventsPage = lazy(() => import('./features/school-events/pages/SchoolEventsPage').then(m => ({ default: m.SchoolEventsPage })))
 

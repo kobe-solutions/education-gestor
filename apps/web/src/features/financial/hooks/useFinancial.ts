@@ -51,6 +51,22 @@ export function useCreateTuition() {
   })
 }
 
+export function useUpdateTuition() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: { amount: number; dueDate: string } }) => {
+      const res = await api.patch<Tuition>(`/tuitions/${id}`, data)
+      return res.data
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['tuitions'] })
+      if (data?.studentId) {
+        qc.invalidateQueries({ queryKey: ['tuitions', 'student', data.studentId] })
+      }
+    },
+  })
+}
+
 export function useRegisterPayment() {
   const qc = useQueryClient()
   return useMutation({

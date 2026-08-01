@@ -8,11 +8,12 @@ import { useStudents } from '../../../features/students/hooks/useStudents'
 import type { Tuition } from '@education-gestor/types'
 
 vi.mock('../../../features/financial/hooks/useFinancial', () => ({
-  useTuitions: vi.fn(),
-  useCreateTuition: () => ({ mutateAsync: vi.fn() }),
-  useRegisterPayment: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useUploadTuitionBoleto: () => ({ mutate: vi.fn() }),
-  useUploadTuitionReceipt: () => ({ mutate: vi.fn() }),
+   useTuitions: vi.fn(),
+   useCreateTuition: () => ({ mutateAsync: vi.fn() }),
+   useUpdateTuition: () => ({ mutateAsync: vi.fn() }),
+   useRegisterPayment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+   useUploadTuitionBoleto: () => ({ mutate: vi.fn() }),
+   useUploadTuitionReceipt: () => ({ mutate: vi.fn() }),
 }))
 
 vi.mock('../../../features/students/hooks/useStudents', () => ({

@@ -36,6 +36,7 @@ import { Avatar } from '../Avatar'
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import { useTeacher } from '../../features/teachers/hooks/useTeachers'
 import { useSchool } from '../../features/schools/hooks/useSchools'
+import { NotificationsMenu } from '../../features/notifications/components/NotificationsMenu'
 
 interface NavItem {
   to: string
@@ -640,6 +641,9 @@ export function AppLayout() {
           <div className="flex-1" />
 
           <div className="flex items-center gap-2">
+            {/* Notificações — gestor/secretaria */}
+            <NotificationsMenu />
+
             {/* Financial visibility toggle (navbar) — admin only */}
             {role === 'admin' && (
             <Button

@@ -29,10 +29,14 @@ import {
 } from "../../../components/ui/select";
 import { cn } from "../../../lib/utils";
 import { useSchoolKey } from "../../../lib/useSchoolKey";
+import { ConfirmDialog } from "../../../components/ConfirmDialog";
 import { toast } from "sonner";
 import {
   useCreateSchoolEvent,
+  useDeleteSchoolEvent,
   useSchoolEvents,
+  useUpdateSchoolEvent,
+  type SchoolEventRecord,
 } from "../hooks/useSchoolEvents";
 
 type EventCategory =
@@ -195,6 +199,14 @@ export function SchoolEventsPage() {
     toDateString(weekEnd),
   );
   const createEvent = useCreateSchoolEvent();
+  const updateEvent = useUpdateSchoolEvent();
+  const deleteEvent = useDeleteSchoolEvent();
+  const [editingEvent, setEditingEvent] = useState<SchoolEventRecord | null>(
+    null,
+  );
+  const [deleteTarget, setDeleteTarget] = useState<SchoolEventRecord | null>(
+    null,
+  );
   const days = Array.from({ length: 7 }, (_, index) =>
     addDays(weekStart, index),
   );
@@ -257,23 +269,59 @@ export function SchoolEventsPage() {
       toast.error("Data inválida. Use o formato DD/MM/AAAA.");
       return;
     }
+    const payload = {
+      title: form.title,
+      category: form.category,
+      date: normalizedDate,
+      startTime: form.allDay ? null : form.startTime,
+      endTime: form.allDay ? null : form.endTime,
+      allDay: form.allDay,
+      location: form.location || null,
+      description: form.description || null,
+    };
     try {
-      await createEvent.mutateAsync({
-        title: form.title,
-        category: form.category,
-        date: normalizedDate,
-        startTime: form.allDay ? null : form.startTime,
-        endTime: form.allDay ? null : form.endTime,
-        allDay: form.allDay,
-        location: form.location || null,
-        description: form.description || null,
-      });
+      if (editingEvent) {
+        await updateEvent.mutateAsync({ id: editingEvent.id, input: payload });
+      } else {
+        await createEvent.mutateAsync(payload);
+      }
     } catch {
       return;
     }
     setCurrentDate(toLocalDate(normalizedDate));
     setIsDialogOpen(false);
+    setEditingEvent(null);
     resetForm();
+  }
+
+  function handleEdit(record: SchoolEventRecord) {
+    setEditingEvent(record);
+    setSelectedEvent(null);
+    setForm({
+      title: record.title,
+      category: record.category as EventCategory,
+      date: record.date,
+      startTime: record.startTime ?? "08:00",
+      endTime: record.endTime ?? "10:00",
+      location: record.location ?? "",
+      description: record.description ?? "",
+      allDay: record.allDay,
+    });
+    setIsDialogOpen(true);
+  }
+
+  function handleDelete(record: SchoolEventRecord) {
+    deleteEvent.mutate(record.id, {
+      onSuccess: () => {
+        setDeleteTarget(null);
+        setSelectedEvent(null);
+        toast.success("Evento excluído");
+      },
+      onError: () => {
+        setDeleteTarget(null);
+        toast.error("Erro ao excluir evento");
+      },
+    });
   }
 
   return (
@@ -575,10 +623,21 @@ export function SchoolEventsPage() {
         </main>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsDialogOpen(false);
+            setEditingEvent(null);
+            resetForm();
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Novo evento escolar</DialogTitle>
+            <DialogTitle>
+              {editingEvent ? "Editar evento escolar" : "Novo evento escolar"}
+            </DialogTitle>
             <DialogDescription>
               O evento será associado somente à escola ativa.
             </DialogDescription>
@@ -699,14 +758,30 @@ export function SchoolEventsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsDialogOpen(false);
+                setEditingEvent(null);
+                resetForm();
+              }}
+            >
               Cancelar
             </Button>
             <Button
               onClick={handleCreate}
-              disabled={!form.title || !form.date || createEvent.isPending}
+              disabled={
+                !form.title ||
+                !form.date ||
+                createEvent.isPending ||
+                updateEvent.isPending
+              }
             >
-              {createEvent.isPending ? "Cadastrando..." : "Cadastrar evento"}
+              {createEvent.isPending || updateEvent.isPending
+                ? "Salvando..."
+                : editingEvent
+                  ? "Salvar alterações"
+                  : "Cadastrar evento"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -722,8 +797,7 @@ export function SchoolEventsPage() {
               <DialogHeader>
                 <DialogTitle>{selectedEvent.title}</DialogTitle>
                 <DialogDescription>{selectedEvent.category}</DialogDescription>
-              </DialogHeader>
-              <div className="space-y-3 text-sm">
+              </DialogHeader>              <div className="space-y-3 text-sm">
                 <p className="flex items-center gap-2">
                   <CalendarDays className="size-4 text-muted-foreground" />
                   {selectedEvent.start.toLocaleDateString("pt-BR", {
@@ -753,10 +827,44 @@ export function SchoolEventsPage() {
                   </p>
                 )}
               </div>
+              {canManage && (
+                <DialogFooter className="mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const record = eventRecords.find(
+                        (event) => event.id === selectedEvent.id,
+                      );
+                      if (record) handleEdit(record);
+                    }}
+                  >
+                    Editar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      const record = eventRecords.find(
+                        (event) => event.id === selectedEvent.id,
+                      );
+                      if (record) setDeleteTarget(record);
+                    }}
+                  >
+                    Excluir
+                  </Button>
+                </DialogFooter>
+              )}
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="Excluir evento"
+        description={`Excluir o evento "${deleteTarget?.title}"? Esta ação não pode ser desfeita.`}
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
+      />
     </div>
   );
 }

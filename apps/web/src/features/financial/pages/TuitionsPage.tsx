@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react'
-import { Plus, EyeOff, FileText, Receipt } from 'lucide-react'
+import { Plus, EyeOff, FileText, Receipt, Pencil } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from '../../../lib/toast'
 import { useTuitions, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
 import { TuitionCreateDialog } from '../components/TuitionCreateDialog'
+import { TuitionEditDialog } from '../components/TuitionEditDialog'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { useApiMutation } from '../../../hooks/useApiMutation'
@@ -44,6 +45,7 @@ export function TuitionsPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [confirmPay, setConfirmPay] = useState<Tuition | null>(null)
+  const [editTarget, setEditTarget] = useState<Tuition | null>(null)
 
   const filtered = tuitions?.filter((t) => {
     const matchesSearch = !search || (t as Tuition & { studentName?: string }).studentName?.toLowerCase().includes(search.toLowerCase())
@@ -215,6 +217,17 @@ export function TuitionsPage() {
                 Registrar pagamento
               </Button>
             )}
+            {t.status !== 'paid' && (
+              <Button
+                size="icon"
+                variant="ghost"
+                title="Editar mensalidade"
+                aria-label="Editar mensalidade"
+                onClick={() => setEditTarget(t)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            )}
             <input
               ref={(el) => { fileInputRefs.current[`boleto-${t.id}`] = el }}
               type="file"
@@ -263,6 +276,8 @@ export function TuitionsPage() {
       />
 
       <TuitionCreateDialog open={dialogOpen} onOpenChange={setDialogOpen} />
+
+      <TuitionEditDialog tuition={editTarget} onOpenChange={(v) => { if (!v) setEditTarget(null) }} />
 
       <Dialog open={!!confirmPay} onOpenChange={(v) => !v && setConfirmPay(null)}>
         <DialogContent>

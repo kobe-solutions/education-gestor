@@ -22,7 +22,10 @@ import {
   useTeacherDocuments,
   useUploadTeacherDocument,
   useDeleteTeacherDocument,
+  useAddTeacherSubject,
+  useRemoveTeacherSubject,
 } from '../hooks/useTeachers'
+import { useSubjects } from '../../subjects/hooks/useSubjects'
 import { Avatar } from '../../../components/Avatar'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useSecretariaSchools } from '../../secretarias/hooks/useSecretarias'
@@ -185,6 +188,12 @@ export function TeacherFormPage() {
   const docInputRef = useRef<HTMLInputElement>(null)
   const [docType, setDocType] = useState('outros')
 
+  // ── Disciplinas ────────────────────────────────────────────────────────
+  const { data: subjects = [] } = useSubjects()
+  const addSubject = useAddTeacherSubject(id ?? '')
+  const removeSubject = useRemoveTeacherSubject(id ?? '')
+  const [subjectToAdd, setSubjectToAdd] = useState('')
+
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -316,6 +325,7 @@ export function TeacherFormPage() {
             <TabsTrigger value="endereco" disabled={!isEdit}>Endereço</TabsTrigger>
             <TabsTrigger value="profissional" disabled={!isEdit}>Dados Profissionais</TabsTrigger>
             <TabsTrigger value="formacao" disabled={!isEdit}>Formação</TabsTrigger>
+            <TabsTrigger value="disciplinas" disabled={!isEdit}>Disciplinas</TabsTrigger>
             <TabsTrigger value="documentos" disabled={!isEdit}>Documentos</TabsTrigger>
             <TabsTrigger value="financeiro" disabled={!isEdit}>Dados Bancários & Senha</TabsTrigger>
           </TabsList>
@@ -576,7 +586,81 @@ export function TeacherFormPage() {
           </form>
         </TabsContent>
 
-        {/* ── Aba 5: Documentos ─────────────────────────────────────────── */}
+        {/* ── Aba 5: Disciplinas ───────────────────────────────────────── */}
+        <TabsContent value="disciplinas">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Disciplinas que leciona</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-end gap-2">
+                <div className="flex-1 space-y-1">
+                  <Label>Adicionar disciplina</Label>
+                  <Select value={subjectToAdd} onValueChange={(v) => v && setSubjectToAdd(v)}>
+                    <SelectTrigger aria-label="Selecionar disciplina">
+                      <SelectValue placeholder="Selecionar disciplina" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subjects
+                        .filter((s) => !teacher?.subjects?.some((ts) => ts.id === s.id))
+                        .map((s) => (
+                          <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        ))}
+                      {subjects.length > 0 && teacher?.subjects?.length === subjects.length && (
+                        <SelectItem value="__none" disabled>Nenhuma disciplina disponível</SelectItem>
+                      )}
+                      {subjects.length === 0 && (
+                        <SelectItem value="__none" disabled>Nenhuma disciplina cadastrada</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  size="sm"
+                  disabled={!subjectToAdd || addSubject.isPending}
+                  onClick={() => {
+                    if (!subjectToAdd) return
+                    addSubject.mutate(subjectToAdd, {
+                      onSuccess: () => {
+                        toast.success('Disciplina vinculada')
+                        setSubjectToAdd('')
+                      },
+                      onError: () => toast.error('Erro ao vincular disciplina'),
+                    })
+                  }}
+                >
+                  {addSubject.isPending ? 'Adicionando...' : 'Adicionar'}
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {(!teacher?.subjects || teacher.subjects.length === 0) && (
+                  <p className="text-xs text-muted-foreground w-full text-center py-6">
+                    Nenhuma disciplina vinculada ainda
+                  </p>
+                )}
+                {teacher?.subjects?.map((subject) => (
+                  <Badge key={subject.id} variant="secondary" className="gap-2 pr-1.5 py-1">
+                    {subject.name}
+                    <button
+                      type="button"
+                      className="rounded-full p-0.5 hover:bg-muted-foreground/20 cursor-pointer"
+                      aria-label={`Remover disciplina ${subject.name}`}
+                      onClick={() => removeSubject.mutate(subject.id, {
+                        onSuccess: () => toast.success('Disciplina removida'),
+                        onError: () => toast.error('Erro ao remover disciplina'),
+                      })}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Aba 6: Documentos ─────────────────────────────────────────── */}
         <TabsContent value="documentos">
           <Card>
             <CardHeader>
@@ -632,7 +716,7 @@ export function TeacherFormPage() {
           </Card>
         </TabsContent>
 
-        {/* ── Aba 6: Dados Financeiros ───────────────────────────────────── */}
+        {/* ── Aba 7: Dados Financeiros ───────────────────────────────────── */}
         <TabsContent value="financeiro" className="space-y-4">
           <form onSubmit={financeiroForm.handleSubmit(onSaveFinanceiro)} className="space-y-4">
             <Card>
