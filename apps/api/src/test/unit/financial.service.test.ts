@@ -75,6 +75,7 @@ const mockTuition = {
   id: 'tuition-id',
   schoolId: 'school-id',
   studentId: 'student-id',
+  studentName: null,
   amount: '500.00',
   dueDate: '2025-05-10',
   paidAt: null,
