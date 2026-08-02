@@ -7,9 +7,11 @@ import {
   registerGradeBodySchema,
   registerAttendanceBodySchema,
   bulkAttendanceBodySchema,
+  bulkGradeBodySchema,
 } from './academic.schema'
 import {
   registerGradeService,
+  registerBulkGradesService,
   getStudentGradesService,
   getClassGradesService,
   registerAttendanceService,
@@ -19,10 +21,10 @@ import {
 } from './academic.service'
 
 const preHandlerAll = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
-const preHandlerManage = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
+const preHandlerProfessor = [authenticate, injectTenant, authorizeRoles(['professor'])]
 
 export async function academicRoutes(app: FastifyInstance) {
-  app.post('/grades', { preHandler: preHandlerAll }, async (request, reply) => {
+  app.post('/grades', { preHandler: preHandlerProfessor }, async (request, reply) => {
     try {
       const body = registerGradeBodySchema.parse(request.body)
       const grade = await registerGradeService({ schoolId: getSchoolId(request), ...body })
@@ -32,6 +34,19 @@ export async function academicRoutes(app: FastifyInstance) {
         if (error.message === 'Class not found' || error.message === 'Student not found') {
           return reply.status(404).send({ message: error.message })
         }
+      }
+      throw error
+    }
+  })
+
+  app.post('/grades/bulk', { preHandler: preHandlerProfessor }, async (request, reply) => {
+    try {
+      const body = bulkGradeBodySchema.parse(request.body)
+      const result = await registerBulkGradesService({ schoolId: getSchoolId(request), ...body })
+      return reply.status(201).send(result)
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Class not found') {
+        return reply.status(404).send({ message: error.message })
       }
       throw error
     }

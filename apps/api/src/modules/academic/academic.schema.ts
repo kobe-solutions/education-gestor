@@ -27,7 +27,21 @@ export const bulkAttendanceBodySchema = z.object({
   ),
 })
 
+export const bulkGradeBodySchema = z.object({
+  classId: z.string().uuid(),
+  subjectId: z.string().uuid(),
+  teacherId: z.string().uuid(),
+  grades: z.array(
+    z.object({
+      studentId: z.string().uuid(),
+      academicPeriodId: z.string().uuid(),
+      value: z.number().min(0).max(10),
+    }),
+  ).max(500),
+})
+
 export type RegisterGradeBody = z.infer<typeof registerGradeBodySchema>
 
 export type RegisterAttendanceBody = z.infer<typeof registerAttendanceBodySchema>
 export type BulkAttendanceBody = z.infer<typeof bulkAttendanceBodySchema>
+export type BulkGradeBody = z.infer<typeof bulkGradeBodySchema>

@@ -52,6 +52,29 @@ export function useRegisterGrade() {
   })
 }
 
+export interface RegisterBulkGradeInput {
+  classId: string
+  subjectId: string
+  teacherId: string
+  grades: { studentId: string; academicPeriodId: string; value: number }[]
+}
+
+export function useRegisterBulkGrades() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: RegisterBulkGradeInput) => {
+      const res = await api.post<Grade[]>('/grades/bulk', data)
+      return res.data
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['grades', 'class', vars.classId] })
+    },
+    onError: (err) => {
+      toast.error(extractErrorMessage(err, 'Erro ao salvar notas'))
+    },
+  })
+}
+
 export function useStudentAttendances(studentId: string) {
   return useQuery({
     queryKey: ['attendances', 'student', studentId],

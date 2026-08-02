@@ -6,6 +6,7 @@ import {
   upsertBulkAttendanceRepository,
   findAttendancesByStudentRepository,
   findAttendancesByClassAndDateRepository,
+  upsertBulkGradesRepository,
 } from './academic.repository'
 import { getStudentService } from '../students/students.service'
 import { getSchoolClassService } from '../classes/schoolClasses.service'
@@ -36,6 +37,14 @@ type BulkAttendanceInput = {
   attendances: Array<{ studentId: string; present: boolean }>
 }
 
+type BulkGradeInput = {
+  schoolId: string
+  classId: string
+  teacherId: string
+  subjectId: string
+  grades: Array<{ studentId: string; academicPeriodId: string; value: number }>
+}
+
 export async function registerGradeService(input: RegisterGradeInput) {
   validateGradeValue(input.value)
 
@@ -48,6 +57,27 @@ export async function registerGradeService(input: RegisterGradeInput) {
   if (!student) throw new Error('Student not found')
 
   return upsertGradeRepository({ ...input })
+}
+
+export async function registerBulkGradesService(input: BulkGradeInput) {
+  const schoolClass = await getSchoolClassService(input.schoolId, input.classId)
+  if (!schoolClass) throw new Error('Class not found')
+
+  for (const grade of input.grades) {
+    validateGradeValue(grade.value)
+  }
+
+  const rows = input.grades.map((grade) => ({
+    schoolId: input.schoolId,
+    classId: input.classId,
+    teacherId: input.teacherId,
+    subjectId: input.subjectId,
+    studentId: grade.studentId,
+    academicPeriodId: grade.academicPeriodId,
+    value: grade.value,
+  }))
+
+  return upsertBulkGradesRepository(rows)
 }
 
 export async function getStudentGradesService(schoolId: string, studentId: string) {
