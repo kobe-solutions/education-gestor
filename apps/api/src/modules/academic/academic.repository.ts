@@ -22,6 +22,16 @@ type UpsertAttendanceInput = {
   present: boolean
 }
 
+type BulkGradeInput = {
+  schoolId: string
+  classId: string
+  studentId: string
+  teacherId: string
+  subjectId: string
+  academicPeriodId: string
+  value: number
+}
+
 const gradeFields = {
   id: grades.id,
   classId: grades.classId,
@@ -162,6 +172,18 @@ export async function upsertBulkAttendanceRepository(
     .onConflictDoUpdate({
       target: [attendances.schoolId, attendances.classId, attendances.studentId, attendances.date],
       set: { present: sql`excluded.present` },
+    })
+    .returning()
+}
+
+export async function upsertBulkGradesRepository(rows: BulkGradeInput[]) {
+  if (rows.length === 0) return []
+  return db
+    .insert(grades)
+    .values(rows.map((row) => ({ ...row, value: row.value.toString() })))
+    .onConflictDoUpdate({
+      target: [grades.schoolId, grades.classId, grades.studentId, grades.subjectId, grades.academicPeriodId],
+      set: { value: sql`excluded.value`, teacherId: sql`excluded.teacher_id`, updatedAt: new Date() },
     })
     .returning()
 }

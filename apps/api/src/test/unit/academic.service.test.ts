@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   registerGradeService,
+  registerBulkGradesService,
   getStudentGradesService,
   registerAttendanceService,
   registerBulkAttendanceService,
@@ -116,6 +117,54 @@ describe('registerGradeService', () => {
         value: 8,
       }),
     ).rejects.toThrow('Student not found')
+  })
+})
+
+describe('registerBulkGradesService', () => {
+  const bulkInput = {
+    schoolId: 'school-id',
+    classId: 'class-id',
+    teacherId: 'teacher-id',
+    subjectId: 'subject-id',
+    grades: [
+      { studentId: 'student-1', academicPeriodId: 'period-id', value: 8.5 },
+      { studentId: 'student-2', academicPeriodId: 'period-id', value: 9.0 },
+    ],
+  }
+
+  it('registra notas em lote para turma existente', async () => {
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.upsertBulkGradesRepository).mockResolvedValue([mockGrade as any, mockGrade as any])
+
+    const result = await registerBulkGradesService(bulkInput)
+
+    expect(result).toHaveLength(2)
+    expect(repo.upsertBulkGradesRepository).toHaveBeenCalledTimes(1)
+    expect(repo.upsertBulkGradesRepository).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ studentId: 'student-1', value: 8.5 }),
+        expect.objectContaining({ studentId: 'student-2', value: 9.0 }),
+      ]),
+    )
+  })
+
+  it('lança erro se turma não existe', async () => {
+    vi.mocked(classService.getSchoolClassService).mockRejectedValue(new Error('Class not found'))
+
+    await expect(registerBulkGradesService(bulkInput)).rejects.toThrow('Class not found')
+    expect(repo.upsertBulkGradesRepository).not.toHaveBeenCalled()
+  })
+
+  it('lança erro se alguma nota estiver fora do range', async () => {
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+
+    await expect(
+      registerBulkGradesService({
+        ...bulkInput,
+        grades: [{ studentId: 'student-1', academicPeriodId: 'period-id', value: 12 }],
+      }),
+    ).rejects.toThrow('Grade value must be between 0 and 10')
+    expect(repo.upsertBulkGradesRepository).not.toHaveBeenCalled()
   })
 })
 

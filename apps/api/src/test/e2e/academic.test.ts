@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify'
 
 vi.mock('../../modules/academic/academic.service', () => ({
   registerGradeService: vi.fn(),
+  registerBulkGradesService: vi.fn(),
   getStudentGradesService: vi.fn(),
   getClassGradesService: vi.fn(),
   registerAttendanceService: vi.fn(),
@@ -80,9 +81,7 @@ describe('POST /grades', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  it('retorna 201 para gestor', async () => {
-    vi.mocked(academicService.registerGradeService).mockResolvedValue(mockGrade as any)
-
+  it('retorna 403 para gestor (atribuição de nota é exclusiva do professor)', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/grades',
@@ -97,7 +96,7 @@ describe('POST /grades', () => {
       },
     })
 
-    expect(response.statusCode).toBe(201)
+    expect(response.statusCode).toBe(403)
   })
 
   it('retorna 400 com nota fora do range', async () => {
@@ -120,6 +119,74 @@ describe('POST /grades', () => {
 
   it('retorna 401 sem token', async () => {
     const response = await app.inject({ method: 'POST', url: '/grades', body: {} })
+    expect(response.statusCode).toBe(401)
+  })
+})
+
+describe('POST /grades/bulk', () => {
+  it('retorna 201 ao lançar notas em lote para professor', async () => {
+    vi.mocked(academicService.registerBulkGradesService).mockResolvedValue([
+      mockGrade as any,
+      { ...mockGrade, id: 'grade-2', studentId: IDS.student2, value: '9.0' },
+    ])
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/grades/bulk',
+      headers: { authorization: `Bearer ${professorToken}` },
+      body: {
+        classId: IDS.class,
+        subjectId: IDS.subject,
+        teacherId: IDS.teacher,
+        grades: [
+          { studentId: IDS.student, academicPeriodId: IDS.period, value: 8.5 },
+          { studentId: IDS.student2, academicPeriodId: IDS.period, value: 9.0 },
+        ],
+      },
+    })
+
+    expect(response.statusCode).toBe(201)
+    expect(response.json()).toHaveLength(2)
+  })
+
+  it('retorna 403 para gestor (atribuição de nota é exclusiva do professor)', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/grades/bulk',
+      headers: { authorization: `Bearer ${gestorToken}` },
+      body: {
+        classId: IDS.class,
+        subjectId: IDS.subject,
+        teacherId: IDS.teacher,
+        grades: [{ studentId: IDS.student, academicPeriodId: IDS.period, value: 8.5 }],
+      },
+    })
+
+    expect(response.statusCode).toBe(403)
+  })
+
+  it('retorna 400 com nota fora do range', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/grades/bulk',
+      headers: { authorization: `Bearer ${professorToken}` },
+      body: {
+        classId: IDS.class,
+        subjectId: IDS.subject,
+        teacherId: IDS.teacher,
+        grades: [{ studentId: IDS.student, academicPeriodId: IDS.period, value: 15 }],
+      },
+    })
+
+    expect(response.statusCode).toBe(400)
+  })
+
+  it('retorna 401 sem token', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/grades/bulk',
+      body: { classId: IDS.class, subjectId: IDS.subject, teacherId: IDS.teacher, grades: [] },
+    })
     expect(response.statusCode).toBe(401)
   })
 })
