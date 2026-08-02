@@ -27,11 +27,11 @@ export function DocumentsTab({ documents, uploading, onUpload, onDelete }: Docum
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-sm">Documentos e anexos</CardTitle>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Select value={docType} onValueChange={(v) => setDocType(v ?? '')}>
-              <SelectTrigger className="h-8 w-48 text-xs">
+              <SelectTrigger className="h-8 w-full sm:w-48 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

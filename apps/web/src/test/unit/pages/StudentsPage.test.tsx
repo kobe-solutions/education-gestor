@@ -3,6 +3,7 @@ import { screen } from '@testing-library/react'
 import { renderWithProviders } from '../../render'
 import { StudentsPage } from '../../../features/students/pages/StudentsPage'
 import { useStudents } from '../../../features/students/hooks/useStudents'
+import { useClass } from '../../../features/classes/hooks/useClasses'
 import type { Student } from '@education-gestor/types'
 
 vi.mock('../../../features/students/hooks/useStudents', () => ({
@@ -10,11 +11,17 @@ vi.mock('../../../features/students/hooks/useStudents', () => ({
   useDeleteStudent: () => ({ mutateAsync: vi.fn(), mutate: vi.fn() }),
 }))
 
+vi.mock('../../../features/classes/hooks/useClasses', () => ({
+  useClasses: () => ({ data: [{ id: 'class-1', name: '3º Ano A' }] }),
+  useClass: vi.fn(() => ({ data: undefined })),
+}))
+
 vi.mock('../../../hooks/useApiMutation', () => ({
   useApiMutation: () => ({ mutate: vi.fn(), isPending: false }),
 }))
 
 const mockUseStudents = vi.mocked(useStudents)
+const mockUseClass = vi.mocked(useClass)
 
 function makeStudent(overrides: Partial<Student> = {}): Student {
   return {
@@ -86,5 +93,30 @@ describe('StudentsPage', () => {
     renderWithProviders(<StudentsPage />, { initialRoute: '/students' })
 
     expect(screen.getByText(/Nenhum aluno cadastrado/)).toBeInTheDocument()
+  })
+
+  it('filtra alunos por turma (client-side)', () => {
+    mockUseClass.mockReturnValue({
+      data: { students: [{ id: 'stu-1' }] },
+    } as ReturnType<typeof useClass>)
+    mockUseStudents.mockReturnValue(mockResult([
+      makeStudent(),
+      makeStudent({ id: 'stu-2', name: 'João Souza', enrollmentCode: '2026-0002' }),
+    ], 2, false))
+    renderWithProviders(<StudentsPage />, { initialRoute: '/students?classId=class-1' })
+
+    expect(screen.getByText('Maria Silva')).toBeInTheDocument()
+    expect(screen.queryByText('João Souza')).not.toBeInTheDocument()
+  })
+
+  it('filtra alunos por range de matrícula (client-side)', () => {
+    mockUseStudents.mockReturnValue(mockResult([
+      makeStudent({ enrollmentDate: '2026-01-10' }),
+      makeStudent({ id: 'stu-2', name: 'João Souza', enrollmentCode: '2026-0002', enrollmentDate: '2026-03-20' }),
+    ], 2, false))
+    renderWithProviders(<StudentsPage />, { initialRoute: '/students?dateFrom=2026-02-01&dateTo=2026-04-30' })
+
+    expect(screen.queryByText('Maria Silva')).not.toBeInTheDocument()
+    expect(screen.getByText('João Souza')).toBeInTheDocument()
   })
 })

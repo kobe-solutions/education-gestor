@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Plus, Pencil, Trash2, UserPlus, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, UserPlus, Upload, SlidersHorizontal, X } from 'lucide-react'
 import { useStudents, useDeleteStudent } from '../hooks/useStudents'
+import { useClasses, useClass } from '../../classes/hooks/useClasses'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
+import { Input } from '../../../components/ui/input'
 import { SearchInput } from '../../../components/SearchInput'
 import { StatusBadge } from '../../../components/StatusBadge'
 import { DataTable, type Column } from '../../../components/DataTable'
+import { cn } from '../../../lib/utils'
 import type { Student } from '@education-gestor/types'
 
 const PAGE_SIZE = 15
@@ -78,8 +81,12 @@ export function StudentsPage() {
   const search = searchParams.get('q') ?? ''
   const statusFilter = searchParams.get('status') ?? 'all'
   const sexFilter = searchParams.get('sex') ?? 'all'
+  const classFilter = searchParams.get('classId') ?? 'all'
   const minAge = searchParams.get('minAge') ?? ''
   const maxAge = searchParams.get('maxAge') ?? ''
+  const dateFrom = searchParams.get('dateFrom') ?? ''
+  const dateTo = searchParams.get('dateTo') ?? ''
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const { data, isLoading } = useStudents({
     page,
     limit: PAGE_SIZE,
@@ -89,9 +96,31 @@ export function StudentsPage() {
     minAge: minAge ? Number(minAge) : undefined,
     maxAge: maxAge ? Number(maxAge) : undefined,
   })
+  const { data: classes } = useClasses()
+  const { data: classDetail } = useClass(classFilter !== 'all' ? classFilter : '')
   const students = data?.data
   const total = data?.total ?? 0
   const deleteMutation = useDeleteStudent()
+
+  const classStudentIds = useMemo(
+    () => new Set(classDetail?.students?.map((s) => s.id) ?? []),
+    [classDetail],
+  )
+
+  const filtered = useMemo(() => {
+    const base = students ?? []
+    const withClass = classFilter === 'all'
+      ? base
+      : base.filter((s) => classStudentIds.has(s.id))
+    return withClass.filter((s) => {
+      if (!dateFrom && !dateTo) return true
+      if (!s.enrollmentDate) return false
+      const d = s.enrollmentDate.slice(0, 10)
+      if (dateFrom && d < dateFrom) return false
+      if (dateTo && d > dateTo) return false
+      return true
+    })
+  }, [students, classFilter, classStudentIds, dateFrom, dateTo])
 
   const columns = useMemo<Column<Student>[]>(() =>
     columnsBase.map((col) => {
@@ -140,8 +169,6 @@ export function StudentsPage() {
     return age
   }
 
-  const filtered = students ?? []
-
   function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
     setSortColumn(direction ? column : null)
     setSortDirection(direction)
@@ -153,7 +180,7 @@ export function StudentsPage() {
       <PageHead
         title="Alunos"
         subtitle={
-          statusFilter === 'all'
+          statusFilter === 'all' && classFilter === 'all' && !dateFrom && !dateTo
             ? `${total} aluno${total !== 1 ? 's' : ''} cadastrado${total !== 1 ? 's' : ''}`
             : `${filtered.length} aluno${filtered.length !== 1 ? 's' : ''} encontrado${filtered.length !== 1 ? 's' : ''}`
         }
@@ -180,37 +207,77 @@ export function StudentsPage() {
             name="student-search"
           />
         </div>
-        <Select value={sexFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('sex'); else next.set('sex', v); return next }) }}>
-          <SelectTrigger aria-label="Filtrar por sexo" className="w-[130px]">
-            <SelectValue placeholder="Sexo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="M">Masculino</SelectItem>
-            <SelectItem value="F">Feminino</SelectItem>
-            <SelectItem value="outro">Outro</SelectItem>
-          </SelectContent>
-        </Select>
-        <input
-          type="number"
-          min={0}
-          max={120}
-          placeholder="Idade min"
-          value={minAge}
-          onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('minAge'); else next.set('minAge', e.target.value); return next })}
-          className="h-9 w-24 px-2.5 text-xs rounded-md border outline-hidden"
-          style={{ border: '1px solid hsl(var(--input))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
-        />
-        <input
-          type="number"
-          min={0}
-          max={120}
-          placeholder="Idade max"
-          value={maxAge}
-          onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('maxAge'); else next.set('maxAge', e.target.value); return next })}
-          className="h-9 w-24 px-2.5 text-xs rounded-md border outline-hidden"
-          style={{ border: '1px solid hsl(var(--input))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
-        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="sm:hidden"
+          aria-expanded={filtersOpen}
+          onClick={() => setFiltersOpen((v) => !v)}
+        >
+          <SlidersHorizontal className="h-4 w-4 mr-1" />
+          Filtros
+          {filtersOpen && <X className="h-4 w-4" />}
+        </Button>
+        <div className={cn('w-full sm:w-auto flex gap-3 flex-wrap items-end', !filtersOpen && 'hidden sm:flex')}>
+          <Select value={sexFilter} onValueChange={(v) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('sex'); else next.set('sex', v); return next }) }}>
+            <SelectTrigger aria-label="Filtrar por sexo" className="w-[130px]">
+              <SelectValue placeholder="Sexo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="M">Masculino</SelectItem>
+              <SelectItem value="F">Feminino</SelectItem>
+              <SelectItem value="outro">Outro</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={classFilter} onValueChange={(v) => { setPage(1); setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('classId'); else next.set('classId', v); return next }) }}>
+            <SelectTrigger aria-label="Filtrar por turma" className="w-[180px]">
+              <SelectValue placeholder="Turma" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as turmas</SelectItem>
+              {(classes ?? []).map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            type="date"
+            aria-label="Matrícula de"
+            title="Matrícula de"
+            value={dateFrom}
+            onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('dateFrom'); else next.set('dateFrom', e.target.value); return next })}
+            className="h-9 w-[140px] text-xs"
+          />
+          <Input
+            type="date"
+            aria-label="Matrícula até"
+            title="Matrícula até"
+            value={dateTo}
+            onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('dateTo'); else next.set('dateTo', e.target.value); return next })}
+            className="h-9 w-[140px] text-xs"
+          />
+          <input
+            type="number"
+            min={0}
+            max={120}
+            placeholder="Idade min"
+            value={minAge}
+            onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('minAge'); else next.set('minAge', e.target.value); return next })}
+            className="h-9 w-24 px-2.5 text-xs rounded-md border outline-hidden"
+            style={{ border: '1px solid hsl(var(--input))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
+          />
+          <input
+            type="number"
+            min={0}
+            max={120}
+            placeholder="Idade max"
+            value={maxAge}
+            onChange={(e) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('maxAge'); else next.set('maxAge', e.target.value); return next })}
+            className="h-9 w-24 px-2.5 text-xs rounded-md border outline-hidden"
+            style={{ border: '1px solid hsl(var(--input))', background: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
+          />
+        </div>
       </div>
 
       <DataTable
