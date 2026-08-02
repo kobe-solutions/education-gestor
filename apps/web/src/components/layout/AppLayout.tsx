@@ -23,6 +23,8 @@ import {
   UserCircle,
   PanelLeftClose,
   PanelLeftOpen,
+  Pin,
+  PinOff,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -37,6 +39,8 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import { useTeacher } from '../../features/teachers/hooks/useTeachers'
 import { useSchool } from '../../features/schools/hooks/useSchools'
 import { NotificationsMenu } from '../../features/notifications/components/NotificationsMenu'
+import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
+import { ShortcutsHelp } from '../ShortcutsHelp'
 
 interface NavItem {
   to: string
@@ -206,8 +210,19 @@ function getInitials(name: string) {
 }
 
 const SIDEBAR_COLLAPSED_KEY = 'iris-sidebar-collapsed'
+const SIDEBAR_PINNED_KEY = 'iris-sidebar-pinned'
 
-function SidebarLink({ to, icon: Icon, label, active, collapsed }: { to: string; icon: React.ElementType; label: string; active: boolean; collapsed: boolean }) {
+interface SidebarLinkProps {
+  to: string
+  icon: React.ElementType
+  label: string
+  active: boolean
+  collapsed: boolean
+  pinned?: boolean
+  onTogglePin?: () => void
+}
+
+function SidebarLink({ to, icon: Icon, label, active, collapsed, pinned = false, onTogglePin }: SidebarLinkProps) {
   const link = (
     <Link
       to={to}
@@ -247,7 +262,32 @@ function SidebarLink({ to, icon: Icon, label, active, collapsed }: { to: string;
     )
   }
 
-  return link
+  return (
+    <div className="relative group">
+      {link}
+      {onTogglePin && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onTogglePin()
+          }}
+          aria-label={pinned ? `Desafixar ${label}` : `Fixar ${label}`}
+          aria-pressed={pinned}
+          title={pinned ? `Desafixar ${label}` : `Fixar ${label}`}
+          className={cn(
+            'absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md',
+            'text-gray-500 opacity-0 group-hover:opacity-100 hover:bg-white/10 hover:text-white',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+            pinned && 'opacity-100 text-amber-400',
+          )}
+        >
+          {pinned ? <PinOff size={13} /> : <Pin size={13} />}
+        </button>
+      )}
+    </div>
+  )
 }
 
 export function AppLayout() {
@@ -257,11 +297,28 @@ export function AppLayout() {
   const navigate = useNavigate()
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true')
+  const [pinnedItems, setPinnedItems] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(SIDEBAR_PINNED_KEY) ?? '[]')
+    } catch {
+      return []
+    }
+  })
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  useKeyboardShortcuts(() => setShortcutsOpen(true))
 
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => {
       const next = !prev
       localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
+      return next
+    })
+  }, [])
+
+  const togglePin = useCallback((to: string) => {
+    setPinnedItems((prev) => {
+      const next = prev.includes(to) ? prev.filter((p) => p !== to) : [...prev, to]
+      localStorage.setItem(SIDEBAR_PINNED_KEY, JSON.stringify(next))
       return next
     })
   }, [])
@@ -309,6 +366,13 @@ export function AppLayout() {
     if (item.to === '/financial' && financialBlocked) return false
     return true
   })
+  const pinnedSet = new Set(pinnedItems)
+  const sortedItems = [...visibleItems].sort((a, b) => {
+    const ap = pinnedSet.has(a.to) ? 0 : 1
+    const bp = pinnedSet.has(b.to) ? 0 : 1
+    if (ap !== bp) return ap - bp
+    return 0
+  })
   const activeItem = getActiveItem(visibleItems, location.pathname)
   const userName = payload?.name ?? ''
   const userEmail = payload && 'email' in payload ? (payload as { email?: string }).email : ''
@@ -337,7 +401,7 @@ export function AppLayout() {
 
         {/* Nav items */}
         <nav className="flex-1 flex flex-col gap-0.5 py-2 px-2 overflow-y-auto">
-          {visibleItems.map((item) => (
+          {sortedItems.map((item) => (
             <SidebarLink
               key={item.to}
               to={item.to}
@@ -345,6 +409,8 @@ export function AppLayout() {
               label={item.label}
               active={activeItem?.to === item.to}
               collapsed={sidebarCollapsed}
+              pinned={pinnedSet.has(item.to)}
+              onTogglePin={() => togglePin(item.to)}
             />
           ))}
         </nav>
@@ -522,7 +588,7 @@ export function AppLayout() {
         </div>
 
         <nav className="flex-1 flex flex-col gap-0.5 py-2 px-2 overflow-y-auto">
-          {visibleItems.map((item) => (
+          {sortedItems.map((item) => (
             <SidebarLink
               key={item.to}
               to={item.to}
@@ -530,6 +596,8 @@ export function AppLayout() {
               label={item.label}
               active={activeItem?.to === item.to}
               collapsed={false}
+              pinned={pinnedSet.has(item.to)}
+              onTogglePin={() => togglePin(item.to)}
             />
           ))}
         </nav>
@@ -676,6 +744,8 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+
+      <ShortcutsHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </div>
   )
 }

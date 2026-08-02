@@ -533,7 +533,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-start sm:justify-between gap-3">
         <div>
           <h1
             className="font-bold leading-tight"
@@ -545,7 +545,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
             Visão geral da escola — {new Date().getFullYear()}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isProfessor && (
             <Link to="/professor">
               <Button variant="outline" size="sm" className="gap-1.5">
@@ -1070,7 +1070,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
               </div>
               {guardianTotalPages > 1 && (
                 <div
-                  className="flex items-center justify-between px-5 py-2.5 border-t"
+                  className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5 border-t"
                   style={{ borderColor: 'hsl(var(--border))' }}
                 >
                   <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
@@ -1175,7 +1175,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
               </div>
               {docTotalPages > 1 && (
                 <div
-                  className="flex items-center justify-between px-5 py-2.5 border-t"
+                  className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5 border-t"
                   style={{ borderColor: 'hsl(var(--border))' }}
                 >
                   <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>

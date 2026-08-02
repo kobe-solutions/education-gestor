@@ -361,13 +361,13 @@ export function StudentSchedulingPage() {
   }
 
   return (
-    <div className="grid grid-cols-[288px_1fr] gap-4 overflow-hidden min-w-0" style={{ height: 'calc(100vh - var(--header-h) - 2rem)' }}>
+    <div className="grid grid-cols-1 lg:grid-cols-[288px_1fr] gap-4 overflow-hidden min-w-0 lg:h-[calc(100vh-var(--header-h)-2rem)]">
 
       {/* ── Sidebar: Alunos ──────────────────────────────────────────────── */}
       <aside className="flex flex-col gap-3 min-h-0 overflow-hidden">
         <div>
           <h2 className="text-base font-semibold">Alunos</h2>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Arraste ou clique para selecionar</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Arraste ou toque para selecionar</p>
         </div>
 
         <div className="relative">
@@ -429,7 +429,7 @@ export function StudentSchedulingPage() {
           <div>
             <h2 className="text-base font-semibold">Turmas</h2>
             <p className="text-[11px] text-muted-foreground">
-              Arraste um aluno até a turma para matricular
+              Arraste um aluno até a turma ou selecione e toque em Matricular
             </p>
           </div>
           <div className="ml-auto w-52">

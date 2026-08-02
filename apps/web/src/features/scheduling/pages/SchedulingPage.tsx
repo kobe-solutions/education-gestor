@@ -149,7 +149,7 @@ function SlotPill({ slot, colorIdx, conflicting = false, onRemove }: SlotPillPro
       <Button
         variant="ghost"
         size="icon"
-        className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600 h-5 w-5"
+        className="ml-auto opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600 h-5 w-5"
         onClick={onRemove}
       >
         <X className="h-3 w-3" />
@@ -419,21 +419,21 @@ export function SchedulingPage() {
   const hasAssignConflict = assignConflicts.length > 0
 
   return (
-    <div className="flex flex-col gap-4" style={{ height: 'calc(100vh - var(--header-h) - 2rem)' }}>
+    <div className="flex flex-col gap-4 min-h-0 lg:h-[calc(100vh-var(--header-h)-2rem)]">
       <PageHead
         title="Locação de Aulas"
-        subtitle="Monte a grade horária — arraste o professor para o slot da turma"
+        subtitle="Monte a grade horária — arraste o professor ou selecione e toque no + da turma"
       />
 
-      <div className="flex flex-1 gap-4 overflow-hidden min-h-0">
+      <div className="flex flex-col lg:flex-row flex-1 gap-4 overflow-hidden min-h-0">
 
       {/* ── Sidebar: Professores ──────────────────────────────────────────── */}
-      <aside className="flex flex-col gap-3 w-72 shrink-0">
+      <aside className="flex flex-col gap-3 w-full lg:w-72 shrink-0">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'hsl(var(--muted-foreground))', letterSpacing: '0.06em' }}>Professores</p>
-          <p className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
-            Arraste ou clique para selecionar
-          </p>
+            <p className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
+              Arraste ou toque para selecionar
+            </p>
         </div>
 
         <div className="relative">
@@ -496,7 +496,7 @@ export function SchedulingPage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'hsl(var(--muted-foreground))', letterSpacing: '0.06em' }}>Turmas</p>
             <p className="text-[11px] mt-0.5" style={{ color: 'hsl(var(--muted-foreground) / 0.6)' }}>
-              Arraste um professor até a turma para alocar
+              Arraste um professor até a turma ou selecione e toque em +
             </p>
           </div>
           <div className="ml-auto w-52">
