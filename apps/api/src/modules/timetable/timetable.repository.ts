@@ -130,6 +130,15 @@ export async function findDistinctTeachersByClassRepository(schoolId: string, cl
     .where(and(eq(timetableSlots.schoolId, schoolId), eq(timetableSlots.classId, classId)))
 }
 
+export async function findSubjectsByClassRepository(schoolId: string, classId: string) {
+  return db
+    .selectDistinct({ id: subjects.id, name: subjects.name })
+    .from(timetableSlots)
+    .innerJoin(subjects, eq(timetableSlots.subjectId, subjects.id))
+    .where(and(eq(timetableSlots.schoolId, schoolId), eq(timetableSlots.classId, classId)))
+    .orderBy(subjects.name)
+}
+
 export async function listTimetableSlotsByTeacherRepository(schoolId: string, teacherId: string) {
   return db
     .select(withJoins)

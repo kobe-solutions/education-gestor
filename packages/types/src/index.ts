@@ -251,6 +251,45 @@ export interface Attendance {
   createdAt: string
 }
 
+export type ReportSituation = 'approved' | 'recovery' | 'failed'
+
+export interface ReportAttendance {
+  rate: number | null
+  presentCount: number
+  totalCount: number
+}
+
+export interface SubjectReport {
+  subjectId: string
+  subjectName: string
+  classId: string | null
+  className: string | null
+  grades: Array<{
+    academicPeriodId: string
+    academicPeriodName: string
+    value: string
+  }>
+  average: number | null
+  status: ReportSituation | null
+  attendance: ReportAttendance | null
+}
+
+export interface StudentReport {
+  studentId: string
+  studentName: string
+  enrollmentCode: string
+  periods: Array<{ id: string; name: string; order: number }>
+  subjects: SubjectReport[]
+  overall: {
+    average: number | null
+    status: ReportSituation | null
+    attendance: ReportAttendance | null
+    approvedSubjects: number
+    totalSubjects: number
+  }
+  generatedAt: string
+}
+
 export interface Tuition {
   id: string
   schoolId: string

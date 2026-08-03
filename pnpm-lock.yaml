@@ -23,6 +23,9 @@ importers:
       '@education-gestor/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@education-gestor/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@fastify/cors':
         specifier: ^10.0.0
         version: 10.1.0
