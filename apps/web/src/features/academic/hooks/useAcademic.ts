@@ -2,13 +2,24 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { api } from '../../../lib/api'
 import { extractErrorMessage } from '../../../lib/errors'
-import type { Grade, Attendance } from '@education-gestor/types'
+import type { Grade, Attendance, StudentReport } from '@education-gestor/types'
 
 export function useStudentGrades(studentId: string) {
   return useQuery({
     queryKey: ['grades', 'student', studentId],
     queryFn: async () => {
       const res = await api.get<Grade[]>(`/students/${studentId}/grades`)
+      return res.data
+    },
+    enabled: !!studentId,
+  })
+}
+
+export function useStudentReport(studentId: string) {
+  return useQuery({
+    queryKey: ['grades', 'student', studentId, 'report'],
+    queryFn: async () => {
+      const res = await api.get<StudentReport>(`/students/${studentId}/report`)
       return res.data
     },
     enabled: !!studentId,
