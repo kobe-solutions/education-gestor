@@ -151,7 +151,7 @@ export async function getClassAttendanceByDateService(
 // Regras de negócio padronizadas da escola (P1 — FEATURES.md). Podem ser
 // configuradas por escola no futuro (P3) sem mudar o contrato do endpoint.
 
-export const PASSING_AVERAGE = 5
+export const PASSING_AVERAGE = 6
 export const RECOVERY_MIN_AVERAGE = 3
 export const MIN_ATTENDANCE_RATE = 75
 

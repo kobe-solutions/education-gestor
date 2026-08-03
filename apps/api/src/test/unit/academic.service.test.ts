@@ -406,6 +406,29 @@ describe('getStudentReportService', () => {
     expect(report.overall.attendance).toEqual({ rate: null, presentCount: 0, totalCount: 0 })
   })
 
+  it('aplica média de aprovação de 6,0 na situação das disciplinas', async () => {
+    mockReport({
+      grades: [
+        { classId: 'class-id', className: '1A', subjectId: 'math-id', subjectName: 'Matemática', academicPeriodId: 'p1-id', academicPeriodName: '1º Bimestre', academicPeriodOrder: 1, value: '5.0' },
+        { classId: 'class-id', className: '1A', subjectId: 'math-id', subjectName: 'Matemática', academicPeriodId: 'p2-id', academicPeriodName: '2º Bimestre', academicPeriodOrder: 2, value: '6.0' },
+        { classId: 'class-id', className: '1A', subjectId: 'port-id', subjectName: 'Português', academicPeriodId: 'p1-id', academicPeriodName: '1º Bimestre', academicPeriodOrder: 1, value: '6.0' },
+        { classId: 'class-id', className: '1A', subjectId: 'port-id', subjectName: 'Português', academicPeriodId: 'p2-id', academicPeriodName: '2º Bimestre', academicPeriodOrder: 2, value: '6.0' },
+      ],
+    })
+
+    const report = await getStudentReportService('school-id', 'student-id')
+
+    const math = report.subjects.find((s) => s.subjectName === 'Matemática')
+    expect(math?.average).toBe(5.5)
+    expect(math?.status).toBe('recovery')
+
+    const port = report.subjects.find((s) => s.subjectName === 'Português')
+    expect(port?.average).toBe(6)
+    expect(port?.status).toBe('approved')
+
+    expect(report.overall.status).toBe('recovery')
+  })
+
   it('lança erro se aluno não existe', async () => {
     vi.mocked(studentService.getStudentService).mockRejectedValue(new Error('Student not found'))
 

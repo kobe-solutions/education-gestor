@@ -157,7 +157,7 @@ export function StudentReportPage() {
             )}
 
             <p className="text-[10px] mt-4 leading-relaxed print:mt-3" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Aprovado: média ≥ 5,0 e frequência ≥ 75% · Recuperação: média de 3,0 a 4,9 · Reprovado: média &lt; 3,0 ou frequência &lt; 75%
+              Aprovado: média ≥ 6,0 e frequência ≥ 75% · Recuperação: média de 3,0 a 5,9 · Reprovado: média &lt; 3,0 ou frequência &lt; 75%
             </p>
           </div>
 
@@ -227,7 +227,7 @@ export function StudentReportPage() {
                                   {grade ? (
                                     <span
                                       className="font-semibold tabular-nums"
-                                      style={{ color: parseFloat(grade.value) >= 5 ? 'hsl(142 71% 45%)' : 'hsl(var(--destructive))' }}
+                                      style={{ color: parseFloat(grade.value) >= 6 ? 'hsl(142 71% 45%)' : 'hsl(var(--destructive))' }}
                                     >
                                       {grade.value}
                                     </span>
@@ -306,7 +306,7 @@ export function StudentReportPage() {
 
           {/* Rodapé do documento — visível apenas na impressão */}
           <p className="hidden print:block text-[10px] text-black/60 pt-4">
-            Documento emitido por {school?.name ?? 'Education Gestor'} em {report?.generatedAt ? formatGeneratedAt(report.generatedAt) : '—'}. Regras: Aprovado — média ≥ 5,0 e frequência ≥ 75%; Recuperação — média de 3,0 a 4,9; Reprovado — média &lt; 3,0 ou frequência &lt; 75%.
+            Documento emitido por {school?.name ?? 'Education Gestor'} em {report?.generatedAt ? formatGeneratedAt(report.generatedAt) : '—'}. Regras: Aprovado — média ≥ 6,0 e frequência ≥ 75%; Recuperação — média de 3,0 a 5,9; Reprovado — média &lt; 3,0 ou frequência &lt; 75%.
           </p>
         </>
       )}
