@@ -3,6 +3,7 @@ import { db } from '../../db'
 import { grades, attendances } from '../../db/schema'
 import { subjects } from '../../db/schema/subjects'
 import { academicPeriods } from '../../db/schema/academicPeriods'
+import { schoolClasses } from '../../db/schema/schoolClasses'
 
 type UpsertGradeInput = {
   schoolId: string
@@ -186,4 +187,58 @@ export async function upsertBulkGradesRepository(rows: BulkGradeInput[]) {
       set: { value: sql`excluded.value`, teacherId: sql`excluded.teacher_id`, updatedAt: new Date() },
     })
     .returning()
+}
+
+export type StudentReportGradeRow = {
+  classId: string
+  className: string | null
+  subjectId: string
+  subjectName: string | null
+  academicPeriodId: string
+  academicPeriodName: string | null
+  academicPeriodOrder: number | null
+  value: string
+}
+
+export type StudentReportAttendanceRow = {
+  classId: string
+  present: boolean
+}
+
+export type StudentReportData = {
+  grades: StudentReportGradeRow[]
+  attendances: StudentReportAttendanceRow[]
+}
+
+export async function findStudentReportDataRepository(
+  schoolId: string,
+  studentId: string,
+): Promise<StudentReportData> {
+  const [gradeRows, attendanceRows] = await Promise.all([
+    db
+      .select({
+        classId: grades.classId,
+        className: schoolClasses.name,
+        subjectId: grades.subjectId,
+        subjectName: subjects.name,
+        academicPeriodId: grades.academicPeriodId,
+        academicPeriodName: academicPeriods.name,
+        academicPeriodOrder: academicPeriods.order,
+        value: grades.value,
+      })
+      .from(grades)
+      .leftJoin(subjects, eq(grades.subjectId, subjects.id))
+      .leftJoin(academicPeriods, eq(grades.academicPeriodId, academicPeriods.id))
+      .leftJoin(schoolClasses, eq(grades.classId, schoolClasses.id))
+      .where(and(eq(grades.schoolId, schoolId), eq(grades.studentId, studentId))),
+    db
+      .select({
+        classId: attendances.classId,
+        present: attendances.present,
+      })
+      .from(attendances)
+      .where(and(eq(attendances.schoolId, schoolId), eq(attendances.studentId, studentId))),
+  ])
+
+  return { grades: gradeRows, attendances: attendanceRows }
 }

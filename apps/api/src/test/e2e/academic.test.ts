@@ -11,6 +11,7 @@ vi.mock('../../modules/academic/academic.service', () => ({
   registerBulkAttendanceService: vi.fn(),
   getStudentAttendancesService: vi.fn(),
   getClassAttendanceByDateService: vi.fn(),
+  getStudentReportService: vi.fn(),
 }))
 
 import * as academicService from '../../modules/academic/academic.service'
@@ -293,5 +294,79 @@ describe('GET /school-classes/:id/attendances', () => {
     })
 
     expect(response.statusCode).toBe(400)
+  })
+})
+
+describe('GET /students/:id/report', () => {
+  const mockReport = {
+    studentId: IDS.student,
+    studentName: 'João',
+    enrollmentCode: 'MAT001',
+    periods: [
+      { id: IDS.period, name: '1º Bimestre', order: 1 },
+      { id: 'period-2', name: '2º Bimestre', order: 2 },
+    ],
+    subjects: [
+      {
+        subjectId: IDS.subject,
+        subjectName: 'Matemática',
+        classId: IDS.class,
+        className: '1A',
+        grades: [
+          { academicPeriodId: IDS.period, academicPeriodName: '1º Bimestre', value: '8.5' },
+        ],
+        average: 8.5,
+        status: 'approved',
+        attendance: { rate: 100, presentCount: 2, totalCount: 2 },
+      },
+    ],
+    overall: {
+      average: 8.5,
+      status: 'approved',
+      attendance: { rate: 100, presentCount: 2, totalCount: 2 },
+      approvedSubjects: 1,
+      totalSubjects: 1,
+    },
+    generatedAt: '2025-04-01T00:00:00.000Z',
+  }
+
+  it('retorna 200 com o boletim agregado do aluno', async () => {
+    vi.mocked(academicService.getStudentReportService).mockResolvedValue(mockReport as any)
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/students/${IDS.student}/report`,
+      headers: { authorization: `Bearer ${gestorToken}` },
+    })
+
+    expect(response.statusCode).toBe(200)
+    const body = response.json()
+    expect(body.studentId).toBe(IDS.student)
+    expect(body.subjects).toHaveLength(1)
+    expect(body.subjects[0].status).toBe('approved')
+    expect(body.overall.average).toBe(8.5)
+  })
+
+  it('retorna 404 se aluno não existe', async () => {
+    vi.mocked(academicService.getStudentReportService).mockRejectedValue(
+      new Error('Student not found'),
+    )
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/students/nao-existe/report',
+      headers: { authorization: `Bearer ${gestorToken}` },
+    })
+
+    expect(response.statusCode).toBe(404)
+  })
+
+  it('retorna 401 sem token', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: `/students/${IDS.student}/report`,
+    })
+
+    expect(response.statusCode).toBe(401)
   })
 })

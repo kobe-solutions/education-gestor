@@ -18,6 +18,7 @@ import {
   registerBulkAttendanceService,
   getStudentAttendancesService,
   getClassAttendanceByDateService,
+  getStudentReportService,
 } from './academic.service'
 
 const preHandlerAll = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
@@ -108,6 +109,18 @@ export async function academicRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       return reply.send(await getStudentAttendancesService(getSchoolId(request), id))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Student not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.get('/students/:id/report', { preHandler: preHandlerAll }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      return reply.send(await getStudentReportService(getSchoolId(request), id))
     } catch (error) {
       if (error instanceof Error && error.message === 'Student not found') {
         return reply.status(404).send({ message: error.message })

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@education-gestor/shared": "workspace:*",
+    "@education-gestor/types": "workspace:*",
     "@aws-sdk/client-s3": "^3.1045.0",
     "@aws-sdk/s3-request-presigner": "^3.1045.0",
     "@fastify/cors": "^10.0.0",
