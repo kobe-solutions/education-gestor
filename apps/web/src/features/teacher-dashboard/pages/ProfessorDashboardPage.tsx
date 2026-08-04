@@ -6,14 +6,19 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronRight,
+  AlertCircle,
+  Radio,
+  UserCheck,
+  GraduationCap,
 } from 'lucide-react'
 import { useTeacherDashboard } from '../hooks/useTeacherDashboard'
 import { useAuth } from '../../../contexts/AuthContext'
-import { Button } from '../../../components/ui/button'
+import { Button, buttonVariants } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Badge } from '../../../components/ui/badge'
 import { WEEK_DAY_LABELS, WEEK_DAYS_ORDER } from '../../timetable/hooks/useTimetable'
 import { TONE_CONFIG, type ToneKey } from '../../../lib/colors'
+import { cn } from '../../../lib/utils'
 
 // ── Inline components (same pattern as DashboardPage.tsx) ─────────────────
 
@@ -135,9 +140,195 @@ function gradeTone(value: number): 'emerald' | 'amber' | 'red' {
   return 'red'
 }
 
+// ── Pendências / aula corrente (P8 — FEATURES.md) ─────────────────────────
+
+function toMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+function formatTimeRange(startTime: string, endTime: string): string {
+  return `${startTime} — ${endTime}`
+}
+
+function getActiveOrNextSlot(slots: import('../hooks/useTeacherDashboard').TimetableSlotInfo[]) {
+  const now = new Date()
+  const nowMinutes = now.getHours() * 60 + now.getMinutes()
+
+  const active = slots.find((s) => {
+    const start = toMinutes(s.classPeriod.startTime)
+    const end = toMinutes(s.classPeriod.endTime)
+    return nowMinutes >= start && nowMinutes < end
+  })
+  if (active) return { slot: active, isActive: true }
+
+  const next = slots.find((s) => toMinutes(s.classPeriod.startTime) > nowMinutes)
+  return next ? { slot: next, isActive: false } : { slot: null, isActive: false }
+}
+
+interface SlotActionLinksProps {
+  slot: import('../hooks/useTeacherDashboard').TimetableSlotInfo
+  today: string
+}
+
+function SlotActionLinks({ slot, today }: SlotActionLinksProps) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Link
+        to={`/professor/attendance?class=${slot.class.id}&date=${today}`}
+        className={buttonVariants({ variant: 'outline', size: 'sm' })}
+      >
+        <UserCheck />
+        Chamada
+      </Link>
+      <Link
+        to={`/professor/grades?class=${slot.class.id}&subject=${slot.subject.id}`}
+        className={buttonVariants({ variant: 'outline', size: 'sm' })}
+      >
+        <GraduationCap />
+        Notas
+      </Link>
+    </div>
+  )
+}
+
+function PendingBadge({ pending, label }: { pending: boolean; label: string }) {
+  return (
+    <Badge variant={pending ? 'warning' : 'success'} className="gap-1">
+      {pending ? (
+        <AlertCircle className="size-3" />
+      ) : (
+        <span className="inline-block size-1.5 rounded-full bg-current" />
+      )}
+      {pending ? `Falta ${label}` : `${label} lançada`}
+    </Badge>
+  )
+}
+
+// ── Card da aula corrente / próxima aula ─────────────────────────────────────
+
+function CurrentClassCard({ slots }: { slots: import('../hooks/useTeacherDashboard').TimetableSlotInfo[] }) {
+  const { slot, isActive } = getActiveOrNextSlot(slots)
+  const today = new Date().toISOString().slice(0, 10)
+
+  if (!slot) {
+    return (
+      <div
+        className="rounded-xl p-5"
+        style={{ background: 'hsl(var(--card))', border: '1px dashed hsl(var(--border))' }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center justify-center rounded-lg shrink-0"
+            style={{ width: 40, height: 40, background: TONE_CONFIG.slate.iconBg, color: TONE_CONFIG.slate.iconColor }}
+          >
+            <CalendarDays size={18} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+              Nenhuma aula em andamento ou programada hoje
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              Acompanhe a grade completa do dia abaixo para planejar seus lançamentos.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="rounded-xl p-5 relative overflow-hidden transition-all duration-200 hover:shadow-md"
+      style={{
+        background: 'hsl(var(--card))',
+        border: `1px solid ${isActive ? 'rgba(79, 70, 229, 0.35)' : 'hsl(var(--border))'}`,
+        boxShadow: isActive ? '0 0 0 1px rgba(79, 70, 229, 0.08)' : 'var(--shadow-sm)',
+      }}
+    >
+      {isActive && (
+        <div
+          className="absolute inset-y-0 left-0 w-1"
+          style={{ background: 'linear-gradient(to bottom, #6366F1, #818CF8)' }}
+        />
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pl-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className="flex items-center justify-center rounded-lg shrink-0"
+            style={{
+              width: 44,
+              height: 44,
+              background: isActive ? TONE_CONFIG.indigo.iconBg : TONE_CONFIG.slate.iconBg,
+              color: isActive ? '#818CF8' : TONE_CONFIG.slate.iconColor,
+            }}
+          >
+            <Radio size={20} className={cn(!isActive && 'opacity-70')} />
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3
+                className="font-bold text-base leading-tight"
+                style={{ color: 'hsl(var(--foreground))' }}
+              >
+                {isActive ? 'Aula Corrente' : 'Próxima Aula'}
+              </h3>
+              {isActive && (
+                <Badge className="gap-1" style={{ background: 'rgba(79, 70, 229, 0.14)', color: '#818CF8' }}>
+                  <span className="relative flex size-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-75" />
+                    <span className="relative inline-flex size-1.5 rounded-full bg-current" />
+                  </span>
+                  Em andamento
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm font-semibold truncate mt-0.5" style={{ color: 'hsl(var(--foreground))' }}>
+              {slot.class.name}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              {slot.subject.name} · {formatTimeRange(slot.classPeriod.startTime, slot.classPeriod.endTime)}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 pl-0 sm:pl-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <PendingBadge pending={!slot.attendanceRegistered} label="chamada" />
+            <PendingBadge pending={!slot.gradesLaunched} label="nota" />
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Link
+              to={`/professor/attendance?class=${slot.class.id}&date=${today}`}
+              className={buttonVariants({ variant: isActive ? 'default' : 'outline', size: 'sm' })}
+            >
+              <UserCheck />
+              Fazer Chamada
+            </Link>
+            <Link
+              to={`/professor/grades?class=${slot.class.id}&subject=${slot.subject.id}`}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              <GraduationCap />
+              Lançar Notas
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Grade Horária de Hoje ──────────────────────────────────────────────────
 
-function TodayScheduleTable({ slots }: { slots: import('../hooks/useTeacherDashboard').TimetableSlotInfo[] }) {
+function TodayScheduleTable({
+  slots,
+  today,
+}: {
+  slots: import('../hooks/useTeacherDashboard').TimetableSlotInfo[]
+  today: string
+}) {
   if (slots.length === 0) {
     return <EmptyState icon={Clock} title="Nenhuma aula programada para hoje" />
   }
@@ -155,7 +346,7 @@ function TodayScheduleTable({ slots }: { slots: import('../hooks/useTeacherDashb
         <table className="w-full text-sm">
           <thead>
             <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-              {['Horário', 'Turma', 'Disciplina'].map((h) => (
+              {['Horário', 'Turma', 'Disciplina', 'Pendências', 'Ações'].map((h) => (
                 <th
                   key={h}
                   className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
@@ -183,6 +374,15 @@ function TodayScheduleTable({ slots }: { slots: import('../hooks/useTeacherDashb
                 </td>
                 <td className="px-5 py-3" style={{ color: 'hsl(var(--foreground))' }}>
                   {s.subject.name}
+                </td>
+                <td className="px-5 py-3">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <PendingBadge pending={!s.attendanceRegistered} label="chamada" />
+                    <PendingBadge pending={!s.gradesLaunched} label="nota" />
+                  </div>
+                </td>
+                <td className="px-5 py-3">
+                  <SlotActionLinks slot={s} today={today} />
                 </td>
               </tr>
             ))}
@@ -311,8 +511,12 @@ export function ProfessorDashboardPage() {
   const { payload } = useAuth()
   const { data, isLoading } = useTeacherDashboard()
 
-  if (isLoading) return <DashboardSkeleton cardCount={4} />
+  if (isLoading) return <DashboardSkeleton cardCount={3} />
   if (!data) return null
+
+  const today = new Date().toISOString().slice(0, 10)
+  const pendingTotal = data.pendingToday.attendance + data.pendingToday.grades
+  const hasPending = pendingTotal > 0
 
   return (
     <div className="space-y-8">
@@ -330,15 +534,37 @@ export function ProfessorDashboardPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
         <DashMetric icon={Users} value={data.classes.length} label="Turmas" tone="indigo" />
         <DashMetric icon={Clock} value={data.todaySchedule.length} label="Aulas Hoje" tone="violet" />
+        <DashMetric
+          icon={AlertCircle}
+          value={pendingTotal}
+          label="Pendências do Dia"
+          tone={hasPending ? 'amber' : 'emerald'}
+          sub={hasPending
+            ? `${data.pendingToday.attendance} chamada(s) · ${data.pendingToday.grades} notas`
+            : 'Tudo em dia'}
+        />
       </div>
+
+      {/* Aula corrente / próxima aula */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Lançamento Rápido"
+          subtitle={
+            hasPending
+              ? 'Acesso direto à chamada e notas da aula em foco'
+              : 'Atalhos para chamada e lançamento de notas'
+          }
+        />
+        <CurrentClassCard slots={data.todaySchedule} />
+      </section>
 
       {/* Section 1: Grade Horária de Hoje */}
       <section className="space-y-4">
         <SectionHeader title="Grade Horária de Hoje" subtitle={WEEK_DAY_LABELS[data.todaySchedule[0]?.weekDay] ?? 'Hoje'} />
-        <TodayScheduleTable slots={data.todaySchedule} />
+        <TodayScheduleTable slots={data.todaySchedule} today={today} />
       </section>
 
       {/* Section 3: Grade Horária Semanal */}
