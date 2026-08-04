@@ -22,6 +22,8 @@ export interface TimetableSlotInfo {
   }
   class: { id: string; name: string }
   subject: { id: string; name: string }
+  attendanceRegistered: boolean
+  gradesLaunched: boolean
 }
 
 export interface AttendanceDateEntry {
@@ -58,6 +60,10 @@ export interface TeacherDashboardData {
   weeklyTimetable: TimetableSlotInfo[]
   attendanceSummary: AttendanceSummaryEntry[]
   classPerformance: ClassPerformanceEntry[]
+  pendingToday: {
+    attendance: number
+    grades: number
+  }
 }
 
 export function useTeacherDashboard() {
