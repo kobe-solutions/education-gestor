@@ -6,6 +6,8 @@ import {
   classStudents,
   subjects,
   classPeriods,
+  academicYears,
+  academicPeriods,
   attendances,
   grades,
 } from '../../db/schema'
@@ -190,4 +192,66 @@ export async function getTeacherClassPerformanceRepository(
   }
 
   return Array.from(grouped.values())
+}
+
+// Auxiliam o painel diário do professor a sinalizar chamada/notas pendentes por
+// turma/disciplina da grade do dia, sem duplicar queries pesadas por slot.
+
+export async function findCurrentAcademicPeriodRepository(
+  schoolId: string,
+  date: string,
+): Promise<{ id: string } | undefined> {
+  const [period] = await db
+    .select({ id: academicPeriods.id })
+    .from(academicPeriods)
+    .innerJoin(academicYears, eq(academicPeriods.academicYearId, academicYears.id))
+    .where(
+      and(
+        eq(academicPeriods.schoolId, schoolId),
+        eq(academicYears.status, 'active'),
+        sql`${academicPeriods.startDate} <= ${date}`,
+        sql`${academicPeriods.endDate} >= ${date}`,
+      ),
+    )
+    .orderBy(academicPeriods.order)
+    .limit(1)
+
+  return period
+}
+
+export async function getTeacherAttendanceRegisteredClassIdsRepository(
+  schoolId: string,
+  teacherId: string,
+  date: string,
+) {
+  const rows = await db
+    .selectDistinct({ classId: attendances.classId })
+    .from(attendances)
+    .innerJoin(
+      timetableSlots,
+      and(
+        eq(timetableSlots.schoolId, schoolId),
+        eq(timetableSlots.teacherId, teacherId),
+        eq(timetableSlots.classId, attendances.classId),
+      ),
+    )
+    .where(and(eq(attendances.schoolId, schoolId), eq(attendances.date, date)))
+
+  return new Set(rows.map((row) => row.classId))
+}
+
+export async function getTeacherGradesRegisteredKeysRepository(
+  schoolId: string,
+  teacherId: string,
+  academicPeriodId?: string,
+) {
+  const conditions = [eq(grades.schoolId, schoolId), eq(grades.teacherId, teacherId)]
+  if (academicPeriodId) conditions.push(eq(grades.academicPeriodId, academicPeriodId))
+
+  const rows = await db
+    .selectDistinct({ classId: grades.classId, subjectId: grades.subjectId })
+    .from(grades)
+    .where(and(...conditions))
+
+  return new Set(rows.map((row) => `${row.classId}:${row.subjectId}`))
 }
