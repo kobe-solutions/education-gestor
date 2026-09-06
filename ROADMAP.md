@@ -88,15 +88,15 @@ Os itens abaixo foram concluídos em ciclos anteriores e estão refletidos no c�
 
 ---
 
-### 2.1 🔴 Rate-limit em `POST /sessions`
+### 2.1 ✅ Rate-limit em `POST /sessions`
 
 **Problema:** Login não tem rate-limit. Brute-force trivial.
 
 **Arquivo:** `apps/api/src/modules/auth/auth.routes.ts`, `apps/api/src/app.ts`
 
 **O que fazer:**
-- [ ] Adicionar `@fastify/rate-limit` ao projeto (dependência ainda não instalada)
-- [ ] Configurar limite em `POST /sessions` (ex: 10 req/min por IP)
+- [x] Adicionar `@fastify/rate-limit` ao projeto (dependência ainda não instalada)
+- [x] Configurar limite em `POST /sessions` (ex: 10 req/min por IP)
 - [ ] Adicionar teste e2e que valide o retorno 429 após o limite
 - [ ] Documentar em `apps/api/docs/openapi.yaml` o header `Retry-After`
 

@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 import { loginBodySchema } from './auth.schema'
 import { authenticateService } from './auth.service'
+import { loginRateLimitConfig } from '../../middlewares/rateLimit'
 
 export async function authRoutes(app: FastifyInstance) {
-  app.post('/sessions', async (request, reply) => {
+  app.post('/sessions', { config: { rateLimit: loginRateLimitConfig } }, async (request, reply) => {
     try {
       const body = loginBodySchema.parse(request.body)
       const authPayload = await authenticateService({ email: body.email, password: body.password })
