@@ -99,6 +99,7 @@ export async function getSchoolMetricsRepository(schoolId: string) {
 
   const classOccupancy = await db
     .select({
+      classId: schoolClasses.id,
       className: schoolClasses.name,
       studentCount: count(classStudents.studentId),
       maxStudents: schoolClasses.maxStudents,
@@ -239,6 +240,7 @@ export async function getSchoolMetricsRepository(schoolId: string) {
       totalGrades: gradeRow.total,
     },
     classOccupancy: classOccupancy.map((c) => ({
+      classId: c.classId,
       className: c.className,
       studentCount: c.studentCount,
       maxStudents: c.maxStudents,
@@ -272,6 +274,13 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     },
   }
 }
+
+// TODO BUG-009: Add per-class aggregation queries for:
+//   1. attendanceRate: SELECT classId, AVG(present) FROM attendances WHERE schoolId = ? GROUP BY classId
+//   2. registrationRate: (registered lesson days / total timetable slots) per class
+//   3. averageGrade: SELECT classId, AVG(value) FROM grades WHERE schoolId = ? GROUP BY classId
+// These require joining timetable_slots ↔ attendances for registration rate.
+// See academic.ts schema: grades.classId → schoolClasses.id, attendances.classId → schoolClasses.id
 
 export async function getAdminMetricsRepository() {
   const [secretariasTotal] = await db.select({ count: count() }).from(secretarias)

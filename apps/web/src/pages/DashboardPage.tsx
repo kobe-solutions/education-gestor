@@ -503,9 +503,12 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         </div>
       </section>
 
-      {/* ── Distribuição ────────────────────────────────────────────────── */}
+      {/* ── Acompanhamento Pedagógico ──────────────────────────────────── */}
+      {/* TODO BUG-007: This section should evolve to include pedagogical metrics
+          (% aulas registradas, % frequência por turma) once BUG-008 backend aggregation
+          endpoint is built. Keep existing student/teacher distribution cards for now. */}
       <section className="space-y-4">
-        <SectionHeader title="Distribuição" subtitle="Situação de alunos e professores" />
+        <SectionHeader title="Acompanhamento Pedagógico" subtitle="Situação de alunos e professores" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div
             className="rounded-xl p-5 space-y-3"
@@ -578,7 +581,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
       {/* ── Turmas ──────────────────────────────────────────────────────── */}
       {data.classOccupancy.length > 0 && (
         <section className="space-y-4">
-          <SectionHeader title="Turmas" subtitle="Ocupação das turmas" />
+          <SectionHeader title="Turmas" subtitle="Desempenho e ocupação das turmas" />
           <div
             className="rounded-xl overflow-hidden"
             style={{
@@ -591,7 +594,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                    {['Turma', 'Alunos', 'Vagas', 'Ocupação'].map((h) => (
+                    {['Nome', 'Qtd. alunos', 'Frequência', 'Aulas registradas', 'Média geral'].map((h) => (
                       <th
                         key={h}
                         className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
@@ -604,37 +607,62 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
                 </thead>
                 <tbody>
                   {data.classOccupancy.map((c) => {
-                    const pct = c.maxStudents > 0 ? Math.round((c.studentCount / c.maxStudents) * 100) : 0
+                    const occupancyPct = c.maxStudents > 0
+                      ? Math.round((c.studentCount / c.maxStudents) * 100)
+                      : 0
+                    const occupancyColor =
+                      occupancyPct >= 90 ? '#EF4444'
+                      : occupancyPct >= 75 ? '#F59E0B'
+                      : '#22C55E'
+
                     return (
                       <tr
-                        key={c.className}
+                        key={c.classId ?? c.className}
                         className="transition-colors duration-150 hover:bg-accent"
                         style={{ borderBottom: '1px solid hsl(var(--border))' }}
                       >
-                        <td className="px-5 py-3 font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-                          {c.className}
-                        </td>
-                        <td className="px-5 py-3 tabular-nums" style={{ color: 'hsl(var(--foreground))' }}>
-                          {c.studentCount}
-                        </td>
-                        <td className="px-5 py-3 tabular-nums" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                          {c.maxStudents}
+                        <td className="px-5 py-3">
+                          {c.classId ? (
+                            <Link
+                              to={`/classes/${c.classId}`}
+                              className="font-semibold hover:underline"
+                              style={{ color: 'hsl(var(--foreground))' }}
+                            >
+                              {c.className}
+                            </Link>
+                          ) : (
+                            <span className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+                              {c.className}
+                            </span>
+                          )}
                         </td>
                         <td className="px-5 py-3">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-1 h-2 rounded-full" style={{ background: 'hsl(var(--border))' }}>
+                          <div className="flex items-center gap-2">
+                            <span className="tabular-nums font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                              {c.studentCount}
+                            </span>
+                            <span className="text-[11px] tabular-nums" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                              / {c.maxStudents}
+                            </span>
+                            <div className="flex-1 h-2 rounded-full max-w-[80px]" style={{ background: 'hsl(var(--border))' }}>
                               <div
                                 className="h-2 rounded-full transition-all"
                                 style={{
-                                  width: `${Math.min(pct, 100)}%`,
-                                  background: pct >= 90 ? '#EF4444' : pct >= 75 ? '#F59E0B' : '#22C55E',
+                                  width: `${Math.min(occupancyPct, 100)}%`,
+                                  background: occupancyColor,
                                 }}
                               />
                             </div>
-                            <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                              {pct}%
-                            </span>
                           </div>
+                        </td>
+                        <td className="px-5 py-3 tabular-nums font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                          {c.attendanceRate != null ? `${c.attendanceRate}%` : '—'}
+                        </td>
+                        <td className="px-5 py-3 tabular-nums font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                          {c.registrationRate != null ? `${c.registrationRate}%` : '—'}
+                        </td>
+                        <td className="px-5 py-3 tabular-nums font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+                          {c.averageGrade ?? '—'}
                         </td>
                       </tr>
                     )

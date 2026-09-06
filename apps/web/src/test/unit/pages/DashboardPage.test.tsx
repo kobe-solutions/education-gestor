@@ -31,7 +31,26 @@ function makeSchoolDashboard(): SchoolDashboard {
     upcomingTuitions: [],
     attendanceRate: 92,
     academicPerformance: { average: '7.8', passRate: 88, totalGrades: 200 },
-    classOccupancy: [],
+    classOccupancy: [
+      {
+        classId: 'cls-1',
+        className: '1° Ano A',
+        studentCount: 35,
+        maxStudents: 40,
+        attendanceRate: 94,
+        registrationRate: 88,
+        averageGrade: '7.2',
+      },
+      {
+        classId: 'cls-2',
+        className: '2° Ano B',
+        studentCount: 30,
+        maxStudents: 40,
+        attendanceRate: null,
+        registrationRate: null,
+        averageGrade: null,
+      },
+    ],
     studentsByStatus: { active: 110, inactive: 5, transferred: 3, cancelled: 2 },
     teachersByStatus: { ativo: 13, inativo: 1, licenca: 1 },
     recentActivity: [],
@@ -125,5 +144,67 @@ describe('DashboardPage', () => {
 
     expect(screen.queryByText('Painel')).not.toBeInTheDocument()
     expect(screen.queryByText('Painel Administrativo')).not.toBeInTheDocument()
+  })
+
+  it('school dashboard: turmas renderiza 5 colunas e links de navegação', () => {
+    mockUseDashboard.mockReturnValue(mockResult(makeSchoolDashboard(), false))
+
+    renderWithProviders(<DashboardPage />, {
+      initialRoute: '/',
+      mockAuth: { payload: { userId: 'u1', name: 'Gestor', role: 'gestor', schoolId: 'school-1' } },
+    })
+
+    expect(screen.getByText('Nome')).toBeInTheDocument()
+    expect(screen.getByText('Qtd. alunos')).toBeInTheDocument()
+    expect(screen.getByText('Frequência')).toBeInTheDocument()
+    expect(screen.getByText('Aulas registradas')).toBeInTheDocument()
+    expect(screen.getAllByText('Média geral').length).toBeGreaterThanOrEqual(1)
+
+    const classLink = screen.getByText('1° Ano A')
+    expect(classLink.closest('a')).toHaveAttribute('href', '/classes/cls-1')
+
+    expect(screen.getAllByText('94%').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText('88%').length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByText('7.2')).toBeInTheDocument()
+
+    const dashes = screen.getAllByText('—')
+    expect(dashes.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('school dashboard: não renderiza upcomingTuitions no painel', () => {
+    const data = makeSchoolDashboard()
+    data.upcomingTuitions = [
+      { id: 't1', studentId: 's1', studentName: 'João Silva', amount: '500.00', dueDate: '2026-02-10', status: 'pending' },
+      { id: 't2', studentId: 's2', studentName: 'Maria Santos', amount: '500.00', dueDate: '2026-02-15', status: 'overdue' },
+    ]
+    mockUseDashboard.mockReturnValue(mockResult(data, false))
+
+    renderWithProviders(<DashboardPage />, {
+      initialRoute: '/',
+      mockAuth: { payload: { userId: 'u1', name: 'Gestor', role: 'gestor', schoolId: 'school-1' } },
+    })
+
+    expect(screen.queryByText('João Silva')).not.toBeInTheDocument()
+    expect(screen.queryByText('Maria Santos')).not.toBeInTheDocument()
+  })
+
+  it('school dashboard: renderiza Controle de Demandas com cards de alerta', () => {
+    const data = makeSchoolDashboard()
+    data.alerts = {
+      lowAttendanceStudents: [{ studentId: 's1', studentName: 'Pedro', absenceCount: 5 }],
+      overdueTuitions: 2,
+      studentsWithoutGuardians: [{ studentId: 's2', studentName: 'Ana' }],
+      studentsWithoutIdDocument: [],
+    }
+    mockUseDashboard.mockReturnValue(mockResult(data, false))
+
+    renderWithProviders(<DashboardPage />, {
+      initialRoute: '/',
+      mockAuth: { payload: { userId: 'u1', name: 'Gestor', role: 'gestor', schoolId: 'school-1' } },
+    })
+
+    expect(screen.getByText('Controle de Demandas')).toBeInTheDocument()
+    expect(screen.getByText('Mensalidades atrasadas')).toBeInTheDocument()
+    expect(screen.getByText('Sem responsável')).toBeInTheDocument()
   })
 })
