@@ -20,6 +20,10 @@ export interface ClassOccupancy {
   className: string
   studentCount: number
   maxStudents: number
+  classId?: string
+  attendanceRate?: number | null
+  registrationRate?: number | null
+  averageGrade?: string | null
 }
 
 export interface LowAttendanceStudent {
