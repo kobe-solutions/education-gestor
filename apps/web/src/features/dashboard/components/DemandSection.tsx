@@ -12,6 +12,10 @@ interface DemandSectionProps {
 
 const ALERT_PAGE_SIZE = 10
 
+// TODO BUG-011: Consider adding a full CRUD backend for demands (POST /demands, PATCH /demands/:id)
+// to allow users to create, assign, and resolve demand items beyond the current computed alerts.
+// Current alerts are read-only and derived from existing data.
+
 export function DemandSection({ alerts, blocked }: DemandSectionProps) {
   const [expanded, setExpanded] = useState<string | null>(null)
 
