@@ -26,6 +26,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
         teachersCount: 0,
         classesCount: 0,
         tuitions: {
+          total: { count: 0, total: '0' },
           pending: { count: 0, total: '0' },
           paid: { count: 0, total: '0' },
           overdue: { count: 0, total: '0' },
