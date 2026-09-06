@@ -39,6 +39,14 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     .where(eq(tuitions.schoolId, schoolId))
     .groupBy(tuitions.status)
 
+  const [tuitionTotal] = await db
+    .select({
+      count: count(),
+      total: sum(tuitions.amount),
+    })
+    .from(tuitions)
+    .where(eq(tuitions.schoolId, schoolId))
+
   const upcoming = await db
     .select({
       id: tuitions.id,
@@ -218,6 +226,7 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     teachersCount: teachersCount.count,
     classesCount: classesCount.count,
     tuitions: {
+      total: { count: tuitionTotal?.count ?? 0, total: tuitionTotal?.total ?? '0' },
       pending: { count: pending?.count ?? 0, total: pending?.total ?? '0' },
       paid: { count: paid?.count ?? 0, total: paid?.total ?? '0' },
       overdue: { count: overdue?.count ?? 0, total: overdue?.total ?? '0' },
@@ -296,6 +305,13 @@ export async function getAdminMetricsRepository() {
     .from(tuitions)
     .groupBy(tuitions.status)
 
+  const [adminTuitionTotal] = await db
+    .select({
+      count: count(),
+      total: sum(tuitions.amount),
+    })
+    .from(tuitions)
+
   const pending = tuitionStats.find((t) => t.status === 'pending')
   const paid = tuitionStats.find((t) => t.status === 'paid')
   const overdue = tuitionStats.find((t) => t.status === 'overdue')
@@ -350,6 +366,7 @@ export async function getAdminMetricsRepository() {
     teachersByStatus,
     classesCount: classesCount.count,
     tuitions: {
+      total: { count: adminTuitionTotal?.count ?? 0, total: adminTuitionTotal?.total ?? '0' },
       pending: { count: pending?.count ?? 0, total: pending?.total ?? '0' },
       paid: { count: paid?.count ?? 0, total: paid?.total ?? '0' },
       overdue: { count: overdue?.count ?? 0, total: overdue?.total ?? '0' },

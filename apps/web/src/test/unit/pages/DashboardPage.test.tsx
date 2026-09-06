@@ -23,6 +23,7 @@ function makeSchoolDashboard(): SchoolDashboard {
     teachersCount: 15,
     classesCount: 8,
     tuitions: {
+      total: { count: 9, total: '9000.00' },
       pending: { count: 3, total: '3000.00' },
       paid: { count: 5, total: '5000.00' },
       overdue: { count: 1, total: '1000.00' },
@@ -49,6 +50,7 @@ function makeAdminDashboard(): AdminDashboard {
     teachersByStatus: { ativo: 80, inativo: 5, licenca: 5 },
     classesCount: 40,
     tuitions: {
+      total: { count: 85, total: '85000.00' },
       pending: { count: 20, total: '20000.00' },
       paid: { count: 60, total: '60000.00' },
       overdue: { count: 5, total: '5000.00' },

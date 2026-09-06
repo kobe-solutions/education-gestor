@@ -37,7 +37,7 @@ describe('useDashboard', () => {
       studentsCount: 10,
       teachersCount: 3,
       classesCount: 2,
-      tuitions: { pending: { count: 1, total: '100' }, paid: { count: 2, total: '200' }, overdue: { count: 0, total: '0' } },
+      tuitions: { total: { count: 3, total: '300' }, pending: { count: 1, total: '100' }, paid: { count: 2, total: '200' }, overdue: { count: 0, total: '0' } },
       upcomingTuitions: [],
       attendanceRate: 90,
       academicPerformance: { average: '7.5', passRate: 80, totalGrades: 20 },
@@ -81,7 +81,7 @@ describe('useDashboard', () => {
       teachersCount: 12,
       teachersByStatus: { ativo: 10, inativo: 1, licenca: 1 },
       classesCount: 8,
-      tuitions: { pending: { count: 1, total: '100' }, paid: { count: 2, total: '200' }, overdue: { count: 0, total: '0' } },
+      tuitions: { total: { count: 3, total: '300' }, pending: { count: 1, total: '100' }, paid: { count: 2, total: '200' }, overdue: { count: 0, total: '0' } },
       topSchools: [],
       recentActivity: [],
     }

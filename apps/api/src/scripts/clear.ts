@@ -16,6 +16,10 @@ import { educationLevels } from '../db/schema/educationLevels'
 import { classPeriods } from '../db/schema/classPeriods'
 import { academicPeriods } from '../db/schema/academicPeriods'
 import { academicYears } from '../db/schema/academicYears'
+import { events } from '../db/schema/events'
+import { calendarEvents } from '../db/schema/calendarEvents'
+import { auditLogs } from '../db/schema/auditLog'
+import { teacherDocuments } from '../db/schema/teacherDocuments'
 import { schools } from '../db/schema/schools'
 import { admins } from '../db/schema/admins'
 
@@ -27,6 +31,7 @@ const TABELAS = [
   { nome: 'timetable_slots', tabela: timetableSlots },
   { nome: 'class_students', tabela: classStudents },
   { nome: 'teacher_subjects', tabela: teacherSubjects },
+  { nome: 'teacher_documents', tabela: teacherDocuments },
   { nome: 'student_medical', tabela: studentMedical },
   { nome: 'student_documents', tabela: studentDocuments },
   { nome: 'guardians', tabela: guardians },
@@ -39,6 +44,9 @@ const TABELAS = [
   { nome: 'class_periods', tabela: classPeriods },
   { nome: 'academic_periods', tabela: academicPeriods },
   { nome: 'academic_years', tabela: academicYears },
+  { nome: 'calendar_events', tabela: calendarEvents },
+  { nome: 'events', tabela: events },
+  { nome: 'audit_logs', tabela: auditLogs },
   { nome: 'schools', tabela: schools },
   { nome: 'admins', tabela: admins },
 ] as const

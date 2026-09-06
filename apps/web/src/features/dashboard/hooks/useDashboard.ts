@@ -51,6 +51,7 @@ export interface SchoolDashboard {
   teachersCount: number
   classesCount: number
   tuitions: {
+    total: TuitionStat
     pending: TuitionStat
     paid: TuitionStat
     overdue: TuitionStat
@@ -91,6 +92,7 @@ export interface AdminDashboard {
   teachersByStatus: { ativo: number; inativo: number; licenca: number }
   classesCount: number
   tuitions: {
+    total: TuitionStat
     pending: TuitionStat
     paid: TuitionStat
     overdue: TuitionStat

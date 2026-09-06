@@ -10,6 +10,7 @@ import {
   School,
   Settings2,
   CalendarDays,
+  CalendarClock,
   Menu,
   X,
   Sun,
@@ -120,6 +121,13 @@ const navItems: NavItem[] = [
     icon: DollarSign,
     roles: ['gestor', 'secretaria'],
     matchPaths: ['/financial'],
+  },
+  {
+    to: '/financial-control',
+    label: 'Controle Financeiro',
+    icon: CalendarClock,
+    roles: ['gestor', 'secretaria'],
+    matchPaths: ['/financial-control'],
   },
   {
     to: '/academic-years',
@@ -363,7 +371,7 @@ export function AppLayout() {
 
   const visibleItems = navItems.filter((item) => {
     if (!role || !item.roles.includes(role)) return false
-    if (item.to === '/financial' && financialBlocked) return false
+    if ((item.to === '/financial' || item.to === '/financial-control') && financialBlocked) return false
     return true
   })
   const pinnedSet = new Set(pinnedItems)

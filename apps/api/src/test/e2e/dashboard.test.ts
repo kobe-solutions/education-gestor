@@ -25,6 +25,7 @@ const mockSchoolMetrics = {
   teachersCount: 8,
   classesCount: 5,
   tuitions: {
+    total: { count: 42, total: '21000.00' },
     pending: { count: 10, total: '5000.00' },
     paid: { count: 30, total: '15000.00' },
     overdue: { count: 2, total: '1000.00' },
@@ -54,6 +55,7 @@ const mockAdminMetrics = {
   teachersByStatus: { ativo: 18, inativo: 1, licenca: 1 },
   classesCount: 12,
   tuitions: {
+    total: { count: 200, total: '100000' },
     pending: { count: 40, total: '20000' },
     paid: { count: 150, total: '75000' },
     overdue: { count: 10, total: '5000' },
