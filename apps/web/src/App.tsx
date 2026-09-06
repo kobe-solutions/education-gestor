@@ -23,6 +23,7 @@ const TeacherFormPage = lazy(() => import('./features/teachers/pages/TeacherForm
 const ClassDetailPage = lazy(() => import('./features/classes/pages/ClassDetailPage').then(m => ({ default: m.ClassDetailPage })))
 const StudentReportPage = lazy(() => import('./features/academic/pages/StudentReportPage').then(m => ({ default: m.StudentReportPage })))
 const TuitionsPage = lazy(() => import('./features/financial/pages/TuitionsPage').then(m => ({ default: m.TuitionsPage })))
+const FinancialControlPage = lazy(() => import('./features/financial/pages/FinancialControlPage').then(m => ({ default: m.FinancialControlPage })))
 const SecretariasPage = lazy(() => import('./features/secretarias/pages/SecretariasPage').then(m => ({ default: m.SecretariasPage })))
 const MySchoolsPage = lazy(() => import('./features/secretarias/pages/MySchoolsPage').then(m => ({ default: m.MySchoolsPage })))
 const SubjectsPage = lazy(() => import('./features/subjects/pages/SubjectsPage').then(m => ({ default: m.SubjectsPage })))
@@ -112,6 +113,7 @@ export function App() {
                   <Route path="/teachers/new" element={<Suspense fallback={<PageLoader />}><TeacherFormPage /></Suspense>} />
                   <Route path="/teachers/:id/edit" element={<Suspense fallback={<PageLoader />}><TeacherFormPage /></Suspense>} />
                   <Route path="/financial" element={<Suspense fallback={<PageLoader />}><TuitionsPage /></Suspense>} />
+                  <Route path="/financial-control" element={<Suspense fallback={<PageLoader />}><FinancialControlPage /></Suspense>} />
                   <Route path="/grades" element={<Suspense fallback={<PageLoader />}><GradesPage /></Suspense>} />
                   <Route path="/attendance" element={<Suspense fallback={<PageLoader />}><GestorAttendancePage /></Suspense>} />
                 </Route>

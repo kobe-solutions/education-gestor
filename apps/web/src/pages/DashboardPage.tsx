@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link, Navigate } from 'react-router'
 import {
   Users,
@@ -17,22 +16,22 @@ import {
   ShieldCheck,
   TrendingUp,
   Presentation,
-  AlertTriangle,
-  FileText,
   Download,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react'
 import { useDashboard, isAdminDashboard, type DashboardData, type AdminDashboard, type SchoolDashboard } from '../features/dashboard/hooks/useDashboard'
 import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
 import { useFinancialVisibility } from '../contexts/FinancialVisibilityContext'
 import { useFinancialBlocked } from '../lib/useFinancialBlocked'
-import { TuitionStatusBadge } from '../features/financial/components/TuitionStatusBadge'
-import { fmtBRL, formatDateBR } from '../lib/format'
+import { fmtBRL } from '../lib/format'
 import { TONE_CONFIG, type ToneKey } from '../lib/colors'
 import { Skeleton } from '../components/ui/skeleton'
 import { Button } from '../components/ui/button'
+import { EmptyState } from '../components/EmptyState'
+import { DashMetric } from '../features/dashboard/components/DashMetric'
+import { SectionHeader } from '../features/dashboard/components/SectionHeader'
+import { FinanceSection } from '../features/dashboard/components/FinanceSection'
+import { DemandSection } from '../features/dashboard/components/DemandSection'
 
 // ── Skeleton ─────────────────────────────────────────────────────────────────
 
@@ -119,89 +118,6 @@ function exportDashboardReport(data: DashboardData) {
   a.click()
   URL.revokeObjectURL(url)
 }
-
-// ── Metric card ──────────────────────────────────────────────────────────────
-
-interface DashMetricProps {
-  icon: React.ElementType
-  value: number | string
-  label: string
-  sub?: string
-  tone: ToneKey
-}
-
-function DashMetric({ icon: Icon, value, label, sub, tone }: DashMetricProps) {
-  const t = TONE_CONFIG[tone]
-  return (
-    <div
-      className="flex flex-col gap-3 p-4 rounded-xl transition-all duration-200
-        hover:shadow-(--shadow-md) hover:-translate-y-0.5"
-      style={{
-        background: 'hsl(var(--card))',
-        border: `1px solid ${t.borderColor}`,
-        boxShadow: 'var(--shadow-sm)',
-      }}
-    >
-      <div
-        className="flex items-center justify-center rounded-md shrink-0"
-        style={{ width: 36, height: 36, background: t.iconBg, color: t.iconColor }}
-      >
-        <Icon size={18} strokeWidth={2.2} />
-      </div>
-      <div>
-        <div
-          className="text-2xl font-extrabold tabular-nums leading-none tracking-tight"
-          style={{ color: t.valueColor }}
-        >
-          {value}
-        </div>
-        <div
-          className="text-[11px] font-semibold uppercase tracking-wider mt-1.5 truncate"
-          style={{ color: 'hsl(var(--muted-foreground))' }}
-        >
-          {label}
-        </div>
-        {sub && (
-          <div className="text-xs font-medium mt-1 tabular-nums" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            {sub}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ── Section header ───────────────────────────────────────────────────────────
-
-function SectionHeader({
-  title,
-  subtitle,
-  action,
-}: {
-  title: string
-  subtitle?: string
-  action?: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-      <div>
-        <h2 className="font-bold text-base" style={{ color: 'hsl(var(--foreground))' }}>
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-xs mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            {subtitle}
-          </p>
-        )}
-      </div>
-      {action}
-    </div>
-  )
-}
-
-// ── Empty state ──────────────────────────────────────────────────────────────
-
-import { EmptyState } from '../components/EmptyState'
 
 // ── Admin dashboard ──────────────────────────────────────────────────────────
 
@@ -316,25 +232,25 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
           <SectionHeader title="Financeiro" subtitle="Mensalidades de todas as escolas" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <DashMetric
-              icon={Clock}
-              value={data.tuitions.pending.count}
-              label="Pendentes"
-              sub={fmtBRL(data.tuitions.pending.total)}
-              tone="amber"
+              icon={TrendingUp}
+              value={fmtBRL(data.tuitions.total.total)}
+              label="Total"
+              sub={`${data.tuitions.total.count} mensalidades`}
+              tone="indigo"
             />
             <DashMetric
               icon={CheckCircle2}
-              value={data.tuitions.paid.count}
+              value={fmtBRL(data.tuitions.paid.total)}
               label="Pagas"
-              sub={fmtBRL(data.tuitions.paid.total)}
+              sub={`${data.tuitions.paid.count} mensalidades`}
               tone="emerald"
             />
             <DashMetric
-              icon={AlertCircle}
-              value={data.tuitions.overdue.count}
-              label="Atrasadas"
-              sub={fmtBRL(data.tuitions.overdue.total)}
-              tone="red"
+              icon={Clock}
+              value={fmtBRL(data.tuitions.pending.total)}
+              label="Pendentes"
+              sub={`${data.tuitions.pending.count} mensalidades`}
+              tone="amber"
             />
           </div>
         </section>
@@ -512,23 +428,8 @@ function NoSchoolView() {
 
 function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/useDashboard').SchoolDashboard }) {
   const { payload } = useAuth()
-  const { hideFinancialData } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const isProfessor = payload?.role === 'professor'
-
-  const ALERT_PAGE_SIZE = 10
-  const [guardianPage, setGuardianPage] = useState(1)
-  const [docPage, setDocPage] = useState(1)
-  const guardianTotalPages = Math.max(1, Math.ceil(data.alerts.studentsWithoutGuardians.length / ALERT_PAGE_SIZE))
-  const docTotalPages = Math.max(1, Math.ceil(data.alerts.studentsWithoutIdDocument.length / ALERT_PAGE_SIZE))
-  const guardianPaginated = data.alerts.studentsWithoutGuardians.slice(
-    (guardianPage - 1) * ALERT_PAGE_SIZE,
-    guardianPage * ALERT_PAGE_SIZE,
-  )
-  const docPaginated = data.alerts.studentsWithoutIdDocument.slice(
-    (docPage - 1) * ALERT_PAGE_SIZE,
-    docPage * ALERT_PAGE_SIZE,
-  )
 
   return (
     <div className="space-y-8">
@@ -745,486 +646,11 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         </section>
       )}
 
-      {!financialBlocked && (
-        <section className="space-y-4">
-          <SectionHeader title="Financeiro" subtitle="Status das mensalidades" />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <DashMetric
-              icon={Clock}
-              value={data.tuitions.pending.count}
-              label="Pendentes"
-              sub={fmtBRL(data.tuitions.pending.total)}
-              tone="amber"
-            />
-            <DashMetric
-              icon={CheckCircle2}
-              value={data.tuitions.paid.count}
-              label="Pagas"
-              sub={fmtBRL(data.tuitions.paid.total)}
-              tone="emerald"
-            />
-            <DashMetric
-              icon={AlertCircle}
-              value={data.tuitions.overdue.count}
-              label="Atrasadas"
-              sub={fmtBRL(data.tuitions.overdue.total)}
-              tone="red"
-            />
-          </div>
-        </section>
-      )}
+      {/* ── Financeiro ──────────────────────────────────────────────────── */}
+      <FinanceSection tuitions={data.tuitions} blocked={financialBlocked} />
 
-      {!financialBlocked && (
-      <section className="space-y-4">
-        <SectionHeader
-          title="Mensalidades vencendo nos próximos 7 dias"
-          subtitle="Acompanhe alunos com vencimento próximo"
-          action={
-            <Link to="/financial" className="shrink-0">
-              <Button variant="outline" size="sm" className="gap-1.5">
-                Ver todas
-                <ArrowRight size={13} />
-              </Button>
-            </Link>
-          }
-        />
-
-        <div
-          className="rounded-xl overflow-hidden"
-          style={{
-            background: 'hsl(var(--card))',
-            border: '1px solid hsl(var(--border))',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          {data.upcomingTuitions.length === 0 ? (
-            <EmptyState
-              icon={CalendarClock}
-              title="Nenhuma mensalidade vencendo nos próximos 7 dias"
-            />
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                    {['Aluno', 'Vencimento', 'Valor', 'Status'].map((h) => (
-                      <th
-                        key={h}
-                        className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                        style={{ color: 'hsl(var(--muted-foreground))' }}
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.upcomingTuitions.map((t) => (
-                    <tr
-                      key={t.id}
-                      className="transition-colors duration-150 hover:bg-accent"
-                      style={{ borderBottom: '1px solid hsl(var(--border))' }}
-                    >
-                      <td className="px-5 py-3">
-                        <Link
-                          to={`/students/${t.studentId}`}
-                          className="font-semibold hover:underline"
-                          style={{ color: 'hsl(var(--foreground))' }}
-                        >
-                          {t.studentName}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-3 tabular-nums" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                        {formatDateBR(t.dueDate)}
-                      </td>
-                      <td className="px-5 py-3 font-semibold tabular-nums" style={{ color: 'hsl(var(--foreground))' }}>
-                        {fmtBRL(t.amount)}
-                      </td>
-                      <td className="px-5 py-3">
-                        <TuitionStatusBadge status={t.status} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </section>
-      )}
-
-      {/* ── Alertas ──────────────────────────────────────────────────────── */}
-      <section className="space-y-4">
-        <SectionHeader title="Alertas" subtitle="Pontos que precisam de atenção" />
-        <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 ${!financialBlocked ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
-          {!financialBlocked && (
-          <Link
-            to="/financial"
-            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
-            style={{
-              background: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div
-                className="flex items-center justify-center rounded-md shrink-0"
-                style={{ width: 32, height: 32, background: TONE_CONFIG.red.iconBg, color: TONE_CONFIG.red.iconColor }}
-              >
-                <AlertCircle size={16} strokeWidth={2.2} />
-              </div>
-              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.red.valueColor }}>
-                {data.alerts.overdueTuitions}
-              </span>
-            </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Mensalidades atrasadas
-            </span>
-          </Link>
-          )}
-          <a
-            href="#alert-sem-responsavel"
-            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
-            style={{
-              background: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div
-                className="flex items-center justify-center rounded-md shrink-0"
-                style={{ width: 32, height: 32, background: TONE_CONFIG.amber.iconBg, color: TONE_CONFIG.amber.iconColor }}
-              >
-                <AlertTriangle size={16} strokeWidth={2.2} />
-              </div>
-              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.amber.valueColor }}>
-                {data.alerts.studentsWithoutGuardians.length}
-              </span>
-            </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Sem responsável
-            </span>
-          </a>
-          <a
-            href="#alert-sem-documento"
-            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
-            style={{
-              background: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div
-                className="flex items-center justify-center rounded-md shrink-0"
-                style={{ width: 32, height: 32, background: TONE_CONFIG.amber.iconBg, color: TONE_CONFIG.amber.iconColor }}
-              >
-                <FileText size={16} strokeWidth={2.2} />
-              </div>
-              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.amber.valueColor }}>
-                {data.alerts.studentsWithoutIdDocument.length}
-              </span>
-            </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Sem doc. identidade
-            </span>
-          </a>
-          <a
-            href="#alert-3-faltas"
-            className="rounded-xl p-4 flex flex-col gap-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-(--shadow-md) block"
-            style={{
-              background: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div
-                className="flex items-center justify-center rounded-md shrink-0"
-                style={{ width: 32, height: 32, background: TONE_CONFIG.amber.iconBg, color: TONE_CONFIG.amber.iconColor }}
-              >
-                <Users size={16} strokeWidth={2.2} />
-              </div>
-              <span className="text-xl font-extrabold tabular-nums" style={{ color: TONE_CONFIG.amber.valueColor }}>
-                {data.alerts.lowAttendanceStudents.length}
-              </span>
-            </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Com 3+ faltas (30d)
-            </span>
-          </a>
-        </div>
-        {/* ── Tabela: Alunos 3+ faltas ─────────────────────────────────── */}
-        <div id="alert-3-faltas">
-          {data.alerts.lowAttendanceStudents.length > 0 && (
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            >
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                      {['Aluno', 'Faltas (30d)'].map((h) => (
-                        <th
-                          key={h}
-                          className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                          style={{ color: 'hsl(var(--muted-foreground))' }}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.alerts.lowAttendanceStudents.map((s) => (
-                      <tr
-                        key={s.studentId}
-                        className="transition-colors duration-150 hover:bg-accent"
-                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
-                      >
-                        <td className="px-5 py-3">
-                          <Link
-                            to={`/students/${s.studentId}`}
-                            className="font-semibold hover:underline"
-                            style={{ color: 'hsl(var(--foreground))' }}
-                          >
-                            {s.studentName}
-                          </Link>
-                        </td>
-                        <td className="px-5 py-3">
-                          <span
-                            className="inline-flex items-center rounded-sm px-2 py-0.5 text-[11px] font-semibold"
-                            style={{ background: TONE_CONFIG.red.iconBg, color: TONE_CONFIG.red.iconColor }}
-                          >
-                            {s.absenceCount} falta{s.absenceCount !== 1 ? 's' : ''}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── Tabela: Alunos sem responsável ───────────────────────────── */}
-        <div id="alert-sem-responsavel">
-          {data.alerts.studentsWithoutGuardians.length > 0 && (
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            >
-              <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
-                <AlertTriangle size={14} style={{ color: TONE_CONFIG.amber.iconColor }} />
-                <span className="text-xs font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  Alunos sem responsável cadastrado
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                      {['Aluno'].map((h) => (
-                        <th
-                          key={h}
-                          className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                          style={{ color: 'hsl(var(--muted-foreground))' }}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {guardianPaginated.map((s) => (
-                      <tr
-                        key={s.studentId}
-                        className="transition-colors duration-150 hover:bg-accent"
-                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
-                      >
-                        <td className="px-5 py-3">
-                          <Link
-                            to={`/students/${s.studentId}`}
-                            className="font-semibold hover:underline"
-                            style={{ color: 'hsl(var(--foreground))' }}
-                          >
-                            {s.studentName}
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {guardianTotalPages > 1 && (
-                <div
-                  className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5 border-t"
-                  style={{ borderColor: 'hsl(var(--border))' }}
-                >
-                  <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                    Mostrando 1–{Math.min(ALERT_PAGE_SIZE, data.alerts.studentsWithoutGuardians.length)} de{' '}
-                    {data.alerts.studentsWithoutGuardians.length}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      disabled={guardianPage <= 1}
-                      onClick={() => setGuardianPage((p) => Math.max(1, p - 1))}
-                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
-                      style={{ color: 'hsl(var(--muted-foreground))' }}
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    {Array.from({ length: guardianTotalPages }, (_, i) => i + 1)
-                      .filter((p) => p === 1 || p === guardianTotalPages || Math.abs(p - guardianPage) <= 1)
-                      .map((p, idx, arr) => (
-                        <span key={p} className="flex items-center gap-1">
-                          {idx > 0 && arr[idx - 1] !== p - 1 && (
-                            <span className="px-1 text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>...</span>
-                          )}
-                          <button
-                            onClick={() => setGuardianPage(p)}
-                            className="min-w-[26px] h-[26px] rounded text-xs font-medium transition-colors hover:bg-accent"
-                            style={{
-                              background: p === guardianPage ? 'hsl(var(--primary))' : 'transparent',
-                              color: p === guardianPage ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                            }}
-                          >
-                            {p}
-                          </button>
-                        </span>
-                      ))}
-                    <button
-                      disabled={guardianPage >= guardianTotalPages}
-                      onClick={() => setGuardianPage((p) => Math.min(guardianTotalPages, p + 1))}
-                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
-                      style={{ color: 'hsl(var(--muted-foreground))' }}
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* ── Tabela: Alunos sem documento ─────────────────────────────── */}
-        <div id="alert-sem-documento">
-          {data.alerts.studentsWithoutIdDocument.length > 0 && (
-            <div
-              className="rounded-xl overflow-hidden"
-              style={{
-                background: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            >
-              <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
-                <FileText size={14} style={{ color: TONE_CONFIG.amber.iconColor }} />
-                <span className="text-xs font-semibold" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                  Alunos sem documento de identidade
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                      {['Aluno'].map((h) => (
-                        <th
-                          key={h}
-                          className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
-                          style={{ color: 'hsl(var(--muted-foreground))' }}
-                        >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {docPaginated.map((s) => (
-                      <tr
-                        key={s.studentId}
-                        className="transition-colors duration-150 hover:bg-accent"
-                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
-                      >
-                        <td className="px-5 py-3">
-                          <Link
-                            to={`/students/${s.studentId}`}
-                            className="font-semibold hover:underline"
-                            style={{ color: 'hsl(var(--foreground))' }}
-                          >
-                            {s.studentName}
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {docTotalPages > 1 && (
-                <div
-                  className="flex flex-wrap items-center justify-between gap-2 px-5 py-2.5 border-t"
-                  style={{ borderColor: 'hsl(var(--border))' }}
-                >
-                  <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                    Mostrando 1–{Math.min(ALERT_PAGE_SIZE, data.alerts.studentsWithoutIdDocument.length)} de{' '}
-                    {data.alerts.studentsWithoutIdDocument.length}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      disabled={docPage <= 1}
-                      onClick={() => setDocPage((p) => Math.max(1, p - 1))}
-                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
-                      style={{ color: 'hsl(var(--muted-foreground))' }}
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    {Array.from({ length: docTotalPages }, (_, i) => i + 1)
-                      .filter((p) => p === 1 || p === docTotalPages || Math.abs(p - docPage) <= 1)
-                      .map((p, idx, arr) => (
-                        <span key={p} className="flex items-center gap-1">
-                          {idx > 0 && arr[idx - 1] !== p - 1 && (
-                            <span className="px-1 text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>...</span>
-                          )}
-                          <button
-                            onClick={() => setDocPage(p)}
-                            className="min-w-[26px] h-[26px] rounded text-xs font-medium transition-colors hover:bg-accent"
-                            style={{
-                              background: p === docPage ? 'hsl(var(--primary))' : 'transparent',
-                              color: p === docPage ? 'hsl(var(--primary-foreground))' : 'hsl(var(--muted-foreground))',
-                            }}
-                          >
-                            {p}
-                          </button>
-                        </span>
-                      ))}
-                    <button
-                      disabled={docPage >= docTotalPages}
-                      onClick={() => setDocPage((p) => Math.min(docTotalPages, p + 1))}
-                      className="p-1 rounded transition-colors disabled:opacity-30 hover:bg-accent"
-                      style={{ color: 'hsl(var(--muted-foreground))' }}
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* ── Controle de Demandas ────────────────────────────────────────── */}
+      <DemandSection alerts={data.alerts} blocked={financialBlocked} />
 
     </div>
   )
