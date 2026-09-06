@@ -70,8 +70,10 @@ O build gera um único chunk de 573 kB. Vite alerta sobre isso. Falta code split
 
 ## Melhoria — API
 
-### 18. Sem rate limiting
+### 18. ✅ Sem rate limiting
 Endpoints de autenticação (`POST /sessions`) não têm rate limiting. Vulnerável a brute force.
+
+**Status:** Resolvido - Implementado `@fastify/rate-limit` com configuração global (100 req/min) e rate limit específico para login (10 req/min).
 
 ### 19. Sem validação de sobreposição em `academic_periods`
 É possível criar dois períodos letivos com datas sobrepostas. A API não valida isso.

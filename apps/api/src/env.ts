@@ -20,6 +20,9 @@ const envSchema = z.object({
   MINIO_KEY: z.string().optional(),
   MINIO_SECRET: z.string().optional(),
   MINIO_PUBLIC_URL: z.string().optional(),
+  RATE_LIMIT_GLOBAL_MAX: z.coerce.number().default(100),
+  RATE_LIMIT_LOGIN_MAX: z.coerce.number().default(10),
+  RATE_LIMIT_TIME_WINDOW: z.coerce.number().default(60000),
 })
 
 export const env = envSchema.parse(process.env)
