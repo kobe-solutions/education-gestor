@@ -19,13 +19,14 @@ import {
   Presentation,
   BarChart3,
   ClipboardCheck,
+  ClipboardList,
   Eye,
   EyeOff,
   UserCircle,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Pin,
-  PinOff,
+  GraduationCap,
+  PartyPopper,
+  CalendarRange,
+  ChevronDown,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -34,7 +35,7 @@ import { useFinancialBlocked } from '../../lib/useFinancialBlocked'
 import { SchoolSelector } from '../SchoolSelector'
 import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
-import { SIDEBAR_BG, ACCENT_COLOR } from '../../lib/colors'
+import { ACCENT_COLOR } from '../../lib/colors'
 import { Avatar } from '../Avatar'
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import { useTeacher } from '../../features/teachers/hooks/useTeachers'
@@ -69,7 +70,7 @@ const navItems: NavItem[] = [
   {
     to: '/professor/classes',
     label: 'Minhas Turmas',
-    icon: Users,
+    icon: GraduationCap,
     roles: ['professor'],
     matchPaths: ['/professor/classes'],
   },
@@ -83,7 +84,7 @@ const navItems: NavItem[] = [
   {
     to: '/professor/grades',
     label: 'Notas',
-    icon: BookOpen,
+    icon: ClipboardList,
     roles: ['professor'],
     matchPaths: ['/professor/grades'],
   },
@@ -132,14 +133,14 @@ const navItems: NavItem[] = [
   {
     to: '/academic-years',
     label: 'Anos Letivos',
-    icon: CalendarDays,
+    icon: CalendarRange,
     roles: ['gestor', 'secretaria'],
     matchPaths: ['/academic-years'],
   },
   {
     to: '/school-events',
-    label: 'Eventos escolares',
-    icon: CalendarDays,
+    label: 'Eventos',
+    icon: PartyPopper,
     roles: ['gestor', 'professor', 'secretaria'],
     matchPaths: ['/school-events'],
   },
@@ -217,84 +218,31 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-const SIDEBAR_COLLAPSED_KEY = 'iris-sidebar-collapsed'
-const SIDEBAR_PINNED_KEY = 'iris-sidebar-pinned'
-
-interface SidebarLinkProps {
-  to: string
-  icon: React.ElementType
-  label: string
-  active: boolean
-  collapsed: boolean
-  pinned?: boolean
-  onTogglePin?: () => void
-}
-
-function SidebarLink({ to, icon: Icon, label, active, collapsed, pinned = false, onTogglePin }: SidebarLinkProps) {
-  const link = (
+function NavLink({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
+  return (
     <Link
       to={to}
       className={cn(
-        'flex items-center gap-3 w-full rounded-lg px-3 py-2.5 transition-all duration-150 relative',
-        collapsed ? 'justify-center px-0' : '',
+        'relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 whitespace-nowrap',
         active
           ? 'text-white'
           : 'text-gray-400 hover:text-white hover:bg-white/5',
       )}
-      style={active ? { background: ACCENT_COLOR + '15' } : undefined}
+      style={active ? { background: ACCENT_COLOR + '18' } : undefined}
     >
-      {active && !collapsed && (
+      {active && (
         <div
-          className="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-6 rounded-r-full"
+          className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
           style={{ background: ACCENT_COLOR }}
         />
       )}
       <Icon
-        className="h-5 w-5 shrink-0"
+        size={16}
+        className="shrink-0"
         style={active ? { color: ACCENT_COLOR } : undefined}
       />
-      {!collapsed && (
-        <span className={cn('text-sm font-medium truncate', active && 'font-semibold')}>
-          {label}
-        </span>
-      )}
+      <span>{label}</span>
     </Link>
-  )
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger render={link} />
-        <TooltipContent side="right" sideOffset={12}>{label}</TooltipContent>
-      </Tooltip>
-    )
-  }
-
-  return (
-    <div className="relative group">
-      {link}
-      {onTogglePin && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            onTogglePin()
-          }}
-          aria-label={pinned ? `Desafixar ${label}` : `Fixar ${label}`}
-          aria-pressed={pinned}
-          title={pinned ? `Desafixar ${label}` : `Fixar ${label}`}
-          className={cn(
-            'absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-md',
-            'text-gray-500 opacity-0 group-hover:opacity-100 hover:bg-white/10 hover:text-white',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-            pinned && 'opacity-100 text-amber-400',
-          )}
-        >
-          {pinned ? <PinOff size={13} /> : <Pin size={13} />}
-        </button>
-      )}
-    </div>
   )
 }
 
@@ -303,33 +251,9 @@ export function AppLayout() {
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true')
-  const [pinnedItems, setPinnedItems] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem(SIDEBAR_PINNED_KEY) ?? '[]')
-    } catch {
-      return []
-    }
-  })
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
   useKeyboardShortcuts(() => setShortcutsOpen(true))
-
-  const toggleSidebar = useCallback(() => {
-    setSidebarCollapsed((prev) => {
-      const next = !prev
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(next))
-      return next
-    })
-  }, [])
-
-  const togglePin = useCallback((to: string) => {
-    setPinnedItems((prev) => {
-      const next = prev.includes(to) ? prev.filter((p) => p !== to) : [...prev, to]
-      localStorage.setItem(SIDEBAR_PINNED_KEY, JSON.stringify(next))
-      return next
-    })
-  }, [])
 
   const role = payload?.role
   const { data: teacherProfile } = useTeacher(role === 'professor' ? payload!.userId : '')
@@ -340,31 +264,31 @@ export function AppLayout() {
   const schoolLogoUrl = role === 'gestor' ? schoolProfile?.logoUrl : undefined
 
   useEffect(() => {
-    setMobileDrawerOpen(false)
+    setMobileMenuOpen(false)
   }, [location.pathname])
 
   useEffect(() => {
-    if (mobileDrawerOpen) {
+    if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
     }
     return () => { document.body.style.overflow = '' }
-  }, [mobileDrawerOpen])
+  }, [mobileMenuOpen])
 
   useEffect(() => {
-    if (!mobileDrawerOpen) return
+    if (!mobileMenuOpen) return
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') setMobileDrawerOpen(false)
+      if (e.key === 'Escape') setMobileMenuOpen(false)
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [mobileDrawerOpen])
+  }, [mobileMenuOpen])
 
-  function handleLogout() {
+  const handleLogout = useCallback(() => {
     logout()
     navigate('/login')
-  }
+  }, [logout, navigate])
 
   const { hideFinancialData, toggleFinancialVisibility } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
@@ -374,257 +298,207 @@ export function AppLayout() {
     if ((item.to === '/financial' || item.to === '/financial-control') && financialBlocked) return false
     return true
   })
-  const pinnedSet = new Set(pinnedItems)
-  const sortedItems = [...visibleItems].sort((a, b) => {
-    const ap = pinnedSet.has(a.to) ? 0 : 1
-    const bp = pinnedSet.has(b.to) ? 0 : 1
-    if (ap !== bp) return ap - bp
-    return 0
-  })
   const activeItem = getActiveItem(visibleItems, location.pathname)
   const userName = payload?.name ?? ''
   const userEmail = payload && 'email' in payload ? (payload as { email?: string }).email : ''
 
-  function renderSidebarContent() {
-    return (
-      <>
-        {/* Logo / School branding */}
-        <div className={cn('flex items-center shrink-0', sidebarCollapsed ? 'justify-center px-0' : 'gap-2.5 px-4')} style={{ height: 'var(--header-h)' }}>
-          {schoolLogoUrl ? (
-            <img src={schoolLogoUrl} alt="" className="h-8 w-8 rounded object-contain shrink-0" />
-          ) : (
-            <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
-              <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
-              <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
-              <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
-              <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
-            </svg>
-          )}
-          {!sidebarCollapsed && (
-            <span className="font-bold text-sm truncate text-white">
-              {schoolProfile?.name ?? 'Painel Geral'}
-            </span>
-          )}
-        </div>
-
-        {/* Nav items */}
-        <nav className="flex-1 flex flex-col gap-0.5 py-2 px-2 overflow-y-auto">
-          {sortedItems.map((item) => (
-            <SidebarLink
-              key={item.to}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              active={activeItem?.to === item.to}
-              collapsed={sidebarCollapsed}
-              pinned={pinnedSet.has(item.to)}
-              onTogglePin={() => togglePin(item.to)}
-            />
-          ))}
-        </nav>
-
-        {/* Bottom section */}
-        <div className="px-3 pb-3 flex flex-col gap-2">
-          {/* Collapse toggle */}
-          <Button
-            variant="outline"
-            size={sidebarCollapsed ? 'icon' : 'default'}
-            className={cn(
-              'bg-transparent text-gray-400 hover:text-white hover:bg-white/5',
-              sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
-            )}
-            style={{ borderColor: 'hsl(var(--primary) / 0.3)' }}
-            onClick={toggleSidebar}
-            title={sidebarCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
-            aria-label={sidebarCollapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
-          >
-            {sidebarCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-            {!sidebarCollapsed && <span className="text-sm font-medium">Recolher</span>}
-          </Button>
-
-          {/* Financial visibility toggle — admin only */}
-          {role === 'admin' && (
-          <Tooltip>
-            <TooltipTrigger
-              render={
-              <Button
-                variant="outline"
-                size={sidebarCollapsed ? 'icon' : 'default'}
-                className={cn(
-                  'bg-transparent hover:bg-primary/10',
-                  sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
-                )}
-                style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
-                onClick={toggleFinancialVisibility}
-              >
-                {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
-                {!sidebarCollapsed && <span className="text-sm font-medium">{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</span>}
-              </Button>
-              }
-            />
-            {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</TooltipContent>}
-          </Tooltip>
-          )}
-
-          {/* Theme toggle */}
-          <Tooltip>
-            <TooltipTrigger
-              render={
-              <Button
-                variant="outline"
-                size={sidebarCollapsed ? 'icon' : 'default'}
-                className={cn(
-                  'bg-transparent text-primary hover:bg-primary/10',
-                  sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
-                )}
-                style={{ borderColor: 'hsl(var(--primary))' }}
-                onClick={toggleTheme}
-              >
-                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                {!sidebarCollapsed && <span className="text-sm font-medium">Alternar tema</span>}
-              </Button>
-              }
-            />
-            {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>Alternar tema</TooltipContent>}
-          </Tooltip>
-
-          {/* Logout */}
-          <Tooltip>
-            <TooltipTrigger
-              render={
-              <Button
-                variant="outline"
-                size={sidebarCollapsed ? 'icon' : 'default'}
-                className={cn(
-                  'bg-transparent text-primary hover:bg-primary/10',
-                  sidebarCollapsed ? 'self-center h-9 w-9' : 'w-full justify-center gap-3',
-                )}
-                style={{ borderColor: 'hsl(var(--primary))' }}
-                onClick={handleLogout}
-              >
-                <LogOut size={18} />
-                {!sidebarCollapsed && <span className="text-sm font-medium">Sair</span>}
-              </Button>
-              }
-            />
-            {sidebarCollapsed && <TooltipContent side="right" sideOffset={12}>Sair</TooltipContent>}
-          </Tooltip>
-
-          {/* User card */}
-          {!sidebarCollapsed && (
-          <div
-            className="flex items-center gap-3 rounded-xl px-3 py-3 mt-1"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            {userPhotoUrl ? (
-              <img src={userPhotoUrl} alt={userName} className="shrink-0 rounded-full object-cover p-2" style={{ width: 36, height: 36 }} />
-            ) : (
-              <div
-                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-                style={{ width: 36, height: 36, background: ACCENT_COLOR }}
-              >
-                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{userName}</p>
-              {userEmail && (
-                <p className="text-xs text-gray-500 truncate">{userEmail}</p>
-              )}
-            </div>
-          </div>
-          )}
-        </div>
-      </>
-    )
-  }
-
   return (
-    <div className="flex h-screen" style={{ background: 'hsl(var(--background))' }}>
-      {/* Desktop sidebar */}
-      <aside
-        className="hidden md:flex flex-col shrink-0 transition-all duration-200"
+    <div className="flex flex-col h-screen" style={{ background: 'hsl(var(--background))' }}>
+      {/* Top Header */}
+      <header
+        className="shrink-0 border-b"
         style={{
-          width: sidebarCollapsed ? 'var(--sidebar-w)' : 'var(--sidebar-expanded-w)',
-          background: SIDEBAR_BG,
+          background: '#0a0f1a',
+          borderColor: 'rgba(255,255,255,0.06)',
         }}
       >
-        {renderSidebarContent()}
-      </aside>
-
-      {/* Mobile drawer overlay */}
-      {mobileDrawerOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden"
-          onClick={() => setMobileDrawerOpen(false)}
-        />
-      )}
-
-      {/* Mobile drawer */}
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col w-64 md:hidden transition-transform duration-200 ease-out',
-          mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full',
-        )}
-        style={{ background: SIDEBAR_BG }}
-      >
-        <div className="flex items-center justify-between px-4 shrink-0" style={{ height: 'var(--header-h)' }}>
-          <div className="flex items-center gap-2.5">
+        {/* Main header row */}
+        <div className="flex items-center h-14 px-4 md:px-6 gap-3">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2.5 shrink-0">
             {schoolLogoUrl ? (
-              <img src={schoolLogoUrl} alt="" className="h-8 w-8 rounded object-contain shrink-0" />
+              <img src={schoolLogoUrl} alt="" className="h-7 w-7 rounded object-contain shrink-0" />
             ) : (
-              <svg width="28" height="28" viewBox="0 0 120 120" aria-label="IRIS">
+              <svg width="26" height="26" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
                 <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
                 <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
                 <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
                 <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
               </svg>
             )}
-            <span className="font-bold text-sm text-white">{schoolProfile?.name ?? 'Painel Geral'}</span>
+            <span className="font-bold text-sm text-white hidden sm:inline truncate max-w-[160px]">
+              {schoolProfile?.name ?? 'Painel Geral'}
+            </span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto ml-4 scrollbar-none">
+            {visibleItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                icon={item.icon}
+                label={item.label}
+                active={activeItem?.to === item.to}
+              />
+            ))}
+          </nav>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-1.5 ml-auto shrink-0">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline px-2 py-0.5 rounded"
+              style={{ color: ACCENT_COLOR, background: ACCENT_COLOR + '12', letterSpacing: '0.1em' }}
+            >
+              {role}
+            </span>
+            {role === 'secretaria' && <SchoolSelector />}
+
+            <NotificationsMenu />
+
+            {role === 'admin' && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}
+                      onClick={toggleFinancialVisibility}
+                    >
+                      {hideFinancialData ? <EyeOff size={16} className="text-red-500" /> : <Eye size={16} className="text-green-500" />}
+                    </Button>
+                  }
+                />
+                <TooltipContent>{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</TooltipContent>
+              </Tooltip>
+            )}
+
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-400 hover:text-white"
+                    onClick={toggleTheme}
+                  >
+                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                  </Button>
+                }
+              />
+              <TooltipContent>Alternar tema</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-400 hover:text-white"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={16} />
+                  </Button>
+                }
+              />
+              <TooltipContent>Sair</TooltipContent>
+            </Tooltip>
+
+            <div className="hidden sm:block ml-1">
+              <Avatar name={userName} photoUrl={userPhotoUrl} size={32} />
+            </div>
+
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 md:hidden"
+              aria-label="Abrir menu"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu size={20} />
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile drawer overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile drawer */}
+      <div
+        className={cn(
+          'fixed inset-y-0 right-0 z-50 w-72 flex flex-col md:hidden transition-transform duration-200 ease-out',
+          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full',
+        )}
+        style={{ background: '#0a0f1a' }}
+      >
+        <div className="flex items-center justify-between px-4 h-14 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2.5">
+            <Avatar name={userName} photoUrl={userPhotoUrl} size={28} />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{userName}</p>
+              {userEmail && <p className="text-[11px] text-gray-500 truncate">{userEmail}</p>}
+            </div>
           </div>
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-gray-400 hover:text-white"
-            onClick={() => setMobileDrawerOpen(false)}
+            onClick={() => setMobileMenuOpen(false)}
           >
             <X size={18} />
           </Button>
         </div>
 
         <nav className="flex-1 flex flex-col gap-0.5 py-2 px-2 overflow-y-auto">
-          {sortedItems.map((item) => (
-            <SidebarLink
-              key={item.to}
-              to={item.to}
-              icon={item.icon}
-              label={item.label}
-              active={activeItem?.to === item.to}
-              collapsed={false}
-              pinned={pinnedSet.has(item.to)}
-              onTogglePin={() => togglePin(item.to)}
-            />
-          ))}
+          {visibleItems.map((item) => {
+            const Icon = item.icon
+            const active = activeItem?.to === item.to
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                  active
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5',
+                )}
+                style={active ? { background: ACCENT_COLOR + '18' } : undefined}
+              >
+                <Icon
+                  size={18}
+                  style={active ? { color: ACCENT_COLOR } : undefined}
+                />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
         </nav>
 
-        <div className="px-3 pb-3 flex flex-col gap-2">
-          {/* Financial visibility toggle — admin only */}
+        <div className="px-3 pb-3 flex flex-col gap-2 border-t pt-3" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
           {role === 'admin' && (
-          <Button
-            variant="outline"
-            size="default"
-            className="w-full justify-start gap-3 bg-transparent hover:bg-primary/10"
-            style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
-            onClick={toggleFinancialVisibility}
-          >
-            {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
-            <span className="text-sm font-medium">
-              {hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}
-            </span>
-          </Button>
+            <Button
+              variant="outline"
+              size="default"
+              className="w-full justify-start gap-3 bg-transparent hover:bg-primary/10"
+              style={{ borderColor: hideFinancialData ? '#EF4444' : '#22C55E' }}
+              onClick={toggleFinancialVisibility}
+            >
+              {hideFinancialData ? <EyeOff size={16} className="text-red-500" /> : <Eye size={16} className="text-green-500" />}
+              <span className="text-sm font-medium">
+                {hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}
+              </span>
+            </Button>
           )}
 
           <Button
@@ -634,11 +508,10 @@ export function AppLayout() {
             style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={toggleTheme}
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             <span className="text-sm font-medium">Alternar tema</span>
           </Button>
 
-          {/* Logout */}
           <Button
             variant="outline"
             size="default"
@@ -646,109 +519,15 @@ export function AppLayout() {
             style={{ borderColor: 'hsl(var(--primary))' }}
             onClick={handleLogout}
           >
-            <LogOut size={18} />
+            <LogOut size={16} />
             <span className="text-sm font-medium">Sair</span>
           </Button>
-
-          {/* User card */}
-          <div
-            className="flex items-center gap-3 rounded-xl px-3 py-3 mt-1"
-            style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
-          >
-            {userPhotoUrl ? (
-              <img src={userPhotoUrl} alt={userName} className="shrink-0 rounded-full object-cover" style={{ width: 36, height: 36 }} />
-            ) : (
-              <div
-                className="flex items-center justify-center text-white text-xs font-bold shrink-0 rounded-full"
-                style={{ width: 36, height: 36, background: ACCENT_COLOR }}
-              >
-                {userName ? getInitials(userName) : role?.[0]?.toUpperCase() ?? 'U'}
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{userName}</p>
-              {userEmail && (
-                <p className="text-xs text-gray-500 truncate">{userEmail}</p>
-              )}
-            </div>
-          </div>
         </div>
-      </aside>
+      </div>
 
-      {/* Main area */}
-      <main className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {/* Header */}
-        <header
-          className="flex items-center px-4 md:px-6 gap-3 shrink-0"
-          style={{
-            height: 'var(--header-h)',
-            background: 'hsl(var(--card))',
-            borderBottom: '1px solid hsl(var(--border))',
-          }}
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 md:hidden"
-            aria-label="Abrir menu"
-            onClick={() => setMobileDrawerOpen(true)}
-          >
-            <Menu size={20} />
-          </Button>
-
-          <span
-            className="text-lg font-bold md:hidden"
-            style={{ color: ACCENT_COLOR }}
-          >
-            IRIS
-          </span>
-
-          <span
-            className="text-xs font-medium uppercase tracking-wide hidden sm:inline"
-            style={{ color: ACCENT_COLOR, letterSpacing: '0.12em' }}
-          >
-            {role}
-          </span>
-          {role === 'secretaria' && <SchoolSelector />}
-
-          <div className="flex-1" />
-
-          <div className="flex items-center gap-2">
-            {/* Notificações — gestor/secretaria */}
-            <NotificationsMenu />
-
-            {/* Financial visibility toggle (navbar) — admin only */}
-            {role === 'admin' && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}
-              onClick={toggleFinancialVisibility}
-              title={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}
-            >
-              {hideFinancialData ? <EyeOff size={18} className="text-red-500" /> : <Eye size={18} className="text-green-500" />}
-            </Button>
-            )}
-
-            {userName && (
-              <span className="text-sm font-medium hidden sm:inline" style={{ color: 'hsl(var(--foreground))' }}>
-                {userName}
-              </span>
-            )}
-
-            <Avatar
-              name={userName}
-              photoUrl={userPhotoUrl}
-              size={40}
-            />
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+      {/* Main content */}
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-4 md:p-6 lg:p-8">
           <Outlet />
         </div>
       </main>

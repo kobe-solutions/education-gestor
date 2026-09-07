@@ -41,6 +41,7 @@ describe('useDashboard', () => {
       upcomingTuitions: [],
       attendanceRate: 90,
       academicPerformance: { average: '7.5', passRate: 80, totalGrades: 20 },
+      attendanceRegistration: { registered: 150, total: 200, rate: 75 },
       classOccupancy: [],
       studentsByStatus: { active: 8, inactive: 1, transferred: 1, cancelled: 0 },
       teachersByStatus: { ativo: 3, inativo: 0, licenca: 0 },

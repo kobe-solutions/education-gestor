@@ -22,7 +22,6 @@ import {
 } from './academic.service'
 
 const preHandlerAll = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
-const preHandlerProfessor = [authenticate, injectTenant, authorizeRoles(['professor'])]
 
 export async function academicRoutes(app: FastifyInstance) {
   app.post('/grades', { preHandler: preHandlerAll }, async (request, reply) => {

@@ -21,9 +21,9 @@ type CreateTuitionServiceInput = {
 
 export async function listTuitionsService(
   schoolId: string,
-  pagination: { limit?: number; offset?: number } = {},
+  opts: { limit?: number; offset?: number; status?: string } = {},
 ) {
-  return findAllTuitionsRepository(schoolId, pagination)
+  return findAllTuitionsRepository(schoolId, opts)
 }
 
 export async function listStudentTuitionsService(schoolId: string, studentId: string) {

@@ -27,9 +27,9 @@ import type { CreateStudentBody, UpdateStudentBody, UpsertMedicalBody, CreateGua
 
 export async function listStudentsService(
   schoolId: string,
-  pagination: { limit?: number; offset?: number } = {},
+  opts: { limit?: number; offset?: number; search?: string; status?: string; sex?: string; minAge?: number; maxAge?: number } = {},
 ) {
-  return findAllStudentsRepository(schoolId, pagination)
+  return findAllStudentsRepository(schoolId, opts)
 }
 
 export async function getStudentService(schoolId: string, id: string) {

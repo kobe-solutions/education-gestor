@@ -197,6 +197,13 @@
       "when": 1785463568761,
       "tag": "0027_bouncy_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1788799915846,
+      "tag": "0028_heavy_toad",
+      "breakpoints": true
     }
   ]
 }

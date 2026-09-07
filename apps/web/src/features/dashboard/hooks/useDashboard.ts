@@ -21,9 +21,15 @@ export interface ClassOccupancy {
   studentCount: number
   maxStudents: number
   classId?: string
-  attendanceRate?: number | null
-  registrationRate?: number | null
-  averageGrade?: string | null
+  attendanceRate: number | null
+  registeredDays: number | null
+  averageGrade: string | null
+}
+
+export interface AttendanceRegistration {
+  registered: number
+  total: number
+  rate: number | null
 }
 
 export interface LowAttendanceStudent {
@@ -63,6 +69,7 @@ export interface SchoolDashboard {
   upcomingTuitions: UpcomingTuition[]
   attendanceRate: number | null
   academicPerformance: AcademicPerformance
+  attendanceRegistration: AttendanceRegistration
   classOccupancy: ClassOccupancy[]
   studentsByStatus: { active: number; inactive: number; transferred: number; cancelled: number }
   teachersByStatus: { ativo: number; inativo: number; licenca: number }

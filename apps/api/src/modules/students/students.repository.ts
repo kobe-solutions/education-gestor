@@ -129,15 +129,46 @@ export async function generateEnrollmentCodeRepository(schoolId: string): Promis
 
 export async function findAllStudentsRepository(
   schoolId: string,
-  { limit = 50, offset = 0 }: { limit?: number; offset?: number } = {},
+  opts: { limit?: number; offset?: number; search?: string; status?: string; sex?: string; minAge?: number; maxAge?: number } = {},
 ) {
+  const { limit = 50, offset = 0 } = opts
+
+  const conditions = [eq(students.schoolId, schoolId), isNull(students.deletedAt)]
+
+  if (opts.search) {
+    const term = `%${opts.search}%`
+    conditions.push(sql`(${students.name} ILIKE ${term} OR ${students.email} ILIKE ${term} OR ${students.cpf} ILIKE ${term} OR ${students.enrollmentCode} ILIKE ${term})`)
+  }
+
+  if (opts.status) {
+    conditions.push(eq(students.enrollmentStatus, opts.status))
+  }
+
+  if (opts.sex) {
+    conditions.push(eq(students.sex, opts.sex))
+  }
+
+  if (opts.minAge) {
+    const maxBirthDate = new Date()
+    maxBirthDate.setFullYear(maxBirthDate.getFullYear() - opts.minAge)
+    conditions.push(sql`${students.birthDate} <= ${maxBirthDate.toISOString().slice(0, 10)}`)
+  }
+
+  if (opts.maxAge) {
+    const minBirthDate = new Date()
+    minBirthDate.setFullYear(minBirthDate.getFullYear() - opts.maxAge - 1)
+    conditions.push(sql`${students.birthDate} > ${minBirthDate.toISOString().slice(0, 10)}`)
+  }
+
+  const where = and(...conditions)
+
   const [data, [countResult]] = await Promise.all([
     db.select(studentFields).from(students)
-      .where(and(eq(students.schoolId, schoolId), isNull(students.deletedAt)))
+      .where(where)
       .orderBy(desc(students.createdAt))
       .limit(limit).offset(offset),
     db.select({ total: count() }).from(students)
-      .where(and(eq(students.schoolId, schoolId), isNull(students.deletedAt))),
+      .where(where),
   ])
   return { data, total: countResult.total }
 }

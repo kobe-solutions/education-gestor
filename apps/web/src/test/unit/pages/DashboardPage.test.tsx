@@ -31,6 +31,7 @@ function makeSchoolDashboard(): SchoolDashboard {
     upcomingTuitions: [],
     attendanceRate: 92,
     academicPerformance: { average: '7.8', passRate: 88, totalGrades: 200 },
+    attendanceRegistration: { registered: 180, total: 200, rate: 90 },
     classOccupancy: [
       {
         classId: 'cls-1',
@@ -38,7 +39,7 @@ function makeSchoolDashboard(): SchoolDashboard {
         studentCount: 35,
         maxStudents: 40,
         attendanceRate: 94,
-        registrationRate: 88,
+        registeredDays: 45,
         averageGrade: '7.2',
       },
       {
@@ -47,7 +48,7 @@ function makeSchoolDashboard(): SchoolDashboard {
         studentCount: 30,
         maxStudents: 40,
         attendanceRate: null,
-        registrationRate: null,
+        registeredDays: null,
         averageGrade: null,
       },
     ],
@@ -157,7 +158,7 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Nome')).toBeInTheDocument()
     expect(screen.getByText('Qtd. alunos')).toBeInTheDocument()
     expect(screen.getByText('Frequência')).toBeInTheDocument()
-    expect(screen.getByText('Aulas registradas')).toBeInTheDocument()
+    expect(screen.getByText('Dias registrados')).toBeInTheDocument()
     expect(screen.getAllByText('Média geral').length).toBeGreaterThanOrEqual(1)
 
     const classLink = screen.getByText('1° Ano A')

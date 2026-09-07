@@ -209,9 +209,7 @@
   --radius: 0.75rem;
 
   /* Layout */
-  --header-h: 60px;
-  --sidebar-w: 72px;
-  --sidebar-expanded-w: 240px;
+  --header-h: 56px;
 
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, hsl(245, 58%, 51%) 0%, hsl(245, 58%, 61%) 100%);
@@ -345,6 +343,14 @@ html::-webkit-scrollbar-thumb {
 
 html::-webkit-scrollbar-thumb:hover {
   background-color: hsl(var(--muted-foreground) / 0.5);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 body {

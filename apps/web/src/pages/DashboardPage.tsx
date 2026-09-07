@@ -504,77 +504,41 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
       </section>
 
       {/* ── Acompanhamento Pedagógico ──────────────────────────────────── */}
-      {/* TODO BUG-007: This section should evolve to include pedagogical metrics
-          (% aulas registradas, % frequência por turma) once BUG-008 backend aggregation
-          endpoint is built. Keep existing student/teacher distribution cards for now. */}
       <section className="space-y-4">
-        <SectionHeader title="Acompanhamento Pedagógico" subtitle="Situação de alunos e professores" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div
-            className="rounded-xl p-5 space-y-3"
-            style={{
-              background: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Alunos
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: 'Ativos', value: data.studentsByStatus.active, tone: 'emerald' as ToneKey },
-                { label: 'Inativos', value: data.studentsByStatus.inactive, tone: 'slate' as ToneKey },
-                { label: 'Transferidos', value: data.studentsByStatus.transferred, tone: 'amber' as ToneKey },
-                { label: 'Cancelados', value: data.studentsByStatus.cancelled, tone: 'red' as ToneKey },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2"
-                  style={{ background: TONE_CONFIG[s.tone].iconBg }}
-                >
-                  <span className="text-lg font-bold tabular-nums" style={{ color: TONE_CONFIG[s.tone].valueColor }}>
-                    {s.value}
-                  </span>
-                  <span className="text-[11px] font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                    {s.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div
-            className="rounded-xl p-5 space-y-3"
-            style={{
-              background: 'hsl(var(--card))',
-              border: '1px solid hsl(var(--border))',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Professores
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: 'Ativos', value: data.teachersByStatus.ativo, tone: 'emerald' as ToneKey },
-                { label: 'Inativos', value: data.teachersByStatus.inativo, tone: 'slate' as ToneKey },
-                { label: 'Licença', value: data.teachersByStatus.licenca, tone: 'amber' as ToneKey },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="flex items-center gap-2 rounded-lg px-3 py-2"
-                  style={{ background: TONE_CONFIG[s.tone].iconBg }}
-                >
-                  <span className="text-lg font-bold tabular-nums" style={{ color: TONE_CONFIG[s.tone].valueColor }}>
-                    {s.value}
-                  </span>
-                  <span className="text-[11px] font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                    {s.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+        <SectionHeader title="Acompanhamento Pedagógico" subtitle="Registros de aula e distribuição de pessoal" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <DashMetric
+            icon={CheckCircle2}
+            value={data.attendanceRegistration.rate != null ? `${data.attendanceRegistration.rate}%` : '—'}
+            label="Aulas Registradas"
+            sub={data.attendanceRegistration.total > 0
+              ? `${data.attendanceRegistration.registered} de ${data.attendanceRegistration.total}`
+              : 'Sem dados'}
+            tone="emerald"
+          />
+          <DashMetric
+            icon={AlertCircle}
+            value={data.attendanceRegistration.rate != null ? `${100 - data.attendanceRegistration.rate}%` : '—'}
+            label="Aulas Pendentes"
+            sub={data.attendanceRegistration.total > 0
+              ? `${data.attendanceRegistration.total - data.attendanceRegistration.registered} pendente(s)`
+              : 'Sem dados'}
+            tone="amber"
+          />
+          <DashMetric
+            icon={Users}
+            value={data.studentsByStatus.active}
+            label="Alunos Ativos"
+            sub={`${data.studentsByStatus.inactive} inativos · ${data.studentsByStatus.transferred} transferidos`}
+            tone="indigo"
+          />
+          <DashMetric
+            icon={GraduationCap}
+            value={data.teachersByStatus.ativo}
+            label="Professores Ativos"
+            sub={`${data.teachersByStatus.inativo} inativos · ${data.teachersByStatus.licenca} licença`}
+            tone="violet"
+          />
         </div>
       </section>
 
@@ -594,7 +558,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
               <table className="w-full text-sm">
                 <thead>
                   <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                    {['Nome', 'Qtd. alunos', 'Frequência', 'Aulas registradas', 'Média geral'].map((h) => (
+                    {['Nome', 'Qtd. alunos', 'Frequência', 'Dias registrados', 'Média geral'].map((h) => (
                       <th
                         key={h}
                         className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wider"
@@ -659,7 +623,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
                           {c.attendanceRate != null ? `${c.attendanceRate}%` : '—'}
                         </td>
                         <td className="px-5 py-3 tabular-nums font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-                          {c.registrationRate != null ? `${c.registrationRate}%` : '—'}
+                          {c.registeredDays != null ? `${c.registeredDays} dia${c.registeredDays !== 1 ? 's' : ''}` : '—'}
                         </td>
                         <td className="px-5 py-3 tabular-nums font-medium" style={{ color: 'hsl(var(--foreground))' }}>
                           {c.averageGrade ?? '—'}
