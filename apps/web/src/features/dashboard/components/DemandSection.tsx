@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { AlertCircle, AlertTriangle, FileText, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { AlertCircle, AlertTriangle, FileText, Users, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Plus, CheckCircle2, Clock, XCircle, Loader2 } from 'lucide-react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { SectionHeader } from './SectionHeader'
 import { TONE_CONFIG, type ToneKey } from '../../../lib/colors'
+import { api } from '../../../lib/api'
+import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Alerts } from '../hooks/useDashboard'
 
 interface DemandSectionProps {
@@ -12,12 +15,47 @@ interface DemandSectionProps {
 
 const ALERT_PAGE_SIZE = 10
 
-// TODO BUG-011: Consider adding a full CRUD backend for demands (POST /demands, PATCH /demands/:id)
-// to allow users to create, assign, and resolve demand items beyond the current computed alerts.
-// Current alerts are read-only and derived from existing data.
+interface Demand {
+  id: string
+  type: string
+  title: string
+  description: string | null
+  responsible: string | null
+  status: string
+  priority: string
+  dueDate: string | null
+  createdAt: string
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  open: 'Aberta',
+  in_progress: 'Em andamento',
+  resolved: 'Resolvida',
+  cancelled: 'Cancelada',
+}
+
+const PRIORITY_LABELS: Record<string, string> = {
+  low: 'Baixa',
+  medium: 'Média',
+  high: 'Alta',
+}
+
+const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
+  open: { bg: '#fef3c7', text: '#92400e' },
+  in_progress: { bg: '#dbeafe', text: '#1e40af' },
+  resolved: { bg: '#d1fae5', text: '#065f46' },
+  cancelled: { bg: '#f3f4f6', text: '#374151' },
+}
+
+const PRIORITY_COLORS: Record<string, { bg: string; text: string }> = {
+  low: { bg: '#f3f4f6', text: '#374151' },
+  medium: { bg: '#fef3c7', text: '#92400e' },
+  high: { bg: '#fee2e2', text: '#991b1b' },
+}
 
 export function DemandSection({ alerts, blocked }: DemandSectionProps) {
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [showForm, setShowForm] = useState(false)
 
   function toggle(key: string) {
     setExpanded((prev) => (prev === key ? null : key))
@@ -120,7 +158,299 @@ export function DemandSection({ alerts, blocked }: DemandSectionProps) {
           )
         })}
       </div>
+
+      {/* CRUD Demands */}
+      <DemandCrudSection showForm={showForm} setShowForm={setShowForm} />
     </section>
+  )
+}
+
+function DemandCrudSection({ showForm, setShowForm }: { showForm: boolean; setShowForm: (v: boolean) => void }) {
+  const { schoolKey } = useSchoolKey()
+  const queryClient = useQueryClient()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['demands', schoolKey],
+    queryFn: async () => {
+      const res = await api.get<{ demands: Demand[]; total: number }>('/demands')
+      return res.data
+    },
+    enabled: !!schoolKey,
+  })
+
+  const createMutation = useMutation({
+    mutationFn: async (body: { type: string; title: string; description?: string; responsible?: string; priority?: string; dueDate?: string }) => {
+      return api.post('/demands', body)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['demands', schoolKey] })
+      setShowForm(false)
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      return api.patch(`/demands/${id}`, { status })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['demands', schoolKey] })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return api.delete(`/demands/${id}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['demands', schoolKey] })
+    },
+  })
+
+  const demands = data?.demands ?? []
+
+  return (
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{
+        background: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
+        boxShadow: 'var(--shadow-sm)',
+      }}
+    >
+      <div className="flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold" style={{ color: 'hsl(var(--foreground))' }}>Demandas Personalizadas</span>
+          <span
+            className="inline-flex items-center rounded-sm px-1.5 py-0.5 text-[10px] font-semibold"
+            style={{ background: '#dbeafe', color: '#1e40af' }}
+          >
+            {demands.length}
+          </span>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors hover:opacity-80"
+          style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
+        >
+          <Plus size={14} />
+          Nova Demanda
+        </button>
+      </div>
+
+      {showForm && (
+        <DemandForm
+          onSubmit={(body) => createMutation.mutate(body)}
+          onCancel={() => setShowForm(false)}
+          isLoading={createMutation.isPending}
+        />
+      )}
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 size={20} className="animate-spin" style={{ color: 'hsl(var(--muted-foreground))' }} />
+        </div>
+      ) : demands.length === 0 ? (
+        <div className="text-center py-8">
+          <span className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+            Nenhuma demanda criada. Clique em "Nova Demanda" para criar.
+          </span>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                {['Tipo', 'Título', 'Responsável', 'Prioridade', 'Status', 'Prazo', 'Ações'].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
+                    style={{ color: 'hsl(var(--muted-foreground))' }}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {demands.map((d) => (
+                <tr
+                  key={d.id}
+                  className="transition-colors duration-150 hover:bg-accent"
+                  style={{ borderBottom: '1px solid hsl(var(--border))' }}
+                >
+                  <td className="px-4 py-2.5">
+                    <span className="text-xs font-medium" style={{ color: 'hsl(var(--foreground))' }}>{d.type}</span>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className="font-semibold text-xs" style={{ color: 'hsl(var(--foreground))' }}>{d.title}</span>
+                    {d.description && (
+                      <p className="text-[11px] mt-0.5 line-clamp-1" style={{ color: 'hsl(var(--muted-foreground))' }}>{d.description}</p>
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className="text-xs" style={{ color: 'hsl(var(--foreground))' }}>{d.responsible ?? '—'}</span>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span
+                      className="inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-semibold"
+                      style={{ background: PRIORITY_COLORS[d.priority]?.bg, color: PRIORITY_COLORS[d.priority]?.text }}
+                    >
+                      {PRIORITY_LABELS[d.priority] ?? d.priority}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span
+                      className="inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-semibold"
+                      style={{ background: STATUS_COLORS[d.status]?.bg, color: STATUS_COLORS[d.status]?.text }}
+                    >
+                      {STATUS_LABELS[d.status] ?? d.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
+                      {d.dueDate ?? '—'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2.5">
+                    <div className="flex items-center gap-1.5">
+                      {d.status === 'open' && (
+                        <button
+                          onClick={() => updateMutation.mutate({ id: d.id, status: 'in_progress' })}
+                          className="p-1 rounded transition-colors hover:bg-accent"
+                          title="Iniciar"
+                        >
+                          <Clock size={14} style={{ color: '#1e40af' }} />
+                        </button>
+                      )}
+                      {(d.status === 'open' || d.status === 'in_progress') && (
+                        <button
+                          onClick={() => updateMutation.mutate({ id: d.id, status: 'resolved' })}
+                          className="p-1 rounded transition-colors hover:bg-accent"
+                          title="Resolver"
+                        >
+                          <CheckCircle2 size={14} style={{ color: '#065f46' }} />
+                        </button>
+                      )}
+                      {(d.status === 'open' || d.status === 'in_progress') && (
+                        <button
+                          onClick={() => updateMutation.mutate({ id: d.id, status: 'cancelled' })}
+                          className="p-1 rounded transition-colors hover:bg-accent"
+                          title="Cancelar"
+                        >
+                          <XCircle size={14} style={{ color: '#6b7280' }} />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { if (confirm('Excluir esta demanda?')) deleteMutation.mutate(d.id) }}
+                        className="p-1 rounded transition-colors hover:bg-accent"
+                        title="Excluir"
+                      >
+                        <XCircle size={14} style={{ color: '#991b1b' }} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DemandForm({ onSubmit, onCancel, isLoading }: {
+  onSubmit: (body: { type: string; title: string; description?: string; responsible?: string; priority?: string; dueDate?: string }) => void
+  onCancel: () => void
+  isLoading: boolean
+}) {
+  const [form, setForm] = useState({ type: '', title: '', description: '', responsible: '', priority: 'medium', dueDate: '' })
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.type.trim() || !form.title.trim()) return
+    onSubmit({
+      type: form.type.trim(),
+      title: form.title.trim(),
+      description: form.description.trim() || undefined,
+      responsible: form.responsible.trim() || undefined,
+      priority: form.priority,
+      dueDate: form.dueDate || undefined,
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="px-5 py-4 border-b" style={{ borderColor: 'hsl(var(--border))' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <input
+          placeholder="Tipo *"
+          value={form.type}
+          onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
+          className="rounded-md px-3 py-2 text-sm border"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}
+          required
+        />
+        <input
+          placeholder="Título *"
+          value={form.title}
+          onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+          className="rounded-md px-3 py-2 text-sm border"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}
+          required
+        />
+        <input
+          placeholder="Responsável"
+          value={form.responsible}
+          onChange={(e) => setForm((p) => ({ ...p, responsible: e.target.value }))}
+          className="rounded-md px-3 py-2 text-sm border"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}
+        />
+        <input
+          placeholder="Descrição"
+          value={form.description}
+          onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+          className="rounded-md px-3 py-2 text-sm border"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}
+        />
+        <select
+          value={form.priority}
+          onChange={(e) => setForm((p) => ({ ...p, priority: e.target.value }))}
+          className="rounded-md px-3 py-2 text-sm border"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}
+        >
+          <option value="low">Baixa</option>
+          <option value="medium">Média</option>
+          <option value="high">Alta</option>
+        </select>
+        <input
+          type="date"
+          value={form.dueDate}
+          onChange={(e) => setForm((p) => ({ ...p, dueDate: e.target.value }))}
+          className="rounded-md px-3 py-2 text-sm border"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--background))', color: 'hsl(var(--foreground))' }}
+          placeholder="Prazo"
+        />
+      </div>
+      <div className="flex items-center gap-2 mt-3">
+        <button
+          type="submit"
+          disabled={isLoading || !form.type.trim() || !form.title.trim()}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-md text-xs font-semibold transition-colors hover:opacity-80 disabled:opacity-50"
+          style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
+        >
+          {isLoading && <Loader2 size={14} className="animate-spin" />}
+          Criar
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-md text-xs font-semibold transition-colors hover:bg-accent"
+          style={{ color: 'hsl(var(--muted-foreground))' }}
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
   )
 }
 
