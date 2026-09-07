@@ -26,6 +26,7 @@ import { classPeriodsRoutes } from "./modules/classPeriods/classPeriods.routes";
 import { timetableRoutes } from "./modules/timetable/timetable.routes";
 import { auditRoutes } from "./modules/audit/audit.routes";
 import { teacherDashboardRoutes } from "./modules/teacherDashboard/teacherDashboard.routes";
+import { demandsRoutes } from "./modules/demands/demands.routes";
 
 export function buildApp() {
   const app = Fastify({
@@ -55,6 +56,7 @@ export function buildApp() {
   app.register(timetableRoutes);
   app.register(auditRoutes);
   app.register(teacherDashboardRoutes);
+  app.register(demandsRoutes);
 
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {
