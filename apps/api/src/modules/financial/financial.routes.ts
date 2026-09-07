@@ -21,10 +21,10 @@ const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secret
 
 export async function financialRoutes(app: FastifyInstance) {
   app.get('/tuitions', { preHandler }, async (request, reply) => {
-    const { page = '1', limit = '100' } = request.query as { page?: string; limit?: string }
+    const { page = '1', limit = '100', status } = request.query as { page?: string; limit?: string; status?: string }
     const limitN = Math.min(parseInt(limit, 10) || 100, 200)
     const offset = (parseInt(page, 10) - 1 || 0) * limitN
-    return reply.send(await listTuitionsService(getSchoolId(request), { limit: limitN, offset }))
+    return reply.send(await listTuitionsService(getSchoolId(request), { limit: limitN, offset, ...(status ? { status } : {}) }))
   })
 
   app.get('/students/:id/tuitions', { preHandler }, async (request, reply) => {

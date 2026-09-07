@@ -82,7 +82,9 @@ describe('POST /grades', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  it('retorna 403 para gestor (atribuição de nota é exclusiva do professor)', async () => {
+  it('retorna 201 para gestor (atribuição de nota permitida a todas as roles)', async () => {
+    vi.mocked(academicService.registerGradeService).mockResolvedValue(mockGrade as any)
+
     const response = await app.inject({
       method: 'POST',
       url: '/grades',
@@ -97,7 +99,7 @@ describe('POST /grades', () => {
       },
     })
 
-    expect(response.statusCode).toBe(403)
+    expect(response.statusCode).toBe(201)
   })
 
   it('retorna 400 com nota fora do range', async () => {
@@ -150,7 +152,9 @@ describe('POST /grades/bulk', () => {
     expect(response.json()).toHaveLength(2)
   })
 
-  it('retorna 403 para gestor (atribuição de nota é exclusiva do professor)', async () => {
+  it('retorna 201 para gestor (atribuição de nota permitida a todas as roles)', async () => {
+    vi.mocked(academicService.registerBulkGradesService).mockResolvedValue([mockGrade as any])
+
     const response = await app.inject({
       method: 'POST',
       url: '/grades/bulk',
@@ -163,7 +167,7 @@ describe('POST /grades/bulk', () => {
       },
     })
 
-    expect(response.statusCode).toBe(403)
+    expect(response.statusCode).toBe(201)
   })
 
   it('retorna 400 com nota fora do range', async () => {

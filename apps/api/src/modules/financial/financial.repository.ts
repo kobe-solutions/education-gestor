@@ -11,8 +11,12 @@ type CreateTuitionRepositoryInput = {
 
 export async function findAllTuitionsRepository(
   schoolId: string,
-  { limit = 100, offset = 0 }: { limit?: number; offset?: number } = {},
+  { limit = 100, offset = 0, status }: { limit?: number; offset?: number; status?: string } = {},
 ) {
+  const conditions = [eq(tuitions.schoolId, schoolId)]
+  if (status) conditions.push(eq(tuitions.status, status))
+  const where = and(...conditions)
+
   const [data, [countResult]] = await Promise.all([
     db.select({
       id: tuitions.id,
@@ -31,11 +35,11 @@ export async function findAllTuitionsRepository(
       updatedAt: tuitions.updatedAt,
     }).from(tuitions)
       .leftJoin(students, eq(tuitions.studentId, students.id))
-      .where(eq(tuitions.schoolId, schoolId))
+      .where(where)
       .orderBy(tuitions.dueDate)
       .limit(limit).offset(offset),
     db.select({ total: count() }).from(tuitions)
-      .where(eq(tuitions.schoolId, schoolId)),
+      .where(where),
   ])
   return { data, total: countResult.total }
 }

@@ -36,10 +36,20 @@ const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secret
 
 export async function studentsRoutes(app: FastifyInstance) {
   app.get('/students', { preHandler }, async (request, reply) => {
-    const { page = '1', limit = '50' } = request.query as { page?: string; limit?: string }
+    const { page = '1', limit = '50', search, status, sex, minAge, maxAge } = request.query as {
+      page?: string; limit?: string; search?: string; status?: string; sex?: string; minAge?: string; maxAge?: string
+    }
     const limitN = Math.min(parseInt(limit, 10) || 50, 200)
     const offset = (parseInt(page, 10) - 1 || 0) * limitN
-    return reply.send(await listStudentsService(getSchoolId(request), { limit: limitN, offset }))
+    return reply.send(await listStudentsService(getSchoolId(request), {
+      limit: limitN,
+      offset,
+      ...(search ? { search } : {}),
+      ...(status ? { status } : {}),
+      ...(sex ? { sex } : {}),
+      ...(minAge ? { minAge: parseInt(minAge, 10) } : {}),
+      ...(maxAge ? { maxAge: parseInt(maxAge, 10) } : {}),
+    }))
   })
 
   app.get('/students/:id', { preHandler }, async (request, reply) => {
