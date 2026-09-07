@@ -1,8 +1,8 @@
-import { eq, count, sum, and, gte, lte, sql, desc, avg } from 'drizzle-orm'
+import { eq, count, sum, and, gte, lte, sql, desc, avg, inArray } from 'drizzle-orm'
 import { db } from '../../db'
 import {
   students, teachers, schoolClasses, tuitions, secretarias, schools, auditLogs,
-  grades, attendances, classStudents, studentDocuments,
+  grades, attendances, classStudents, studentDocuments, timetableSlots,
 } from '../../db/schema'
 
 export async function getSchoolMetricsRepository(schoolId: string) {
@@ -110,6 +110,63 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     .groupBy(schoolClasses.id, schoolClasses.name, schoolClasses.maxStudents)
     .orderBy(desc(count(classStudents.studentId)))
 
+  // ── Per-class attendance rate (last 30 days) ──────────────────────────
+
+  const classIds = classOccupancy.map((c) => c.classId)
+  const classAttendanceRates = classIds.length > 0
+    ? await db
+        .select({
+          classId: attendances.classId,
+          total: count(),
+          present: sql<number>`count(case when ${attendances.present} is true then 1 end)`,
+        })
+        .from(attendances)
+        .where(
+          and(
+            inArray(attendances.classId, classIds),
+            gte(attendances.date, thirtyDaysAgo),
+          ),
+        )
+        .groupBy(attendances.classId)
+    : []
+
+  // ── Per-class average grade ───────────────────────────────────────────
+
+  const classAverageGrades = classIds.length > 0
+    ? await db
+        .select({
+          classId: grades.classId,
+          average: avg(grades.value),
+        })
+        .from(grades)
+        .where(inArray(grades.classId, classIds))
+        .groupBy(grades.classId)
+    : []
+
+  // ── Per-class registration rate (attendance days / timetable slots) ───
+
+  const classSlotCounts = classIds.length > 0
+    ? await db
+        .select({
+          classId: timetableSlots.classId,
+          slotCount: count(),
+        })
+        .from(timetableSlots)
+        .where(inArray(timetableSlots.classId, classIds))
+        .groupBy(timetableSlots.classId)
+    : []
+
+  const classAttendanceDays = classIds.length > 0
+    ? await db
+        .select({
+          classId: attendances.classId,
+          dayCount: sql<number>`count(distinct ${attendances.date})`,
+        })
+        .from(attendances)
+        .where(inArray(attendances.classId, classIds))
+        .groupBy(attendances.classId)
+    : []
+
   // ── Students by enrollment status ─────────────────────────────────────
 
   const studentsByStatusRows = await db
@@ -194,6 +251,21 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     )
     .orderBy(students.name)
 
+  // ── School-level attendance registration summary ─────────────────────
+
+  const [totalSlotsRow] = await db
+    .select({ total: count() })
+    .from(timetableSlots)
+    .where(eq(timetableSlots.schoolId, schoolId))
+
+  const [registeredDaysRow] = await db
+    .select({ total: sql<number>`count(distinct ${attendances.date})` })
+    .from(attendances)
+    .where(eq(attendances.schoolId, schoolId))
+
+  const totalSlots = totalSlotsRow?.total ?? 0
+  const registeredDays = registeredDaysRow ? Number(registeredDaysRow.total) : 0
+
   // ── Build response ────────────────────────────────────────────────────
 
   const pending = tuitionStats.find((t) => t.status === 'pending')
@@ -239,12 +311,35 @@ export async function getSchoolMetricsRepository(schoolId: string) {
       passRate,
       totalGrades: gradeRow.total,
     },
-    classOccupancy: classOccupancy.map((c) => ({
-      classId: c.classId,
-      className: c.className,
-      studentCount: c.studentCount,
-      maxStudents: c.maxStudents,
-    })),
+    attendanceRegistration: {
+      registered: registeredDays,
+      total: totalSlots,
+      rate: totalSlots > 0 ? Math.round((registeredDays / totalSlots) * 100) : null,
+    },
+    classOccupancy: classOccupancy.map((c) => {
+      const attRow = classAttendanceRates.find((r) => r.classId === c.classId)
+      const gradeRow = classAverageGrades.find((g) => g.classId === c.classId)
+      const slotRow = classSlotCounts.find((s) => s.classId === c.classId)
+      const dayRow = classAttendanceDays.find((d) => d.classId === c.classId)
+
+      const attendanceRate = attRow && attRow.total > 0
+        ? Math.round((Number(attRow.present) / attRow.total) * 100)
+        : null
+
+      const registeredDays = dayRow ? Number(dayRow.dayCount) : null
+
+      const averageGrade = gradeRow?.average ? Number(gradeRow.average).toFixed(1) : null
+
+      return {
+        classId: c.classId,
+        className: c.className,
+        studentCount: c.studentCount,
+        maxStudents: c.maxStudents,
+        attendanceRate,
+        registeredDays,
+        averageGrade,
+      }
+    }),
     studentsByStatus,
     teachersByStatus,
     recentActivity: recentActivity.map((a) => ({
@@ -274,13 +369,6 @@ export async function getSchoolMetricsRepository(schoolId: string) {
     },
   }
 }
-
-// TODO BUG-009: Add per-class aggregation queries for:
-//   1. attendanceRate: SELECT classId, AVG(present) FROM attendances WHERE schoolId = ? GROUP BY classId
-//   2. registrationRate: (registered lesson days / total timetable slots) per class
-//   3. averageGrade: SELECT classId, AVG(value) FROM grades WHERE schoolId = ? GROUP BY classId
-// These require joining timetable_slots ↔ attendances for registration rate.
-// See academic.ts schema: grades.classId → schoolClasses.id, attendances.classId → schoolClasses.id
 
 export async function getAdminMetricsRepository() {
   const [secretariasTotal] = await db.select({ count: count() }).from(secretarias)
