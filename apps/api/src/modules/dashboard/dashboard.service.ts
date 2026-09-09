@@ -1,4 +1,4 @@
-import { getSchoolMetricsRepository, getAdminMetricsRepository, getAdminActivityRepository } from './dashboard.repository'
+import { getSchoolMetricsRepository, getAdminMetricsRepository, getAdminActivityRepository, getRegistrationStatusRepository } from './dashboard.repository'
 
 export async function getSchoolDashboardService(schoolId: string) {
   return getSchoolMetricsRepository(schoolId)
@@ -15,4 +15,12 @@ export async function getAdminActivityService(opts: {
   entity?: string
 }) {
   return getAdminActivityRepository(opts)
+}
+
+export async function getRegistrationStatusService(
+  schoolId: string,
+  filters?: { teacherId?: string; classId?: string },
+  pagination?: { limit: number; offset: number },
+) {
+  return getRegistrationStatusRepository(schoolId, filters, pagination)
 }
