@@ -1,8 +1,9 @@
-import { eq, count, sum, and, gte, lte, sql, desc, avg, inArray } from 'drizzle-orm'
+import { eq, count, sum, and, gte, lte, sql, desc, avg, inArray, ne } from 'drizzle-orm'
 import { db } from '../../db'
 import {
   students, teachers, schoolClasses, tuitions, secretarias, schools, auditLogs,
   grades, attendances, classStudents, studentDocuments, timetableSlots,
+  classPeriods, academicYears, academicPeriods, subjects,
 } from '../../db/schema'
 
 export async function getSchoolMetricsRepository(schoolId: string) {
@@ -529,5 +530,258 @@ export async function getAdminActivityRepository(opts: {
       entityId: a.entityId,
       createdAt: a.createdAt.toISOString(),
     })),
+  }
+}
+
+// ── Registration Status (BUG-012) ────────────────────────────────────────
+
+function countWeekdaysBetween(startDate: string, endDate: string): Map<string, number> {
+  const counts = new Map<string, number>()
+  const start = new Date(startDate + 'T00:00:00Z')
+  const end = new Date(endDate + 'T00:00:00Z')
+
+  for (const name of ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']) {
+    counts.set(name, 0)
+  }
+
+  const current = new Date(start)
+  while (current <= end) {
+    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][current.getUTCDay()]
+    counts.set(dayName, (counts.get(dayName) ?? 0) + 1)
+    current.setUTCDate(current.getUTCDate() + 1)
+  }
+
+  return counts
+}
+
+export type RegistrationStatusTeacher = {
+  teacherId: string
+  teacherName: string
+  classes: Array<{
+    classId: string
+    className: string
+    subjects: Array<{
+      subjectId: string
+      subjectName: string
+      weekDay: string
+      periodName: string
+      periodStartTime: string
+      periodEndTime: string
+      attendanceRegistered: boolean
+      gradesRegistered: boolean
+    }>
+  }>
+}
+
+export type RegistrationStatusResult = {
+  data: RegistrationStatusTeacher[]
+  total: number
+  summary: {
+    totalSlots: number
+    attendanceRegistered: number
+    gradesRegistered: number
+  }
+}
+
+export async function getRegistrationStatusRepository(
+  schoolId: string,
+  filters?: { teacherId?: string; classId?: string },
+  pagination?: { limit: number; offset: number },
+): Promise<RegistrationStatusResult> {
+  // 1. Find active academic year
+  const [activeYear] = await db
+    .select({ id: academicYears.id })
+    .from(academicYears)
+    .where(and(eq(academicYears.schoolId, schoolId), eq(academicYears.status, 'active')))
+    .limit(1)
+
+  if (!activeYear) {
+    return { data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0, gradesRegistered: 0 } }
+  }
+
+  // 2. Find current academic period
+  const today = new Date().toISOString().slice(0, 10)
+  const [currentPeriod] = await db
+    .select({ id: academicPeriods.id, startDate: academicPeriods.startDate, endDate: academicPeriods.endDate })
+    .from(academicPeriods)
+    .where(
+      and(
+        eq(academicPeriods.schoolId, schoolId),
+        eq(academicPeriods.academicYearId, activeYear.id),
+        sql`${academicPeriods.startDate} <= ${today}`,
+        sql`${academicPeriods.endDate} >= ${today}`,
+      ),
+    )
+    .orderBy(academicPeriods.order)
+    .limit(1)
+
+  // 3. Build slot query conditions
+  const slotConditions = [
+    eq(timetableSlots.schoolId, schoolId),
+    eq(timetableSlots.academicYearId, activeYear.id),
+  ]
+  if (filters?.teacherId) slotConditions.push(eq(timetableSlots.teacherId, filters.teacherId))
+  if (filters?.classId) slotConditions.push(eq(timetableSlots.classId, filters.classId))
+
+  // 4. Fetch all relevant timetable slots with joins
+  const slots = await db
+    .select({
+      slotId: timetableSlots.id,
+      teacherId: timetableSlots.teacherId,
+      teacherName: teachers.name,
+      classId: timetableSlots.classId,
+      className: schoolClasses.name,
+      subjectId: timetableSlots.subjectId,
+      subjectName: subjects.name,
+      weekDay: timetableSlots.weekDay,
+      classPeriodName: classPeriods.name,
+      classPeriodStartTime: classPeriods.startTime,
+      classPeriodEndTime: classPeriods.endTime,
+    })
+    .from(timetableSlots)
+    .innerJoin(teachers, eq(timetableSlots.teacherId, teachers.id))
+    .innerJoin(schoolClasses, eq(timetableSlots.classId, schoolClasses.id))
+    .innerJoin(subjects, eq(timetableSlots.subjectId, subjects.id))
+    .innerJoin(classPeriods, eq(timetableSlots.classPeriodId, classPeriods.id))
+    .where(and(...slotConditions))
+    .orderBy(teachers.name, schoolClasses.name, classPeriods.order)
+
+  if (slots.length === 0) {
+    return { data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0, gradesRegistered: 0 } }
+  }
+
+  const classIds = [...new Set(slots.map((s) => s.classId))]
+
+  // 5. Count attendance dates per class within the period
+  const attendanceDateCounts = new Map<string, number>()
+  if (currentPeriod) {
+    const attRows = await db
+      .select({
+        classId: attendances.classId,
+        dayCount: sql<number>`count(distinct ${attendances.date})`,
+      })
+      .from(attendances)
+      .where(
+        and(
+          eq(attendances.schoolId, schoolId),
+          inArray(attendances.classId, classIds),
+          gte(attendances.date, currentPeriod.startDate),
+          lte(attendances.date, currentPeriod.endDate),
+        ),
+      )
+      .groupBy(attendances.classId)
+
+    for (const row of attRows) {
+      attendanceDateCounts.set(row.classId, Number(row.dayCount))
+    }
+  }
+
+  // 6. Compute expected weekday counts per class within the period
+  const expectedWeekdayCounts = new Map<string, number>()
+  if (currentPeriod) {
+    const weekdayCounts = countWeekdaysBetween(currentPeriod.startDate, currentPeriod.endDate)
+    for (const classId of classIds) {
+      const classSlots = slots.filter((s) => s.classId === classId)
+      const uniqueWeekdays = new Set(classSlots.map((s) => s.weekDay))
+      let expected = 0
+      for (const wd of uniqueWeekdays) {
+        expected += weekdayCounts.get(wd) ?? 0
+      }
+      expectedWeekdayCounts.set(classId, expected)
+    }
+  }
+
+  // 7. Check grades per class+subject within the current period
+  const gradesRegisteredSet = new Set<string>()
+  if (currentPeriod) {
+    const gradeRows = await db
+      .selectDistinct({ classId: grades.classId, subjectId: grades.subjectId })
+      .from(grades)
+      .where(
+        and(
+          eq(grades.schoolId, schoolId),
+          inArray(grades.classId, classIds),
+          eq(grades.academicPeriodId, currentPeriod.id),
+        ),
+      )
+
+    for (const row of gradeRows) {
+      gradesRegisteredSet.add(`${row.classId}:${row.subjectId}`)
+    }
+  }
+
+  // 8. Group slots by teacher → class → subjects
+  const teacherMap = new Map<string, {
+    teacherId: string
+    teacherName: string
+    classes: Map<string, {
+      classId: string
+      className: string
+      subjects: Array<{
+        subjectId: string
+        subjectName: string
+        weekDay: string
+        periodName: string
+        periodStartTime: string
+        periodEndTime: string
+        attendanceRegistered: boolean
+        gradesRegistered: boolean
+      }>
+    }>
+  }>()
+
+  let totalSlots = 0
+  let attendanceRegisteredCount = 0
+  let gradesRegisteredCount = 0
+
+  for (const slot of slots) {
+    totalSlots++
+
+    let teacherEntry = teacherMap.get(slot.teacherId)
+    if (!teacherEntry) {
+      teacherEntry = { teacherId: slot.teacherId, teacherName: slot.teacherName, classes: new Map() }
+      teacherMap.set(slot.teacherId, teacherEntry)
+    }
+
+    let classEntry = teacherEntry.classes.get(slot.classId)
+    if (!classEntry) {
+      classEntry = { classId: slot.classId, className: slot.className, subjects: [] }
+      teacherEntry.classes.set(slot.classId, classEntry)
+    }
+
+    const expectedCount = expectedWeekdayCounts.get(slot.classId) ?? 0
+    const actualCount = attendanceDateCounts.get(slot.classId) ?? 0
+    const attendanceRegistered = expectedCount > 0 && actualCount >= expectedCount
+    const gradesKey = `${slot.classId}:${slot.subjectId}`
+    const gradesRegistered = gradesRegisteredSet.has(gradesKey)
+
+    if (attendanceRegistered) attendanceRegisteredCount++
+    if (gradesRegistered) gradesRegisteredCount++
+
+    classEntry.subjects.push({
+      subjectId: slot.subjectId,
+      subjectName: slot.subjectName,
+      weekDay: slot.weekDay,
+      periodName: slot.classPeriodName,
+      periodStartTime: slot.classPeriodStartTime,
+      periodEndTime: slot.classPeriodEndTime,
+      attendanceRegistered,
+      gradesRegistered,
+    })
+  }
+
+  const allTeachers = Array.from(teacherMap.values()).map((t) => ({
+    ...t,
+    classes: Array.from(t.classes.values()),
+  }))
+
+  const limit = pagination?.limit ?? 50
+  const offset = pagination?.offset ?? 0
+  const paginatedTeachers = allTeachers.slice(offset, offset + limit)
+
+  return {
+    data: paginatedTeachers,
+    total: allTeachers.length,
+    summary: { totalSlots, attendanceRegistered: attendanceRegisteredCount, gradesRegistered: gradesRegisteredCount },
   }
 }
