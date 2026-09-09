@@ -9,7 +9,6 @@ import {
   Building2,
   School,
   Settings2,
-  CalendarDays,
   CalendarClock,
   Menu,
   X,
@@ -26,7 +25,7 @@ import {
   GraduationCap,
   PartyPopper,
   CalendarRange,
-  ChevronDown,
+  ChevronLeft,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -35,7 +34,7 @@ import { useFinancialBlocked } from '../../lib/useFinancialBlocked'
 import { SchoolSelector } from '../SchoolSelector'
 import { Button } from '../ui/button'
 import { cn } from '../../lib/utils'
-import { ACCENT_COLOR } from '../../lib/colors'
+import { ACCENT_COLOR, SIDEBAR_BG, SIDEBAR_ITEM_HOVER } from '../../lib/colors'
 import { Avatar } from '../Avatar'
 import { Tooltip, TooltipTrigger, TooltipContent } from '../ui/tooltip'
 import { useTeacher } from '../../features/teachers/hooks/useTeachers'
@@ -115,6 +114,13 @@ const navItems: NavItem[] = [
     icon: BookOpen,
     roles: ['gestor', 'secretaria'],
     matchPaths: ['/academic', '/classes', '/structure', '/education-levels', '/series', '/scheduling'],
+  },
+  {
+    to: '/dashboard/registration-status',
+    label: 'Registro de Aulas',
+    icon: ClipboardCheck,
+    roles: ['gestor', 'secretaria'],
+    matchPaths: ['/dashboard/registration-status'],
   },
   {
     to: '/financial',
@@ -218,31 +224,120 @@ function getInitials(name: string) {
     .toUpperCase()
 }
 
-function NavLink({ to, icon: Icon, label, active }: { to: string; icon: React.ElementType; label: string; active: boolean }) {
+const SIDEBAR_WIDTH = 240
+
+function SidebarNav({
+  items,
+  activeItem,
+  collapsed,
+  onToggle,
+}: {
+  items: NavItem[]
+  activeItem: NavItem | null
+  collapsed: boolean
+  onToggle: () => void
+}) {
   return (
-    <Link
-      to={to}
-      className={cn(
-        'relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 whitespace-nowrap',
-        active
-          ? 'text-white'
-          : 'text-gray-400 hover:text-white hover:bg-white/5',
-      )}
-      style={active ? { background: ACCENT_COLOR + '18' } : undefined}
+    <aside
+      className="fixed inset-y-0 left-0 z-30 flex flex-col shrink-0 transition-[width] duration-200 ease-out"
+      style={{
+        width: collapsed ? 64 : SIDEBAR_WIDTH,
+        background: SIDEBAR_BG,
+      }}
     >
-      {active && (
-        <div
-          className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
-          style={{ background: ACCENT_COLOR }}
-        />
-      )}
-      <Icon
-        size={16}
-        className="shrink-0"
-        style={active ? { color: ACCENT_COLOR } : undefined}
-      />
-      <span>{label}</span>
-    </Link>
+      {/* Logo */}
+      <div
+        className="flex items-center h-14 px-3 shrink-0 border-b"
+        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <Link to="/" className="flex items-center gap-2.5 min-w-0 mx-auto">
+          <svg width="26" height="26" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
+            <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
+            <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
+            <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
+            <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
+          </svg>
+          {!collapsed && (
+            <span className="font-bold text-sm text-white truncate">
+              Painel
+            </span>
+          )}
+        </Link>
+      </div>
+
+      {/* Nav items */}
+      <nav className="flex-1 flex flex-col gap-0.5 py-3 px-2 overflow-y-auto scrollbar-none">
+        {items.map((item) => {
+          const Icon = item.icon
+          const active = activeItem?.to === item.to
+          const link = (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                'flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150',
+                collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5',
+                active
+                  ? 'text-white'
+                  : 'text-gray-400 hover:text-white',
+              )}
+              style={{
+                background: active ? ACCENT_COLOR + '18' : undefined,
+              }}
+              title={collapsed ? item.label : undefined}
+            >
+              <Icon
+                size={18}
+                className="shrink-0"
+                style={active ? { color: ACCENT_COLOR } : undefined}
+              />
+              {!collapsed && <span className="truncate">{item.label}</span>}
+            </Link>
+          )
+
+          if (collapsed) {
+            return (
+              <Tooltip key={item.to}>
+                <TooltipTrigger render={link} />
+                <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
+              </Tooltip>
+            )
+          }
+          return link
+        })}
+      </nav>
+
+      {/* Toggle at bottom */}
+      <div
+        className="shrink-0 px-2 pb-3 border-t"
+        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'h-9 w-full text-gray-500 hover:text-white mt-2',
+                  collapsed && 'px-0',
+                )}
+                onClick={onToggle}
+                aria-label={collapsed ? 'Expandir sidebar' : 'Recolher sidebar'}
+              >
+                <ChevronLeft
+                  size={16}
+                  className={cn('transition-transform duration-200', collapsed && 'rotate-180')}
+                />
+              </Button>
+            }
+          />
+          <TooltipContent side="right" sideOffset={8}>
+            {collapsed ? 'Expandir' : 'Recolher'}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+    </aside>
   )
 }
 
@@ -251,9 +346,19 @@ export function AppLayout() {
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 768)
   useKeyboardShortcuts(() => setShortcutsOpen(true))
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    setIsDesktop(mq.matches)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const role = payload?.role
   const { data: teacherProfile } = useTeacher(role === 'professor' ? payload!.userId : '')
@@ -302,130 +407,25 @@ export function AppLayout() {
   const userName = payload?.name ?? ''
   const userEmail = payload && 'email' in payload ? (payload as { email?: string }).email : ''
 
+  const contentMargin = !isDesktop || mobileMenuOpen
+    ? 0
+    : sidebarCollapsed
+      ? 64
+      : SIDEBAR_WIDTH
+
   return (
-    <div className="flex flex-col h-screen" style={{ background: 'hsl(var(--background))' }}>
-      {/* Top Header */}
-      <header
-        className="shrink-0 border-b"
-        style={{
-          background: '#0a0f1a',
-          borderColor: 'rgba(255,255,255,0.06)',
-        }}
-      >
-        {/* Main header row */}
-        <div className="flex items-center h-14 px-4 md:px-6 gap-3">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0">
-            {schoolLogoUrl ? (
-              <img src={schoolLogoUrl} alt="" className="h-7 w-7 rounded object-contain shrink-0" />
-            ) : (
-              <svg width="26" height="26" viewBox="0 0 120 120" aria-label="IRIS" className="shrink-0">
-                <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
-                <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
-                <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
-                <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
-              </svg>
-            )}
-            <span className="font-bold text-sm text-white hidden sm:inline truncate max-w-[160px]">
-              {schoolProfile?.name ?? 'Painel Geral'}
-            </span>
-          </Link>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'hsl(var(--background))' }}>
+      {/* Desktop sidebar */}
+      <div className="hidden md:block">
+        <SidebarNav
+          items={visibleItems}
+          activeItem={activeItem}
+          collapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed((v) => !v)}
+        />
+      </div>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1 flex-1 overflow-x-auto ml-4 scrollbar-none">
-            {visibleItems.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                icon={item.icon}
-                label={item.label}
-                active={activeItem?.to === item.to}
-              />
-            ))}
-          </nav>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-1.5 ml-auto shrink-0">
-            <span
-              className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline px-2 py-0.5 rounded"
-              style={{ color: ACCENT_COLOR, background: ACCENT_COLOR + '12', letterSpacing: '0.1em' }}
-            >
-              {role}
-            </span>
-            {role === 'secretaria' && <SchoolSelector />}
-
-            <NotificationsMenu />
-
-            {role === 'admin' && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}
-                      onClick={toggleFinancialVisibility}
-                    >
-                      {hideFinancialData ? <EyeOff size={16} className="text-red-500" /> : <Eye size={16} className="text-green-500" />}
-                    </Button>
-                  }
-                />
-                <TooltipContent>{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</TooltipContent>
-              </Tooltip>
-            )}
-
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-gray-400 hover:text-white"
-                    onClick={toggleTheme}
-                  >
-                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                  </Button>
-                }
-              />
-              <TooltipContent>Alternar tema</TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-gray-400 hover:text-white"
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={16} />
-                  </Button>
-                }
-              />
-              <TooltipContent>Sair</TooltipContent>
-            </Tooltip>
-
-            <div className="hidden sm:block ml-1">
-              <Avatar name={userName} photoUrl={userPhotoUrl} size={32} />
-            </div>
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 md:hidden"
-              aria-label="Abrir menu"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <Menu size={20} />
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile drawer overlay */}
+      {/* Mobile overlay */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
@@ -433,33 +433,41 @@ export function AppLayout() {
         />
       )}
 
-      {/* Mobile drawer */}
+      {/* Mobile sidebar drawer */}
       <div
         className={cn(
-          'fixed inset-y-0 right-0 z-50 w-72 flex flex-col md:hidden transition-transform duration-200 ease-out',
-          mobileMenuOpen ? 'translate-x-0' : 'translate-x-full',
+          'fixed inset-y-0 left-0 z-50 flex flex-col md:hidden transition-transform duration-200 ease-out',
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
         )}
-        style={{ background: '#0a0f1a' }}
+        style={{ width: SIDEBAR_WIDTH, background: SIDEBAR_BG }}
       >
-        <div className="flex items-center justify-between px-4 h-14 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          <div className="flex items-center gap-2.5">
-            <Avatar name={userName} photoUrl={userPhotoUrl} size={28} />
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">{userName}</p>
-              {userEmail && <p className="text-[11px] text-gray-500 truncate">{userEmail}</p>}
-            </div>
+        <div className="flex items-center justify-between px-3 h-14 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            {schoolLogoUrl ? (
+              <img src={schoolLogoUrl} alt="" className="h-7 w-7 rounded object-contain shrink-0" />
+            ) : (
+              <svg width="26" height="26" viewBox="0 0 120 120" className="shrink-0">
+                <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
+                <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
+                <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
+                <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
+              </svg>
+            )}
+            <span className="font-bold text-sm text-white truncate">
+              {schoolProfile?.name ?? 'Painel'}
+            </span>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-gray-400 hover:text-white"
+            className="h-8 w-8 text-gray-400 hover:text-white shrink-0"
             onClick={() => setMobileMenuOpen(false)}
           >
             <X size={18} />
           </Button>
         </div>
 
-        <nav className="flex-1 flex flex-col gap-0.5 py-2 px-2 overflow-y-auto">
+        <nav className="flex-1 flex flex-col gap-0.5 py-3 px-2 overflow-y-auto">
           {visibleItems.map((item) => {
             const Icon = item.icon
             const active = activeItem?.to === item.to
@@ -486,6 +494,14 @@ export function AppLayout() {
         </nav>
 
         <div className="px-3 pb-3 flex flex-col gap-2 border-t pt-3" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center gap-2.5 px-1 pb-1">
+            <Avatar name={userName} photoUrl={userPhotoUrl} size={28} />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">{userName}</p>
+              {userEmail && <p className="text-[11px] text-gray-500 truncate">{userEmail}</p>}
+            </div>
+          </div>
+
           {role === 'admin' && (
             <Button
               variant="outline"
@@ -525,12 +541,132 @@ export function AppLayout() {
         </div>
       </div>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-4 md:p-6 lg:p-8">
-          <Outlet />
-        </div>
-      </main>
+      {/* Main area */}
+      <div
+        className="flex flex-col flex-1 min-w-0 transition-[margin] duration-200"
+        style={{ marginLeft: contentMargin }}
+      >
+        {/* Top bar */}
+        <header
+          className="shrink-0 h-14 flex items-center gap-3 px-4 md:px-6 border-b"
+          style={{
+            background: 'hsl(var(--background))',
+            borderColor: 'hsl(var(--border))',
+          }}
+        >
+          {/* Mobile hamburger */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 md:hidden shrink-0"
+            aria-label="Abrir menu"
+            onClick={() => setMobileMenuOpen(true)}
+          >
+            <Menu size={20} />
+          </Button>
+
+          {/* Mobile logo */}
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 md:hidden">
+            {schoolLogoUrl ? (
+              <img src={schoolLogoUrl} alt="" className="h-7 w-7 rounded object-contain shrink-0" />
+            ) : (
+              <svg width="26" height="26" viewBox="0 0 120 120" className="shrink-0">
+                <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke={ACCENT_COLOR} strokeWidth="3.4" />
+                <circle cx="60" cy="60" r="18" fill={ACCENT_COLOR + 'CC'} />
+                <circle cx="60" cy="60" r="12" fill={ACCENT_COLOR} />
+                <circle cx="60" cy="60" r="7" fill="#1e1b4b" />
+              </svg>
+            )}
+            <span className="font-bold text-sm truncate max-w-[140px]">
+              {schoolProfile?.name ?? 'Painel'}
+            </span>
+          </Link>
+
+          {/* Page title */}
+          <div className="flex-1 min-w-0">
+            {activeItem && (
+              <h1 className="text-sm font-semibold truncate hidden sm:block">
+                {activeItem.label}
+              </h1>
+            )}
+          </div>
+
+          {/* Right actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline px-2 py-0.5 rounded"
+              style={{ color: ACCENT_COLOR, background: ACCENT_COLOR + '12', letterSpacing: '0.1em' }}
+            >
+              {role}
+            </span>
+            {role === 'secretaria' && <SchoolSelector />}
+
+            <NotificationsMenu />
+
+            {role === 'admin' && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}
+                      onClick={toggleFinancialVisibility}
+                    >
+                      {hideFinancialData ? <EyeOff size={16} className="text-red-500" /> : <Eye size={16} className="text-green-500" />}
+                    </Button>
+                  }
+                />
+                <TooltipContent>{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</TooltipContent>
+              </Tooltip>
+            )}
+
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={toggleTheme}
+                  >
+                    {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                  </Button>
+                }
+              />
+              <TooltipContent>Alternar tema</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={16} />
+                  </Button>
+                }
+              />
+              <TooltipContent>Sair</TooltipContent>
+            </Tooltip>
+
+            <div className="hidden sm:block ml-1">
+              <Avatar name={userName} photoUrl={userPhotoUrl} size={32} />
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 md:p-6 lg:p-8">
+            <Outlet />
+          </div>
+        </main>
+      </div>
 
       <ShortcutsHelp open={shortcutsOpen} onOpenChange={setShortcutsOpen} />
     </div>
