@@ -1,4 +1,4 @@
-import { Network, CalendarRange, UserPlus, BookOpen, CheckSquare, Settings2 } from 'lucide-react'
+import { Network, CalendarRange, UserPlus, BookOpen, CheckSquare, Settings2, ClipboardCheck } from 'lucide-react'
 import { HubCard } from '../components/HubCard'
 import { PageHead } from '../components/PageHead'
 
@@ -40,6 +40,12 @@ export function AcademicHubPage() {
           icon={CheckSquare}
           title="Frequência"
           description="Registro diário de presença em lote ou aluno a aluno."
+        />
+        <HubCard
+          to="/dashboard/registration-status"
+          icon={ClipboardCheck}
+          title="Registro de Aulas"
+          description="Acompanhe o status de frequência e notas por professor e turma."
         />
         <HubCard
           to="/settings"

@@ -52,6 +52,7 @@ const GestorAttendancePage = lazy(() => import('./features/academic/pages/Attend
 const GradesPage = lazy(() => import('./features/academic/pages/GradesPage').then(m => ({ default: m.GradesPage })))
 const ClassPeriodsPage = lazy(() => import('./features/classes/pages/ClassPeriodsPage').then(m => ({ default: m.ClassPeriodsPage })))
 const SchoolEventsPage = lazy(() => import('./features/school-events/pages/SchoolEventsPage').then(m => ({ default: m.SchoolEventsPage })))
+const RegistrationStatusPage = lazy(() => import('./features/dashboard/pages/RegistrationStatusPage').then(m => ({ default: m.RegistrationStatusPage })))
 
 function PageLoader() {
   return (
@@ -116,6 +117,7 @@ export function App() {
                   <Route path="/financial-control" element={<Suspense fallback={<PageLoader />}><FinancialControlPage /></Suspense>} />
                   <Route path="/grades" element={<Suspense fallback={<PageLoader />}><GradesPage /></Suspense>} />
                   <Route path="/attendance" element={<Suspense fallback={<PageLoader />}><GestorAttendancePage /></Suspense>} />
+                  <Route path="/dashboard/registration-status" element={<Suspense fallback={<PageLoader />}><RegistrationStatusPage /></Suspense>} />
                 </Route>
 
                 {/* Hubs de navegação — gestor, professor e secretaria */}
