@@ -15,6 +15,11 @@ import * as classService from '../../modules/classes/schoolClasses.service'
 import * as classRepo from '../../modules/classes/schoolClasses.repository'
 import * as timetableRepo from '../../modules/timetable/timetable.repository'
 
+vi.mock('../../db', () => ({
+  db: {
+    transaction: vi.fn(async (fn: (...args: any[]) => Promise<any>) => fn()),
+  },
+}))
 vi.mock('../../modules/academic/academic.repository')
 vi.mock('../../modules/students/students.service')
 vi.mock('../../modules/classes/schoolClasses.service')
