@@ -8,6 +8,7 @@ import {
   createStudentRepository,
   updateStudentRepository,
   deleteStudentRepository,
+  permanentDeleteStudentRepository,
   createGuardianRepository,
   updateGuardianRepository,
   deleteGuardianRepository,
@@ -82,6 +83,17 @@ export async function deleteStudentService(schoolId: string, id: string) {
   }
 
   await deleteStudentRepository(schoolId, id)
+}
+
+export async function permanentDeleteStudentService(schoolId: string, id: string) {
+  const student = await findStudentByIdRepository(schoolId, id)
+  if (!student) throw new Error('Student not found')
+
+  if (student.photoUrl) {
+    await deleteFile(extractKeyFromUrl(student.photoUrl)).catch(() => null)
+  }
+
+  await permanentDeleteStudentRepository(schoolId, id)
 }
 
 // ─── Foto ─────────────────────────────────────────────────────────────────────

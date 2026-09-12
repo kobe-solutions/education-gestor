@@ -17,6 +17,7 @@ import {
   createStudentService,
   updateStudentService,
   deleteStudentService,
+  permanentDeleteStudentService,
   uploadStudentPhotoService,
   listGuardiansService,
   addGuardianService,
@@ -33,6 +34,7 @@ import type { TenantPayload } from '../../middlewares/authorize'
 import { importStudentsService } from './import-students.service'
 
 const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
+const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
 
 export async function studentsRoutes(app: FastifyInstance) {
   app.get('/students', { preHandler }, async (request, reply) => {
@@ -139,6 +141,19 @@ export async function studentsRoutes(app: FastifyInstance) {
       await deleteStudentService(getSchoolId(request), id)
       const user = request.user as TenantPayload
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'DELETE', 'student', id)
+      return reply.status(204).send()
+    } catch (e) {
+      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
+      throw e
+    }
+  })
+
+  app.delete('/students/:id/permanent', { preHandler: adminOnly }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      await permanentDeleteStudentService(getSchoolId(request), id)
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'DELETE', 'student', id, { permanent: true })
       return reply.status(204).send()
     } catch (e) {
       if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })

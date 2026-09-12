@@ -13,6 +13,7 @@ import {
   toggleSchoolFinancialVisibilityService,
   uploadSchoolLogoServices,
   deleteSchoolService,
+  permanentDeleteSchoolService,
 } from './schools.service'
 import { createSchoolBodySchema, updateSchoolBodySchema, changePasswordBodySchema } from './schools.schema'
 import { validateImageFile, extFromMime } from '../../lib/validators'
@@ -149,6 +150,21 @@ export async function schoolsRoutes(app: FastifyInstance) {
       if (error instanceof Error) {
         if (error.message === 'School not found') return reply.status(404).send({ message: error.message })
         if (error.message === 'Forbidden') return reply.status(403).send({ message: 'Sem permissão para remover esta escola' })
+      }
+      throw error
+    }
+  })
+
+  app.delete('/schools/:id/permanent', { preHandler: adminOnly }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const user = request.user as JwtPayload
+      await permanentDeleteSchoolService(id)
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'DELETE', 'school', id, { permanent: true })
+      return reply.status(204).send()
+    } catch (error) {
+      if (error instanceof Error && error.message === 'School not found') {
+        return reply.status(404).send({ message: error.message })
       }
       throw error
     }
