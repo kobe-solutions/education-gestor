@@ -9,6 +9,7 @@ import type { Student } from '@education-gestor/types'
 vi.mock('../../../features/students/hooks/useStudents', () => ({
   useStudents: vi.fn(),
   useDeleteStudent: () => ({ mutateAsync: vi.fn(), mutate: vi.fn() }),
+  usePermanentDeleteStudent: () => ({ mutateAsync: vi.fn(), mutate: vi.fn() }),
 }))
 
 vi.mock('../../../features/classes/hooks/useClasses', () => ({

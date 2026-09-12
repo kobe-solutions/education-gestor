@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
-import { useTeachers, useDeleteTeacher } from '../hooks/useTeachers'
+import { useTeachers, useDeleteTeacher, usePermanentDeleteTeacher } from '../hooks/useTeachers'
 import { toast } from '../../../lib/toast'
+import { useAuth } from '../../../contexts/AuthContext'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
@@ -64,10 +65,14 @@ export function TeachersPage() {
   const teachers = data?.data
   const total = data?.total ?? 0
   const deleteMutation = useDeleteTeacher()
+  const permanentDeleteMutation = usePermanentDeleteTeacher()
+  const { payload } = useAuth()
+  const isAdmin = payload?.role === 'admin'
   const [searchParams, setSearchParams] = useSearchParams()
   const search = searchParams.get('q') ?? ''
   const statusFilter = searchParams.get('status') ?? 'all'
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [permanentDeleteTarget, setPermanentDeleteTarget] = useState<string | null>(null)
 
   const columns = useMemo<Column<Teacher>[]>(() =>
     columnsBase.map((col) => {
@@ -155,6 +160,17 @@ export function TeachersPage() {
             >
               <Trash2 size={14} className="text-destructive" />
             </Button>
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="icon"
+                title="Excluir permanentemente"
+                aria-label="Excluir permanentemente"
+                onClick={() => setPermanentDeleteTarget(t.id)}
+              >
+                <AlertTriangle size={14} className="text-destructive" />
+              </Button>
+            )}
           </div>
         )}
         emptyMessage={search ? `Nenhum professor encontrado para "${search}".` : 'Nenhum professor cadastrado.'}
@@ -189,6 +205,26 @@ export function TeachersPage() {
           })
         }}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={!!permanentDeleteTarget}
+        onConfirm={() => {
+          permanentDeleteMutation.mutate(permanentDeleteTarget!, {
+            onSuccess: () => {
+              toast.success('Professor excluído permanentemente')
+              setPermanentDeleteTarget(null)
+            },
+            onError: (err) => {
+              toast.error(extractErrorMessage(err))
+              setPermanentDeleteTarget(null)
+            },
+          })
+        }}
+        onCancel={() => setPermanentDeleteTarget(null)}
+        title="Excluir permanentemente"
+        description="Esta ação irá remover o professor e todos os seus dados (disciplinas vinculadas, documentos) de forma irreversível. Esta ação não pode ser desfeita."
+        confirmLabel="Excluir permanentemente"
       />
     </div>
   )

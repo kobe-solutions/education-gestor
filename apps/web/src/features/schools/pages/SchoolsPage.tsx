@@ -18,9 +18,10 @@ import {
   Eye,
   EyeOff,
   Camera,
+  AlertTriangle,
 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
-import { useSchools, useCreateSchool, useUpdateSchool, useDeleteSchool, useChangeSchoolPassword } from '../hooks/useSchools'
+import { useSchools, useCreateSchool, useUpdateSchool, useDeleteSchool, useChangeSchoolPassword, usePermanentDeleteSchool } from '../hooks/useSchools'
 import { useUploadSchoolLogo } from '../hooks/useSchools'
 import { useAuth } from '../../../contexts/AuthContext'
 import { toast } from '../../../lib/toast'
@@ -80,12 +81,14 @@ interface SchoolCardProps {
   school: School
   canManage: boolean
   isSecretaria: boolean
+  isAdmin: boolean
   onEdit: (school: School) => void
   onDelete: (id: string) => void
+  onPermanentDelete: (id: string) => void
   onResetPassword: (school: School) => void
 }
 
-function SchoolCard({ school, canManage, isSecretaria, onEdit, onDelete, onResetPassword }: SchoolCardProps) {
+function SchoolCard({ school, canManage, isSecretaria, isAdmin, onEdit, onDelete, onPermanentDelete, onResetPassword }: SchoolCardProps) {
   const toggleFinancial = useToggleSchoolFinancialVisibility()
   const uploadLogo = useUploadSchoolLogo()
   const logoInputRef = useRef<HTMLInputElement>(null)
@@ -212,6 +215,17 @@ function SchoolCard({ school, canManage, isSecretaria, onEdit, onDelete, onReset
                 <Trash2 size={14} className="mr-1.5" />
                 Excluir
               </Button>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => onPermanentDelete(school.id)}
+                >
+                  <AlertTriangle size={14} className="mr-1.5" />
+                  Excluir permanentemente
+                </Button>
+              )}
             </>
           )}
         </div>
@@ -226,6 +240,7 @@ export function SchoolsPage() {
   const createMutation = useCreateSchool()
   const updateMutation = useUpdateSchool()
   const deleteMutation = useDeleteSchool()
+  const permanentDeleteMutation = usePermanentDeleteSchool()
   const changeSchoolPassword = useChangeSchoolPassword()
 
   const [searchParams, setSearchParams] = useSearchParams()
@@ -233,6 +248,7 @@ export function SchoolsPage() {
   const [createOpen, setCreateOpen] = useState(false)
   const [editing, setEditing] = useState<School | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [permanentDeleteTarget, setPermanentDeleteTarget] = useState<string | null>(null)
   const [passwordTarget, setPasswordTarget] = useState<{ id: string; name: string } | null>(null)
 
   const createForm = useForm<CreateForm>({ resolver: zodResolver(createSchema) })
@@ -467,8 +483,10 @@ export function SchoolsPage() {
               school={s}
               canManage={canManage}
               isSecretaria={isSecretaria}
+              isAdmin={isAdmin}
               onEdit={handleEdit}
               onDelete={(id) => setDeleteTarget(id)}
+              onPermanentDelete={(id) => setPermanentDeleteTarget(id)}
               onResetPassword={(school) => {
                 passwordForm.reset()
                 setPasswordTarget({ id: school.id, name: school.name })
@@ -697,6 +715,26 @@ export function SchoolsPage() {
           })
         }}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={!!permanentDeleteTarget}
+        onConfirm={() => {
+          permanentDeleteMutation.mutate(permanentDeleteTarget!, {
+            onSuccess: () => {
+              toast.success('Escola excluída permanentemente')
+              setPermanentDeleteTarget(null)
+            },
+            onError: (err) => {
+              toast.error(extractErrorMessage(err))
+              setPermanentDeleteTarget(null)
+            },
+          })
+        }}
+        onCancel={() => setPermanentDeleteTarget(null)}
+        title="Excluir permanentemente"
+        description="Esta ação irá remover a escola e todos os seus vínculos de forma irreversível. Esta ação não pode ser desfeita."
+        confirmLabel="Excluir permanentemente"
       />
     </div>
   )

@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
-import { Plus, Pencil, Trash2, UserPlus, Upload, SlidersHorizontal, X } from 'lucide-react'
-import { useStudents, useDeleteStudent } from '../hooks/useStudents'
+import { Plus, Pencil, Trash2, UserPlus, Upload, SlidersHorizontal, X, AlertTriangle } from 'lucide-react'
+import { useStudents, useDeleteStudent, usePermanentDeleteStudent } from '../hooks/useStudents'
 import { useClasses, useClass } from '../../classes/hooks/useClasses'
 import { useApiMutation } from '../../../hooks/useApiMutation'
+import { useAuth } from '../../../contexts/AuthContext'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
@@ -101,6 +102,9 @@ export function StudentsPage() {
   const students = data?.data
   const total = data?.total ?? 0
   const deleteMutation = useDeleteStudent()
+  const permanentDeleteMutation = usePermanentDeleteStudent()
+  const { payload } = useAuth()
+  const isAdmin = payload?.role === 'admin'
 
   const classStudentIds = useMemo(
     () => new Set(classDetail?.students?.map((s) => s.id) ?? []),
@@ -157,6 +161,14 @@ export function StudentsPage() {
   })
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [permanentDeleteTarget, setPermanentDeleteTarget] = useState<string | null>(null)
+
+  const permanentDeleteApiMutation = useApiMutation({
+    mutationFn: (id: string) => permanentDeleteMutation.mutateAsync(id),
+    successMessage: 'Aluno excluído permanentemente',
+    onSuccess: () => setPermanentDeleteTarget(null),
+    onError: () => setPermanentDeleteTarget(null),
+  })
 
   function calcAge(birthDate: string | null): number | null {
     if (!birthDate) return null
@@ -306,6 +318,18 @@ export function StudentsPage() {
             >
               <Trash2 size={14} />
             </Button>
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive"
+                title="Excluir permanentemente"
+                aria-label="Excluir permanentemente"
+                onClick={() => setPermanentDeleteTarget(s.id)}
+              >
+                <AlertTriangle size={14} />
+              </Button>
+            )}
           </div>
         )}
         emptyMessage={search ? `Nenhum aluno encontrado para "${search}".` : 'Nenhum aluno cadastrado.'}
@@ -331,6 +355,15 @@ export function StudentsPage() {
           deleteApiMutation.mutate(deleteTarget!)
         }}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={!!permanentDeleteTarget}
+        onConfirm={() => permanentDeleteApiMutation.mutate(permanentDeleteTarget!)}
+        onCancel={() => setPermanentDeleteTarget(null)}
+        title="Excluir permanentemente"
+        description="Esta ação irá remover o aluno e todos os seus dados (responsáveis, documentos, ficha médica) de forma irreversível. Esta ação não pode ser desfeita."
+        confirmLabel="Excluir permanentemente"
       />
     </div>
   )
