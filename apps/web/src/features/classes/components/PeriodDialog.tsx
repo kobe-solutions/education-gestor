@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { extractErrorMessage } from '../../../lib/errors'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
@@ -46,6 +47,7 @@ export function PeriodDialog({
       : emptyPeriod,
   )
   const [errors, setErrors] = useState<Partial<Record<keyof PeriodFormData, string>>>({})
+  const [overlapError, setOverlapError] = useState<string | null>(null)
 
   const createMutation = useCreateAcademicPeriod(yearId)
   const updateMutation = useUpdateAcademicPeriod(yearId)
@@ -55,12 +57,24 @@ export function PeriodDialog({
     mutationFn: (data: Omit<PeriodFormData, 'order'> & { order: number }) => createMutation.mutateAsync(data),
     successMessage: 'Período criado',
     onSuccess: () => onClose(),
+    onError: (err) => {
+      const msg = extractErrorMessage(err)
+      if (msg.includes('sobrepõe')) {
+        setOverlapError(msg)
+      }
+    },
   })
 
   const updateApiMutation = useApiMutation({
     mutationFn: (vars: { id: string; data: Record<string, unknown> }) => updateMutation.mutateAsync(vars),
     successMessage: 'Período atualizado',
     onSuccess: () => onClose(),
+    onError: (err) => {
+      const msg = extractErrorMessage(err)
+      if (msg.includes('sobrepõe')) {
+        setOverlapError(msg)
+      }
+    },
   })
 
   const activeApiMutation = editing ? updateApiMutation : createApiMutation
@@ -77,6 +91,7 @@ export function PeriodDialog({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setOverlapError(null)
     if (!validate()) return
     const payload = {
       name: form.name,
@@ -94,7 +109,7 @@ export function PeriodDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { setOverlapError(null); onClose() } }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{editing ? 'Editar período' : 'Novo período letivo'}</DialogTitle>
@@ -127,15 +142,20 @@ export function PeriodDialog({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label>Início *</Label>
-              <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+              <Input type="date" value={form.startDate} onChange={(e) => { setForm({ ...form, startDate: e.target.value }); setOverlapError(null) }} />
               {errors.startDate && <p className="text-xs text-destructive">{errors.startDate}</p>}
             </div>
             <div className="space-y-1">
               <Label>Fim *</Label>
-              <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+              <Input type="date" value={form.endDate} onChange={(e) => { setForm({ ...form, endDate: e.target.value }); setOverlapError(null) }} />
               {errors.endDate && <p className="text-xs text-destructive">{errors.endDate}</p>}
             </div>
           </div>
+          {overlapError && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2">
+              <p className="text-xs text-destructive font-medium">{overlapError}</p>
+            </div>
+          )}
           <div className="space-y-1">
             <Label>Fechamento de notas</Label>
             <Input type="date" value={form.gradeClosingDate} onChange={(e) => setForm({ ...form, gradeClosingDate: e.target.value })} />

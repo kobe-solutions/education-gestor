@@ -76,6 +76,16 @@ export function useDeleteSchool() {
   })
 }
 
+export function usePermanentDeleteSchool() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/schools/${id}/permanent`)
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
+  })
+}
+
 export function useChangeSchoolPassword() {
   return useMutation({
     mutationFn: async ({ id, password }: { id: string; password: string }) => {

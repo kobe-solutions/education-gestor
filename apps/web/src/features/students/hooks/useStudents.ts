@@ -94,6 +94,14 @@ export function useDeleteStudent() {
   })
 }
 
+export function usePermanentDeleteStudent() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => { await api.delete(`/students/${id}/permanent`) },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['students'] }),
+  })
+}
+
 // ─── Foto ─────────────────────────────────────────────────────────────────────
 
 export function useUploadStudentPhoto(studentId: string) {

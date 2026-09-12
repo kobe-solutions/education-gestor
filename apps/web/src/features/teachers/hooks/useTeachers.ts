@@ -83,6 +83,14 @@ export function useDeleteTeacher() {
   })
 }
 
+export function usePermanentDeleteTeacher() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => { await api.delete(`/teachers/${id}/permanent`) },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),
+  })
+}
+
 export function useAddTeacherSubject(id: string) {
   const qc = useQueryClient()
   return useMutation({
