@@ -12,6 +12,11 @@ import * as repo from '../../modules/classes/schoolClasses.repository'
 import * as timetableRepo from '../../modules/timetable/timetable.repository'
 import * as studentsRepo from '../../modules/students/students.repository'
 
+vi.mock('../../db', () => ({
+  db: {
+    transaction: vi.fn(async (fn: (...args: any[]) => Promise<any>) => fn()),
+  },
+}))
 vi.mock('../../modules/classes/schoolClasses.repository')
 vi.mock('../../modules/timetable/timetable.repository')
 vi.mock('../../modules/students/students.repository')
@@ -172,30 +177,30 @@ describe('deleteSchoolClassService', () => {
 
 describe('addStudentToClassService', () => {
   it('matricula aluno na turma', async () => {
-    vi.mocked(repo.findSchoolClassByIdRepository).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.lockSchoolClassForUpdateRepository).mockResolvedValue({ id: 'class-id', maxStudents: 40 })
     vi.mocked(studentsRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
     vi.mocked(repo.findClassStudentLinkRepository).mockResolvedValue(undefined as any)
-    vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({ 'class-id': 10 })
+    vi.mocked(repo.countStudentsByClassRepository).mockResolvedValue(10)
     vi.mocked(repo.addStudentToClassRepository).mockResolvedValue({ id: 'link-id', classId: 'class-id', studentId: 'student-id', createdAt: new Date() })
 
     await expect(addStudentToClassService('school-id', 'class-id', 'student-id')).resolves.not.toThrow()
   })
 
   it('lança erro se turma não existe', async () => {
-    vi.mocked(repo.findSchoolClassByIdRepository).mockResolvedValue(undefined as any)
+    vi.mocked(repo.lockSchoolClassForUpdateRepository).mockResolvedValue(undefined as any)
 
     await expect(addStudentToClassService('school-id', 'nao-existe', 'student-id')).rejects.toThrow('Class not found')
   })
 
   it('lança erro se aluno não existe', async () => {
-    vi.mocked(repo.findSchoolClassByIdRepository).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.lockSchoolClassForUpdateRepository).mockResolvedValue({ id: 'class-id', maxStudents: 40 })
     vi.mocked(studentsRepo.findStudentByIdRepository).mockResolvedValue(undefined as any)
 
     await expect(addStudentToClassService('school-id', 'class-id', 'nao-existe')).rejects.toThrow('Student not found')
   })
 
   it('lança erro se aluno já está na turma', async () => {
-    vi.mocked(repo.findSchoolClassByIdRepository).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.lockSchoolClassForUpdateRepository).mockResolvedValue({ id: 'class-id', maxStudents: 40 })
     vi.mocked(studentsRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
     vi.mocked(repo.findClassStudentLinkRepository).mockResolvedValue({ id: 'link' })
 
@@ -203,10 +208,10 @@ describe('addStudentToClassService', () => {
   })
 
   it('lança erro se turma está cheia', async () => {
-    vi.mocked(repo.findSchoolClassByIdRepository).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.lockSchoolClassForUpdateRepository).mockResolvedValue({ id: 'class-id', maxStudents: 40 })
     vi.mocked(studentsRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
     vi.mocked(repo.findClassStudentLinkRepository).mockResolvedValue(undefined as any)
-    vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({ 'class-id': 40 })
+    vi.mocked(repo.countStudentsByClassRepository).mockResolvedValue(40)
 
     await expect(addStudentToClassService('school-id', 'class-id', 'student-id')).rejects.toThrow('Class is full')
   })

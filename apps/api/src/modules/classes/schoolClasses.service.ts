@@ -11,9 +11,12 @@ import {
   countStudentsByClassesRepository,
   findClassesByStudentRepository,
   findStudentCurrentClassRepository,
+  lockSchoolClassForUpdateRepository,
+  countStudentsByClassRepository,
 } from './schoolClasses.repository'
 import { findDistinctTeachersByClassRepository } from '../timetable/timetable.repository'
 import { findStudentByIdRepository } from '../students/students.repository'
+import { db } from '../../db'
 
 type CreateSchoolClassServiceInput = {
   schoolId: string
@@ -76,26 +79,27 @@ export async function deleteSchoolClassService(schoolId: string, id: string) {
 }
 
 export async function addStudentToClassService(schoolId: string, classId: string, studentId: string) {
-  const schoolClass = await findSchoolClassByIdRepository(schoolId, classId)
-  if (!schoolClass) throw new Error('Class not found')
+  return db.transaction(async (tx) => {
+    const lockedClass = await lockSchoolClassForUpdateRepository(schoolId, classId)
+    if (!lockedClass) throw new Error('Class not found')
 
-  const student = await findStudentByIdRepository(schoolId, studentId)
-  if (!student) throw new Error('Student not found')
+    const student = await findStudentByIdRepository(schoolId, studentId)
+    if (!student) throw new Error('Student not found')
 
-  const alreadyLinked = await findClassStudentLinkRepository(classId, studentId)
-  if (alreadyLinked) throw new Error('Student already in class')
+    const alreadyLinked = await findClassStudentLinkRepository(classId, studentId)
+    if (alreadyLinked) throw new Error('Student already in class')
 
-  const currentClass = await findStudentCurrentClassRepository(studentId)
-  if (currentClass && currentClass.classId !== classId) {
-    throw new Error(`Student already enrolled in class ${currentClass.className}`)
-  }
+    const currentClass = await findStudentCurrentClassRepository(studentId)
+    if (currentClass && currentClass.classId !== classId) {
+      throw new Error(`Student already enrolled in class ${currentClass.className}`)
+    }
 
-  const counts = await countStudentsByClassesRepository([classId])
-  const enrolled = counts[classId] ?? 0
-  const maxStudents = (schoolClass as any).maxStudents ?? 40
-  if (enrolled >= maxStudents) throw new Error('Class is full')
+    const enrolled = await countStudentsByClassRepository(classId)
+    const maxStudents = lockedClass.maxStudents ?? 40
+    if (enrolled >= maxStudents) throw new Error('Class is full')
 
-  return addStudentToClassRepository(classId, studentId)
+    return addStudentToClassRepository(classId, studentId)
+  })
 }
 
 export async function removeStudentFromClassService(schoolId: string, classId: string, studentId: string) {

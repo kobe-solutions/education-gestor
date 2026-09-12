@@ -1,4 +1,4 @@
-import { eq, and, count, inArray } from 'drizzle-orm'
+import { eq, and, count, inArray, sql } from 'drizzle-orm'
 import { db } from '../../db'
 import { schoolClasses, classStudents, students, series, educationLevels } from '../../db/schema'
 
@@ -182,4 +182,23 @@ export async function findStudentCurrentClassRepository(studentId: string) {
     .limit(1)
 
   return result
+}
+
+export async function lockSchoolClassForUpdateRepository(schoolId: string, classId: string) {
+  const [locked] = await db
+    .select({ id: schoolClasses.id, maxStudents: schoolClasses.maxStudents })
+    .from(schoolClasses)
+    .where(and(eq(schoolClasses.schoolId, schoolId), eq(schoolClasses.id, classId)))
+    .for('update')
+
+  return locked
+}
+
+export async function countStudentsByClassRepository(classId: string) {
+  const [result] = await db
+    .select({ total: count() })
+    .from(classStudents)
+    .where(eq(classStudents.classId, classId))
+
+  return Number(result?.total ?? 0)
 }
