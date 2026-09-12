@@ -6,6 +6,7 @@ import {
   deleteAcademicPeriodRepository,
 } from './academicPeriods.repository'
 import type { CreateAcademicPeriodBody, UpdateAcademicPeriodBody } from './academicPeriods.schema'
+import { validateNoPeriodOverlap } from '../../lib/validators'
 
 export async function listAcademicPeriodsService(schoolId: string, academicYearId: string) {
   return findAllAcademicPeriodsRepository(schoolId, academicYearId)
@@ -26,6 +27,9 @@ export async function createAcademicPeriodService(
   academicYearId: string,
   body: CreateAcademicPeriodBody,
 ) {
+  const existingPeriods = await findAllAcademicPeriodsRepository(schoolId, academicYearId)
+  validateNoPeriodOverlap(body.startDate, body.endDate, existingPeriods)
+
   return createAcademicPeriodRepository({
     schoolId,
     academicYearId,
@@ -46,6 +50,12 @@ export async function updateAcademicPeriodService(
 ) {
   const existing = await findAcademicPeriodByIdRepository(schoolId, academicYearId, id)
   if (!existing) throw new Error('Academic period not found')
+
+  const startDate = body.startDate ?? existing.startDate
+  const endDate = body.endDate ?? existing.endDate
+
+  const existingPeriods = await findAllAcademicPeriodsRepository(schoolId, academicYearId)
+  validateNoPeriodOverlap(startDate, endDate, existingPeriods, id)
 
   const updated = await updateAcademicPeriodRepository(schoolId, academicYearId, id, {
     ...body,
