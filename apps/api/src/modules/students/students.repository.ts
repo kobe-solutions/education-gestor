@@ -216,6 +216,13 @@ export async function deleteStudentRepository(schoolId: string, id: string) {
   await db.update(students).set({ deletedAt: new Date() }).where(and(eq(students.schoolId, schoolId), eq(students.id, id)))
 }
 
+export async function permanentDeleteStudentRepository(schoolId: string, id: string) {
+  await db.delete(guardians).where(eq(guardians.studentId, id))
+  await db.delete(studentMedical).where(eq(studentMedical.studentId, id))
+  await db.delete(studentDocuments).where(eq(studentDocuments.studentId, id))
+  await db.delete(students).where(and(eq(students.schoolId, schoolId), eq(students.id, id)))
+}
+
 // ─── Responsáveis / autorizados ────────────────────────────────────────────────
 
 export async function createGuardianRepository(input: CreateGuardianInput) {

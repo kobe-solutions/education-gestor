@@ -1,3 +1,4 @@
+import { db } from '../../db'
 import {
   upsertGradeRepository,
   findGradesByStudentRepository,
@@ -117,18 +118,20 @@ export async function registerAttendanceService(input: RegisterAttendanceInput) 
 }
 
 export async function registerBulkAttendanceService(input: BulkAttendanceInput) {
-  const schoolClass = await getSchoolClassService(input.schoolId, input.classId)
-  if (!schoolClass) throw new Error('Class not found')
+  return db.transaction(async (tx) => {
+    const schoolClass = await getSchoolClassService(input.schoolId, input.classId)
+    if (!schoolClass) throw new Error('Class not found')
 
-  const rows = input.attendances.map((a) => ({
-    schoolId: input.schoolId,
-    classId: input.classId,
-    studentId: a.studentId,
-    date: input.date,
-    present: a.present,
-  }))
+    const rows = input.attendances.map((a) => ({
+      schoolId: input.schoolId,
+      classId: input.classId,
+      studentId: a.studentId,
+      date: input.date,
+      present: a.present,
+    }))
 
-  return upsertBulkAttendanceRepository(rows)
+    return upsertBulkAttendanceRepository(rows)
+  })
 }
 
 export async function getStudentAttendancesService(schoolId: string, studentId: string) {

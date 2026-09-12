@@ -4,22 +4,38 @@ info:
   version: 1.0.0
   description: |
     API REST para gestão escolar multi-role e multi-tenant.
-    Roles atuais no JWT: admin, gestor, professor.
+    Roles: admin, secretaria, gestor, professor.
 servers:
   - url: http://localhost:3333
     description: Local development
+
 tags:
   - name: Health
   - name: Auth
   - name: Schools
+  - name: Secretarias
   - name: Teachers
+  - name: Students
   - name: Classes
   - name: Subjects
+  - name: Academic Years
+  - name: Academic Periods
+  - name: Academic (Grades & Attendance)
+  - name: Financial
+  - name: Dashboard
+  - name: Timetable
+  - name: Events
+  - name: Audit
+  - name: Education Levels
+  - name: Series
+  - name: Class Periods
+  - name: Teacher Dashboard
+
 paths:
   /health:
     get:
       tags: [Health]
-      summary: Health check da API
+      summary: Health check
       responses:
         '200':
           description: API online
@@ -28,242 +44,1502 @@ paths:
               schema:
                 type: object
                 properties:
-                  status:
-                    type: string
-                    example: ok
-                required: [status]
+                  status: { type: string, example: ok }
+
+  # ── Auth ──────────────────────────────────────────────────────────────────────
 
   /sessions:
     post:
       tags: [Auth]
-      summary: Login único (admin, gestor, professor)
-      description: |
-        Autentica pelo par email/senha e retorna JWT.
-        O token contém: userId, schoolId, role.
+      summary: Login (admin, secretaria, gestor, professor)
+      description: Autentica por email/senha e retorna JWT com userId, schoolId/secretariaId, role.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginBody'
-            examples:
-              admin:
-                value:
-                  email: admin@education.com
-                  password: change-me-now
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+              required: [email, password]
       responses:
         '200':
           description: Login realizado
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResponse'
+                type: object
+                properties:
+                  accessToken: { type: string }
         '400':
           $ref: '#/components/responses/ValidationError'
         '401':
-          description: Credenciais inválidas
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Invalid credentials
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── Schools ───────────────────────────────────────────────────────────────────
 
   /schools:
+    get:
+      tags: [Schools]
+      summary: Listar escolas
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de escolas
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
       tags: [Schools]
-      summary: Criar usuário gestor (school)
-      description: Cria uma school com role padrão gestor.
+      summary: Criar escola (secretaria)
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSchoolBody'
+              type: object
+              properties:
+                name: { type: string, minLength: 2 }
+                slug: { type: string, minLength: 2 }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+              required: [name, slug, email, password]
       responses:
         '201':
-          description: Gestor criado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSchoolResponse'
+          description: Escola criada
         '400':
           $ref: '#/components/responses/ValidationError'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '409':
-          description: School já existe por slug ou email
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: School already exists with this slug or email
+          description: Slug ou email já existe
 
-  /schools/users/management:
-    post:
+  /schools/{id}:
+    get:
       tags: [Schools]
-      summary: Alias para criação de usuário gestor
-      description: Mesmo comportamento de POST /schools.
+      summary: Obter escola por ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Escola encontrada
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Schools]
+      summary: Atualizar escola
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSchoolBody'
+              type: object
+              properties:
+                name: { type: string }
+                slug: { type: string }
+                email: { type: string }
+                director: { type: string, nullable: true }
+                coordinator: { type: string, nullable: true }
+                phone: { type: string, nullable: true }
+                address: { type: string, nullable: true }
       responses:
-        '201':
-          description: Gestor criado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSchoolResponse'
+        '200':
+          description: Escola atualizada
         '400':
           $ref: '#/components/responses/ValidationError'
-        '409':
-          description: School já existe por slug ou email
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Schools]
+      summary: Soft delete escola
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Escola removida
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /schools/{id}/permanent:
+    delete:
+      tags: [Schools]
+      summary: Hard delete escola (LGPD, admin only)
+      security: [{ bearerAuth: [] }]
+      description: Remove permanentemente a escola e vínculos com secretarias. Apenas role admin.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Escola removida permanentemente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /schools/{id}/password:
+    put:
+      tags: [Schools]
+      summary: Alterar senha da escola
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: { type: string, minLength: 8 }
+              required: [password]
+      responses:
+        '204':
+          description: Senha alterada
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /schools/{id}/financial-visibility:
+    patch:
+      tags: [Schools]
+      summary: Toggle visibilidade financeira (admin)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Visibilidade alterada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /schools/{id}/logo:
+    post:
+      tags: [Schools]
+      summary: Upload logo da escola
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Logo atualizada
+        '400':
+          description: Arquivo inválido
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Teachers ──────────────────────────────────────────────────────────────────
 
   /teachers:
+    get:
+      tags: [Teachers]
+      summary: Listar professores
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 200 }
+      responses:
+        '200':
+          description: Lista de professores
+        '401':
+          $ref: '#/components/responses/Unauthorized'
     post:
       tags: [Teachers]
       summary: Criar professor
-      description: |
-        Endpoint protegido por JWT + tenant + RBAC.
-        Apenas roles admin e gestor podem acessar.
-      security:
-        - bearerAuth: []
+      security: [{ bearerAuth: [] }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateTeacherBody'
+              type: object
+              properties:
+                name: { type: string, minLength: 2 }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+              required: [name, email, password]
       responses:
         '201':
           description: Professor criado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateTeacherResponse'
         '400':
           $ref: '#/components/responses/ValidationError'
-        '401':
-          description: Não autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Unauthorized
         '403':
-          description: Role sem permissão
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Forbidden
+          $ref: '#/components/responses/Forbidden'
         '409':
-          description: Professor já existe com esse email na mesma school
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Já existe um professor cadastrado com este e-mail
+          description: Email já existe
 
-  /school-classes:
-    post:
-      tags: [Classes]
-      summary: Criar turma (school class)
-      description: Endpoint protegido por JWT + tenant + RBAC. Apenas roles `admin` e `gestor` podem acessar.
-      security:
-        - bearerAuth: []
+  /teachers/{id}:
+    get:
+      tags: [Teachers]
+      summary: Obter professor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Professor encontrado
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Teachers]
+      summary: Atualizar professor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSchoolClassBody'
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+      responses:
+        '200':
+          description: Professor atualizado
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Teachers]
+      summary: Soft delete professor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Professor removido
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teachers/{id}/permanent:
+    delete:
+      tags: [Teachers]
+      summary: Hard delete professor (LGPD, admin only)
+      security: [{ bearerAuth: [] }]
+      description: Remove permanentemente professor, disciplinas vinculadas e documentos. Apenas role admin.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Professor removido permanentemente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teachers/{id}/password:
+    put:
+      tags: [Teachers]
+      summary: Alterar senha do professor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: { type: string, minLength: 8 }
+              required: [password]
+      responses:
+        '204':
+          description: Senha alterada
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teachers/{id}/subjects:
+    post:
+      tags: [Teachers]
+      summary: Vincular disciplina ao professor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjectId: { type: string, format: uuid }
+              required: [subjectId]
+      responses:
+        '201':
+          description: Vínculo criado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teachers/{id}/subjects/{subjectId}:
+    delete:
+      tags: [Teachers]
+      summary: Desvincular disciplina do professor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: subjectId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Vínculo removido
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /teachers/{id}/photo:
+    post:
+      tags: [Teachers]
+      summary: Upload foto do professor
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Foto atualizada
+        '400':
+          description: Arquivo inválido
+
+  /teachers/me:
+    put:
+      tags: [Teachers]
+      summary: Professor atualiza seu próprio perfil
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                phone: { type: string }
+      responses:
+        '200':
+          description: Perfil atualizado
+
+  /teachers/me/password:
+    put:
+      tags: [Teachers]
+      summary: Professor altera sua própria senha
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password: { type: string, minLength: 8 }
+              required: [password]
+      responses:
+        '204':
+          description: Senha alterada
+
+  /teachers/me/photo:
+    post:
+      tags: [Teachers]
+      summary: Professor faz upload da própria foto
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Foto atualizada
+
+  # ── Students ──────────────────────────────────────────────────────────────────
+
+  /students:
+    get:
+      tags: [Students]
+      summary: Listar alunos
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 200 }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string }
+        - name: sex
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Lista de alunos
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Students]
+      summary: Criar aluno
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2 }
+                email: { type: string, format: email }
+              required: [name]
+      responses:
+        '201':
+          description: Aluno criado
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /students/import:
+    post:
+      tags: [Students]
+      summary: Importar alunos em lote (CSV/XLSX)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Importação concluída
+        '400':
+          description: Formato inválido
+
+  /students/{id}:
+    get:
+      tags: [Students]
+      summary: Obter aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Aluno encontrado
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Students]
+      summary: Atualizar aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+      responses:
+        '200':
+          description: Aluno atualizado
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Students]
+      summary: Soft delete aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Aluno removido
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /students/{id}/permanent:
+    delete:
+      tags: [Students]
+      summary: Hard delete aluno (LGPD, admin only)
+      security: [{ bearerAuth: [] }]
+      description: Remove permanentemente aluno, responsáveis, ficha médica e documentos. Apenas role admin.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Aluno removido permanentemente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /students/{id}/photo:
+    post:
+      tags: [Students]
+      summary: Upload foto do aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Foto atualizada
+
+  /students/{id}/guardians:
+    get:
+      tags: [Students]
+      summary: Listar responsáveis do aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lista de responsáveis
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Students]
+      summary: Adicionar responsável
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                relationship: { type: string }
+                isResponsible: { type: boolean }
+                isAuthorizedPickup: { type: boolean }
+              required: [name, relationship]
+      responses:
+        '201':
+          description: Responsável adicionado
+
+  /students/{id}/guardians/{guardianId}:
+    put:
+      tags: [Students]
+      summary: Atualizar responsável
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: guardianId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Responsável atualizado
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Students]
+      summary: Remover responsável
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: guardianId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Responsável removido
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /students/{id}/medical:
+    get:
+      tags: [Students]
+      summary: Obter ficha médica
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Ficha médica
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Students]
+      summary: Atualizar ficha médica
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                allergies: { type: string }
+                medications: { type: string }
+                diseases: { type: string }
+      responses:
+        '200':
+          description: Ficha atualizada
+
+  /students/{id}/documents:
+    get:
+      tags: [Students]
+      summary: Listar documentos do aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lista de documentos
+    post:
+      tags: [Students]
+      summary: Upload documento do aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201':
+          description: Documento adicionado
+
+  /students/{id}/documents/{docId}:
+    delete:
+      tags: [Students]
+      summary: Remover documento do aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: docId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Documento removido
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Classes ───────────────────────────────────────────────────────────────────
+
+  /school-classes:
+    get:
+      tags: [Classes]
+      summary: Listar turmas
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de turmas
+    post:
+      tags: [Classes]
+      summary: Criar turma
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2 }
+                shift: { type: string }
+              required: [name, shift]
       responses:
         '201':
           description: Turma criada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSchoolClassResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          description: Não autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Unauthorized
-        '403':
-          description: Role sem permissão
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Forbidden
 
-  /subjects:
+  /school-classes/{id}:
+    get:
+      tags: [Classes]
+      summary: Obter turma
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Turma encontrada
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Classes]
+      summary: Atualizar turma
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Turma atualizada
+    delete:
+      tags: [Classes]
+      summary: Remover turma
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Turma removida
+
+  /school-classes/{classId}/students:
     post:
-      tags: [Subjects]
-      summary: Criar disciplina (subject)
-      description: Endpoint protegido por JWT + tenant + RBAC. Apenas roles `admin` e `gestor` podem acessar.
-      security:
-        - bearerAuth: []
+      tags: [Classes]
+      summary: Matricular aluno na turma (com lock de concorrência)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSubjectBody'
+              type: object
+              properties:
+                studentId: { type: string, format: uuid }
+              required: [studentId]
+      responses:
+        '201':
+          description: Aluno matriculado
+        '400':
+          description: Turma cheia ou aluno já matriculado
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /school-classes/{classId}/students/{studentId}:
+    delete:
+      tags: [Classes]
+      summary: Remover aluno da turma
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: studentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Aluno removido da turma
+
+  # ── Subjects ──────────────────────────────────────────────────────────────────
+
+  /subjects:
+    get:
+      tags: [Subjects]
+      summary: Listar disciplinas
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de disciplinas
+    post:
+      tags: [Subjects]
+      summary: Criar disciplina
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2 }
+                code: { type: string, nullable: true }
+                weeklyHours: { type: integer, minimum: 1 }
+              required: [name, weeklyHours]
       responses:
         '201':
           description: Disciplina criada
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateSubjectResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-        '401':
-          description: Não autenticado
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Unauthorized
-        '403':
-          description: Role sem permissão
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              example:
-                message: Forbidden
         '409':
-          description: Conflito (nome ou código já existe)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-              examples:
-                nameConflict:
-                  value:
-                    message: Subject already exists with this name
-                codeConflict:
-                  value:
-                    message: Subject already exists with this code
+          description: Nome ou código já existe
+
+  # ── Academic Years ────────────────────────────────────────────────────────────
+
+  /academic-years:
+    get:
+      tags: [Academic Years]
+      summary: Listar anos letivos
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de anos letivos
+    post:
+      tags: [Academic Years]
+      summary: Criar ano letivo
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                year: { type: integer }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date }
+              required: [year]
+      responses:
+        '201':
+          description: Ano letivo criado
+
+  # ── Academic Periods ──────────────────────────────────────────────────────────
+
+  /academic-years/{yearId}/periods:
+    get:
+      tags: [Academic Periods]
+      summary: Listar períodos de um ano letivo
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lista de períodos
+    post:
+      tags: [Academic Periods]
+      summary: Criar período letivo (com validação de sobreposição)
+      security: [{ bearerAuth: [] }]
+      description: Valida automaticamente que o novo período não sobrepõe com existentes no mesmo ano letivo.
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, minLength: 2 }
+                type: { type: string, enum: [bimestre, trimestre, semestre] }
+                order: { type: integer, minimum: 1 }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date }
+              required: [name, type, order, startDate, endDate]
+      responses:
+        '201':
+          description: Período criado
+        '400':
+          description: Sobreposição com período existente
+
+  /academic-years/{yearId}/periods/{id}:
+    get:
+      tags: [Academic Periods]
+      summary: Obter período
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Período encontrado
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Academic Periods]
+      summary: Atualizar período (com validação de sobreposição)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                startDate: { type: string, format: date }
+                endDate: { type: string, format: date }
+      responses:
+        '200':
+          description: Período atualizado
+        '400':
+          description: Sobreposição com período existente
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Academic Periods]
+      summary: Remover período
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: yearId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Período removido
+
+  # ── Academic (Grades & Attendance) ────────────────────────────────────────────
+
+  /academic/grades:
+    post:
+      tags: [Academic]
+      summary: Registrar nota (upsert)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId: { type: string, format: uuid }
+                studentId: { type: string, format: uuid }
+                subjectId: { type: string, format: uuid }
+                academicPeriodId: { type: string, format: uuid }
+                value: { type: number, minimum: 0, maximum: 10 }
+              required: [classId, studentId, subjectId, academicPeriodId, value]
+      responses:
+        '201':
+          description: Nota registrada
+
+  /academic/grades/bulk:
+    post:
+      tags: [Academic]
+      summary: Registrar notas em lote
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId: { type: string, format: uuid }
+                teacherId: { type: string, format: uuid }
+                subjectId: { type: string, format: uuid }
+                grades:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      studentId: { type: string, format: uuid }
+                      academicPeriodId: { type: string, format: uuid }
+                      value: { type: number }
+      responses:
+        '201':
+          description: Notas registradas
+
+  /academic/attendance:
+    post:
+      tags: [Academic]
+      summary: Registrar frequência individual
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId: { type: string, format: uuid }
+                studentId: { type: string, format: uuid }
+                date: { type: string, format: date }
+                present: { type: boolean }
+      responses:
+        '201':
+          description: Frequência registrada
+
+  /academic/attendance/bulk:
+    post:
+      tags: [Academic]
+      summary: Registrar frequência em lote (transação atômica)
+      security: [{ bearerAuth: [] }]
+      description: Registra frequência de vários alunos de uma vez dentro de uma transação.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                classId: { type: string, format: uuid }
+                date: { type: string, format: date }
+                attendances:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      studentId: { type: string, format: uuid }
+                      present: { type: boolean }
+      responses:
+        '201':
+          description: Frequências registradas
+
+  /students/{id}/report:
+    get:
+      tags: [Academic]
+      summary: Boletim completo do aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Boletim do aluno
+
+  # ── Financial ─────────────────────────────────────────────────────────────────
+
+  /tuitions:
+    get:
+      tags: [Financial]
+      summary: Listar mensalidades
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 100, maximum: 200 }
+        - name: status
+          in: query
+          schema: { type: string, enum: [pending, paid, overdue] }
+      responses:
+        '200':
+          description: Lista de mensalidades
+    post:
+      tags: [Financial]
+      summary: Criar mensalidade
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studentId: { type: string, format: uuid }
+                amount: { type: number, exclusiveMinimum: 0 }
+                dueDate: { type: string, format: date }
+              required: [studentId, amount, dueDate]
+      responses:
+        '201':
+          description: Mensalidade criada
+
+  /tuitions/{id}:
+    patch:
+      tags: [Financial]
+      summary: Atualizar mensalidade
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount: { type: number }
+                dueDate: { type: string, format: date }
+      responses:
+        '200':
+          description: Mensalidade atualizada
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Não é possível alterar mensalidade paga
+
+  /tuitions/{id}/pay:
+    patch:
+      tags: [Financial]
+      summary: Registrar pagamento
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Pagamento registrado
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Mensalidade já paga
+
+  /tuitions/{id}/boleto:
+    post:
+      tags: [Financial]
+      summary: Upload boleto da mensalidade
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Boleto uploaded
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /tuitions/{id}/receipt:
+    post:
+      tags: [Financial]
+      summary: Upload comprovante da mensalidade
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Comprovante uploaded
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /students/{id}/tuitions:
+    get:
+      tags: [Financial]
+      summary: Listar mensalidades de um aluno
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Lista de mensalidades
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ── Dashboard ─────────────────────────────────────────────────────────────────
+
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Métricas do dashboard (por role)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Métricas agregadas
+
+  # ── Timetable ─────────────────────────────────────────────────────────────────
+
+  /timetable/{classId}:
+    get:
+      tags: [Timetable]
+      summary: Grade horária da turma
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Grade horária
+
+  # ── Events ────────────────────────────────────────────────────────────────────
+
+  /events:
+    get:
+      tags: [Events]
+      summary: Listar eventos do calendário
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de eventos
+    post:
+      tags: [Events]
+      summary: Criar evento
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Evento criado
+
+  # ── Audit ─────────────────────────────────────────────────────────────────────
+
+  /audit-logs:
+    get:
+      tags: [Audit]
+      summary: Listar logs de auditoria
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        '200':
+          description: Lista de logs
+
+  # ── Education Levels ──────────────────────────────────────────────────────────
+
+  /education-levels:
+    get:
+      tags: [Education Levels]
+      summary: Listar níveis de ensino
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de níveis
+    post:
+      tags: [Education Levels]
+      summary: Criar nível de ensino
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Nível criado
+
+  # ── Series ────────────────────────────────────────────────────────────────────
+
+  /series:
+    get:
+      tags: [Series]
+      summary: Listar séries
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de séries
+    post:
+      tags: [Series]
+      summary: Criar série
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Série criada
+
+  # ── Class Periods ─────────────────────────────────────────────────────────────
+
+  /class-periods:
+    get:
+      tags: [Class Periods]
+      summary: Listar períodos de aula
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Lista de períodos
+    post:
+      tags: [Class Periods]
+      summary: Criar período de aula
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Período criado
+
+  # ── Teacher Dashboard ─────────────────────────────────────────────────────────
+
+  /teacher-dashboard:
+    get:
+      tags: [Teacher Dashboard]
+      summary: Dados agregados do professor
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Dados do dashboard do professor
 
 components:
   securitySchemes:
@@ -273,179 +1549,40 @@ components:
       bearerFormat: JWT
   responses:
     ValidationError:
-      description: Erro de validação de entrada
+      description: Erro de validação
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ValidationErrorResponse'
-  schemas:
-    LoginBody:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-      required: [email, password]
-    SessionResponse:
-      type: object
-      properties:
-        accessToken:
-          type: string
-      required: [accessToken]
-    CreateSchoolBody:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 2
-        slug:
-          type: string
-          minLength: 2
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-      required: [name, slug, email, password]
-    CreateSchoolResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        name:
-          type: string
-        slug:
-          type: string
-        email:
-          type: string
-          format: email
-        role:
-          type: string
-          enum: [gestor]
-      required: [id, name, slug, email, role]
-    CreateTeacherBody:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 2
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-      required: [name, email, password]
-    CreateTeacherResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        schoolId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        email:
-          type: string
-          format: email
-        role:
-          type: string
-          enum: [gestor, professor]
-        createdAt:
-          type: string
-          format: date-time
-      required: [id, schoolId, name, email, role, createdAt]
-    MessageResponse:
-      type: object
-      properties:
-        message:
-          type: string
-      required: [message]
-    ValidationErrorResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Validation error
-        issues:
-          type: array
-          items:
             type: object
-      required: [message, issues]
-    CreateSchoolClassBody:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 2
-        shift:
-          type: string
-        grade:
-          type: string
-        termTime:
-          type: string
-      required: [name, shift, grade, termTime]
-    CreateSchoolClassResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        schoolId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        grade:
-          type: string
-        shift:
-          type: string
-        termTime:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-      required: [id, schoolId, name, grade, shift, termTime, createdAt]
-    CreateSubjectBody:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 2
-        code:
-          type: string
-          minLength: 1
-          nullable: true
-        weeklyHours:
-          type: integer
-          format: int32
-          minimum: 1
-      required: [name, weeklyHours]
-    CreateSubjectResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        schoolId:
-          type: string
-          format: uuid
-        name:
-          type: string
-        code:
-          type: string
-          nullable: true
-        weeklyHours:
-          type: integer
-          format: int32
-        createdAt:
-          type: string
-          format: date-time
-      required: [id, schoolId, name, weeklyHours, createdAt]
+            properties:
+              message: { type: string, example: Validation error }
+              issues:
+                type: array
+                items: { type: object }
+    Unauthorized:
+      description: Não autenticado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              example: { message: Unauthorized }
+    Forbidden:
+      description: Sem permissão
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              example: { message: Forbidden }
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message: { type: string }
+              example: { message: Not found }

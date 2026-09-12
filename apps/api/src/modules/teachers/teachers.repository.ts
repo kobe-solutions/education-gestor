@@ -184,6 +184,12 @@ export async function deleteTeacherRepository(schoolId: string, id: string) {
   await db.update(teachers).set({ deletedAt: new Date() }).where(and(eq(teachers.schoolId, schoolId), eq(teachers.id, id)))
 }
 
+export async function permanentDeleteTeacherRepository(schoolId: string, id: string) {
+  await db.delete(teacherSubjects).where(eq(teacherSubjects.teacherId, id))
+  await db.delete(teacherDocuments).where(eq(teacherDocuments.teacherId, id))
+  await db.delete(teachers).where(and(eq(teachers.schoolId, schoolId), eq(teachers.id, id)))
+}
+
 export async function updateTeacherPasswordRepository(schoolId: string, id: string, passwordHash: string) {
   await db
     .update(teachers)

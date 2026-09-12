@@ -10,6 +10,26 @@ export function validateISODate(date: string): void {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error(`Invalid date format: ${date}. Expected YYYY-MM-DD`)
 }
 
+export function validateNoPeriodOverlap(
+  newStart: string,
+  newEnd: string,
+  existingPeriods: Array<{ id: string; name: string; startDate: string; endDate: string }>,
+  excludeId?: string,
+): void {
+  for (const period of existingPeriods) {
+    if (excludeId && period.id === excludeId) continue
+
+    const overlaps =
+      newStart <= period.endDate && newEnd >= period.startDate
+
+    if (overlaps) {
+      throw new Error(
+        `Período sobrepõe com "${period.name}" (${period.startDate} a ${period.endDate})`,
+      )
+    }
+  }
+}
+
 const MIME_EXT_MAP: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',

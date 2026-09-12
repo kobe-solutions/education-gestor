@@ -12,6 +12,7 @@ import {
   getTeacherService,
   updateTeacherService,
   deleteTeacherService,
+  permanentDeleteTeacherService,
   changeTeacherPasswordService,
   uploadTeacherPhotoService,
   addTeacherSubjectService,
@@ -23,6 +24,7 @@ import {
 
 const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
 const writePreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
+const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
 
 export async function teachersRoutes(app: FastifyInstance) {
   // ── Self-service (professor) ──────────────────────────────────────────────────
@@ -155,6 +157,21 @@ export async function teachersRoutes(app: FastifyInstance) {
       await deleteTeacherService(getSchoolId(request), id)
       const user = request.user as TenantPayload
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'DELETE', 'teacher', id)
+      return reply.status(204).send()
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.delete('/teachers/:id/permanent', { preHandler: adminOnly }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      await permanentDeleteTeacherService(getSchoolId(request), id)
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'DELETE', 'teacher', id, { permanent: true })
       return reply.status(204).send()
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher not found') {

@@ -136,6 +136,11 @@ export async function deleteSchoolRepository(id: string) {
   await db.update(schools).set({ deletedAt: new Date() }).where(eq(schools.id, id))
 }
 
+export async function permanentDeleteSchoolRepository(id: string) {
+  await db.delete(secretariaSchools).where(eq(secretariaSchools.schoolId, id))
+  await db.delete(schools).where(eq(schools.id, id))
+}
+
 export async function linkSchoolToSecretariaRepository(schoolId: string, secretariaId: string) {
   await db
     .insert(secretariaSchools)

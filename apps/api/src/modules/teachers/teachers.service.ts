@@ -10,6 +10,7 @@ import {
   findTeacherByIdRepository,
   updateTeacherRepository,
   deleteTeacherRepository,
+  permanentDeleteTeacherRepository,
   updateTeacherPasswordRepository,
   addSubjectToTeacherRepository,
   removeSubjectFromTeacherRepository,
@@ -108,6 +109,17 @@ export async function deleteTeacherService(schoolId: string, id: string) {
   }
 
   await deleteTeacherRepository(schoolId, id)
+}
+
+export async function permanentDeleteTeacherService(schoolId: string, id: string) {
+  const teacher = await findTeacherByIdRepository(schoolId, id)
+  if (!teacher) throw new Error('Teacher not found')
+
+  if (teacher.photoUrl) {
+    await deleteFile(extractKeyFromUrl(teacher.photoUrl)).catch(() => null)
+  }
+
+  await permanentDeleteTeacherRepository(schoolId, id)
 }
 
 export async function changeTeacherPasswordService(schoolId: string, id: string, password: string) {

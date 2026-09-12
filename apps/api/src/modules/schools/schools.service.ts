@@ -10,6 +10,7 @@ import {
   updateSchoolRepository,
   updateSchoolPasswordRepository,
   deleteSchoolRepository,
+  permanentDeleteSchoolRepository,
   linkSchoolToSecretariaRepository,
   isSchoolOwnedBySecretariaRepository,
   toggleSchoolFinancialVisibilityRepository,
@@ -126,6 +127,12 @@ export async function deleteSchoolService(id: string, requester: RequesterInfo) 
   if (!school) throw new Error('School not found')
   await assertOwnership(id, requester)
   await deleteSchoolRepository(id)
+}
+
+export async function permanentDeleteSchoolService(id: string) {
+  const school = await findSchoolByIdRepository(id)
+  if (!school) throw new Error('School not found')
+  await permanentDeleteSchoolRepository(id)
 }
 
 export async function uploadSchoolLogoServices(
