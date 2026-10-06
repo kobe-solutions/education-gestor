@@ -4,7 +4,7 @@ export const createSchoolClassBodySchema = z.object({
   name: z.string().min(2),
   shift: z.string().min(1),
   serieId: z.string().uuid().optional(),
-  academicPeriodId: z.string().uuid().optional(),
+  academicYearId: z.string().uuid().optional(),
   maxStudents: z.number().int().min(1).optional(),
 })
 
@@ -12,7 +12,7 @@ export const updateSchoolClassBodySchema = z.object({
   name: z.string().min(2).optional(),
   shift: z.string().optional(),
   serieId: z.string().uuid().nullable().optional(),
-  academicPeriodId: z.string().uuid().nullable().optional(),
+  academicYearId: z.string().uuid().nullable().optional(),
   maxStudents: z.number().int().min(1).optional(),
 })
 

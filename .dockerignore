@@ -6,3 +6,6 @@ dist
 *.local
 .env
 .DS_Store
+**/node_modules
+**/dist
+.pnpm-store

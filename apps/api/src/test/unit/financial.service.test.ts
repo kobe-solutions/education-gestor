@@ -122,11 +122,22 @@ describe('createTuitionService', () => {
 describe('listTuitionsService', () => {
   it('retorna todas as mensalidades da escola', async () => {
     vi.mocked(repo.findAllTuitionsRepository).mockResolvedValue({ data: [mockTuition], total: 1 })
+    vi.mocked(repo.findStudentClassMapRepository).mockResolvedValue(
+      new Map([
+        ['student-id', { classId: 'class-id', className: '3º Ano A', classIds: ['class-id'] }],
+      ]),
+    )
+    vi.mocked(repo.findSchoolClassOptionsRepository).mockResolvedValue([
+      { id: 'class-id', name: '3º Ano A' },
+    ])
 
     const result = await listTuitionsService('school-id')
 
     expect(result.data).toHaveLength(1)
+    expect(result.data[0].className).toBe('3º Ano A')
+    expect(result.classes).toHaveLength(1)
     expect(repo.findAllTuitionsRepository).toHaveBeenCalledWith('school-id', {})
+    expect(repo.findStudentClassMapRepository).toHaveBeenCalledWith('school-id')
   })
 })
 
@@ -134,6 +145,7 @@ describe('listStudentTuitionsService', () => {
   it('retorna mensalidades do aluno', async () => {
     vi.mocked(studentService.getStudentService).mockResolvedValue(mockStudent as any)
     vi.mocked(repo.findTuitionsByStudentRepository).mockResolvedValue([mockTuition])
+    vi.mocked(repo.findStudentClassMapRepository).mockResolvedValue(new Map())
 
     const result = await listStudentTuitionsService('school-id', 'student-id')
 

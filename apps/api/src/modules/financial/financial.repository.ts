@@ -1,6 +1,54 @@
-import { eq, and, count } from 'drizzle-orm'
+import { eq, and, count, asc } from 'drizzle-orm'
 import { db } from '../../db'
-import { tuitions, students } from '../../db/schema'
+import { tuitions, students, classStudents, schoolClasses } from '../../db/schema'
+
+export type StudentClassInfo = {
+  classId: string
+  className: string
+  classIds: string[]
+}
+
+export async function findSchoolClassOptionsRepository(schoolId: string) {
+  return db
+    .select({
+      id: schoolClasses.id,
+      name: schoolClasses.name,
+    })
+    .from(schoolClasses)
+    .where(eq(schoolClasses.schoolId, schoolId))
+    .orderBy(asc(schoolClasses.name))
+}
+
+export async function findStudentClassMapRepository(schoolId: string) {
+  const rows = await db
+    .select({
+      studentId: classStudents.studentId,
+      classId: schoolClasses.id,
+      className: schoolClasses.name,
+    })
+    .from(classStudents)
+    .innerJoin(schoolClasses, eq(classStudents.classId, schoolClasses.id))
+    .where(eq(schoolClasses.schoolId, schoolId))
+    .orderBy(asc(schoolClasses.name))
+
+  const map = new Map<string, StudentClassInfo>()
+  for (const row of rows) {
+    const existing = map.get(row.studentId)
+    if (!existing) {
+      map.set(row.studentId, {
+        classId: row.classId,
+        className: row.className,
+        classIds: [row.classId],
+      })
+      continue
+    }
+    if (!existing.classIds.includes(row.classId)) {
+      existing.classIds.push(row.classId)
+      existing.className = `${existing.className}, ${row.className}`
+    }
+  }
+  return map
+}
 
 type CreateTuitionRepositoryInput = {
   schoolId: string

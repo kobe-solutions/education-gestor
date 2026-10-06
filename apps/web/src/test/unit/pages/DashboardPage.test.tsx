@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { renderWithProviders } from '../../render'
 import { DashboardPage } from '../../../pages/DashboardPage'
 import { useDashboard, type DashboardData, type AdminDashboard, type SchoolDashboard } from '../../../features/dashboard/hooks/useDashboard'
@@ -101,12 +101,39 @@ describe('DashboardPage', () => {
       mockAuth: { payload: { userId: 'u1', name: 'Gestor', role: 'gestor', schoolId: 'school-1' } },
     })
 
+    expect(screen.queryByRole('heading', { name: /Mensalidades vencendo/ })).not.toBeInTheDocument()
     expect(screen.getByText('Painel')).toBeInTheDocument()
     expect(screen.getAllByText('Alunos').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Professores').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Turmas').length).toBeGreaterThan(0)
     expect(screen.getByText('120')).toBeInTheDocument()
     expect(screen.getByText('92%')).toBeInTheDocument()
+  })
+
+  it.each([
+    { pending: '3000.00', paid: '5000.00', overdue: '1000.00', counts: [3, 5, 1], expected: [9, 5, 4], amounts: [9000, 5000, 4000] },
+    { pending: '0', paid: '0', overdue: '0', counts: [0, 0, 0], expected: [0, 0, 0], amounts: [0, 0, 0] },
+    { pending: '0.10', paid: '0.20', overdue: '0.30', counts: [1, 1, 1], expected: [3, 1, 2], amounts: [0.60, 0.20, 0.40] },
+  ])('gestor: soma quantidades e valores, incluindo atrasadas nas pendentes ($pending)', ({ pending, paid, overdue, counts, expected, amounts }) => {
+    const data = makeSchoolDashboard()
+    data.tuitions = {
+      total: { count: expected[0], total: String(amounts[0]) },
+      pending: { count: counts[0], total: pending },
+      paid: { count: counts[1], total: paid },
+      overdue: { count: counts[2], total: overdue },
+    }
+    mockUseDashboard.mockReturnValue(mockResult(data, false))
+    renderWithProviders(<DashboardPage />, {
+      mockAuth: { payload: { userId: 'u1', name: 'Gestor', role: 'gestor', schoolId: 'school-1' } },
+    })
+    const labels = ['Total de mensalidades', 'Total de mensalidades pagas', 'Total de mensalidades pendentes']
+    labels.forEach((label, index) => {
+      const card = screen.getByText(label).parentElement!.parentElement!
+      expect(within(card).getByText(String(expected[index]))).toBeInTheDocument()
+      const amount = amounts[index].toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+      expect(within(card).getByText(amount.replace(/\s/g, ' '))).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Atrasadas')).not.toBeInTheDocument()
   })
 
   it('admin: renderiza o painel administrativo', () => {

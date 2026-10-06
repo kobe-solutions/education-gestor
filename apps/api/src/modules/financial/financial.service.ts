@@ -4,6 +4,8 @@ import { tuitions } from '../../db/schema'
 import { deleteFile, extractKeyFromUrl, uploadFile } from '../../lib/storage'
 import {
   findAllTuitionsRepository,
+  findSchoolClassOptionsRepository,
+  findStudentClassMapRepository,
   findTuitionsByStudentRepository,
   findTuitionByIdRepository,
   createTuitionRepository,
@@ -19,17 +21,43 @@ type CreateTuitionServiceInput = {
   dueDate: string
 }
 
+function enrichTuitionWithClass<T extends { studentId: string }>(
+  tuition: T,
+  classMap: Map<string, { classId: string; className: string; classIds: string[] }>,
+) {
+  const cls = classMap.get(tuition.studentId)
+  return {
+    ...tuition,
+    classId: cls?.classId ?? null,
+    className: cls?.className ?? null,
+    classIds: cls?.classIds ?? [],
+  }
+}
+
 export async function listTuitionsService(
   schoolId: string,
   opts: { limit?: number; offset?: number; status?: string } = {},
 ) {
-  return findAllTuitionsRepository(schoolId, opts)
+  const [result, classMap, classes] = await Promise.all([
+    findAllTuitionsRepository(schoolId, opts),
+    findStudentClassMapRepository(schoolId),
+    findSchoolClassOptionsRepository(schoolId),
+  ])
+  return {
+    data: result.data.map((tuition) => enrichTuitionWithClass(tuition, classMap)),
+    total: result.total,
+    classes,
+  }
 }
 
 export async function listStudentTuitionsService(schoolId: string, studentId: string) {
   const student = await getStudentService(schoolId, studentId)
   if (!student) throw new Error('Student not found')
-  return findTuitionsByStudentRepository(schoolId, studentId)
+  const [tuitions, classMap] = await Promise.all([
+    findTuitionsByStudentRepository(schoolId, studentId),
+    findStudentClassMapRepository(schoolId),
+  ])
+  return tuitions.map((tuition) => enrichTuitionWithClass(tuition, classMap))
 }
 
 export async function createTuitionService(input: CreateTuitionServiceInput) {

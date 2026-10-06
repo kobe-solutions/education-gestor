@@ -305,6 +305,9 @@ export interface Tuition {
   receiptFileSize: number | null
   createdAt: string
   updatedAt: string
+  classId?: string | null
+  className?: string | null
+  classIds?: string[]
 }
 
 export interface Secretaria {

@@ -832,7 +832,7 @@ async function main() {
   console.log('  Admin:       admin@educationgestor.com')
   console.log('  Secretaria:  contato@educacao-saopaulo.sp.gov.br')
   console.log('  Secretaria:  contato@educacao-campinas.sp.gov.br')
-  console.log('  Escola:      gestor@colegiosaopaulo.com')
+  console.log('  Escola:        ')
   console.log('  Escola:      gestor@colegionobre.com')
   console.log('  Escola:      gestor@institutofuturo.com')
   console.log('\nProfessores:')

@@ -181,6 +181,8 @@ describe('addStudentToClassService', () => {
     vi.mocked(studentsRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
     vi.mocked(repo.findClassStudentLinkRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.countStudentsByClassRepository).mockResolvedValue(10)
+    vi.mocked(repo.findStudentCurrentClassRepository).mockResolvedValue(undefined as any)
+    vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({ 'class-id': 10 })
     vi.mocked(repo.addStudentToClassRepository).mockResolvedValue({ id: 'link-id', classId: 'class-id', studentId: 'student-id', createdAt: new Date() })
 
     await expect(addStudentToClassService('school-id', 'class-id', 'student-id')).resolves.not.toThrow()
@@ -212,6 +214,8 @@ describe('addStudentToClassService', () => {
     vi.mocked(studentsRepo.findStudentByIdRepository).mockResolvedValue(mockStudent)
     vi.mocked(repo.findClassStudentLinkRepository).mockResolvedValue(undefined as any)
     vi.mocked(repo.countStudentsByClassRepository).mockResolvedValue(40)
+    vi.mocked(repo.findStudentCurrentClassRepository).mockResolvedValue(undefined as any)
+    vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({ 'class-id': 40 })
 
     await expect(addStudentToClassService('school-id', 'class-id', 'student-id')).rejects.toThrow('Class is full')
   })

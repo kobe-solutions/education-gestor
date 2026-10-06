@@ -1,11 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import { renderWithProviders } from '../../render'
 import { TuitionsPage } from '../../../features/financial/pages/TuitionsPage'
 import { useTuitions, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../../../features/financial/hooks/useFinancial'
 import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
 import { useStudents } from '../../../features/students/hooks/useStudents'
+import { useDashboard } from '../../../features/dashboard/hooks/useDashboard'
 import type { Tuition } from '@education-gestor/types'
+
+vi.mock('../../../features/dashboard/hooks/useDashboard', () => ({
+  useDashboard: vi.fn(),
+  isAdminDashboard: (data: object) => 'secretariasActive' in data,
+}))
 
 vi.mock('../../../features/financial/hooks/useFinancial', () => ({
    useTuitions: vi.fn(),
@@ -60,6 +66,7 @@ const STORAGE_KEY = 'iris-hide-financial'
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.mocked(useDashboard).mockReturnValue({ data: { upcomingTuitions: [] }, isLoading: false, isError: false } as unknown as ReturnType<typeof useDashboard>)
   localStorage.removeItem(STORAGE_KEY)
   mockUseFinancialBlocked.mockReturnValue({ blocked: false, loading: false })
   mockUseStudents.mockReturnValue({ data: { data: [] }, isLoading: false } as never)
@@ -70,6 +77,19 @@ afterEach(() => {
 })
 
 describe('TuitionsPage', () => {
+  it('mostra os proximos vencimentos mesmo fora da pagina atual da lista', () => {
+    mockUseTuitions.mockReturnValue(mockResult([], 0, false))
+    vi.mocked(useDashboard).mockReturnValue({
+      data: { upcomingTuitions: [{ id: 'upcoming-1', studentId: 'stu-3', studentName: 'Aluno futuro', amount: '250.50', dueDate: '2026-10-05', status: 'pending' }] },
+      isLoading: false, isError: false,
+    } as unknown as ReturnType<typeof useDashboard>)
+    renderWithProviders(<TuitionsPage />, { initialRoute: '/financial?status=paid' })
+    const section = screen.getByRole('heading', { name: /Mensalidades vencendo/ }).closest('section')!
+    expect(within(section).getByText('Aluno futuro')).toBeInTheDocument()
+    expect(within(section).getByText('05/10/2026')).toBeInTheDocument()
+    expect(within(section).getByRole('link', { name: 'Aluno futuro' })).toHaveAttribute('href', '/students/stu-3')
+  })
+
   it('renderiza a lista de mensalidades', () => {
     mockUseTuitions.mockReturnValue(mockResult([
       makeTuition(),

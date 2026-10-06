@@ -70,6 +70,21 @@ function DashboardSkeleton({ cardCount }: { cardCount: number }) {
 
 // ── Export ────────────────────────────────────────────────────────────────────
 
+function summarizeSchoolTuitions(tuitions: SchoolDashboard['tuitions']) {
+  const pending = {
+    count: tuitions.pending.count + tuitions.overdue.count,
+    total: (Math.round(Number(tuitions.pending.total) * 100) + Math.round(Number(tuitions.overdue.total) * 100)) / 100,
+  }
+  return {
+    pending,
+    paid: tuitions.paid,
+    total: {
+      count: pending.count + tuitions.paid.count,
+      total: (Math.round(pending.total * 100) + Math.round(Number(tuitions.paid.total) * 100)) / 100,
+    },
+  }
+}
+
 function exportDashboardReport(data: DashboardData) {
   const isAdmin = isAdminDashboard(data)
   const rows: string[][] = []
@@ -96,9 +111,10 @@ function exportDashboardReport(data: DashboardData) {
     rows.push(['Alunos Ativos', String(d.studentsByStatus.active)])
     rows.push(['Alunos Inativos', String(d.studentsByStatus.inactive)])
     rows.push(['Prof. Ativos', String(d.teachersByStatus.ativo)])
-    rows.push(['Mensalidades Pendentes', `${d.tuitions.pending.count} (${fmtBRL(d.tuitions.pending.total)})`])
-    rows.push(['Mensalidades Pagas', `${d.tuitions.paid.count} (${fmtBRL(d.tuitions.paid.total)})`])
-    rows.push(['Mensalidades Atrasadas', `${d.tuitions.overdue.count} (${fmtBRL(d.tuitions.overdue.total)})`])
+    const financial = summarizeSchoolTuitions(d.tuitions)
+    rows.push(['Total de mensalidades', `${financial.total.count} (${fmtBRL(financial.total.total)})`])
+    rows.push(['Total de mensalidades pagas', `${financial.paid.count} (${fmtBRL(financial.paid.total)})`])
+    rows.push(['Total de mensalidades pendentes', `${financial.pending.count} (${fmtBRL(financial.pending.total)})`])
     rows.push(['Taxa de Presença', d.attendanceRate != null ? `${d.attendanceRate}%` : '—'])
     rows.push(['Média Geral', d.academicPerformance.average ?? '—'])
     rows.push(['Taxa de Aprovação', d.academicPerformance.passRate != null ? `${d.academicPerformance.passRate}%` : '—'])

@@ -36,7 +36,7 @@ export function DashMetric({ icon: Icon, value, label, sub, tone, to }: DashMetr
           {value}
         </div>
         <div
-          className="text-[11px] font-semibold uppercase tracking-wider mt-1.5 truncate"
+          className="text-[11px] font-semibold uppercase tracking-wider mt-1.5"
           style={{ color: 'hsl(var(--muted-foreground))' }}
         >
           {label}
