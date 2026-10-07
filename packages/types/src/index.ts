@@ -188,11 +188,11 @@ export interface SchoolClass {
   name: string
   shift: string
   serieId: string | null
-  academicPeriodId: string | null
+  academicYearId: string | null
   maxStudents: number
   studentCount?: number
   serie: { id: string; name: string; educationLevel: { id: string; name: string; type: string } | null } | null
-  academicPeriod: { id: string; name: string } | null
+  academicYear: { id: string; name: string; year: number } | null
   teachers: { id: string; name: string; email: string; role: string }[]
   students: { id: string; name: string; enrollmentCode: string }[]
   createdAt: string

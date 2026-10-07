@@ -60,7 +60,7 @@ export function ClassDetailPage() {
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {schoolClass.serie?.name ?? '—'} · {schoolClass.shift}
-            {schoolClass.academicPeriod ? ` · ${schoolClass.academicPeriod.name}` : ''}
+            {schoolClass.academicYear ? ` · ${schoolClass.academicYear.name}` : ''}
           </p>
         </div>
 

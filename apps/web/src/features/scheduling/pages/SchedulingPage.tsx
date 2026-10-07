@@ -161,7 +161,7 @@ function SlotPill({ slot, colorIdx, conflicting = false, onRemove }: SlotPillPro
 // ─── Componente: Class Column ──────────────────────────────────────────────
 
 interface ClassColumnProps {
-  schoolClass: { id: string; name: string; shift: string; serie: { name: string } | null; academicPeriodId: string | null }
+    schoolClass: { id: string; name: string; shift: string; serie: { name: string } | null; academicYearId: string | null }
   slots: TimetableSlot[]
   selectedTeacher: { id: string; name: string } | null
   teacherColorMap: Record<string, number>

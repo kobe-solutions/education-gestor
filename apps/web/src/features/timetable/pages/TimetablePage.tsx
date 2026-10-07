@@ -166,7 +166,7 @@ export function TimetablePage() {
           {schoolClass && (
             <p className="text-sm text-muted-foreground">
               {schoolClass.serie?.name ?? '—'} · {schoolClass.shift}
-              {schoolClass.academicPeriod ? ` · ${schoolClass.academicPeriod.name}` : ''}
+              {schoolClass.academicYear ? ` · ${schoolClass.academicYear.name}` : ''}
             </p>
           )}
         </div>

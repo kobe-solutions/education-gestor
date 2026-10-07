@@ -330,7 +330,7 @@ npx playwright install chromium
 **Setup:**
 ```ts
 // playwright.config.ts (raiz do monorepo)
-// baseURL: http://localhost:5173
+// baseURL: http://localhost:5174
 // Roda API em background no beforeAll global
 // Reseta banco de teste antes de cada spec (via API interna ou query direta)
 ```

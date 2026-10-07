@@ -138,6 +138,21 @@ describe('createSchoolClassService', () => {
       expect.objectContaining({ serieId: null }),
     )
   })
+
+  it('encaminha o ano letivo informado', async () => {
+    vi.mocked(repo.createSchoolClassRepository).mockResolvedValue(mockClass)
+
+    await createSchoolClassService({
+      schoolId: 'school-id',
+      name: '9A',
+      shift: 'manhã',
+      academicYearId: 'year-id',
+    })
+
+    expect(repo.createSchoolClassRepository).toHaveBeenCalledWith(
+      expect.objectContaining({ academicYearId: 'year-id' }),
+    )
+  })
 })
 
 describe('updateSchoolClassService', () => {

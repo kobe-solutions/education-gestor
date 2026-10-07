@@ -78,7 +78,7 @@ export function ClassesPage() {
                     <TableCell className="font-medium">{c.name}</TableCell>
                     <TableCell>{c.serie?.name ?? <span className="text-muted-foreground">—</span>}</TableCell>
                     <TableCell className="capitalize">{c.shift}</TableCell>
-                    <TableCell>{c.academicPeriod?.name ?? <span className="text-muted-foreground">—</span>}</TableCell>
+                  <TableCell>{c.academicYear?.name ?? <span className="text-muted-foreground">—</span>}</TableCell>
                     <TableCell>{c.students.length}</TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       <div className="flex gap-1 justify-end">

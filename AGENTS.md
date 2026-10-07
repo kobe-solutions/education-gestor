@@ -57,7 +57,7 @@ education-gestor/
 │   │       ├── app.ts          # Configuração do Fastify
 │   │       └── server.ts       # Entry point
 │   │
-│   └── web/                    # React SPA (porta 5173)
+│   └── web/                    # React SPA (porta 5174)
 │       └── src/
 │           ├── features/       # 18 features (espelha módulos da API)
 │           │   └── [feature]/
@@ -171,7 +171,7 @@ NODE_ENV=development
 | `db` | 5432 | PostgreSQL 16 (produção) |
 | `db-test` | 5433 | PostgreSQL 16 (testes) |
 | `api` | 3333 | Fastify backend (target `dev` do Dockerfile) |
-| `web` | 5173 | Vite dev server (target `dev` do Dockerfile) |
+| `web` | 5174 | Vite dev server (target `dev` do Dockerfile) |
 
 ### Comandos
 
