@@ -464,19 +464,19 @@ async function main() {
 
     const turmasData = [
       // Fundamental: 6 turmas (6º ao 9º + extras)
-      { schoolId: escola.id, serieId: seriesFundamental[5].id, academicPeriodId: periodosInseridos[1].id, name: '6A', shift: 'manhã', maxStudents: 35 },
-      { schoolId: escola.id, serieId: seriesFundamental[5].id, academicPeriodId: periodosInseridos[1].id, name: '6B', shift: 'tarde', maxStudents: 35 },
-      { schoolId: escola.id, serieId: seriesFundamental[6].id, academicPeriodId: periodosInseridos[1].id, name: '7A', shift: 'manhã', maxStudents: 35 },
-      { schoolId: escola.id, serieId: seriesFundamental[6].id, academicPeriodId: periodosInseridos[1].id, name: '7B', shift: 'tarde', maxStudents: 35 },
-      { schoolId: escola.id, serieId: seriesFundamental[7].id, academicPeriodId: periodosInseridos[1].id, name: '8A', shift: 'manhã', maxStudents: 35 },
-      { schoolId: escola.id, serieId: seriesFundamental[8].id, academicPeriodId: periodosInseridos[1].id, name: '9A', shift: 'manhã', maxStudents: 35 },
+      { schoolId: escola.id, serieId: seriesFundamental[5].id, academicYearId: anoLetivo.id, name: '6A', shift: 'manhã', maxStudents: 35 },
+      { schoolId: escola.id, serieId: seriesFundamental[5].id, academicYearId: anoLetivo.id, name: '6B', shift: 'tarde', maxStudents: 35 },
+      { schoolId: escola.id, serieId: seriesFundamental[6].id, academicYearId: anoLetivo.id, name: '7A', shift: 'manhã', maxStudents: 35 },
+      { schoolId: escola.id, serieId: seriesFundamental[6].id, academicYearId: anoLetivo.id, name: '7B', shift: 'tarde', maxStudents: 35 },
+      { schoolId: escola.id, serieId: seriesFundamental[7].id, academicYearId: anoLetivo.id, name: '8A', shift: 'manhã', maxStudents: 35 },
+      { schoolId: escola.id, serieId: seriesFundamental[8].id, academicYearId: anoLetivo.id, name: '9A', shift: 'manhã', maxStudents: 35 },
       // Médio: 6 turmas
-      { schoolId: escola.id, serieId: seriesMedio[0].id, academicPeriodId: periodosInseridos[1].id, name: '1MA', shift: 'manhã', maxStudents: 40 },
-      { schoolId: escola.id, serieId: seriesMedio[0].id, academicPeriodId: periodosInseridos[1].id, name: '1MB', shift: 'noite', maxStudents: 40 },
-      { schoolId: escola.id, serieId: seriesMedio[1].id, academicPeriodId: periodosInseridos[1].id, name: '2MA', shift: 'manhã', maxStudents: 40 },
-      { schoolId: escola.id, serieId: seriesMedio[1].id, academicPeriodId: periodosInseridos[1].id, name: '2MB', shift: 'noite', maxStudents: 40 },
-      { schoolId: escola.id, serieId: seriesMedio[2].id, academicPeriodId: periodosInseridos[1].id, name: '3MA', shift: 'manhã', maxStudents: 40 },
-      { schoolId: escola.id, serieId: seriesMedio[2].id, academicPeriodId: periodosInseridos[1].id, name: '3MB', shift: 'noite', maxStudents: 40 },
+      { schoolId: escola.id, serieId: seriesMedio[0].id, academicYearId: anoLetivo.id, name: '1MA', shift: 'manhã', maxStudents: 40 },
+      { schoolId: escola.id, serieId: seriesMedio[0].id, academicYearId: anoLetivo.id, name: '1MB', shift: 'noite', maxStudents: 40 },
+      { schoolId: escola.id, serieId: seriesMedio[1].id, academicYearId: anoLetivo.id, name: '2MA', shift: 'manhã', maxStudents: 40 },
+      { schoolId: escola.id, serieId: seriesMedio[1].id, academicYearId: anoLetivo.id, name: '2MB', shift: 'noite', maxStudents: 40 },
+      { schoolId: escola.id, serieId: seriesMedio[2].id, academicYearId: anoLetivo.id, name: '3MA', shift: 'manhã', maxStudents: 40 },
+      { schoolId: escola.id, serieId: seriesMedio[2].id, academicYearId: anoLetivo.id, name: '3MB', shift: 'noite', maxStudents: 40 },
     ]
 
     const turmasInseridas = await db.insert(schoolClasses).values(turmasData).returning()

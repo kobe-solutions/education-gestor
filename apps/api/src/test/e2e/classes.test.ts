@@ -41,9 +41,9 @@ const mockClass = {
   name: '1A',
   shift: 'manhã',
   serieId: null,
-  academicPeriodId: IDS.period,
+  academicYearId: IDS.period,
   serie: null,
-  academicPeriod: { id: IDS.period, name: '2025' },
+  academicYear: { id: IDS.period, name: '2025', year: 2025 },
   teachers: [],
   students: [],
   createdAt: new Date(),
@@ -147,17 +147,20 @@ describe('POST /school-classes', () => {
     expect(response.statusCode).toBe(201)
   })
 
-  it('retorna 201 ao criar turma com serie e período', async () => {
+  it('retorna 201 ao criar turma com série e ano letivo', async () => {
     vi.mocked(classesService.createSchoolClassService).mockResolvedValue(mockClass as any)
 
     const response = await app.inject({
       method: 'POST',
       url: '/school-classes',
       headers: { authorization: `Bearer ${gestorToken}` },
-      body: { name: '1A', shift: 'manhã', serieId: IDS.class, academicPeriodId: IDS.period },
+      body: { name: '1A', shift: 'manhã', serieId: IDS.class, academicYearId: IDS.period },
     })
 
     expect(response.statusCode).toBe(201)
+    expect(classesService.createSchoolClassService).toHaveBeenCalledWith(
+      expect.objectContaining({ academicYearId: IDS.period }),
+    )
   })
 
   it('retorna 400 com body inválido', async () => {
