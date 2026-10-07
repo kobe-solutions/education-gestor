@@ -30,7 +30,7 @@ interface ClassInput {
   name: string
   shift: string
   serieId?: string | null
-  academicPeriodId?: string | null
+  academicYearId?: string | null
 }
 
 export function useCreateClass() {

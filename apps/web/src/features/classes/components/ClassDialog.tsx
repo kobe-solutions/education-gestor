@@ -8,7 +8,8 @@ import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
-import { useCreateClass, useUpdateClass, useAcademicPeriods } from '../hooks/useClasses'
+import { useCreateClass, useUpdateClass } from '../hooks/useClasses'
+import { useAcademicYears } from '../hooks/useAcademicYears'
 import { useSeries } from '../../series/hooks/useSeries'
 import { toast } from '../../../lib/toast'
 import type { SchoolClass } from '@education-gestor/types'
@@ -17,7 +18,7 @@ const schema = z.object({
   name: z.string().min(1, 'Nome obrigatório'),
   shift: z.string().min(1, 'Turno obrigatório'),
   serieId: z.string().optional(),
-  academicPeriodId: z.string().optional(),
+  academicYearId: z.string().optional(),
 })
 
 type FormData = z.infer<typeof schema>
@@ -30,19 +31,19 @@ interface ClassDialogProps {
 
 export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
   const isEdit = !!schoolClass
-  const { data: periods } = useAcademicPeriods()
+  const { data: academicYears } = useAcademicYears()
   const { data: seriesList } = useSeries()
   const createMutation = useCreateClass()
   const updateMutation = useUpdateClass(schoolClass?.id ?? '')
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', shift: '', serieId: '', academicPeriodId: '' },
+    defaultValues: { name: '', shift: '', serieId: '', academicYearId: '' },
   })
 
   const shiftValue = watch('shift')
   const serieIdValue = watch('serieId')
-  const periodIdValue = watch('academicPeriodId')
+  const academicYearIdValue = watch('academicYearId')
 
   useEffect(() => {
     if (schoolClass) {
@@ -50,10 +51,10 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
         name: schoolClass.name,
         shift: schoolClass.shift,
         serieId: schoolClass.serieId ?? '',
-        academicPeriodId: schoolClass.academicPeriodId ?? '',
+        academicYearId: schoolClass.academicYearId ?? '',
       })
     } else {
-      reset({ name: '', shift: '', serieId: '', academicPeriodId: '' })
+      reset({ name: '', shift: '', serieId: '', academicYearId: '' })
     }
   }, [schoolClass, reset])
 
@@ -62,7 +63,7 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
       name: data.name,
       shift: data.shift,
       serieId: data.serieId || null,
-      academicPeriodId: data.academicPeriodId || null,
+      academicYearId: data.academicYearId || null,
     }
 
     const mutation = isEdit ? updateMutation : createMutation
@@ -128,18 +129,18 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label>Período letivo (opcional)</Label>
+            <Label>Ano letivo (opcional)</Label>
             <Select
-              value={periodIdValue ?? ''}
-              onValueChange={(v) => { if (v !== null) setValue('academicPeriodId', v === 'none' ? '' : v) }}
+              value={academicYearIdValue ?? ''}
+              onValueChange={(v) => { if (v !== null) setValue('academicYearId', v === 'none' ? '' : v) }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o período" />
+                <SelectValue placeholder="Selecione o ano letivo" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">Nenhum</SelectItem>
-                {periods?.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                {academicYears?.map((year) => (
+                  <SelectItem key={year.id} value={year.id}>{year.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
