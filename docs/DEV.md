@@ -57,7 +57,7 @@ pnpm dev
 | Serviço | URL |
 |---|---|
 | API (Fastify) | http://localhost:3333 |
-| Web (Vite) | http://localhost:5173 |
+| Web (Vite) | http://localhost:5174 |
 | Health check | http://localhost:3333/health |
 
 ### Alternativa: Usar Docker para tudo
@@ -220,7 +220,7 @@ Boas práticas:
 | `db` | 5432 | PostgreSQL (produção) |
 | `db-test` | 5433 | PostgreSQL (testes) |
 | `api` | 3333 | Fastify backend |
-| `web` | 5173 | Vite dev server |
+| `web` | 5174 | Vite dev server |
 
 ### Comandos Docker
 

@@ -87,7 +87,7 @@ pnpm dev
 | Serviço | Endereço |
 |---|---|
 | API | http://localhost:3333 |
-| Web | http://localhost:5173 |
+| Web | http://localhost:5174 |
 | Health check | http://localhost:3333/health |
 
 ### Alternativa: Usar Docker para tudo
@@ -130,7 +130,7 @@ Sobe API + Web + Banco em containers.
 
 | Comando | O que faz |
 |---|---|
-| `pnpm dev` | Vite dev server (porta 5173) |
+| `pnpm dev` | Vite dev server (porta 5174) |
 | `pnpm build` | tsc + vite build |
 | `pnpm preview` | Vite preview |
 | `pnpm test` | Vitest run |
@@ -147,7 +147,7 @@ Sobe API + Web + Banco em containers.
 | `db` | 5432 | PostgreSQL 16 (produção) |
 | `db-test` | 5433 | PostgreSQL 16 (testes) |
 | `api` | 3333 | Fastify backend (target `dev` do Dockerfile) |
-| `web` | 5173 | Vite dev server (target `dev` do Dockerfile) |
+| `web` | 5174 | Vite dev server (target `dev` do Dockerfile) |
 
 O `Dockerfile` é multi-stage com targets `dev` e `prod`. O `docker-compose.yml` usa o target `dev` para permitir hot-reload via volumes.
 
@@ -179,7 +179,7 @@ docker compose logs -f web
 education-gestor/
 ├── apps/
 │   ├── api/          # Fastify + Drizzle (porta 3333) — 22 módulos
-│   └── web/          # React + Vite (porta 5173) — 18 features
+│   └── web/          # React + Vite (porta 5174) — 18 features
 ├── packages/
 │   └── types/        # DTOs e tipos compartilhados
 ├── .env              # Variáveis de ambiente (compartilhadas)

@@ -228,7 +228,7 @@ O Frontend lê o `.env` raiz via `envDir: '../../'` no `vite.config.ts`. O proxy
 | `db` | 5432 | PostgreSQL 16 (produção) |
 | `db-test` | 5433 | PostgreSQL 16 (testes) |
 | `api` | 3333 | Fastify backend (target `dev` do Dockerfile) |
-| `web` | 5173 | Vite dev server (target `dev` do Dockerfile) |
+| `web` | 5174 | Vite dev server (target `dev` do Dockerfile) |
 
 ### Comandos
 
@@ -275,7 +275,7 @@ pnpm test:coverage    # Relatório de cobertura
 ### Web (`apps/web`)
 
 ```bash
-pnpm dev              # Vite dev server (porta 5173)
+pnpm dev              # Vite dev server (porta 5174)
 pnpm build            # tsc + vite build
 pnpm preview          # Vite preview
 pnpm test             # Vitest run

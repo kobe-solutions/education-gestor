@@ -20,7 +20,7 @@ pnpm install
 
 ## Etapa 2 — Subir o banco de dados
 
-O `docker-compose.yml` já existe na raiz do projeto com 4 serviços: `db` (5432), `db-test` (5433), `api` (3333), `web` (5173).
+O `docker-compose.yml` já existe na raiz do projeto com 4 serviços: `db` (5432), `db-test` (5433), `api` (3333), `web` (5174).
 
 ```bash
 docker compose up -d db
@@ -98,7 +98,7 @@ pnpm --filter api dev
 
 # Terminal 2 — Frontend
 pnpm --filter web dev
-# Esperado: Vite rodando em http://localhost:5173
+# Esperado: Vite rodando em http://localhost:5174
 ```
 
 Ou use o script raiz que roda os dois juntos:
@@ -110,7 +110,7 @@ pnpm dev
 
 ## Etapa 8 — Testar fluxo de autenticação
 
-Abra `http://localhost:5173`.
+Abra `http://localhost:5174`.
 
 **Deve redirecionar para `/login`.**
 
@@ -118,7 +118,7 @@ Abra `http://localhost:5173`.
 2. Deve redirecionar para `/` (dashboard)
 3. Sidebar deve mostrar apenas "Secretarias" (role admin)
 4. Clique em "Sair" — deve voltar para `/login`
-5. Tente acessar `http://localhost:5173/students` sem login — deve redirecionar para `/login`
+5. Tente acessar `http://localhost:5174/students` sem login — deve redirecionar para `/login`
 
 ---
 
@@ -143,7 +143,7 @@ Anote o `id` da escola e o token retornado (ou faça login com `gestor@escola.co
 
 ## Etapa 10 — Testar fluxo do Gestor
 
-Faça login com `gestor@escola.com` em `http://localhost:5173/login`.
+Faça login com `gestor@escola.com` em `http://localhost:5174/login`.
 
 A sidebar deve mostrar: Alunos, Professores, Turmas, Notas, Frequência, Financeiro.
 

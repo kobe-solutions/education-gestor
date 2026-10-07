@@ -167,7 +167,7 @@ NODE_ENV=development
 | `db` | 5432 | PostgreSQL (produção) |
 | `db-test` | 5433 | PostgreSQL (testes) |
 | `api` | 3333 | Fastify backend |
-| `web` | 5173 | Vite dev server |
+| `web` | 5174 | Vite dev server |
 
 ### Comandos
 
