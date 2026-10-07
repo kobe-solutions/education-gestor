@@ -23,12 +23,14 @@ type CreateSchoolClassServiceInput = {
   name: string
   shift: string
   serieId?: string
+  academicYearId?: string
 }
 
 type UpdateSchoolClassServiceInput = {
   name?: string
   shift?: string
   serieId?: string | null
+  academicYearId?: string | null
 }
 
 export async function listSchoolClassesService(schoolId: string) {
@@ -57,6 +59,7 @@ export async function createSchoolClassService(input: CreateSchoolClassServiceIn
     name: input.name.trim(),
     shift: input.shift,
     serieId: input.serieId ?? null,
+    academicYearId: input.academicYearId ?? null,
   })
 }
 

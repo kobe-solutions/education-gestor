@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+    "start": "pnpm dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm --filter api exec tsc --noEmit && pnpm --filter web exec tsc --noEmit",
     "db:generate": "pnpm --filter api db:generate",

@@ -46,13 +46,14 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 5173,
+    port: Number(process.env.VITE_PORT ?? 5174),
+    strictPort: true,
     watch: {
       usePolling: true,
     },
     proxy: {
       '/api': {
-        target: 'http://api:3333',
+        target: process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:3333',
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },

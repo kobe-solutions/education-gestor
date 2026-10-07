@@ -5,6 +5,7 @@ import { toast } from '../../../lib/toast'
 import { useTuitions, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
 import { TuitionCreateDialog } from '../components/TuitionCreateDialog'
 import { TuitionEditDialog } from '../components/TuitionEditDialog'
+import { UpcomingTuitions } from '../components/UpcomingTuitions'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { useApiMutation } from '../../../hooks/useApiMutation'
@@ -24,6 +25,7 @@ export function TuitionsPage() {
   const { hideFinancialData } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const [page, setPage] = useState(1)
+  const [classFilter, setClassFilter] = useState<string>('all')
   const [sortColumn, setSortColumn] = useState<string | null>('dueDate')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc' | null>('asc')
   const [searchParams, setSearchParams] = useSearchParams()
@@ -34,6 +36,7 @@ export function TuitionsPage() {
   const { data: tuitionsData, isLoading } = useTuitions({ page, limit: PAGE_SIZE, status: statusFilter })
   const tuitions = tuitionsData?.data
   const total = tuitionsData?.total ?? 0
+  const classOptions = tuitionsData?.classes ?? []
   const payMutation = useRegisterPayment()
 
   const payApiMutation = useApiMutation({
@@ -52,7 +55,11 @@ export function TuitionsPage() {
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter
     const matchesDateFrom = !dateFrom || t.dueDate >= dateFrom
     const matchesDateTo = !dateTo || t.dueDate <= dateTo
-    return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo
+    const matchesClass =
+      classFilter === 'all' ||
+      t.classIds?.includes(classFilter) ||
+      t.classId === classFilter
+    return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo && matchesClass
   }) ?? []
 
   function handleSortChange(column: string, direction: 'asc' | 'desc' | null) {
@@ -96,6 +103,15 @@ export function TuitionsPage() {
         >
           {t.studentName ?? t.studentId}
         </Link>
+      ),
+    },
+    {
+      key: 'className',
+      label: 'Turma',
+      render: (t) => (
+        <span style={{ color: 'hsl(var(--muted-foreground))' }}>
+          {t.className ?? 'Sem turma'}
+        </span>
       ),
     },
     {
@@ -150,6 +166,8 @@ export function TuitionsPage() {
         }
       />
 
+      <UpcomingTuitions />
+
       <div className="flex gap-3 flex-wrap items-end">
         <div className="w-full max-w-sm">
           <SearchInput
@@ -178,6 +196,27 @@ export function TuitionsPage() {
           <option value="pending">Pendente</option>
           <option value="paid">Pago</option>
           <option value="overdue">Atrasado</option>
+        </select>
+
+        <select
+          value={classFilter}
+          onChange={(e) => {
+            setPage(1)
+            setClassFilter(e.target.value)
+          }}
+          aria-label="Filtrar por turma"
+          className="px-3 py-2.5 text-sm rounded-md outline-hidden cursor-pointer hover:border-primary"
+          style={{
+            border: '1px solid hsl(var(--muted-foreground) / 0.3)',
+            background: 'hsl(var(--card))',
+            color: 'hsl(var(--primary))',
+            minWidth: 180,
+          }}
+        >
+          <option value="all">Todas as turmas</option>
+          {classOptions.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
         </select>
 
         <div className="flex items-center gap-2">

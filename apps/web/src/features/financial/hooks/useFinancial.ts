@@ -3,6 +3,17 @@ import { api } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Tuition } from '@education-gestor/types'
 
+export type TuitionClassOption = {
+  id: string
+  name: string
+}
+
+type TuitionsResponse = {
+  data: Tuition[]
+  total: number
+  classes?: TuitionClassOption[]
+}
+
 export function useTuitions(params?: { page?: number; limit?: number; status?: string }) {
   const { schoolKey, enabled } = useSchoolKey()
   const page = params?.page ?? 1
@@ -11,10 +22,14 @@ export function useTuitions(params?: { page?: number; limit?: number; status?: s
   return useQuery({
     queryKey: ['tuitions', schoolKey, { page, limit, status }],
     queryFn: async () => {
-      const res = await api.get<{ data: Tuition[]; total: number }>('/tuitions', {
+      const res = await api.get<TuitionsResponse>('/tuitions', {
         params: { page, limit, ...(status ? { status } : {}) },
       })
-      return { data: res.data.data, total: res.data.total }
+      return {
+        data: res.data.data,
+        total: res.data.total,
+        classes: res.data.classes ?? [],
+      }
     },
     enabled,
   })
@@ -46,6 +61,7 @@ export function useCreateTuition() {
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['tuitions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       qc.invalidateQueries({ queryKey: ['tuitions', 'student', variables.studentId] })
     },
   })
@@ -60,6 +76,7 @@ export function useUpdateTuition() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['tuitions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       if (data?.studentId) {
         qc.invalidateQueries({ queryKey: ['tuitions', 'student', data.studentId] })
       }
@@ -76,6 +93,7 @@ export function useRegisterPayment() {
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['tuitions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
       if (data?.studentId) {
         qc.invalidateQueries({ queryKey: ['tuitions', 'student', data.studentId] })
       }

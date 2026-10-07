@@ -110,8 +110,10 @@ services:
     container_name: education-gestor-web
     environment:
       NODE_ENV: development
+      VITE_PORT: '5174'
+      VITE_API_PROXY_TARGET: http://api:3333
     ports:
-      - '5173:5173'
+      - '5174:5174'
     volumes:
       - .:/app
       - /app/node_modules
