@@ -183,10 +183,7 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1
-          className="font-bold leading-tight"
-          style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
-        >
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
           Painel Administrativo
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
@@ -452,10 +449,7 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-start sm:justify-between gap-3">
         <div>
-          <h1
-            className="font-bold leading-tight"
-            style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
-          >
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
             Painel
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
@@ -678,7 +672,13 @@ export function DashboardPage() {
 
   if (isSecretariaWithoutSchool) return <NoSchoolView />
   if (isLoading) return <DashboardSkeleton cardCount={payload?.role === 'admin' ? 6 : 6} />
-  if (!data) return null
+  if (!data) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+        Não foi possível carregar o painel. Tente novamente em instantes.
+      </div>
+    )
+  }
 
   if (isAdminDashboard(data)) return <AdminDashboard data={data} />
 

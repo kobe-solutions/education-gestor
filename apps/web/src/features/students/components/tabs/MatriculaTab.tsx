@@ -76,6 +76,7 @@ export function MatriculaTab({
           <Select
             value={student?.enrollmentStatus ?? 'active'}
             onValueChange={(v) => { if (v !== null) onStatusChange(v) }}
+            items={Object.entries(ENROLLMENT_STATUS_LABELS).map(([value, label]) => ({ value, label }))}
           >
             <SelectTrigger className="w-48">
               <SelectValue />
@@ -114,7 +115,11 @@ export function MatriculaTab({
           ))}
 
           <div className="flex gap-2 pt-1">
-            <Select value={classToAdd} onValueChange={(v) => setClassToAdd(v ?? '')}>
+            <Select
+              value={classToAdd}
+              onValueChange={(v) => setClassToAdd(v ?? '')}
+              items={availableClasses.map((c) => ({ value: c.id, label: c.name }))}
+            >
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder="Selecionar turma..." />
               </SelectTrigger>

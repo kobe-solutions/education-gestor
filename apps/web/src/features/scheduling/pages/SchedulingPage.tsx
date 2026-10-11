@@ -31,16 +31,16 @@ import {
 // ─── Utilidades ───────────────────────────────────────────────────────────────
 
 const TEACHER_COLORS = [
-  { bg: 'bg-blue-500', light: 'bg-blue-500/10 border-blue-500/30 text-blue-400', ring: 'ring-blue-400' },
-  { bg: 'bg-violet-500', light: 'bg-violet-500/10 border-violet-500/30 text-violet-400', ring: 'ring-violet-400' },
-  { bg: 'bg-emerald-500', light: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400', ring: 'ring-emerald-400' },
-  { bg: 'bg-orange-500', light: 'bg-orange-500/10 border-orange-500/30 text-orange-400', ring: 'ring-orange-400' },
-  { bg: 'bg-pink-500', light: 'bg-pink-500/10 border-pink-500/30 text-pink-400', ring: 'ring-pink-400' },
-  { bg: 'bg-teal-500', light: 'bg-teal-500/10 border-teal-500/30 text-teal-400', ring: 'ring-teal-400' },
-  { bg: 'bg-red-500', light: 'bg-red-500/10 border-red-500/30 text-red-400', ring: 'ring-red-400' },
-  { bg: 'bg-indigo-500', light: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400', ring: 'ring-indigo-400' },
-  { bg: 'bg-amber-500', light: 'bg-amber-500/10 border-amber-500/30 text-amber-400', ring: 'ring-amber-400' },
-  { bg: 'bg-cyan-500', light: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400', ring: 'ring-cyan-400' },
+  { bg: 'bg-blue-500', light: 'bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300', ring: 'ring-blue-400' },
+  { bg: 'bg-violet-500', light: 'bg-violet-500/10 border-violet-500/30 text-violet-700 dark:text-violet-300', ring: 'ring-violet-400' },
+  { bg: 'bg-emerald-500', light: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-400' },
+  { bg: 'bg-orange-500', light: 'bg-orange-500/10 border-orange-500/30 text-orange-700 dark:text-orange-300', ring: 'ring-orange-400' },
+  { bg: 'bg-pink-500', light: 'bg-pink-500/10 border-pink-500/30 text-pink-700 dark:text-pink-300', ring: 'ring-pink-400' },
+  { bg: 'bg-teal-500', light: 'bg-teal-500/10 border-teal-500/30 text-teal-700 dark:text-teal-300', ring: 'ring-teal-400' },
+  { bg: 'bg-red-500', light: 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300', ring: 'ring-red-400' },
+  { bg: 'bg-indigo-500', light: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300', ring: 'ring-indigo-400' },
+  { bg: 'bg-amber-500', light: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300', ring: 'ring-amber-400' },
+  { bg: 'bg-cyan-500', light: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300', ring: 'ring-cyan-400' },
 ]
 
 function teacherColorIndex(name: string) {
@@ -58,7 +58,7 @@ function initials(name: string) {
     .join('')
 }
 
-import { SHIFT_LABELS, SHIFT_BADGE_CLASSES } from '../../../lib/labels'
+import { formatShiftLabel, SHIFT_BADGE_CLASSES } from '../../../lib/labels'
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────
 
@@ -90,6 +90,15 @@ function TeacherCard({ teacher, colorIdx, assignmentCount, isSelected, onSelect 
         e.dataTransfer.setData('teacherName', teacher.name)
       }}
       onClick={onSelect}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onSelect()
+        }
+      }}
       className={[
         'group relative flex items-center gap-3 rounded-xl border px-3 py-2.5 cursor-grab active:cursor-grabbing transition-all duration-150 select-none',
         isSelected
@@ -151,8 +160,9 @@ function SlotPill({ slot, colorIdx, conflicting = false, onRemove }: SlotPillPro
         size="icon"
         className="ml-auto opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity shrink-0 hover:text-red-600 h-5 w-5"
         onClick={onRemove}
+        aria-label={`Remover aula de ${slot.subject.name}`}
       >
-        <X className="h-3 w-3" />
+        <X className="h-3 w-3" aria-hidden="true" />
       </Button>
     </div>
   )
@@ -192,7 +202,7 @@ function ClassColumn({
   }, {})
 
   const shiftKey = schoolClass.shift.toLowerCase()
-  const shiftLabel = SHIFT_LABELS[shiftKey] ?? schoolClass.shift
+  const shiftLabel = formatShiftLabel(schoolClass.shift)
   const shiftBadge = SHIFT_BADGE_CLASSES[shiftKey] ?? 'bg-muted text-muted-foreground border-border'
 
   return (
@@ -242,7 +252,7 @@ function ClassColumn({
         </div>
         <div className="flex items-center gap-1 ml-2">
           <span className="text-[10px] text-muted-foreground font-medium">{slots.length} aulas</span>
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => setCollapsed((v) => !v)}>
+          <Button variant="ghost" size="icon" aria-label={collapsed ? 'Expandir turma' : 'Recolher turma'} className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => setCollapsed((v) => !v)}>
             {collapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
           </Button>
         </div>
@@ -553,10 +563,10 @@ export function SchedulingPage() {
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <Label>Professor *</Label>
+              <Label htmlFor="assign-teacher">Professor *</Label>
               <Select value={formTeacher} onValueChange={(v) => setFormTeacher(v ?? '')}
                 items={teachers.map((t) => ({ value: t.id, label: t.name }))}>
-                <SelectTrigger>
+                <SelectTrigger id="assign-teacher">
                   <SelectValue placeholder="Selecionar professor" />
                 </SelectTrigger>
                 <SelectContent>
@@ -577,10 +587,10 @@ export function SchedulingPage() {
             </div>
 
             <div className="space-y-1">
-              <Label>Disciplina *</Label>
+              <Label htmlFor="assign-subject">Disciplina *</Label>
               <Select value={formSubject} onValueChange={(v) => setFormSubject(v ?? '')}
                 items={subjects.map((s) => ({ value: s.id, label: s.name }))}>
-                <SelectTrigger><SelectValue placeholder="Selecionar disciplina" /></SelectTrigger>
+                <SelectTrigger id="assign-subject"><SelectValue placeholder="Selecionar disciplina" /></SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
                     <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
@@ -591,10 +601,10 @@ export function SchedulingPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Dia *</Label>
+                <Label htmlFor="assign-day">Dia *</Label>
                 <Select value={formDay} onValueChange={(v) => setFormDay(v ?? '')}
                   items={WEEK_DAYS_ORDER.map((d) => ({ value: d, label: WEEK_DAY_LABELS[d] }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger id="assign-day"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {WEEK_DAYS_ORDER.map((d) => (
                       <SelectItem key={d} value={d}>{WEEK_DAY_LABELS[d]}</SelectItem>
@@ -603,10 +613,10 @@ export function SchedulingPage() {
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Horário *</Label>
+                <Label htmlFor="assign-period">Horário *</Label>
                 <Select value={formClassPeriodId} onValueChange={(v) => setFormClassPeriodId(v ?? '')}
                   items={classPeriods.map((cp) => ({ value: cp.id, label: `${cp.name} (${cp.startTime}–${cp.endTime})` }))}>
-                  <SelectTrigger><SelectValue placeholder="Selecionar horário" /></SelectTrigger>
+                  <SelectTrigger id="assign-period"><SelectValue placeholder="Selecionar horário" /></SelectTrigger>
                   <SelectContent>
                     {classPeriods.map((cp) => (
                       <SelectItem key={cp.id} value={cp.id}>{cp.name} ({cp.startTime}–{cp.endTime})</SelectItem>

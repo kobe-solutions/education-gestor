@@ -36,20 +36,23 @@ export function FinancialControlPage() {
     )
   }
 
-  if (!data || !('upcomingTuitions' in data)) return null
+  if (!data || !('upcomingTuitions' in data)) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+        Não foi possível carregar o controle financeiro. Tente novamente em instantes.
+      </div>
+    )
+  }
 
   const tuitions = data.tuitions
 
   return (
     <div className="space-y-8">
       <div>
-        <h1
-          className="font-bold leading-tight"
-          style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
-        >
+        <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
           Controle Financeiro
         </h1>
-        <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+        <p className="mt-1 text-sm text-muted-foreground">
           Acompanhamento de mensalidades — {new Date().getFullYear()}
         </p>
       </div>

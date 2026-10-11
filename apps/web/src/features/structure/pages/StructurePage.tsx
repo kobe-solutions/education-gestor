@@ -8,6 +8,7 @@ import { Button } from '../../../components/ui/button'
 import { PageHead } from '../../../components/PageHead'
 import { StatusBadge } from '../../../components/StatusBadge'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { formatShiftLabel } from '../../../lib/labels'
 
 export function StructurePage() {
   const navigate = useNavigate()
@@ -46,14 +47,22 @@ export function StructurePage() {
             return (
               <div
                 key={level.id}
-                className="rounded-xl overflow-hidden"
-                style={{ border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))', boxShadow: 'var(--shadow-sm)' }}
+                className="overflow-hidden rounded-xl border border-border bg-card shadow-sm"
               >
                 {/* Cabeçalho do nível — fundo tint azul */}
                 <div
                   className="flex items-center gap-3 px-5 py-4 cursor-pointer transition-colors hover:bg-primary/10"
                   style={{ background: 'hsl(var(--primary) / 0.1)', borderBottom: '1px solid hsl(var(--border))' }}
                   onClick={() => navigate(`/education-levels/${level.id}/series`)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Abrir séries de ${level.name}`}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      navigate(`/education-levels/${level.id}/series`)
+                    }
+                  }}
                 >
                   <div
                     className="flex items-center justify-center rounded-xl shrink-0"
@@ -109,9 +118,17 @@ export function StructurePage() {
                                 <GraduationCap size={12} />
                               </div>
                               <span
-                                className="text-sm font-semibold cursor-pointer transition-colors hover:text-primary"
+                                className="cursor-pointer text-sm font-semibold transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 style={{ color: 'hsl(var(--primary))' }}
                                 onClick={() => navigate('/structure/classes')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault()
+                                    navigate('/structure/classes')
+                                  }
+                                }}
                               >
                                 {serie.name}
                               </span>
@@ -133,7 +150,7 @@ export function StructurePage() {
                                     <BookOpen size={11} />
                                     {turma.name}
                                     {turma.shift && (
-                                      <span style={{ opacity: 0.65 }}>· {turma.shift}</span>
+                                      <span style={{ opacity: 0.65 }}>· {formatShiftLabel(turma.shift)}</span>
                                     )}
                                   </Button>
                                 ))}
@@ -184,7 +201,7 @@ export function StructurePage() {
                     onClick={() => navigate(`/classes/${turma.id}`)}
                   >
                     <BookOpen size={11} />
-                    {turma.name} · {turma.shift}
+                    {turma.name} · {formatShiftLabel(turma.shift)}
                   </Button>
                 ))}
               </div>

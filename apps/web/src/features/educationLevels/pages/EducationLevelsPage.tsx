@@ -194,10 +194,10 @@ export function EducationLevelsPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Tipo *</Label>
+              <Label htmlFor="education-level-type">Tipo *</Label>
               <Select value={typeValue} onValueChange={(v) => { if (v !== null) setValue('type', v) }}
                 items={LEVEL_TYPES.map(([value, label]) => ({ value, label }))}>
-                <SelectTrigger>
+                <SelectTrigger id="education-level-type">
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -209,10 +209,10 @@ export function EducationLevelsPage() {
               {errors.type && <p className="text-xs text-destructive">{errors.type.message}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Modalidade (opcional)</Label>
+              <Label htmlFor="education-level-modality">Modalidade (opcional)</Label>
               <Select value={modalityValue ?? ''} onValueChange={(v) => { if (v !== null) setValue('modality', v === 'none' ? '' : v) }}
                 items={[{ value: 'none', label: 'Nenhuma' }, ...MODALITIES.map(([value, label]) => ({ value, label }))]}>
-                <SelectTrigger>
+                <SelectTrigger id="education-level-modality">
                   <SelectValue placeholder="Nenhuma modalidade específica" />
                 </SelectTrigger>
                 <SelectContent>
@@ -224,8 +224,8 @@ export function EducationLevelsPage() {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Nome *</Label>
-              <Input placeholder="Ex: Ensino Fundamental 1" {...register('name')} />
+              <Label htmlFor="education-level-name">Nome *</Label>
+              <Input id="education-level-name" placeholder="Ex: Ensino Fundamental 1" {...register('name')} />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <DialogFooter>

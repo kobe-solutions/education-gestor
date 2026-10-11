@@ -182,7 +182,7 @@ export function StudentDetailPage() {
   ]
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
       <Breadcrumbs
         items={[
           { label: 'Pessoas', to: '/people' },
@@ -199,6 +199,7 @@ export function StudentDetailPage() {
               <Button
                 variant="outline"
                 size="icon"
+                aria-label="Voltar para a lista de alunos"
                 onClick={() => navigate('/students')}
                 className="shrink-0"
                 title="Voltar para lista de alunos"
@@ -256,9 +257,9 @@ export function StudentDetailPage() {
       </Card>
 
       {/* Grid de Informações */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Coluna Principal (2 terços no desktop) */}
-        <div className="md:col-span-2 space-y-6">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           {/* Dados Pessoais */}
           <Card>
             <CardHeader className="pb-3">
@@ -448,7 +449,7 @@ export function StudentDetailPage() {
         </div>
 
         {/* Coluna Lateral (1 terço no desktop) */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           {/* Turmas Matriculadas */}
           <Card>
             <CardHeader className="pb-3">
@@ -592,38 +593,38 @@ export function StudentDetailPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onAddGuardian)} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label>Nome completo *</Label>
-              <Input {...register('name')} placeholder="Nome do responsável" />
+              <Label htmlFor="detail-guardian-name">Nome completo *</Label>
+              <Input id="detail-guardian-name" {...register('name')} placeholder="Nome do responsável" />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label>Parentesco *</Label>
-              <Input placeholder="Ex: Mãe, Pai, Avó..." {...register('relationship')} />
+              <Label htmlFor="detail-guardian-relationship">Parentesco *</Label>
+              <Input id="detail-guardian-relationship" placeholder="Ex: Mãe, Pai, Avó..." {...register('relationship')} />
               {errors.relationship && (
                 <p className="text-xs text-destructive">{errors.relationship.message}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Email</Label>
-                <Input type="email" {...register('email')} placeholder="email@exemplo.com" />
+                <Label htmlFor="detail-guardian-email">Email</Label>
+                <Input id="detail-guardian-email" type="email" {...register('email')} placeholder="email@exemplo.com" />
                 {errors.email && (
                   <p className="text-xs text-destructive">{errors.email.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label>Telefone</Label>
-                <Input {...register('phone')} placeholder="(00) 00000-0000" />
+                <Label htmlFor="detail-guardian-phone">Telefone</Label>
+                <Input id="detail-guardian-phone" {...register('phone')} placeholder="(00) 00000-0000" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>CPF</Label>
-                <Input {...register('cpf')} placeholder="000.000.000-00" />
+                <Label htmlFor="detail-guardian-cpf">CPF</Label>
+                <Input id="detail-guardian-cpf" {...register('cpf')} placeholder="000.000.000-00" />
               </div>
               <div className="space-y-1.5">
-                <Label>Profissão</Label>
-                <Input {...register('profession')} placeholder="Ex: Engenheiro(a)" />
+                <Label htmlFor="detail-guardian-profession">Profissão</Label>
+                <Input id="detail-guardian-profession" {...register('profession')} placeholder="Ex: Engenheiro(a)" />
               </div>
             </div>
 

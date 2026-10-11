@@ -29,6 +29,7 @@ import { useSubjects } from '../../subjects/hooks/useSubjects'
 import { Avatar } from '../../../components/Avatar'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useSecretariaSchools } from '../../secretarias/hooks/useSecretarias'
+import { DOCUMENT_TYPE_LABELS } from '../../../lib/labels'
 
 function Opt() {
   return <span className="ml-1 text-[10px] font-normal text-muted-foreground">(opcional)</span>
@@ -343,11 +344,12 @@ export function TeacherFormPage() {
                   <Avatar name={teacher?.name ?? ''} photoUrl={teacher?.photoUrl} size={96} className="rounded-full" />
                   <button
                     type="button"
+                    aria-label="Alterar foto do professor"
                     className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     onClick={() => photoInputRef.current?.click()}
                     disabled={uploadPhoto.isPending}
                   >
-                    <Camera className="h-6 w-6 text-white" />
+                    <Camera className="h-6 w-6 text-white" aria-hidden="true" />
                   </button>
                   <input
                     ref={photoInputRef}
@@ -364,31 +366,31 @@ export function TeacherFormPage() {
               <CardHeader><CardTitle className="text-sm">Identificação pessoal</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
-                  <Label>Nome completo *</Label>
+                  <Label htmlFor="name">Nome completo *</Label>
                   <Input {...pessoalForm.register('name')} />
                   {pessoalForm.formState.errors.name && (
                     <p className="text-xs text-destructive">{pessoalForm.formState.errors.name.message}</p>
                   )}
                 </div>
                 <div className="space-y-1">
-                  <Label>CPF<Opt /></Label>
+                  <Label htmlFor="cpf">CPF<Opt /></Label>
                   <Input placeholder="000.000.000-00" {...pessoalForm.register('cpf')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>RG<Opt /></Label>
+                  <Label htmlFor="rg">RG<Opt /></Label>
                   <Input placeholder="00.000.000-0" {...pessoalForm.register('rg')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Data de nascimento<Opt /></Label>
+                  <Label htmlFor="birthDate">Data de nascimento<Opt /></Label>
                   <Input type="date" {...pessoalForm.register('birthDate')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Sexo<Opt /></Label>
+                  <Label htmlFor="sex">Sexo<Opt /></Label>
                   <Select
                     value={pessoalForm.watch('sex') ?? ''}
                     onValueChange={(v) => pessoalForm.setValue('sex', v as 'M' | 'F' | 'outro')}
                   >
-                    <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                    <SelectTrigger id="sex"><SelectValue placeholder="Selecionar" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="M">Masculino</SelectItem>
                       <SelectItem value="F">Feminino</SelectItem>
@@ -397,11 +399,11 @@ export function TeacherFormPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label>Nacionalidade<Opt /></Label>
+                  <Label htmlFor="nationality">Nacionalidade<Opt /></Label>
                   <Input placeholder="Brasileiro(a)" {...pessoalForm.register('nationality')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Estado civil<Opt /></Label>
+                  <Label htmlFor="maritalStatus">Estado civil<Opt /></Label>
                   <Input placeholder="Solteiro(a), Casado(a)..." {...pessoalForm.register('maritalStatus')} />
                 </div>
               </CardContent>
@@ -411,18 +413,18 @@ export function TeacherFormPage() {
               <CardHeader><CardTitle className="text-sm">Contato & acesso</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label>Telefone<Opt /></Label>
+                  <Label htmlFor="phone">Telefone<Opt /></Label>
                   <Input placeholder="(00) 00000-0000" {...pessoalForm.register('phone')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Email *</Label>
+                  <Label htmlFor="email">Email *</Label>
                   <Input type="email" {...pessoalForm.register('email')} />
                   {pessoalForm.formState.errors.email && (
                     <p className="text-xs text-destructive">{pessoalForm.formState.errors.email.message}</p>
                   )}
                 </div>
                 <div className="space-y-1">
-                  <Label>{isEdit ? 'Nova senha' : 'Senha *'}<Opt /></Label>
+                  <Label htmlFor="password">{isEdit ? 'Nova senha' : 'Senha *'}<Opt /></Label>
                   <Input type="password" placeholder="Mínimo 8 caracteres" {...pessoalForm.register('password')} />
                   {pessoalForm.formState.errors.password && (
                     <p className="text-xs text-destructive">{pessoalForm.formState.errors.password.message}</p>
@@ -451,31 +453,31 @@ export function TeacherFormPage() {
               <CardHeader><CardTitle className="text-sm">Endereço</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <Label>CEP<Opt /></Label>
+                  <Label htmlFor="addressCep">CEP<Opt /></Label>
                   <Input placeholder="00000-000" {...enderecoForm.register('addressCep')} />
                 </div>
                 <div className="col-span-2 space-y-1">
-                  <Label>Logradouro<Opt /></Label>
+                  <Label htmlFor="addressStreet">Logradouro<Opt /></Label>
                   <Input placeholder="Rua, Avenida..." {...enderecoForm.register('addressStreet')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Número<Opt /></Label>
+                  <Label htmlFor="addressNumber">Número<Opt /></Label>
                   <Input {...enderecoForm.register('addressNumber')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Complemento<Opt /></Label>
+                  <Label htmlFor="addressComplement">Complemento<Opt /></Label>
                   <Input placeholder="Apto, Bloco..." {...enderecoForm.register('addressComplement')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Bairro<Opt /></Label>
+                  <Label htmlFor="addressNeighborhood">Bairro<Opt /></Label>
                   <Input {...enderecoForm.register('addressNeighborhood')} />
                 </div>
                 <div className="col-span-2 space-y-1">
-                  <Label>Cidade<Opt /></Label>
+                  <Label htmlFor="addressCity">Cidade<Opt /></Label>
                   <Input {...enderecoForm.register('addressCity')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Estado (UF)<Opt /></Label>
+                  <Label htmlFor="addressState">Estado (UF)<Opt /></Label>
                   <Input maxLength={2} placeholder="CE" {...enderecoForm.register('addressState')} />
                 </div>
               </CardContent>
@@ -495,16 +497,16 @@ export function TeacherFormPage() {
               <CardHeader><CardTitle className="text-sm">Dados profissionais</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
-                  <Label>Cargo / Função<Opt /></Label>
-                  <Input placeholder="Professor, Coordenador, Auxiliar..." {...profissionalForm.register('position')} />
+                  <Label htmlFor="teacher-position">Cargo / Função<Opt /></Label>
+                  <Input id="teacher-position" placeholder="Professor, Coordenador, Auxiliar..." {...profissionalForm.register('position')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Tipo de contrato<Opt /></Label>
+                  <Label htmlFor="teacher-contract-type">Tipo de contrato<Opt /></Label>
                   <Select
                     value={profissionalForm.watch('contractType') ?? ''}
                     onValueChange={(v) => profissionalForm.setValue('contractType', v as any)}
                   >
-                    <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                    <SelectTrigger id="teacher-contract-type"><SelectValue placeholder="Selecionar" /></SelectTrigger>
                     <SelectContent>
                       {Object.entries(CONTRACT_LABELS).map(([v, l]) => (
                         <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -513,16 +515,16 @@ export function TeacherFormPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label>Carga horária<Opt /></Label>
-                  <Input placeholder="Ex: 40h/semana" {...profissionalForm.register('workload')} />
+                  <Label htmlFor="teacher-workload">Carga horária<Opt /></Label>
+                  <Input id="teacher-workload" placeholder="Ex: 40h/semana" {...profissionalForm.register('workload')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Turno<Opt /></Label>
+                  <Label htmlFor="teacher-work-shift">Turno<Opt /></Label>
                   <Select
                     value={profissionalForm.watch('workShift') ?? ''}
                     onValueChange={(v) => profissionalForm.setValue('workShift', v as any)}
                   >
-                    <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                    <SelectTrigger id="teacher-work-shift"><SelectValue placeholder="Selecionar" /></SelectTrigger>
                     <SelectContent>
                       {Object.entries(SHIFT_LABELS).map(([v, l]) => (
                         <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -531,12 +533,12 @@ export function TeacherFormPage() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label>Situação</Label>
+                  <Label htmlFor="teacher-employment-status">Situação</Label>
                   <Select
                     value={profissionalForm.watch('employmentStatus') ?? 'ativo'}
                     onValueChange={(v) => profissionalForm.setValue('employmentStatus', v as any)}
                   >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="teacher-employment-status"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {Object.entries(EMPLOYMENT_STATUS_LABELS).map(([v, l]) => (
                         <SelectItem key={v} value={v}>{l}</SelectItem>
@@ -561,20 +563,20 @@ export function TeacherFormPage() {
               <CardHeader><CardTitle className="text-sm">Formação acadêmica</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label>Escolaridade<Opt /></Label>
-                  <Input placeholder="Superior completo, Pós-graduação..." {...formacaoForm.register('educationLevel')} />
+                  <Label htmlFor="teacher-education-level">Escolaridade<Opt /></Label>
+                  <Input id="teacher-education-level" placeholder="Superior completo, Pós-graduação..." {...formacaoForm.register('educationLevel')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Curso de formação<Opt /></Label>
-                  <Input placeholder="Licenciatura em Matemática..." {...formacaoForm.register('degree')} />
+                  <Label htmlFor="teacher-degree">Curso de formação<Opt /></Label>
+                  <Input id="teacher-degree" placeholder="Licenciatura em Matemática..." {...formacaoForm.register('degree')} />
                 </div>
                 <div className="col-span-2 space-y-1">
-                  <Label>Instituição<Opt /></Label>
-                  <Input placeholder="Nome da universidade / faculdade" {...formacaoForm.register('institution')} />
+                  <Label htmlFor="teacher-institution">Instituição<Opt /></Label>
+                  <Input id="teacher-institution" placeholder="Nome da universidade / faculdade" {...formacaoForm.register('institution')} />
                 </div>
                 <div className="col-span-2 space-y-1">
-                  <Label>Registro profissional<Opt /></Label>
-                  <Input placeholder="CREA, CREF, CRP, etc." {...formacaoForm.register('professionalRegistry')} />
+                  <Label htmlFor="teacher-professional-registry">Registro profissional<Opt /></Label>
+                  <Input id="teacher-professional-registry" placeholder="CREA, CREF, CRP, etc." {...formacaoForm.register('professionalRegistry')} />
                 </div>
               </CardContent>
             </Card>
@@ -595,8 +597,14 @@ export function TeacherFormPage() {
             <CardContent className="space-y-4">
               <div className="flex items-end gap-2">
                 <div className="flex-1 space-y-1">
-                  <Label>Adicionar disciplina</Label>
-                  <Select value={subjectToAdd} onValueChange={(v) => v && setSubjectToAdd(v)}>
+                  <Label htmlFor="teacher-subject">Adicionar disciplina</Label>
+                  <Select
+                    value={subjectToAdd}
+                    onValueChange={(v) => v && setSubjectToAdd(v)}
+                    items={subjects
+                      .filter((s) => !teacher?.subjects?.some((ts) => ts.id === s.id))
+                      .map((s) => ({ value: s.id, label: s.name }))}
+                  >
                     <SelectTrigger aria-label="Selecionar disciplina">
                       <SelectValue placeholder="Selecionar disciplina" />
                     </SelectTrigger>
@@ -697,7 +705,7 @@ export function TeacherFormPage() {
                     <div>
                       <p className="text-sm">{doc.name}</p>
                       <p className="text-xs text-muted-foreground">
-                        {doc.type}
+                        {DOCUMENT_TYPE_LABELS[doc.type] ?? doc.type}
                         {doc.fileSize ? ` · ${(doc.fileSize / 1024).toFixed(0)} KB` : ''}
                       </p>
                     </div>
@@ -723,24 +731,24 @@ export function TeacherFormPage() {
               <CardHeader><CardTitle className="text-sm">Dados bancários</CardTitle></CardHeader>
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label>Banco<Opt /></Label>
-                  <Input placeholder="Ex: Banco do Brasil, Itaú..." {...financeiroForm.register('bank')} />
+                  <Label htmlFor="teacher-bank">Banco<Opt /></Label>
+                  <Input id="teacher-bank" placeholder="Ex: Banco do Brasil, Itaú..." {...financeiroForm.register('bank')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Agência<Opt /></Label>
-                  <Input placeholder="0000" {...financeiroForm.register('agency')} />
+                  <Label htmlFor="teacher-agency">Agência<Opt /></Label>
+                  <Input id="teacher-agency" placeholder="0000" {...financeiroForm.register('agency')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Número da conta<Opt /></Label>
-                  <Input placeholder="00000-0" {...financeiroForm.register('accountNumber')} />
+                  <Label htmlFor="teacher-account-number">Número da conta<Opt /></Label>
+                  <Input id="teacher-account-number" placeholder="00000-0" {...financeiroForm.register('accountNumber')} />
                 </div>
                 <div className="space-y-1">
-                  <Label>Tipo de conta<Opt /></Label>
-                  <Input placeholder="Corrente, Poupança..." {...financeiroForm.register('accountType')} />
+                  <Label htmlFor="teacher-account-type">Tipo de conta<Opt /></Label>
+                  <Input id="teacher-account-type" placeholder="Corrente, Poupança..." {...financeiroForm.register('accountType')} />
                 </div>
                 <div className="col-span-2 space-y-1">
-                  <Label>Chave PIX<Opt /></Label>
-                  <Input placeholder="CPF, e-mail, telefone ou chave aleatória" {...financeiroForm.register('pixKey')} />
+                  <Label htmlFor="teacher-pix-key">Chave PIX<Opt /></Label>
+                  <Input id="teacher-pix-key" placeholder="CPF, e-mail, telefone ou chave aleatória" {...financeiroForm.register('pixKey')} />
                 </div>
               </CardContent>
             </Card>
@@ -756,8 +764,8 @@ export function TeacherFormPage() {
               <CardHeader><CardTitle className="text-sm">Alterar senha</CardTitle></CardHeader>
               <CardContent className="max-w-sm">
                 <div className="space-y-1">
-                  <Label>Nova senha</Label>
-                  <Input type="password" placeholder="Mínimo 8 caracteres" {...senhaForm.register('password')} />
+                  <Label htmlFor="teacher-new-password">Nova senha</Label>
+                  <Input id="teacher-new-password" type="password" placeholder="Mínimo 8 caracteres" {...senhaForm.register('password')} />
                   {senhaForm.formState.errors.password && (
                     <p className="text-xs text-destructive">{senhaForm.formState.errors.password.message}</p>
                   )}

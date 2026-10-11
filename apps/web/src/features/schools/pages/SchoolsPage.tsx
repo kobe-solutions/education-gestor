@@ -108,10 +108,11 @@ function SchoolCard({ school, canManage, isSecretaria, isAdmin, onEdit, onDelete
               <>
                 <button
                   type="button"
+                  aria-label={`Alterar logo de ${school.name}`}
                   className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                   onClick={() => logoInputRef.current?.click()}
                 >
-                  <Camera className="h-4 w-4 text-white" />
+                  <Camera className="h-4 w-4 text-white" aria-hidden="true" />
                 </button>
                 <input
                   ref={logoInputRef}
@@ -506,8 +507,9 @@ export function SchoolsPage() {
           <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Nome *</Label>
+                <Label htmlFor="create-school-name">Nome *</Label>
                 <Input
+                  id="create-school-name"
                   {...createForm.register('name')}
                   onChange={(e) => {
                     createForm.setValue('name', e.target.value)
@@ -521,9 +523,10 @@ export function SchoolsPage() {
                 )}
               </div>
               <div className="space-y-1">
-                <Label>Slug *</Label>
+                <Label htmlFor="create-school-slug">Slug *</Label>
                 <Input
                   placeholder="ex: escola-modelo"
+                  id="create-school-slug"
                   {...createForm.register('slug')}
                   onChange={(e) => {
                     slugManuallyEdited.current = true
@@ -537,15 +540,15 @@ export function SchoolsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Email *</Label>
-                <Input type="email" {...createForm.register('email')} />
+                <Label htmlFor="create-school-email">Email *</Label>
+                <Input id="create-school-email" type="email" {...createForm.register('email')} />
                 {createForm.formState.errors.email && (
                   <p className="text-xs text-destructive">{createForm.formState.errors.email.message}</p>
                 )}
               </div>
               <div className="space-y-1">
-                <Label>Senha *</Label>
-                <Input type="password" {...createForm.register('password')} />
+                <Label htmlFor="create-school-password">Senha *</Label>
+                <Input id="create-school-password" type="password" {...createForm.register('password')} />
                 {createForm.formState.errors.password && (
                   <p className="text-xs text-destructive">{createForm.formState.errors.password.message}</p>
                 )}
@@ -553,22 +556,22 @@ export function SchoolsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Diretor</Label>
-                <Input placeholder="Nome do diretor" {...createForm.register('director')} />
+                <Label htmlFor="create-school-director">Diretor</Label>
+                <Input id="create-school-director" placeholder="Nome do diretor" {...createForm.register('director')} />
               </div>
               <div className="space-y-1">
-                <Label>Coordenador</Label>
-                <Input placeholder="Nome do coordenador" {...createForm.register('coordinator')} />
+                <Label htmlFor="create-school-coordinator">Coordenador</Label>
+                <Input id="create-school-coordinator" placeholder="Nome do coordenador" {...createForm.register('coordinator')} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Telefone</Label>
-                <Input placeholder="(00) 00000-0000" {...createForm.register('phone')} />
+                <Label htmlFor="create-school-phone">Telefone</Label>
+                <Input id="create-school-phone" placeholder="(00) 00000-0000" {...createForm.register('phone')} />
               </div>
               <div className="space-y-1">
-                <Label>Endereço</Label>
-                <Input placeholder="Rua, número, bairro" {...createForm.register('address')} />
+                <Label htmlFor="create-school-address">Endereço</Label>
+                <Input id="create-school-address" placeholder="Rua, número, bairro" {...createForm.register('address')} />
               </div>
             </div>
             <DialogFooter>
@@ -593,8 +596,9 @@ export function SchoolsPage() {
           <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Nome *</Label>
+                <Label htmlFor="edit-school-name">Nome *</Label>
                 <Input
+                  id="edit-school-name"
                   {...editForm.register('name')}
                   onChange={(e) => {
                     editForm.setValue('name', e.target.value)
@@ -608,9 +612,10 @@ export function SchoolsPage() {
                 )}
               </div>
               <div className="space-y-1">
-                <Label>Slug *</Label>
+                <Label htmlFor="edit-school-slug">Slug *</Label>
                 <Input
                   placeholder="ex: escola-modelo"
+                  id="edit-school-slug"
                   {...editForm.register('slug')}
                   onChange={(e) => {
                     editSlugManuallyEdited.current = true
@@ -623,30 +628,30 @@ export function SchoolsPage() {
               </div>
             </div>
             <div className="space-y-1">
-              <Label>Email *</Label>
-              <Input type="email" {...editForm.register('email')} />
+              <Label htmlFor="edit-school-email">Email *</Label>
+              <Input id="edit-school-email" type="email" {...editForm.register('email')} />
               {editForm.formState.errors.email && (
                 <p className="text-xs text-destructive">{editForm.formState.errors.email.message}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Diretor</Label>
-                <Input placeholder="Nome do diretor" {...editForm.register('director')} />
+                <Label htmlFor="edit-school-director">Diretor</Label>
+                <Input id="edit-school-director" placeholder="Nome do diretor" {...editForm.register('director')} />
               </div>
               <div className="space-y-1">
-                <Label>Coordenador</Label>
-                <Input placeholder="Nome do coordenador" {...editForm.register('coordinator')} />
+                <Label htmlFor="edit-school-coordinator">Coordenador</Label>
+                <Input id="edit-school-coordinator" placeholder="Nome do coordenador" {...editForm.register('coordinator')} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label>Telefone</Label>
-                <Input placeholder="(00) 00000-0000" {...editForm.register('phone')} />
+                <Label htmlFor="edit-school-phone">Telefone</Label>
+                <Input id="edit-school-phone" placeholder="(00) 00000-0000" {...editForm.register('phone')} />
               </div>
               <div className="space-y-1">
-                <Label>Endereço</Label>
-                <Input placeholder="Rua, número, bairro" {...editForm.register('address')} />
+                <Label htmlFor="edit-school-address">Endereço</Label>
+                <Input id="edit-school-address" placeholder="Rua, número, bairro" {...editForm.register('address')} />
               </div>
             </div>
             <DialogFooter>
@@ -672,10 +677,11 @@ export function SchoolsPage() {
           </DialogHeader>
           <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Nova senha *</Label>
+              <Label htmlFor="reset-school-password">Nova senha *</Label>
               <Input
                 type="password"
                 placeholder="Mínimo 8 caracteres"
+                id="reset-school-password"
                 {...passwordForm.register('password')}
               />
               {passwordForm.formState.errors.password && (

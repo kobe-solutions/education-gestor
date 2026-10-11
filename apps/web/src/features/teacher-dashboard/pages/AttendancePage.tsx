@@ -925,7 +925,7 @@ export function AttendancePage() {
             <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
           </Link>
           <div className="flex-1 min-w-0">
-            <h1 className="font-bold leading-tight" style={{ fontSize: 22, color: 'hsl(var(--foreground))' }}>
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
               Frequência
             </h1>
             <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
@@ -948,7 +948,13 @@ export function AttendancePage() {
     )
   }
 
-  if (!data) return null
+  if (!data) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+        Não foi possível carregar os dados de frequência. Tente novamente em instantes.
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -962,7 +968,7 @@ export function AttendancePage() {
           <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold leading-tight" style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}>
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
             Frequência Escolar
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>

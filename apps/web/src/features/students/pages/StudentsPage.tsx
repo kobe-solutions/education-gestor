@@ -242,7 +242,11 @@ export function StudentsPage() {
               <SelectItem value="outro">Outro</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={classFilter} onValueChange={(v) => { setPage(1); setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('classId'); else next.set('classId', v); return next }) }}>
+          <Select
+            value={classFilter}
+            onValueChange={(v) => { setPage(1); setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v || v === 'all') next.delete('classId'); else next.set('classId', v); return next }) }}
+            items={[{ value: 'all', label: 'Todas as turmas' }, ...(classes ?? []).map((c) => ({ value: c.id, label: c.name }))]}
+          >
             <SelectTrigger aria-label="Filtrar por turma" className="w-[180px]">
               <SelectValue placeholder="Turma" />
             </SelectTrigger>

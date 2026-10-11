@@ -222,8 +222,9 @@ export function SubjectsPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <Label>Nome *</Label>
+              <Label htmlFor="subject-name">Nome *</Label>
               <Input
+                id="subject-name"
                 placeholder="Ex: Matemática"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -231,16 +232,18 @@ export function SubjectsPage() {
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Código (opcional)</Label>
+              <Label htmlFor="subject-code">Código (opcional)</Label>
               <Input
+                id="subject-code"
                 placeholder="Ex: MAT"
                 value={form.code}
                 onChange={(e) => setForm({ ...form, code: e.target.value })}
               />
             </div>
             <div className="space-y-1">
-              <Label>Horas Semanais *</Label>
+              <Label htmlFor="subject-weekly-hours">Horas Semanais *</Label>
               <Input
+                id="subject-weekly-hours"
                 type="number"
                 min={1}
                 placeholder="Ex: 4"

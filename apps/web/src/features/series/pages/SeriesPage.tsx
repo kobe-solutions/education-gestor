@@ -179,10 +179,10 @@ export function SeriesPage() {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {!editing && (
               <div className="space-y-1">
-                <Label>Nível de ensino *</Label>
+                <Label htmlFor="series-level">Nível de ensino *</Label>
                 <Select value={levelIdValue} onValueChange={(v) => { if (v !== null) setValue('educationLevelId', v) }}
                   items={levels?.map((l) => ({ value: l.id, label: l.name }))}>
-                  <SelectTrigger>
+                  <SelectTrigger id="series-level">
                     <SelectValue placeholder="Selecione o nível" />
                   </SelectTrigger>
                   <SelectContent>
@@ -197,13 +197,13 @@ export function SeriesPage() {
               </div>
             )}
             <div className="space-y-1">
-              <Label>Nome *</Label>
-              <Input placeholder="Ex: 1º ano" {...register('name')} />
+              <Label htmlFor="series-name">Nome *</Label>
+              <Input id="series-name" placeholder="Ex: 1º ano" {...register('name')} />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-1">
-                <Label>Posição na sequência</Label>
+                <Label htmlFor="series-order">Posição na sequência</Label>
                 <Tooltip>
                   <TooltipTrigger>
                     <HelpCircle className="h-3.5 w-3.5 text-muted-foreground cursor-default" />
@@ -211,7 +211,7 @@ export function SeriesPage() {
                   <TooltipContent>Define a ordem de exibição das séries dentro do nível. Ex: 1º ano = 1, 2º ano = 2, 3º ano = 3.</TooltipContent>
                 </Tooltip>
               </div>
-              <Input type="number" min={0} placeholder="Ex: 1" {...register('order')} />
+              <Input id="series-order" type="number" min={0} placeholder="Ex: 1" {...register('order')} />
               {errors.order && <p className="text-xs text-destructive">{errors.order.message}</p>}
             </div>
             <DialogFooter>

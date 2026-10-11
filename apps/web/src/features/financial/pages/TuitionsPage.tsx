@@ -185,12 +185,7 @@ export function TuitionsPage() {
           }}
           name="status"
           aria-label="Filtrar por status"
-          className="px-3 py-2.5 text-sm rounded-md outline-hidden cursor-pointer hover:border-primary"
-          style={{
-            border: '1px solid hsl(var(--muted-foreground) / 0.3)',
-            background: 'hsl(var(--card))',
-            color: 'hsl(var(--primary))',
-          }}
+          className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-hidden cursor-pointer hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/30 sm:w-auto"
         >
           <option value="all">Todos</option>
           <option value="pending">Pendente</option>
@@ -205,13 +200,7 @@ export function TuitionsPage() {
             setClassFilter(e.target.value)
           }}
           aria-label="Filtrar por turma"
-          className="px-3 py-2.5 text-sm rounded-md outline-hidden cursor-pointer hover:border-primary"
-          style={{
-            border: '1px solid hsl(var(--muted-foreground) / 0.3)',
-            background: 'hsl(var(--card))',
-            color: 'hsl(var(--primary))',
-            minWidth: 180,
-          }}
+          className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm text-foreground outline-hidden cursor-pointer hover:border-primary focus-visible:ring-3 focus-visible:ring-ring/30 sm:min-w-44 sm:w-auto"
         >
           <option value="all">Todas as turmas</option>
           {classOptions.map((c) => (
@@ -219,8 +208,8 @@ export function TuitionsPage() {
           ))}
         </select>
 
-        <div className="flex items-center gap-2">
-          <label className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>De</label>
+        <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+          <label className="text-xs text-muted-foreground" htmlFor="tuitions-date-from">De</label>
           <Input
             type="date"
             value={dateFrom}
@@ -228,10 +217,11 @@ export function TuitionsPage() {
               setPage(1)
               setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('dateFrom'); else next.set('dateFrom', e.target.value); return next })
             }}
-            className="h-9 w-40 text-xs"
+            id="tuitions-date-from"
+            className="h-9 w-[calc(50%-1.25rem)] min-w-32 text-xs sm:w-40"
             aria-label="Data inicial"
           />
-          <label className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>Até</label>
+          <label className="text-xs text-muted-foreground" htmlFor="tuitions-date-to">Até</label>
           <Input
             type="date"
             value={dateTo}
@@ -239,7 +229,8 @@ export function TuitionsPage() {
               setPage(1)
               setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!e.target.value) next.delete('dateTo'); else next.set('dateTo', e.target.value); return next })
             }}
-            className="h-9 w-40 text-xs"
+            id="tuitions-date-to"
+            className="h-9 w-[calc(50%-1.25rem)] min-w-32 text-xs sm:w-40"
             aria-label="Data final"
           />
         </div>
@@ -282,17 +273,18 @@ export function TuitionsPage() {
               size="sm"
               variant="ghost"
               title="Anexar boleto"
+              aria-label="Anexar boleto"
               onClick={() => fileInputRefs.current[`boleto-${t.id}`]?.click()}
             >
               <FileText className="h-4 w-4" />
             </Button>
             {t.boletoUrl && (
-              <Button size="sm" variant="ghost" title="Ver boleto" onClick={() => window.open(t.boletoUrl!, '_blank')}>
+              <Button size="sm" variant="ghost" title="Ver boleto" aria-label="Ver boleto" onClick={() => window.open(t.boletoUrl!, '_blank')}>
                 <FileText className="h-4 w-4" />
               </Button>
             )}
             {t.receiptUrl && (
-              <Button size="sm" variant="ghost" title="Ver comprovante" onClick={() => window.open(t.receiptUrl!, '_blank')}>
+              <Button size="sm" variant="ghost" title="Ver comprovante" aria-label="Ver comprovante" onClick={() => window.open(t.receiptUrl!, '_blank')}>
                 <Receipt className="h-4 w-4" />
               </Button>
             )}

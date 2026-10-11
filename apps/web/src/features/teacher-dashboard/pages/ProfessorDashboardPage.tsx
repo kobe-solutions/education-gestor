@@ -512,7 +512,13 @@ export function ProfessorDashboardPage() {
   const { data, isLoading } = useTeacherDashboard()
 
   if (isLoading) return <DashboardSkeleton cardCount={3} />
-  if (!data) return null
+  if (!data) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+        Não foi possível carregar o painel do professor. Tente novamente em instantes.
+      </div>
+    )
+  }
 
   const today = new Date().toISOString().slice(0, 10)
   const pendingTotal = data.pendingToday.attendance + data.pendingToday.grades
@@ -522,10 +528,7 @@ export function ProfessorDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1
-          className="font-bold leading-tight"
-          style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
-        >
+        <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
           Painel do Professor
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>

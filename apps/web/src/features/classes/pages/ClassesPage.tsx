@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
 import type { SchoolClass } from '@education-gestor/types'
+import { formatShiftLabel } from '../../../lib/labels'
 
 export function ClassesPage() {
   const navigate = useNavigate()
@@ -77,7 +78,7 @@ export function ClassesPage() {
                   <TableRow key={c.id} className="cursor-pointer" onClick={() => navigate(`/classes/${c.id}`)}>
                     <TableCell className="font-medium">{c.name}</TableCell>
                     <TableCell>{c.serie?.name ?? <span className="text-muted-foreground">—</span>}</TableCell>
-                    <TableCell className="capitalize">{c.shift}</TableCell>
+                    <TableCell>{formatShiftLabel(c.shift)}</TableCell>
                   <TableCell>{c.academicYear?.name ?? <span className="text-muted-foreground">—</span>}</TableCell>
                     <TableCell>{c.students.length}</TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>

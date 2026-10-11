@@ -97,8 +97,9 @@ export function YearDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Ano *</Label>
+              <Label htmlFor="academic-year">Ano *</Label>
               <Input
+                id="academic-year"
                 type="number"
                 min={2000}
                 max={2100}
@@ -109,31 +110,31 @@ export function YearDialog({
               {errors.year && <p className="text-xs text-destructive">{errors.year}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Nome *</Label>
-              <Input placeholder="Ex: Ano Letivo 2025" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Label htmlFor="academic-year-name">Nome *</Label>
+              <Input id="academic-year-name" placeholder="Ex: Ano Letivo 2025" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Início *</Label>
-              <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
+              <Label htmlFor="academic-year-start">Início *</Label>
+              <Input id="academic-year-start" type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
               {errors.startDate && <p className="text-xs text-destructive">{errors.startDate}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Fim *</Label>
-              <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
+              <Label htmlFor="academic-year-end">Fim *</Label>
+              <Input id="academic-year-end" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
               {errors.endDate && <p className="text-xs text-destructive">{errors.endDate}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Início das matrículas</Label>
-              <Input type="date" value={form.registrationStart} onChange={(e) => setForm({ ...form, registrationStart: e.target.value })} />
+              <Label htmlFor="academic-year-registration-start">Início das matrículas</Label>
+              <Input id="academic-year-registration-start" type="date" value={form.registrationStart} onChange={(e) => setForm({ ...form, registrationStart: e.target.value })} />
             </div>
             <div className="space-y-1">
-              <Label>Fim das matrículas</Label>
-              <Input type="date" value={form.registrationEnd} onChange={(e) => setForm({ ...form, registrationEnd: e.target.value })} />
+              <Label htmlFor="academic-year-registration-end">Fim das matrículas</Label>
+              <Input id="academic-year-registration-end" type="date" value={form.registrationEnd} onChange={(e) => setForm({ ...form, registrationEnd: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
