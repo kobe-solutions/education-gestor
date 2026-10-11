@@ -10,18 +10,15 @@ interface EmptyStateProps {
 export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center gap-3 py-12 text-center">
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{ width: 48, height: 48, background: 'hsl(var(--accent))', color: 'hsl(var(--muted-foreground))' }}
-      >
-        <Icon size={22} />
+      <div className="flex size-12 items-center justify-center rounded-full bg-accent text-muted-foreground">
+        <Icon size={22} aria-hidden="true" />
       </div>
       <div>
-        <p className="text-sm font-medium" style={{ color: 'hsl(var(--foreground))' }}>
+        <p className="text-sm font-medium text-foreground">
           {title}
         </p>
         {description && (
-          <p className="text-xs mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
+          <p className="mt-1 text-xs text-muted-foreground">
             {description}
           </p>
         )}

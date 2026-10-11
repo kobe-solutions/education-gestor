@@ -1,3 +1,5 @@
+import { cn } from '@/lib/utils'
+
 interface SurfaceProps {
   children: React.ReactNode
   className?: string
@@ -5,16 +7,7 @@ interface SurfaceProps {
 
 export function Surface({ children, className }: SurfaceProps) {
   return (
-    <div
-      className={className}
-      style={{
-        background: 'hsl(var(--card))',
-        border: '1px solid hsl(var(--border))',
-        borderRadius: 12,
-        overflow: 'hidden',
-        boxShadow: 'var(--shadow-sm)',
-      }}
-    >
+    <div className={cn('overflow-hidden rounded-xl border border-border bg-card shadow-sm', className)}>
       {children}
     </div>
   )

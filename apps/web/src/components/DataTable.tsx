@@ -234,8 +234,20 @@ export function DataTable<T>({
               {sortedData.map((row) => (
                 <TableRow
                   key={rowKey(row)}
-                  className={onRowClick ? 'cursor-pointer' : undefined}
+                  className={onRowClick ? 'cursor-pointer focus-visible:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset' : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  aria-label={onRowClick ? 'Abrir registro' : undefined}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onKeyDown={
+                    onRowClick
+                      ? (event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            onRowClick(row)
+                          }
+                        }
+                      : undefined
+                  }
                 >
                   {allColumns.map((col) => (
                     <TableCell

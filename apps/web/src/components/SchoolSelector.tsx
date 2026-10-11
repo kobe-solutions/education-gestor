@@ -23,7 +23,7 @@ export function SchoolSelector() {
   return (
     <Select value={activeSchoolId ?? ''} onValueChange={(v) => { if (v !== null) handleChange(v) }}
       items={schools?.map((school) => ({ value: school.id, label: school.name }))}>
-      <SelectTrigger className="w-52 h-8 text-sm">
+      <SelectTrigger aria-label="Escola ativa" className="h-8 w-full max-w-52 text-sm sm:w-52">
         <SelectValue placeholder="Selecionar escola" />
       </SelectTrigger>
       <SelectContent>

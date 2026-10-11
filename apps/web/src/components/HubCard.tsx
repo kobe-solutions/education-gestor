@@ -14,20 +14,16 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
   if (disabled) {
     return (
       <div
-        className="flex flex-col gap-3 p-4 md:gap-4 md:p-5 rounded-xl opacity-50 cursor-not-allowed"
-        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
+        className="flex cursor-not-allowed flex-col gap-3 rounded-xl border border-border bg-card p-4 opacity-50 shadow-sm md:gap-4 md:p-5"
       >
-        <div
-          className="flex items-center justify-center rounded-md shrink-0"
-          style={{ width: 36, height: 36, background: 'rgba(79,70,229,0.10)' }}
-        >
-          <Icon size={18} style={{ color: '#4F46E5' }} />
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <Icon size={18} aria-hidden="true" />
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-sm" style={{ color: 'hsl(var(--primary))' }}>{title}</h3>
-          <p className="text-xs mt-1 leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>{description}</p>
+          <h3 className="text-sm font-semibold text-primary">{title}</h3>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
         </div>
-        <span className="text-xs font-medium" style={{ color: 'hsl(var(--muted-foreground))' }}>Em breve</span>
+        <span className="text-xs font-medium text-muted-foreground">Em breve</span>
       </div>
     )
   }
@@ -35,22 +31,18 @@ export function HubCard({ to, icon: Icon, title, description, disabled }: HubCar
   return (
     <Link
       to={to}
-      className="group flex flex-col gap-3 p-4 md:gap-4 md:p-5 rounded-xl transition-all duration-180 hover:border-primary hover:shadow-md"
-      style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: 'var(--shadow-sm)' }}
+      className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-[border-color,box-shadow,transform] duration-180 hover:-translate-y-0.5 hover:border-primary hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:gap-4 md:p-5"
     >
-      <div
-        className="flex items-center justify-center rounded-md shrink-0"
-        style={{ width: 36, height: 36, background: 'rgba(79,70,229,0.10)' }}
-      >
-        <Icon size={18} style={{ color: '#4F46E5' }} />
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+        <Icon size={18} aria-hidden="true" />
       </div>
       <div className="flex-1">
-        <h3 className="font-semibold text-sm" style={{ color: 'hsl(var(--primary))' }}>{title}</h3>
-        <p className="text-xs mt-1 leading-relaxed" style={{ color: 'hsl(var(--muted-foreground))' }}>{description}</p>
+        <h3 className="text-sm font-semibold text-primary">{title}</h3>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{description}</p>
       </div>
-      <div className="flex items-center gap-1 text-xs font-semibold" style={{ color: '#4F46E5' }}>
+      <div className="flex items-center gap-1 text-xs font-semibold text-primary">
         Acessar
-        <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform duration-120" />
+        <ArrowRight size={12} aria-hidden="true" className="transition-transform duration-120 group-hover:translate-x-0.5" />
       </div>
     </Link>
   )

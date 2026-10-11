@@ -29,19 +29,22 @@ export function PageHead({ title, subtitle, actions, backTo, breadcrumb, tabs }:
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div className="flex items-start gap-2">
           {backTo && (
-            <Button variant="ghost" size="icon" onClick={handleBack} className="mt-0.5 shrink-0">
-              <ArrowLeft className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Voltar"
+              onClick={handleBack}
+              className="mt-0.5 shrink-0"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
           <div>
-            <h1
-              className="font-bold leading-tight"
-              style={{ fontSize: 20, color: 'hsl(var(--primary))', letterSpacing: '-0.01em' }}
-            >
+            <h1 className="text-xl font-bold leading-tight tracking-tight text-primary">
               {title}
             </h1>
             {subtitle && (
-              <p className="mt-0.5 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {subtitle}
               </p>
             )}
