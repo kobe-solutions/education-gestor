@@ -439,6 +439,10 @@ export function AppLayout() {
           'fixed inset-y-0 left-0 z-50 flex flex-col md:hidden transition-transform duration-200 ease-out',
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
         )}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu principal"
+        aria-hidden={!mobileMenuOpen}
         style={{ width: SIDEBAR_WIDTH, background: SIDEBAR_BG }}
       >
         <div className="flex items-center justify-between px-3 h-14 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
@@ -460,10 +464,11 @@ export function AppLayout() {
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Fechar menu"
             className="h-8 w-8 text-gray-400 hover:text-white shrink-0"
             onClick={() => setMobileMenuOpen(false)}
           >
-            <X size={18} />
+            <X size={18} aria-hidden="true" />
           </Button>
         </div>
 
@@ -629,6 +634,7 @@ export function AppLayout() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
+                    aria-label="Alternar tema"
                     onClick={toggleTheme}
                   >
                     {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
@@ -645,6 +651,7 @@ export function AppLayout() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8"
+                    aria-label="Sair"
                     onClick={handleLogout}
                   >
                     <LogOut size={16} />

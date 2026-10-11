@@ -17,6 +17,7 @@ export function SearchInput({ value, onChange, placeholder = 'Buscar...', classN
       <Input
         type="search"
         name={name}
+        aria-label="Buscar"
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

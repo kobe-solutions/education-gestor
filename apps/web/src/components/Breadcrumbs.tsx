@@ -13,17 +13,16 @@ export function Breadcrumbs({ items, className }: { items: BreadcrumbItem[]; cla
     <nav aria-label="Breadcrumb" className={cn('flex items-center gap-1 text-xs', className)}>
       {items.map((item, idx) => (
         <span key={idx} className="flex items-center gap-1">
-          {idx > 0 && <ChevronRight className="h-3 w-3" style={{ color: 'hsl(var(--muted-foreground))' }} />}
+          {idx > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground" aria-hidden="true" />}
           {item.to ? (
             <Link
               to={item.to}
-              className="hover:underline transition-colors"
-              style={{ color: 'hsl(var(--muted-foreground))' }}
+              className="text-muted-foreground transition-colors hover:text-foreground hover:underline"
             >
               {item.label}
             </Link>
           ) : (
-            <span style={{ color: 'hsl(var(--foreground))' }} className="font-medium">
+            <span className="font-medium text-foreground">
               {item.label}
             </span>
           )}

@@ -20,16 +20,16 @@ import {
 // ─── Utilidades ───────────────────────────────────────────────────────────────
 
 const STUDENT_COLORS = [
-  { bg: 'bg-blue-500', light: 'bg-blue-500/10 border-blue-500/30 text-blue-400' },
-  { bg: 'bg-violet-500', light: 'bg-violet-500/10 border-violet-500/30 text-violet-400' },
-  { bg: 'bg-emerald-500', light: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' },
-  { bg: 'bg-orange-500', light: 'bg-orange-500/10 border-orange-500/30 text-orange-400' },
-  { bg: 'bg-pink-500', light: 'bg-pink-500/10 border-pink-500/30 text-pink-400' },
-  { bg: 'bg-teal-500', light: 'bg-teal-500/10 border-teal-500/30 text-teal-400' },
-  { bg: 'bg-red-500', light: 'bg-red-500/10 border-red-500/30 text-red-400' },
-  { bg: 'bg-indigo-500', light: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400' },
-  { bg: 'bg-amber-500', light: 'bg-amber-500/10 border-amber-500/30 text-amber-400' },
-  { bg: 'bg-cyan-500', light: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400' },
+  { bg: 'bg-blue-500', light: 'bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300' },
+  { bg: 'bg-violet-500', light: 'bg-violet-500/10 border-violet-500/30 text-violet-700 dark:text-violet-300' },
+  { bg: 'bg-emerald-500', light: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300' },
+  { bg: 'bg-orange-500', light: 'bg-orange-500/10 border-orange-500/30 text-orange-700 dark:text-orange-300' },
+  { bg: 'bg-pink-500', light: 'bg-pink-500/10 border-pink-500/30 text-pink-700 dark:text-pink-300' },
+  { bg: 'bg-teal-500', light: 'bg-teal-500/10 border-teal-500/30 text-teal-700 dark:text-teal-300' },
+  { bg: 'bg-red-500', light: 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300' },
+  { bg: 'bg-indigo-500', light: 'bg-indigo-500/10 border-indigo-500/30 text-indigo-700 dark:text-indigo-300' },
+  { bg: 'bg-amber-500', light: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300' },
+  { bg: 'bg-cyan-500', light: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-300' },
 ]
 
 function getColorIdx(name: string) {
@@ -42,7 +42,7 @@ function initials(name: string) {
   return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('')
 }
 
-import { SHIFT_LABELS, SHIFT_BADGE_CLASSES } from '../../../lib/labels'
+import { formatShiftLabel, SHIFT_BADGE_CLASSES } from '../../../lib/labels'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
@@ -137,7 +137,7 @@ function ClassCard({
   const overflow = count - MAX_VISIBLE_AVATARS
 
   const shiftKey = schoolClass.shift?.toLowerCase() ?? ''
-  const shiftLabel = SHIFT_LABELS[shiftKey] ?? schoolClass.shift
+  const shiftLabel = formatShiftLabel(schoolClass.shift)
   const shiftBadge = SHIFT_BADGE_CLASSES[shiftKey] ?? 'bg-muted text-muted-foreground border-border'
 
   return (
@@ -384,8 +384,8 @@ export function StudentSchedulingPage() {
             <span className="text-xs font-medium text-primary">
               {selectedStudent.name.split(' ')[0]} selecionado
             </span>
-            <Button variant="ghost" size="icon" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('studentId'); return next })}>
-              <X className="h-3.5 w-3.5" />
+            <Button variant="ghost" size="icon" aria-label="Remover aluno selecionado" className="h-5 w-5 text-primary hover:opacity-70" onClick={() => setSearchParams((prev) => { const next = new URLSearchParams(prev); next.delete('studentId'); return next })}>
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           </div>
         )}

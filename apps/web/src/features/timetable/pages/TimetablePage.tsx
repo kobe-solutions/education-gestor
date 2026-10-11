@@ -14,6 +14,7 @@ import {
   WEEK_DAYS_ORDER,
 } from '../hooks/useTimetable'
 import type { TimetableSlot } from '../hooks/useTimetable'
+import { formatShiftLabel } from '../../../lib/labels'
 import { WeekGrid } from '../components/WeekGrid'
 import { useClass, useClassPeriods } from '../../classes/hooks/useClasses'
 import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
@@ -156,8 +157,8 @@ export function TimetablePage() {
       />
 
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(`/classes/${classId}`)}>
-          <ArrowLeft className="h-4 w-4" />
+        <Button variant="ghost" size="icon" aria-label="Voltar para a turma" onClick={() => navigate(`/classes/${classId}`)}>
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         </Button>
         <div>
           <h1 className="text-xl font-semibold">
@@ -165,7 +166,7 @@ export function TimetablePage() {
           </h1>
           {schoolClass && (
             <p className="text-sm text-muted-foreground">
-              {schoolClass.serie?.name ?? '—'} · {schoolClass.shift}
+              {schoolClass.serie?.name ?? '—'} · {formatShiftLabel(schoolClass.shift)}
               {schoolClass.academicYear ? ` · ${schoolClass.academicYear.name}` : ''}
             </p>
           )}
@@ -254,11 +255,11 @@ export function TimetablePage() {
                         </div>
                         {canManage && (
                           <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleEdit(slot)}>
-                              <Pencil className="h-4 w-4" />
+                            <Button variant="ghost" size="icon" aria-label={`Editar aula de ${slot.subject.name}`} onClick={() => handleEdit(slot)}>
+                              <Pencil className="h-4 w-4" aria-hidden="true" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(slot.id)}>
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                            <Button variant="ghost" size="icon" aria-label={`Excluir aula de ${slot.subject.name}`} onClick={() => setDeleteTarget(slot.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" aria-hidden="true" />
                             </Button>
                           </div>
                         )}
@@ -278,10 +279,10 @@ export function TimetablePage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Horário *</Label>
+              <Label htmlFor="timetable-period">Horário *</Label>
               <Select value={classPeriodIdValue} onValueChange={(v) => { if (v !== null) setValue('classPeriodId', v) }}
                 items={classPeriods?.map((cp) => ({ value: cp.id, label: `${cp.name} (${cp.startTime}–${cp.endTime})` }))}>
-                <SelectTrigger>
+                <SelectTrigger id="timetable-period">
                   <SelectValue placeholder="Selecione o horário" />
                 </SelectTrigger>
                 <SelectContent>
@@ -295,10 +296,10 @@ export function TimetablePage() {
               )}
             </div>
             <div className="space-y-1">
-              <Label>Dia da semana *</Label>
+              <Label htmlFor="timetable-weekday">Dia da semana *</Label>
               <Select value={weekDayValue} onValueChange={(v) => { if (v !== null) setValue('weekDay', v as typeof WEEK_DAYS[number]) }}
                 items={WEEK_DAYS.map((d) => ({ value: d, label: WEEK_DAY_LABELS[d] }))}>
-                <SelectTrigger>
+                <SelectTrigger id="timetable-weekday">
                   <SelectValue placeholder="Dia" />
                 </SelectTrigger>
                 <SelectContent>
@@ -310,10 +311,10 @@ export function TimetablePage() {
               {errors.weekDay && <p className="text-xs text-destructive">{errors.weekDay.message}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Disciplina *</Label>
+              <Label htmlFor="timetable-subject">Disciplina *</Label>
               <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}
                 items={subjects?.map((s) => ({ value: s.id, label: s.name }))}>
-                <SelectTrigger>
+                <SelectTrigger id="timetable-subject">
                   <SelectValue placeholder="Selecione a disciplina" />
                 </SelectTrigger>
                 <SelectContent>
@@ -325,10 +326,10 @@ export function TimetablePage() {
               {errors.subjectId && <p className="text-xs text-destructive">{errors.subjectId.message}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Professor *</Label>
+              <Label htmlFor="timetable-teacher">Professor *</Label>
               <Select value={teacherIdValue} onValueChange={(v) => { if (v !== null) setValue('teacherId', v) }}
                 items={teachers?.map((t) => ({ value: t.id, label: t.name }))}>
-                <SelectTrigger>
+                <SelectTrigger id="timetable-teacher">
                   <SelectValue placeholder="Selecione o professor" />
                 </SelectTrigger>
                 <SelectContent>

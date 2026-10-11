@@ -82,11 +82,20 @@ export function PessoalTab({ isEdit, student, uploadingPhoto, saving, onSave, on
         <div
           className="h-28 w-28 md:h-32 md:w-32 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden bg-muted cursor-pointer hover:border-primary transition-colors"
           onClick={() => isEdit && photoInputRef.current?.click()}
+          role={isEdit ? 'button' : undefined}
+          tabIndex={isEdit ? 0 : undefined}
+          aria-label={isEdit ? 'Alterar foto do aluno' : undefined}
+          onKeyDown={(event) => {
+            if (isEdit && (event.key === 'Enter' || event.key === ' ')) {
+              event.preventDefault()
+              photoInputRef.current?.click()
+            }
+          }}
         >
           {student?.photoUrl ? (
             <img
               src={student.photoUrl}
-              alt="foto"
+              alt={`Foto de ${student?.name ?? 'aluno'}`}
               className="h-full w-full object-cover"
               loading="lazy"
               decoding="async"
@@ -128,31 +137,31 @@ export function PessoalTab({ isEdit, student, uploadingPhoto, saving, onSave, on
           <form onSubmit={form.handleSubmit(onSave)} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="col-span-1 sm:col-span-2 space-y-1.5">
-                <Label>Nome completo *</Label>
+                <Label htmlFor="name">Nome completo *</Label>
                 <Input {...form.register('name')} placeholder="Nome completo do aluno" />
                 {form.formState.errors.name && (
                   <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label>CPF<Opt /></Label>
+                <Label htmlFor="cpf">CPF<Opt /></Label>
                 <Input placeholder="000.000.000-00" {...form.register('cpf')} />
               </div>
               <div className="space-y-1.5">
-                <Label>RG<Opt /></Label>
+                <Label htmlFor="rg">RG<Opt /></Label>
                 <Input placeholder="00.000.000-0" {...form.register('rg')} />
               </div>
               <div className="space-y-1.5">
-                <Label>Data de nascimento<Opt /></Label>
+                <Label htmlFor="birthDate">Data de nascimento<Opt /></Label>
                 <Input type="date" {...form.register('birthDate')} />
               </div>
               <div className="space-y-1.5">
-                <Label>Sexo<Opt /></Label>
+                <Label htmlFor="sex">Sexo<Opt /></Label>
                 <Select
                   value={form.watch('sex') ?? ''}
                   onValueChange={(v) => form.setValue('sex', v as 'M' | 'F' | 'outro')}
                 >
-                  <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                  <SelectTrigger id="sex"><SelectValue placeholder="Selecionar" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="M">Masculino</SelectItem>
                     <SelectItem value="F">Feminino</SelectItem>
@@ -161,12 +170,12 @@ export function PessoalTab({ isEdit, student, uploadingPhoto, saving, onSave, on
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Tipo sanguíneo<Opt /></Label>
+                <Label htmlFor="bloodType">Tipo sanguíneo<Opt /></Label>
                 <Select
                   value={form.watch('bloodType') ?? ''}
                   onValueChange={(v) => form.setValue('bloodType', v as PessoalForm['bloodType'])}
                 >
-                  <SelectTrigger><SelectValue placeholder="Selecionar" /></SelectTrigger>
+                  <SelectTrigger id="bloodType"><SelectValue placeholder="Selecionar" /></SelectTrigger>
                   <SelectContent>
                     {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((t) => (
                       <SelectItem key={t} value={t}>{t}</SelectItem>
@@ -175,26 +184,26 @@ export function PessoalTab({ isEdit, student, uploadingPhoto, saving, onSave, on
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Naturalidade<Opt /></Label>
+                <Label htmlFor="naturalidade">Naturalidade<Opt /></Label>
                 <Input placeholder="Cidade / Estado" {...form.register('naturalidade')} />
               </div>
               <div className="space-y-1.5">
-                <Label>Telefone<Opt /></Label>
+                <Label htmlFor="phone">Telefone<Opt /></Label>
                 <Input placeholder="(00) 00000-0000" {...form.register('phone')} />
               </div>
               <div className="col-span-1 sm:col-span-2 space-y-1.5">
-                <Label>Email<Opt /></Label>
+                <Label htmlFor="email">Email<Opt /></Label>
                 <Input type="email" placeholder="email@exemplo.com" {...form.register('email')} />
                 {form.formState.errors.email && (
                   <p className="text-xs text-destructive">{form.formState.errors.email.message}</p>
                 )}
               </div>
               <div className="col-span-1 sm:col-span-2 space-y-1.5">
-                <Label>Comorbidades<Opt /></Label>
+                <Label htmlFor="comorbidities">Comorbidades<Opt /></Label>
                 <Input placeholder="Ex: Hipertensão, diabetes..." {...form.register('comorbidities')} />
               </div>
               <div className="col-span-1 sm:col-span-2 space-y-1.5">
-                <Label>Observações<Opt /></Label>
+                <Label htmlFor="observations">Observações<Opt /></Label>
                 <Textarea
                   className="resize-none min-h-[80px]"
                   placeholder="Observações gerais sobre o aluno..."

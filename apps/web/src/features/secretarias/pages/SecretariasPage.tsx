@@ -157,10 +157,11 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
             <Avatar name={secretaria.name} photoUrl={secretaria.logoUrl} size={52} />
             <button
               type="button"
+              aria-label={`Alterar logo de ${secretaria.name}`}
               className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
               onClick={() => logoInputRef.current?.click()}
             >
-              <Camera className="h-4 w-4 text-white" />
+              <Camera className="h-4 w-4 text-white" aria-hidden="true" />
             </button>
             <input
               ref={logoInputRef}
@@ -345,10 +346,10 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
           {availableSchools.length > 0 && (
             <div className="flex items-end gap-2">
               <div className="flex-1 space-y-1">
-                <Label className="text-xs">Vincular escola</Label>
+                <Label htmlFor="secretaria-link-school" className="text-xs">Vincular escola</Label>
                 <Select value={selectedSchoolId ?? ''} onValueChange={(v) => { setSelectedSchoolId(v); setLinkError(null) }}
                   items={availableSchools.map((s) => ({ value: s.id, label: s.name }))}>
-                  <SelectTrigger>
+                  <SelectTrigger id="secretaria-link-school">
                     <SelectValue placeholder="Selecione uma escola" />
                   </SelectTrigger>
                   <SelectContent>
@@ -737,37 +738,37 @@ export function SecretariasPage() {
           </DialogHeader>
           <form onSubmit={handleCreateSubmit(onCreateSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Nome *</Label>
-              <Input placeholder="Ex: Rede ABC" {...registerCreate('name')} />
+              <Label htmlFor="create-secretaria-name">Nome *</Label>
+              <Input id="create-secretaria-name" placeholder="Ex: Rede ABC" {...registerCreate('name')} />
               {createErrors.name && (
                 <p className="text-xs text-destructive">{createErrors.name.message}</p>
               )}
             </div>
             <div className="space-y-1">
-              <Label>Email *</Label>
-              <Input type="email" {...registerCreate('email')} />
+              <Label htmlFor="create-secretaria-email">Email *</Label>
+              <Input id="create-secretaria-email" type="email" {...registerCreate('email')} />
               {createErrors.email && (
                 <p className="text-xs text-destructive">{createErrors.email.message}</p>
               )}
             </div>
             <div className="space-y-1">
-              <Label>Senha *</Label>
-              <Input type="password" {...registerCreate('password')} />
+              <Label htmlFor="create-secretaria-password">Senha *</Label>
+              <Input id="create-secretaria-password" type="password" {...registerCreate('password')} />
               {createErrors.password && (
                 <p className="text-xs text-destructive">{createErrors.password.message}</p>
               )}
             </div>
             <div className="space-y-1">
-              <Label>Responsável</Label>
-              <Input {...registerCreate('responsible')} />
+              <Label htmlFor="create-secretaria-responsible">Responsável</Label>
+              <Input id="create-secretaria-responsible" {...registerCreate('responsible')} />
             </div>
             <div className="space-y-1">
-              <Label>Telefone</Label>
-              <Input {...registerCreate('phone')} />
+              <Label htmlFor="create-secretaria-phone">Telefone</Label>
+              <Input id="create-secretaria-phone" {...registerCreate('phone')} />
             </div>
             <div className="space-y-1">
-              <Label>Endereço</Label>
-              <Input {...registerCreate('address')} />
+              <Label htmlFor="create-secretaria-address">Endereço</Label>
+              <Input id="create-secretaria-address" {...registerCreate('address')} />
             </div>
             {createApiError && (
               <p className="text-xs text-destructive text-center">{createApiError}</p>
@@ -799,30 +800,30 @@ export function SecretariasPage() {
           </DialogHeader>
           <form onSubmit={handleEditSubmit(onEditSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Nome</Label>
-              <Input {...registerEdit('name')} />
+              <Label htmlFor="edit-secretaria-name">Nome</Label>
+              <Input id="edit-secretaria-name" {...registerEdit('name')} />
               {editErrors.name && (
                 <p className="text-xs text-destructive">{editErrors.name.message}</p>
               )}
             </div>
             <div className="space-y-1">
-              <Label>Email</Label>
-              <Input type="email" {...registerEdit('email')} />
+              <Label htmlFor="edit-secretaria-email">Email</Label>
+              <Input id="edit-secretaria-email" type="email" {...registerEdit('email')} />
               {editErrors.email && (
                 <p className="text-xs text-destructive">{editErrors.email.message}</p>
               )}
             </div>
             <div className="space-y-1">
-              <Label>Responsável</Label>
-              <Input {...registerEdit('responsible')} />
+              <Label htmlFor="edit-secretaria-responsible">Responsável</Label>
+              <Input id="edit-secretaria-responsible" {...registerEdit('responsible')} />
             </div>
             <div className="space-y-1">
-              <Label>Telefone</Label>
-              <Input {...registerEdit('phone')} />
+              <Label htmlFor="edit-secretaria-phone">Telefone</Label>
+              <Input id="edit-secretaria-phone" {...registerEdit('phone')} />
             </div>
             <div className="space-y-1">
-              <Label>Endereço</Label>
-              <Input {...registerEdit('address')} />
+              <Label htmlFor="edit-secretaria-address">Endereço</Label>
+              <Input id="edit-secretaria-address" {...registerEdit('address')} />
             </div>
             <div className="flex items-center gap-3">
               <Label htmlFor="secretaria-active">Ativo</Label>
@@ -858,10 +859,11 @@ export function SecretariasPage() {
           </DialogHeader>
           <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Nova senha *</Label>
+              <Label htmlFor="reset-secretaria-password">Nova senha *</Label>
               <Input
                 type="password"
                 placeholder="Mínimo 8 caracteres"
+                id="reset-secretaria-password"
                 {...registerPassword('password')}
               />
               {passwordErrors.password && (

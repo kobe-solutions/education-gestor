@@ -67,12 +67,13 @@ function DialogContent({
                 variant="ghost"
                 className="absolute top-4 right-4 bg-secondary"
                 size="icon-sm"
+                aria-label="Fechar"
               />
             }
           >
             <XIcon
             />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Fechar</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>

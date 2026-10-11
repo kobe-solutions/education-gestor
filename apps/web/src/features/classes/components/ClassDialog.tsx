@@ -89,15 +89,15 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
-            <Label>Nome *</Label>
-            <Input placeholder="Ex: 1A, 2B..." {...register('name')} />
+            <Label htmlFor="class-name">Nome *</Label>
+            <Input id="class-name" placeholder="Ex: 1A, 2B..." {...register('name')} />
             {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
           <div className="space-y-1">
-            <Label>Turno *</Label>
+            <Label htmlFor="class-shift">Turno *</Label>
             <Select value={shiftValue} onValueChange={(v) => { if (v !== null) setValue('shift', v) }}
               items={[{ value: 'manhã', label: 'Manhã' }, { value: 'tarde', label: 'Tarde' }, { value: 'noite', label: 'Noite' }, { value: 'integral', label: 'Integral' }]}>
-              <SelectTrigger>
+              <SelectTrigger id="class-shift">
                 <SelectValue placeholder="Selecione o turno" />
               </SelectTrigger>
               <SelectContent>
@@ -110,12 +110,16 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
             {errors.shift && <p className="text-xs text-destructive">{errors.shift.message}</p>}
           </div>
           <div className="space-y-1">
-            <Label>Série (opcional)</Label>
+            <Label htmlFor="class-series">Série (opcional)</Label>
             <Select
               value={serieIdValue ?? ''}
               onValueChange={(v) => { if (v !== null) setValue('serieId', v === 'none' ? '' : v) }}
+              items={[
+                { value: 'none', label: 'Nenhuma' },
+                ...(seriesList?.map((s) => ({ value: s.id, label: `${s.educationLevel ? `${s.educationLevel.name} — ` : ''}${s.name}` })) ?? []),
+              ]}
             >
-              <SelectTrigger>
+              <SelectTrigger id="class-series">
                 <SelectValue placeholder="Selecione a série" />
               </SelectTrigger>
               <SelectContent>
@@ -129,12 +133,16 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label>Ano letivo (opcional)</Label>
+            <Label htmlFor="class-academic-year">Ano letivo (opcional)</Label>
             <Select
               value={academicYearIdValue ?? ''}
               onValueChange={(v) => { if (v !== null) setValue('academicYearId', v === 'none' ? '' : v) }}
+              items={[
+                { value: 'none', label: 'Nenhum' },
+                ...(academicYears?.map((year) => ({ value: year.id, label: year.name })) ?? []),
+              ]}
             >
-              <SelectTrigger>
+              <SelectTrigger id="class-academic-year">
                 <SelectValue placeholder="Selecione o ano letivo" />
               </SelectTrigger>
               <SelectContent>

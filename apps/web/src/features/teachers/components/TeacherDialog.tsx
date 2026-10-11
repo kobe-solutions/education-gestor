@@ -77,18 +77,18 @@ export function TeacherDialog({ open, onClose, teacher }: TeacherDialogProps) {
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
-            <Label>Nome</Label>
-            <Input placeholder="Nome completo" {...register('name')} />
+            <Label htmlFor="teacher-dialog-name">Nome</Label>
+            <Input id="teacher-dialog-name" placeholder="Nome completo" {...register('name')} />
             {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
           </div>
           <div className="space-y-1">
-            <Label>Email</Label>
-            <Input type="email" {...register('email')} />
+            <Label htmlFor="teacher-dialog-email">Email</Label>
+            <Input id="teacher-dialog-email" type="email" {...register('email')} />
             {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
           </div>
           <div className="space-y-1">
-            <Label>{isEdit ? 'Nova senha (opcional)' : 'Senha'}</Label>
-            <Input type="password" {...register('password')} />
+            <Label htmlFor="teacher-dialog-password">{isEdit ? 'Nova senha (opcional)' : 'Senha'}</Label>
+            <Input id="teacher-dialog-password" type="password" {...register('password')} />
             {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
           </div>
           <DialogFooter>

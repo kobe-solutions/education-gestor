@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs'
+import { formatShiftLabel } from '../../../lib/labels'
 
 export function AttendancePage() {
   const today = new Date().toISOString().split('T')[0]
@@ -28,7 +29,7 @@ export function AttendancePage() {
 
   const selectedClass = classes?.find((c) => c.id === selectedClassId)
   const classStudents = selectedClass?.students ?? []
-  const studentIds = classStudents.map((s: any) => s.studentId)
+  const studentIds = classStudents.map((s) => s.id)
   const enrolledStudents = allStudents?.filter((s) => studentIds.includes(s.id)) ?? []
 
   function toggle(studentId: string) {
@@ -80,19 +81,23 @@ export function AttendancePage() {
         <TabsContent value="registro" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto_auto] gap-3 items-end">
             <div className="space-y-1 min-w-0">
-              <Label>Turma</Label>
-              <Select value={selectedClassId} onValueChange={(v) => { if (v === null) return; setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('class'); else next.set('class', v); return next }); setAttendance({}); setSaved(false) }}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
+              <Label htmlFor="attendance-class">Turma</Label>
+              <Select
+                value={selectedClassId}
+                onValueChange={(v) => { if (v === null) return; setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('class'); else next.set('class', v); return next }); setAttendance({}); setSaved(false) }}
+                items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? formatShiftLabel(c.shift)}` })) ?? []}
+              >
+                <SelectTrigger id="attendance-class" className="w-full"><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
                 <SelectContent>
                   {classes?.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name} — {c.serie?.name ?? c.shift}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{c.name} — {c.serie?.name ?? formatShiftLabel(c.shift)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1 min-w-0">
-              <Label>Data</Label>
-              <Input type="date" value={date} onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('date', e.target.value); return next }); setAttendance({}); setSaved(false) }} className="w-full md:w-40 min-w-0" />
+              <Label htmlFor="attendance-date">Data</Label>
+              <Input id="attendance-date" type="date" value={date} onChange={(e) => { setSearchParams((prev) => { const next = new URLSearchParams(prev); next.set('date', e.target.value); return next }); setAttendance({}); setSaved(false) }} className="w-full md:w-40 min-w-0" />
             </div>
             {isReady && Object.keys(attendance).length === 0 && (
               <Button variant="outline" onClick={initAttendance} className="w-full md:w-auto shrink-0 mt-1 md:mt-0">Carregar chamada</Button>
@@ -132,8 +137,8 @@ export function AttendancePage() {
                             onClick={() => toggle(s.id)}
                             className={`w-8 h-8 rounded-full text-sm font-medium ${
                               attendance[s.id]
-                                ? 'bg-green-500/10 text-green-400'
-                                : 'bg-red-500/10 text-red-400'
+                                ? 'bg-green-500/10 text-green-700 dark:text-green-300'
+                                : 'bg-red-500/10 text-red-700 dark:text-red-300'
                             }`}
                           >
                             {attendance[s.id] ? 'P' : 'F'}

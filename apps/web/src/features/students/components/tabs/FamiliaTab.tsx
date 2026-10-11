@@ -101,16 +101,16 @@ export function FamiliaTab({
           <CardHeader><CardTitle className="text-sm">Dados familiares</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Nome da mãe<Opt /></Label>
-              <Input {...familiaForm.register('motherName')} />
+              <Label htmlFor="motherName">Nome da mãe<Opt /></Label>
+              <Input id="motherName" {...familiaForm.register('motherName')} />
             </div>
             <div className="space-y-1">
-              <Label>Telefone da mãe<Opt /></Label>
-              <Input placeholder="(00) 00000-0000" {...familiaForm.register('motherPhone')} />
+              <Label htmlFor="motherPhone">Telefone da mãe<Opt /></Label>
+              <Input id="motherPhone" placeholder="(00) 00000-0000" {...familiaForm.register('motherPhone')} />
             </div>
             <div className="col-span-2 space-y-1">
-              <Label>Nome do pai<Opt /></Label>
-              <Input {...familiaForm.register('fatherName')} />
+              <Label htmlFor="fatherName">Nome do pai<Opt /></Label>
+              <Input id="fatherName" {...familiaForm.register('fatherName')} />
             </div>
           </CardContent>
         </Card>
@@ -119,32 +119,32 @@ export function FamiliaTab({
           <CardHeader><CardTitle className="text-sm">Endereço</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
-              <Label>CEP<Opt /></Label>
-              <Input placeholder="00000-000" {...familiaForm.register('addressCep')} />
+              <Label htmlFor="family-address-cep">CEP<Opt /></Label>
+              <Input id="family-address-cep" placeholder="00000-000" {...familiaForm.register('addressCep')} />
             </div>
             <div className="col-span-2 space-y-1">
-              <Label>Logradouro<Opt /></Label>
-              <Input placeholder="Rua, Avenida..." {...familiaForm.register('addressStreet')} />
+              <Label htmlFor="family-address-street">Logradouro<Opt /></Label>
+              <Input id="family-address-street" placeholder="Rua, Avenida..." {...familiaForm.register('addressStreet')} />
             </div>
             <div className="space-y-1">
-              <Label>Número<Opt /></Label>
-              <Input {...familiaForm.register('addressNumber')} />
+              <Label htmlFor="family-address-number">Número<Opt /></Label>
+              <Input id="family-address-number" {...familiaForm.register('addressNumber')} />
             </div>
             <div className="space-y-1">
-              <Label>Complemento<Opt /></Label>
-              <Input placeholder="Apto, Bloco..." {...familiaForm.register('addressComplement')} />
+              <Label htmlFor="family-address-complement">Complemento<Opt /></Label>
+              <Input id="family-address-complement" placeholder="Apto, Bloco..." {...familiaForm.register('addressComplement')} />
             </div>
             <div className="space-y-1">
-              <Label>Bairro<Opt /></Label>
-              <Input {...familiaForm.register('addressNeighborhood')} />
+              <Label htmlFor="family-address-neighborhood">Bairro<Opt /></Label>
+              <Input id="family-address-neighborhood" {...familiaForm.register('addressNeighborhood')} />
             </div>
             <div className="col-span-2 space-y-1">
-              <Label>Cidade<Opt /></Label>
-              <Input {...familiaForm.register('addressCity')} />
+              <Label htmlFor="family-address-city">Cidade<Opt /></Label>
+              <Input id="family-address-city" {...familiaForm.register('addressCity')} />
             </div>
             <div className="space-y-1">
-              <Label>Estado (UF)<Opt /></Label>
-              <Input maxLength={2} placeholder="SP" {...familiaForm.register('addressState')} />
+              <Label htmlFor="family-address-state">Estado (UF)<Opt /></Label>
+              <Input id="family-address-state" maxLength={2} placeholder="SP" {...familiaForm.register('addressState')} />
             </div>
           </CardContent>
         </Card>
@@ -177,31 +177,31 @@ export function FamiliaTab({
             <p className="text-sm font-medium">Novo responsável / autorizado</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="col-span-2 space-y-1">
-                <Label>Nome completo *</Label>
-                <Input {...guardianForm.register('name')} />
+                <Label htmlFor="guardian-name">Nome completo *</Label>
+                <Input id="guardian-name" {...guardianForm.register('name')} />
                 {guardianForm.formState.errors.name && (
                   <p className="text-xs text-destructive">{guardianForm.formState.errors.name.message}</p>
                 )}
               </div>
               <div className="space-y-1">
-                <Label>Parentesco *</Label>
-                <Input placeholder="Pai, Mãe, Avó..." {...guardianForm.register('relationship')} />
+                <Label htmlFor="guardian-relationship">Parentesco *</Label>
+                <Input id="guardian-relationship" placeholder="Pai, Mãe, Avó..." {...guardianForm.register('relationship')} />
               </div>
               <div className="space-y-1">
-                <Label>CPF<Opt /></Label>
-                <Input placeholder="000.000.000-00" {...guardianForm.register('cpf')} />
+                <Label htmlFor="guardian-cpf">CPF<Opt /></Label>
+                <Input id="guardian-cpf" placeholder="000.000.000-00" {...guardianForm.register('cpf')} />
               </div>
               <div className="space-y-1">
-                <Label>Telefone<Opt /></Label>
-                <Input placeholder="(00) 00000-0000" {...guardianForm.register('phone')} />
+                <Label htmlFor="guardian-phone">Telefone<Opt /></Label>
+                <Input id="guardian-phone" placeholder="(00) 00000-0000" {...guardianForm.register('phone')} />
               </div>
               <div className="space-y-1">
-                <Label>Profissão<Opt /></Label>
-                <Input {...guardianForm.register('profession')} />
+                <Label htmlFor="guardian-profession">Profissão<Opt /></Label>
+                <Input id="guardian-profession" {...guardianForm.register('profession')} />
               </div>
               <div className="col-span-2 space-y-1">
-                <Label>Email<Opt /></Label>
-                <Input type="email" {...guardianForm.register('email')} />
+                <Label htmlFor="guardian-email">Email<Opt /></Label>
+                <Input id="guardian-email" type="email" {...guardianForm.register('email')} />
               </div>
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input type="checkbox" {...guardianForm.register('isResponsible')} className="rounded" />

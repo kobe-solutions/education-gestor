@@ -184,24 +184,24 @@ export function ClassPeriodsPage() {
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-1">
-              <Label>Nome *</Label>
-              <Input placeholder="Ex: 1º Tempo" {...register('name')} />
+              <Label htmlFor="class-period-name">Nome *</Label>
+              <Input id="class-period-name" placeholder="Ex: 1º Tempo" {...register('name')} />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1">
-                <Label>Início *</Label>
-                <Input type="time" {...register('startTime')} />
+                <Label htmlFor="class-period-start">Início *</Label>
+                <Input id="class-period-start" type="time" {...register('startTime')} />
                 {errors.startTime && <p className="text-xs text-destructive">{errors.startTime.message}</p>}
               </div>
               <div className="space-y-1">
-                <Label>Fim *</Label>
-                <Input type="time" {...register('endTime')} />
+                <Label htmlFor="class-period-end">Fim *</Label>
+                <Input id="class-period-end" type="time" {...register('endTime')} />
                 {errors.endTime && <p className="text-xs text-destructive">{errors.endTime.message}</p>}
               </div>
               <div className="space-y-1">
-                <Label>Ordem *</Label>
-                <Input type="number" min={1} {...register('order')} />
+                <Label htmlFor="class-period-order">Ordem *</Label>
+                <Input id="class-period-order" type="number" min={1} {...register('order')} />
                 {errors.order && <p className="text-xs text-destructive">{errors.order.message}</p>}
               </div>
             </div>

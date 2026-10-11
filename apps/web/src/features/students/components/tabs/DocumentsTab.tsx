@@ -30,7 +30,11 @@ export function DocumentsTab({ documents, uploading, onUpload, onDelete }: Docum
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-sm">Documentos e anexos</CardTitle>
           <div className="flex flex-wrap items-center gap-2">
-            <Select value={docType} onValueChange={(v) => setDocType(v ?? '')}>
+            <Select
+              value={docType}
+              onValueChange={(v) => setDocType(v ?? '')}
+              items={Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => ({ value, label }))}
+            >
               <SelectTrigger className="h-8 w-full sm:w-48 text-xs">
                 <SelectValue />
               </SelectTrigger>

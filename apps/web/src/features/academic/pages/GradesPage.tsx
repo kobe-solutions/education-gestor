@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table'
 import { EmptyState } from '../../../components/EmptyState'
+import { formatShiftLabel } from '../../../lib/labels'
 
 export function GradesPage() {
   const { data: classes } = useClasses()
@@ -24,15 +25,15 @@ export function GradesPage() {
       </div>
 
       <div className="w-64">
-        <Label>Turma</Label>
+        <Label htmlFor="grades-class">Turma</Label>
         <Select value={selectedClassId} onValueChange={(v) => setSearchParams((prev) => { const next = new URLSearchParams(prev); if (!v) next.delete('class'); else next.set('class', v); return next })}
-          items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? c.shift}` }))}>
-          <SelectTrigger>
+          items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? formatShiftLabel(c.shift)}` }))}>
+          <SelectTrigger id="grades-class">
             <SelectValue placeholder="Selecione a turma" />
           </SelectTrigger>
           <SelectContent>
             {classes?.map((c) => (
-              <SelectItem key={c.id} value={c.id}>{c.name} — {c.serie?.name ?? c.shift}</SelectItem>
+              <SelectItem key={c.id} value={c.id}>{c.name} — {c.serie?.name ?? formatShiftLabel(c.shift)}</SelectItem>
             ))}
           </SelectContent>
         </Select>

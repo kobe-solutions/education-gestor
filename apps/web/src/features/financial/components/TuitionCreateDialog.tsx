@@ -56,10 +56,10 @@ export function TuitionCreateDialog({ open, onOpenChange }: TuitionCreateDialogP
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Aluno</Label>
+            <Label htmlFor="tuition-student">Aluno</Label>
             <Select value={studentIdValue} onValueChange={(v) => { if (v !== null) setValue('studentId', v) }}
               items={students?.map((s) => ({ value: s.id, label: s.name }))}>
-              <SelectTrigger><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
+              <SelectTrigger id="tuition-student"><SelectValue placeholder="Selecione o aluno" /></SelectTrigger>
               <SelectContent>
                 {students?.map((s) => (
                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
@@ -69,8 +69,9 @@ export function TuitionCreateDialog({ open, onOpenChange }: TuitionCreateDialogP
             {errors.studentId && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.studentId.message}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label>Valor (R$)</Label>
+            <Label htmlFor="tuition-amount">Valor (R$)</Label>
             <Input
+              id="tuition-amount"
               placeholder="R$ 500,00"
               value={amountDisplay}
               onChange={(e) => {
@@ -84,8 +85,8 @@ export function TuitionCreateDialog({ open, onOpenChange }: TuitionCreateDialogP
             {errors.amount && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.amount.message}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label>Vencimento</Label>
-            <Input type="date" {...register('dueDate')} />
+            <Label htmlFor="tuition-due-date">Vencimento</Label>
+            <Input id="tuition-due-date" type="date" {...register('dueDate')} />
             {errors.dueDate && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.dueDate.message}</p>}
           </div>
           <DialogFooter>

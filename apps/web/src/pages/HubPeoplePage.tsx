@@ -389,20 +389,17 @@ export function HubPeoplePage() {
             style={{
               width: 52,
               height: 52,
-              background: 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)))',
+              background: 'hsl(var(--primary))',
               boxShadow: '0 8px 24px hsl(var(--primary) / 0.3)',
             }}
           >
             <Users size={24} className="text-white" />
           </div>
           <div className="min-w-0">
-            <h1
-              className="font-bold leading-tight"
-              style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
-            >
+            <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
               {greeting()}, {payload?.name?.split(' ')[0] ?? 'gestor'}!
             </h1>
-            <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
+            <p className="mt-1 text-sm text-muted-foreground">
               Gerencie alunos e professores da sua escola — cadastros, matrículas e muito mais
             </p>
           </div>

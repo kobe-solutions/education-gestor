@@ -11,11 +11,12 @@ import { Button } from '../../../components/ui/button'
 import { Badge } from '../../../components/ui/badge'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { SHIFT_CONFIG, LEVEL_COLORS } from '../../../lib/colors'
+import { formatShiftLabel } from '../../../lib/labels'
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────
 
 function shiftConfig(shift: string) {
-  return SHIFT_CONFIG[shift.toLowerCase()] ?? { label: shift, className: 'bg-muted text-muted-foreground border-border' }
+  return SHIFT_CONFIG[shift.toLowerCase()] ?? { label: formatShiftLabel(shift), className: 'bg-muted text-muted-foreground border-border' }
 }
 
 function levelColor(type: string) {

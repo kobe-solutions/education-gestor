@@ -190,7 +190,13 @@ export function ClassPerformancePage() {
   }, [filtered])
 
   if (isLoading) return <ClassPerformanceSkeleton />
-  if (!data) return null
+  if (!data) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+        Não foi possível carregar o desempenho das turmas. Tente novamente em instantes.
+      </div>
+    )
+  }
 
   const allGrades = filtered.flatMap((p) => p.subjects.map((s) => s.averageGrade))
   const overallAvg =
@@ -220,14 +226,7 @@ export function ClassPerformancePage() {
           <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1
-            className="font-bold leading-tight"
-            style={{
-              fontSize: 22,
-              color: 'hsl(var(--foreground))',
-              letterSpacing: '-0.01em',
-            }}
-          >
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
             Desempenho das Turmas
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>

@@ -330,7 +330,7 @@ export function SchoolEventsPage() {
         <div className="flex items-center gap-3">
           <CalendarDays className="size-5 text-primary" />
           <div>
-            <h1 className="text-lg font-semibold tracking-tight">
+            <h1 className="text-xl font-semibold tracking-tight">
               Eventos escolares
             </h1>
             <p className="text-xs text-muted-foreground">
@@ -382,6 +382,7 @@ export function SchoolEventsPage() {
             <button
               type="button"
               className="rounded p-1 hover:bg-muted"
+              aria-label="Mês anterior"
               onClick={() =>
                 setCurrentDate(
                   new Date(
@@ -400,6 +401,7 @@ export function SchoolEventsPage() {
             <button
               type="button"
               className="rounded p-1 hover:bg-muted"
+              aria-label="Próximo mês"
               onClick={() =>
                 setCurrentDate(
                   new Date(
@@ -550,7 +552,7 @@ export function SchoolEventsPage() {
                               type="button"
                               onClick={() => setSelectedEvent(event)}
                               className={cn(
-                                "h-full min-w-0 flex-1 overflow-hidden rounded border-l-2 px-1.5 py-1 text-left text-[11px] font-medium shadow-sm",
+                                "h-full min-w-0 flex-1 overflow-hidden rounded border-l px-1.5 py-1 text-left text-[11px] font-medium shadow-sm",
                                 categoryStyle(event.category).event,
                               )}
                             >
@@ -591,7 +593,7 @@ export function SchoolEventsPage() {
                             type="button"
                             onClick={() => setSelectedEvent(event)}
                             className={cn(
-                              "absolute inset-x-1 z-20 overflow-hidden rounded border-l-2 px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm",
+                              "absolute inset-x-1 z-20 overflow-hidden rounded border-l px-1.5 py-1 text-left text-[11px] leading-tight shadow-sm",
                               categoryStyle(event.category).event,
                             )}
                             style={{

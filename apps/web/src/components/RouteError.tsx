@@ -22,19 +22,14 @@ export function RouteError() {
     <div className="flex items-center justify-center min-h-[60vh] p-8">
       <div className="flex flex-col items-center gap-4 text-center max-w-md">
         <div
-          className="flex items-center justify-center rounded-full"
-          style={{
-            width: 56,
-            height: 56,
-            background: 'hsl(var(--destructive) / 0.1)',
-          }}
+          className="flex size-14 items-center justify-center rounded-full bg-destructive/10"
         >
-          <AlertTriangle className="h-7 w-7" style={{ color: 'hsl(var(--destructive))' }} />
+          <AlertTriangle className="h-7 w-7 text-destructive" aria-hidden="true" />
         </div>
-        <h2 className="text-lg font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
+        <h2 className="text-lg font-semibold text-foreground">
           {title}
         </h2>
-        <p className="text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
+        <p className="text-sm text-muted-foreground">
           {message}
         </p>
         <div className="flex gap-2">

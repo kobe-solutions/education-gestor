@@ -8,6 +8,7 @@ import { Breadcrumbs } from '../../../components/Breadcrumbs'
 import { Button } from '../../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { formatShiftLabel } from '../../../lib/labels'
 
 export function ClassDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -59,7 +60,7 @@ export function ClassDetailPage() {
             {schoolClass.name}
           </h1>
           <p className="text-sm mt-0.5" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            {schoolClass.serie?.name ?? '—'} · {schoolClass.shift}
+            {schoolClass.serie?.name ?? '—'} · {formatShiftLabel(schoolClass.shift)}
             {schoolClass.academicYear ? ` · ${schoolClass.academicYear.name}` : ''}
           </p>
         </div>

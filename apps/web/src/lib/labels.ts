@@ -41,14 +41,30 @@ export const SHIFT_LABELS: Record<string, string> = {
   noite: 'Noite',
 }
 
+const SHIFT_ENGLISH_LABELS: Record<string, string> = {
+  morning: 'Manhã',
+  afternoon: 'Tarde',
+  evening: 'Noite',
+  night: 'Noite',
+  fulltime: 'Integral',
+  full_time: 'Integral',
+}
+
+export function formatShiftLabel(value: string | null | undefined) {
+  if (!value) return '—'
+  const normalized = value.trim().toLowerCase()
+  const withoutAccents = normalized.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return SHIFT_LABELS[normalized] ?? SHIFT_LABELS[withoutAccents] ?? SHIFT_ENGLISH_LABELS[normalized] ?? value
+}
+
 export const SHIFT_BADGE_CLASSES: Record<string, string> = {
-  manha: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-  tarde: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-  noite: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-  integral: 'bg-green-500/10 text-green-400 border-green-500/30',
-  matutino: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-  vespertino: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
-  noturno: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+  manha: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/30',
+  tarde: 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/30',
+  noite: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
+  integral: 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/30',
+  matutino: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/30',
+  vespertino: 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/30',
+  noturno: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
 }
 
 // ─── Academic Year Status ───────────────────────────────────────────────────
@@ -100,5 +116,8 @@ export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   historico: 'Histórico Escolar',
   boletim: 'Boletim de Notas',
   identidade: 'Documento de Identidade',
+  diploma: 'Diploma',
+  certificado: 'Certificado',
+  registro: 'Registro Profissional',
   outros: 'Outros',
 }

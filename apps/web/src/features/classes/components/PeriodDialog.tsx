@@ -116,16 +116,16 @@ export function PeriodDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <Label>Nome *</Label>
-            <Input placeholder="Ex: 1º Bimestre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <Label htmlFor="period-name">Nome *</Label>
+            <Input id="period-name" placeholder="Ex: 1º Bimestre" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Tipo *</Label>
+              <Label htmlFor="period-type">Tipo *</Label>
               <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as PeriodType })}
                 items={[{ value: 'bimestre', label: 'Bimestre' }, { value: 'trimestre', label: 'Trimestre' }, { value: 'semestre', label: 'Semestre' }]}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger id="period-type"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="bimestre">Bimestre</SelectItem>
                   <SelectItem value="trimestre">Trimestre</SelectItem>
@@ -134,20 +134,20 @@ export function PeriodDialog({
               </Select>
             </div>
             <div className="space-y-1">
-              <Label>Ordem *</Label>
-              <Input type="number" min={1} value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
+              <Label htmlFor="period-order">Ordem *</Label>
+              <Input id="period-order" type="number" min={1} value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
               {errors.order && <p className="text-xs text-destructive">{errors.order}</p>}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Início *</Label>
-              <Input type="date" value={form.startDate} onChange={(e) => { setForm({ ...form, startDate: e.target.value }); setOverlapError(null) }} />
+              <Label htmlFor="period-start">Início *</Label>
+              <Input id="period-start" type="date" value={form.startDate} onChange={(e) => { setForm({ ...form, startDate: e.target.value }); setOverlapError(null) }} />
               {errors.startDate && <p className="text-xs text-destructive">{errors.startDate}</p>}
             </div>
             <div className="space-y-1">
-              <Label>Fim *</Label>
-              <Input type="date" value={form.endDate} onChange={(e) => { setForm({ ...form, endDate: e.target.value }); setOverlapError(null) }} />
+              <Label htmlFor="period-end">Fim *</Label>
+              <Input id="period-end" type="date" value={form.endDate} onChange={(e) => { setForm({ ...form, endDate: e.target.value }); setOverlapError(null) }} />
               {errors.endDate && <p className="text-xs text-destructive">{errors.endDate}</p>}
             </div>
           </div>
@@ -157,8 +157,8 @@ export function PeriodDialog({
             </div>
           )}
           <div className="space-y-1">
-            <Label>Fechamento de notas</Label>
-            <Input type="date" value={form.gradeClosingDate} onChange={(e) => setForm({ ...form, gradeClosingDate: e.target.value })} />
+            <Label htmlFor="period-grade-closing">Fechamento de notas</Label>
+            <Input id="period-grade-closing" type="date" value={form.gradeClosingDate} onChange={(e) => setForm({ ...form, gradeClosingDate: e.target.value })} />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>

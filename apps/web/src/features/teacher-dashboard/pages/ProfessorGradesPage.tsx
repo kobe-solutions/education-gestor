@@ -131,10 +131,7 @@ export function ProfessorGradesPage() {
           <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1
-            className="font-bold leading-tight"
-            style={{ fontSize: 22, color: 'hsl(var(--foreground))', letterSpacing: '-0.01em' }}
-          >
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
             Lançar Notas
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
@@ -166,7 +163,7 @@ export function ProfessorGradesPage() {
       {/* ── Filters ──────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="w-full sm:w-72">
-          <Label className="text-xs mb-1.5 block" style={{ color: 'hsl(var(--muted-foreground))' }}>
+          <Label htmlFor="professor-grades-class" className="mb-1.5 block text-xs text-muted-foreground">
             Turma
           </Label>
           <Select
@@ -182,7 +179,7 @@ export function ProfessorGradesPage() {
             }
             items={dashboard?.classes.map((c) => ({ value: c.id, label: c.name })) ?? []}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="professor-grades-class" className="w-full">
               <SelectValue placeholder="Selecione uma turma" />
             </SelectTrigger>
             <SelectContent>
@@ -199,7 +196,7 @@ export function ProfessorGradesPage() {
         </div>
 
         <div className="w-full sm:w-64">
-          <Label className="text-xs mb-1.5 block" style={{ color: 'hsl(var(--muted-foreground))' }}>
+          <Label htmlFor="professor-grades-subject" className="mb-1.5 block text-xs text-muted-foreground">
             Disciplina
           </Label>
           <Select
@@ -214,7 +211,7 @@ export function ProfessorGradesPage() {
             }
             items={teacherSubjects.map((s) => ({ value: s.id, label: s.name }))}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="professor-grades-subject" className="w-full">
               <SelectValue placeholder="Selecione a disciplina" />
             </SelectTrigger>
             <SelectContent>

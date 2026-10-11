@@ -19,6 +19,7 @@ import { Card, CardContent } from '../../../components/ui/card'
 import { TONE_CONFIG, SHIFT_CONFIG } from '../../../lib/colors'
 import { cn } from '../../../lib/utils'
 import { EmptyState } from '../../../components/EmptyState'
+import { formatShiftLabel } from '../../../lib/labels'
 
 function gradeTone(value: number): 'emerald' | 'amber' | 'red' {
   if (value >= 7) return 'emerald'
@@ -94,50 +95,26 @@ function MetricCard({
 function ShiftBadge({ shift }: { shift: string }) {
   const cfg = SHIFT_CONFIG[shift]
   if (cfg) {
-    const colors: Record<string, string> = {
-      'bg-amber-500/10': 'rgba(180, 83, 9, 0.10)',
-      'text-amber-400': '#F59E0B',
-      'border-amber-500/30': 'rgba(180, 83, 9, 0.30)',
-      'bg-orange-500/10': 'rgba(234, 88, 12, 0.10)',
-      'text-orange-400': '#F97316',
-      'border-orange-500/30': 'rgba(234, 88, 12, 0.30)',
-      'bg-indigo-500/10': 'rgba(79, 70, 229, 0.10)',
-      'text-indigo-400': '#818CF8',
-      'border-indigo-500/30': 'rgba(79, 70, 229, 0.30)',
-      'bg-green-500/10': 'rgba(21, 128, 61, 0.10)',
-      'text-green-400': '#22C55E',
-      'border-green-500/30': 'rgba(21, 128, 61, 0.30)',
-    }
-    const bgKey = cfg.className.split(' ').find((c) => c.startsWith('bg-')) ?? ''
-    const fgKey = cfg.className.split(' ').find((c) => c.startsWith('text-')) ?? ''
-
     return (
       <span
-        className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold capitalize border"
-        style={{
-          background: colors[bgKey] ?? 'hsl(var(--border))',
-          color: colors[fgKey] ?? 'hsl(var(--muted-foreground))',
-          borderColor: 'transparent',
-        }}
+        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold capitalize ${cfg.className}`}
       >
         {cfg.label}
       </span>
     )
   }
 
-  const fallbackColors: Record<string, { bg: string; fg: string }> = {
-    matutino: { bg: 'rgba(79, 70, 229, 0.10)', fg: '#818CF8' },
-    vespertino: { bg: 'rgba(180, 83, 9, 0.10)', fg: '#F59E0B' },
-    noturno: { bg: 'rgba(49, 46, 129, 0.10)', fg: '#A5B4FC' },
-    integral: { bg: 'rgba(21, 128, 61, 0.10)', fg: '#22C55E' },
+  const fallbackClasses: Record<string, string> = {
+    matutino: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
+    vespertino: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30',
+    noturno: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30',
+    integral: 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/30',
   }
-  const c = fallbackColors[shift] ?? { bg: 'hsl(var(--border))', fg: 'hsl(var(--muted-foreground))' }
   return (
     <span
-      className="inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-semibold capitalize"
-      style={{ background: c.bg, color: c.fg }}
+      className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold capitalize ${fallbackClasses[shift] ?? 'border-border bg-muted text-muted-foreground'}`}
     >
-      {shift}
+      {formatShiftLabel(shift)}
     </span>
   )
 }
@@ -227,7 +204,7 @@ export function MyClassesPage() {
       counts.set(c.shift, (counts.get(c.shift) ?? 0) + 1)
     }
     return Array.from(counts.entries())
-      .map(([shift, count]) => `${count} ${SHIFT_CONFIG[shift]?.label ?? shift}`)
+      .map(([shift, count]) => `${count} ${formatShiftLabel(shift)}`)
       .join(' · ')
   }, [data])
 
@@ -244,7 +221,13 @@ export function MyClassesPage() {
   }, [data, searchQuery])
 
   if (isLoading) return <MyClassesSkeleton />
-  if (!data) return null
+  if (!data) {
+    return (
+      <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-6 text-sm text-destructive">
+        Não foi possível carregar suas turmas. Tente novamente em instantes.
+      </div>
+    )
+  }
 
   const totalStudents = data.classes.reduce((sum, c) => sum + c.studentCount, 0)
   const avgPerClass =
@@ -263,14 +246,7 @@ export function MyClassesPage() {
           <ArrowLeft size={16} style={{ color: 'hsl(var(--foreground))' }} />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1
-            className="font-bold leading-tight"
-            style={{
-              fontSize: 22,
-              color: 'hsl(var(--foreground))',
-              letterSpacing: '-0.01em',
-            }}
-          >
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-foreground">
             Minhas Turmas
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>

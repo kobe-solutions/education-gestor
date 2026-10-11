@@ -44,10 +44,10 @@ export const TONE_CONFIG = {
 export type ToneKey = keyof typeof TONE_CONFIG
 
 export const SHIFT_CONFIG: Record<string, { label: string; className: string }> = {
-  manha:    { label: 'Manhã',    className: 'bg-amber-500/10 text-amber-400 border-amber-500/30' },
-  tarde:    { label: 'Tarde',    className: 'bg-orange-500/10 text-orange-400 border-orange-500/30' },
-  noite:    { label: 'Noite',    className: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30' },
-  integral: { label: 'Integral', className: 'bg-green-500/10 text-green-400 border-green-500/30' },
+  manha:    { label: 'Manhã',    className: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30' },
+  tarde:    { label: 'Tarde',    className: 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/30' },
+  noite:    { label: 'Noite',    className: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30' },
+  integral: { label: 'Integral', className: 'bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/30' },
 }
 
 export const LEVEL_COLORS: Record<string, string> = {

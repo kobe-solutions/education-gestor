@@ -55,9 +55,10 @@ export function MedicalTab({ medical, saving, onSave }: MedicalTabProps) {
             { field: 'medicalContact' as const, label: 'Contato médico', placeholder: 'Nome do médico e telefone...' },
           ].map(({ field, label, placeholder }) => (
             <div key={field} className="space-y-1">
-              <Label>{label}<Opt /></Label>
+              <Label htmlFor={`medical-${field}`}>{label}<Opt /></Label>
               <Textarea
                 className="min-h-[72px] resize-none"
+                id={`medical-${field}`}
                 placeholder={placeholder}
                 {...form.register(field)}
               />

@@ -56,8 +56,9 @@ export function TuitionEditDialog({ tuition, onOpenChange }: TuitionEditDialogPr
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Valor (R$)</Label>
+            <Label htmlFor="edit-tuition-amount">Valor (R$)</Label>
             <Input
+              id="edit-tuition-amount"
               placeholder="R$ 500,00"
               value={amountDisplay}
               onChange={(e) => {
@@ -71,8 +72,8 @@ export function TuitionEditDialog({ tuition, onOpenChange }: TuitionEditDialogPr
             {errors.amount && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.amount.message}</p>}
           </div>
           <div className="space-y-1.5">
-            <Label>Vencimento</Label>
-            <Input type="date" {...register('dueDate')} />
+            <Label htmlFor="edit-tuition-due-date">Vencimento</Label>
+            <Input id="edit-tuition-due-date" type="date" {...register('dueDate')} />
             {errors.dueDate && <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.dueDate.message}</p>}
           </div>
           <DialogFooter>
