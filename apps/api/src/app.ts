@@ -28,6 +28,7 @@ import { auditRoutes } from "./modules/audit/audit.routes";
 import { teacherDashboardRoutes } from "./modules/teacherDashboard/teacherDashboard.routes";
 import { demandsRoutes } from "./modules/demands/demands.routes";
 import { markOverdueTuitionsJob } from "./modules/financial/financial.jobs";
+import { lessonRecordsRoutes } from "./modules/lessonRecords/lessonRecords.routes";
 
 export function buildApp() {
   const app = Fastify({
@@ -58,6 +59,7 @@ export function buildApp() {
   app.register(auditRoutes);
   app.register(teacherDashboardRoutes);
   app.register(demandsRoutes);
+  app.register(lessonRecordsRoutes);
 
   // Overdue tuitions job — runs on boot and every 24 hours
   markOverdueTuitionsJob().catch(() => null)
