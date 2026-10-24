@@ -26,6 +26,7 @@ import {
   PartyPopper,
   CalendarRange,
   ChevronLeft,
+  FileText,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -121,6 +122,13 @@ const navItems: NavItem[] = [
     icon: ClipboardCheck,
     roles: ['gestor', 'secretaria'],
     matchPaths: ['/dashboard/registration-status'],
+  },
+  {
+    to: '/lesson-records',
+    label: 'Registros de Aula',
+    icon: FileText,
+    roles: ['gestor', 'professor'],
+    matchPaths: ['/lesson-records'],
   },
   {
     to: '/financial',

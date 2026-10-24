@@ -66,7 +66,7 @@ export interface TeacherDashboardData {
   }
 }
 
-export function useTeacherDashboard() {
+export function useTeacherDashboard(enabledForRole = true) {
   const { schoolKey, enabled } = useSchoolKey()
   return useQuery({
     queryKey: ['teacher-dashboard', schoolKey],
@@ -74,7 +74,7 @@ export function useTeacherDashboard() {
       const res = await api.get<TeacherDashboardData>('/teacher/dashboard')
       return res.data
     },
-    enabled,
+    enabled: enabled && enabledForRole,
     staleTime: 60_000,
   })
 }
