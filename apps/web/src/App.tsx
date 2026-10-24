@@ -53,6 +53,7 @@ const GradesPage = lazy(() => import('./features/academic/pages/GradesPage').the
 const ClassPeriodsPage = lazy(() => import('./features/classes/pages/ClassPeriodsPage').then(m => ({ default: m.ClassPeriodsPage })))
 const SchoolEventsPage = lazy(() => import('./features/school-events/pages/SchoolEventsPage').then(m => ({ default: m.SchoolEventsPage })))
 const RegistrationStatusPage = lazy(() => import('./features/dashboard/pages/RegistrationStatusPage').then(m => ({ default: m.RegistrationStatusPage })))
+const LessonRecordsPage = lazy(() => import('./features/lesson-records/pages/LessonRecordsPage').then(m => ({ default: m.LessonRecordsPage })))
 
 function PageLoader() {
   return (
@@ -126,6 +127,10 @@ export function App() {
                   <Route path="/school-events" element={<Suspense fallback={<PageLoader />}><SchoolEventsPage /></Suspense>} />
                   <Route path="/classes/:id" element={<Suspense fallback={<PageLoader />}><ClassDetailPage /></Suspense>} />
                   <Route path="/classes/:id/timetable" element={<Suspense fallback={<PageLoader />}><TimetablePage /></Suspense>} />
+                </Route>
+
+                <Route element={<PrivateRoute allowedRoles={['gestor', 'professor']} />}>
+                  <Route path="/lesson-records" element={<Suspense fallback={<PageLoader />}><LessonRecordsPage /></Suspense>} />
                 </Route>
 
                 {/* Professor Dashboard */}

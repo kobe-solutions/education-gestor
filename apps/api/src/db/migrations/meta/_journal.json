@@ -204,6 +204,20 @@
       "when": 1788799915846,
       "tag": "0028_heavy_toad",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792800000000,
+      "tag": "0029_lesson_records",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1792800000001,
+      "tag": "0030_lesson_record_timetable_slot",
+      "breakpoints": true
     }
   ]
 }

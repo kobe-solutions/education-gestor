@@ -21,3 +21,4 @@ export * from "./studentDocuments";
 export * from "./teacherSubjects";
 export * from "./teacherDocuments";
 export * from "./demands";
+export * from "./lessonRecords";
