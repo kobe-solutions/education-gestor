@@ -9,6 +9,7 @@
     "db:studio": "drizzle-kit studio",
     "admin:provision": "tsx src/scripts/provision-admin.ts",
     "db:seed": "tsx src/scripts/seed.ts",
+    "db:seed:manual": "tsx src/scripts/seed-manual.ts",
     "db:clear": "tsx src/scripts/clear.ts",
     "test": "vitest run",
     "test:watch": "vitest",
