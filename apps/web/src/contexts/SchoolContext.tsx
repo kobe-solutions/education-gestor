@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react'
+import { useAuth } from './AuthContext'
 
 interface SchoolContextValue {
   activeSchoolId: string | null
@@ -12,6 +13,8 @@ const SchoolContext = createContext<SchoolContextValue | null>(null)
 export { SchoolContext }
 
 export function SchoolProvider({ children }: { children: ReactNode }) {
+  const { token } = useAuth()
+  const previousToken = useRef(token)
   const [activeSchoolId, setActiveSchoolId] = useState<string | null>(
     () => sessionStorage.getItem('activeSchoolId'),
   )
@@ -32,6 +35,12 @@ export function SchoolProvider({ children }: { children: ReactNode }) {
     setActiveSchoolId(null)
     setActiveSchoolName(null)
   }, [])
+
+  useEffect(() => {
+    if (previousToken.current === token) return
+    previousToken.current = token
+    clearActiveSchool()
+  }, [token, clearActiveSchool])
 
   return (
     <SchoolContext.Provider value={{ activeSchoolId, activeSchoolName, setActiveSchool, clearActiveSchool }}>

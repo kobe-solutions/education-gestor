@@ -16,7 +16,6 @@ export async function authenticateService(input: AuthenticateServiceInput) {
   if (admin && verifyPassword(input.password, admin.passwordHash)) {
     return {
       userId: admin.id,
-      schoolId: admin.id,
       name: admin.name,
       role: 'admin' as const,
     }
