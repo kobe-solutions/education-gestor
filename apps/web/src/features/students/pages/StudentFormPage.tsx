@@ -148,8 +148,8 @@ export function StudentFormPage() {
         <div className="text-5xl">🏫</div>
         <h2 className="text-xl font-semibold">Nenhuma escola vinculada</h2>
         <p className="text-muted-foreground">
-          Sua secretaria não está vinculada a nenhuma escola. Entre em contato com um administrador
-          para vincular sua secretaria a pelo menos uma escola antes de cadastrar alunos.
+          Esta Secretaria de Educação ainda não tem escolas vinculadas. Peça a um administrador
+          da plataforma para incluir escolas na rede antes de cadastrar alunos.
         </p>
         <Button variant="outline" onClick={() => navigate('/students')}>
           Voltar para alunos
@@ -239,14 +239,16 @@ export function StudentFormPage() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="pessoal" className="w-full space-y-6">
-        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-          <TabsList className="w-full justify-start min-w-max">
-            <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
-            <TabsTrigger value="familia" disabled={!isEdit}>Família & Responsável</TabsTrigger>
-            <TabsTrigger value="saude" disabled={!isEdit}>Ficha Médica</TabsTrigger>
-            <TabsTrigger value="documentos" disabled={!isEdit}>Documentos</TabsTrigger>
-            <TabsTrigger value="matricula">Matrícula & Turmas</TabsTrigger>
+      {!isEdit && <p className="rounded-lg border border-primary/20 bg-secondary px-4 py-3 text-sm text-secondary-foreground">Comece pelos dados pessoais. Depois de salvar o cadastro, você poderá completar as outras etapas.</p>}
+      <Tabs defaultValue="pessoal" className="w-full space-y-5">
+        <div>
+          {isEdit && <p className="mb-2 text-sm text-muted-foreground">Você pode preencher cada etapa e voltar para completar ou atualizar as informações.</p>}
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl bg-transparent p-0 sm:grid-cols-3 lg:grid-cols-5">
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="pessoal">1. Dados pessoais</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="familia" disabled={!isEdit}>2. Família</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="saude" disabled={!isEdit}>3. Saúde</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="documentos" disabled={!isEdit}>4. Documentos</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="matricula">5. Turmas e matrícula</TabsTrigger>
           </TabsList>
         </div>
 

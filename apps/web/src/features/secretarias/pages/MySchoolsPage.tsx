@@ -22,12 +22,15 @@ export function MySchoolsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Minhas Escolas</h1>
+      <div>
+        <h1 className="text-2xl font-semibold">Escolas da rede</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Escolha uma escola para consultar e administrar os dados dela.</p>
+      </div>
 
       {isLoading && <p className="text-muted-foreground text-sm">Carregando escolas...</p>}
 
       {!isLoading && schools?.length === 0 && (
-        <p className="text-muted-foreground text-sm">Nenhuma escola vinculada à sua conta.</p>
+        <p className="text-muted-foreground text-sm">Nenhuma escola está vinculada a esta Secretaria de Educação.</p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -45,7 +48,7 @@ export function MySchoolsPage() {
                 variant={isActive ? 'secondary' : 'default'}
                 onClick={() => handleAccess(school.id, school.name)}
               >
-                {isActive ? 'Escola ativa' : 'Acessar'}
+                {isActive ? 'Escola em uso' : 'Acessar esta escola'}
               </Button>
             </Surface>
           )

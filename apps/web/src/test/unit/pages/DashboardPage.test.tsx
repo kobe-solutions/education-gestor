@@ -158,8 +158,8 @@ describe('DashboardPage', () => {
       mockSchool: { activeSchoolId: null },
     })
 
-    expect(screen.getByText('Nenhuma escola selecionada')).toBeInTheDocument()
-    expect(screen.getByText('Ir para Minhas Escolas')).toBeInTheDocument()
+    expect(screen.getByText('Escolha uma escola da rede')).toBeInTheDocument()
+    expect(screen.getByText('Ver escolas da rede')).toBeInTheDocument()
   })
 
   it('professor: redireciona para /professor', () => {

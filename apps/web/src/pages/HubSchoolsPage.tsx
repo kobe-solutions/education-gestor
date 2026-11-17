@@ -1,28 +1,15 @@
 import { Home, School } from 'lucide-react'
-import { HubCard } from '../components/HubCard'
 import { PageHead } from '../components/PageHead'
+import { TaskSection } from '../components/TaskNavigation'
 
 export function HubSchoolsPage() {
   return (
-    <div className="space-y-6">
-      <PageHead
-        title="Escolas"
-        subtitle="Gerencie as escolas vinculadas à sua secretaria"
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <HubCard
-          to="/my-schools"
-          icon={Home}
-          title="Minhas Escolas"
-          description="Visualize e selecione as escolas vinculadas à sua secretaria para gerenciamento."
-        />
-        <HubCard
-          to="/schools"
-          icon={School}
-          title="Todas as Escolas"
-          description="Cadastro completo de escolas com dados de endereço e responsáveis."
-        />
-      </div>
+    <div className="space-y-8">
+      <PageHead title="Rede de escolas" subtitle="A Secretaria de Educação administra as escolas vinculadas e pode acessar uma escola por vez." />
+      <TaskSection title="Trabalhar com escolas" items={[
+        { to: '/my-schools', icon: Home, title: 'Acessar uma escola', description: 'Escolha uma escola vinculada para abrir o painel e as rotinas dela.', action: 'Escolher escola' },
+        { to: '/schools', icon: School, title: 'Escolas da rede', description: 'Consulte ou atualize os dados das escolas administradas pela rede.', action: 'Gerenciar escolas' },
+      ]} />
     </div>
   )
 }

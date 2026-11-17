@@ -1,34 +1,18 @@
-import { Building2, School, Activity } from 'lucide-react'
-import { HubCard } from '../components/HubCard'
+import { Activity, Building2, School } from 'lucide-react'
 import { PageHead } from '../components/PageHead'
+import { TaskSection } from '../components/TaskNavigation'
 
 export function HubAdminPage() {
   return (
-    <div className="space-y-6">
-      <PageHead
-        title="Administração"
-        subtitle="Gestão de secretarias e escolas da plataforma"
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <HubCard
-          to="/secretarias"
-          icon={Building2}
-          title="Secretarias"
-          description="Cadastro e gerenciamento das secretarias de educação vinculadas à plataforma."
-        />
-        <HubCard
-          to="/schools"
-          icon={School}
-          title="Escolas"
-          description="Visualize e gerencie as escolas vinculadas a cada secretaria."
-        />
-        <HubCard
-          to="/admin/activity"
-          icon={Activity}
-          title="Atividade"
-          description="Visualize o histórico de ações realizadas por todos os usuários da plataforma."
-        />
-      </div>
+    <div className="space-y-8">
+      <PageHead title="Administração da plataforma" subtitle="Gerencie as organizações que usam a IRIS Educação." />
+      <TaskSection title="Organizações" items={[
+        { to: '/secretarias', icon: Building2, title: 'Secretarias', description: 'Cadastre e gerencie as secretarias vinculadas à plataforma.', action: 'Ver secretarias' },
+        { to: '/schools', icon: School, title: 'Escolas', description: 'Consulte os cadastros de escolas e seus vínculos.', action: 'Ver escolas' },
+      ]} />
+      <TaskSection title="Acompanhar a plataforma" items={[
+        { to: '/admin/activity', icon: Activity, title: 'Histórico de atividade', description: 'Consulte ações realizadas por usuários na plataforma.', action: 'Ver atividade' },
+      ]} />
     </div>
   )
 }

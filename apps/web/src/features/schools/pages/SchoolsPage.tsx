@@ -353,8 +353,10 @@ export function SchoolsPage() {
   return (
     <div className="space-y-6">
       <PageHead
-        title="Escolas"
-        subtitle={`${schools?.length ?? 0} escolas cadastradas`}
+        title={isSecretaria ? 'Escolas da rede' : 'Escolas'}
+        subtitle={isSecretaria
+          ? `${schools?.length ?? 0} escolas vinculadas à rede que você administra`
+          : `${schools?.length ?? 0} escolas cadastradas`}
         actions={
           canManage ? (
             <Button size="sm" onClick={handleCreate}>
