@@ -40,9 +40,13 @@ export function useLessonRecordSummary(month?: string) {
 
 export function useLessonRecords(month: string, filters: { teacherId?: string; classId?: string } = {}) {
   const { schoolKey, enabled } = useSchoolKey()
+  const [year, monthNumber] = month.split('-').map(Number)
+  const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
   return useQuery({
     queryKey: ['lesson-records', schoolKey, month, filters.teacherId, filters.classId],
-    queryFn: async () => (await api.get<LessonRecord[]>('/lesson-records', { params: { from: `${month}-01`, to: `${month}-31`, ...filters } })).data,
+    queryFn: async () => (await api.get<LessonRecord[]>('/lesson-records', {
+      params: { from: `${month}-01`, to: `${month}-${String(lastDay).padStart(2, '0')}`, ...filters },
+    })).data,
     enabled,
   })
 }
