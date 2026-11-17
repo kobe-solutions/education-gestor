@@ -466,8 +466,7 @@ export function SchoolEventsPage() {
             )}
           </div>
           <p className="mt-8 text-xs leading-relaxed text-muted-foreground">
-            Os eventos cadastrados por uma secretaria ficam visíveis somente
-            para a escola selecionada.
+            Ao trabalhar pela rede, cada evento fica associado somente à escola selecionada.
           </p>
         </aside>
 
@@ -478,8 +477,7 @@ export function SchoolEventsPage() {
               <div>
                 <h2 className="font-medium">Selecione uma escola</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Escolha uma escola no topo da página para ver e cadastrar seus
-                  eventos.
+                  Escolha uma escola da rede no topo da página para ver e cadastrar os eventos dela.
                 </p>
               </div>
             </div>
@@ -641,7 +639,7 @@ export function SchoolEventsPage() {
               {editingEvent ? "Editar evento escolar" : "Novo evento escolar"}
             </DialogTitle>
             <DialogDescription>
-              O evento será associado somente à escola ativa.
+              O evento será associado somente à escola da rede que está em uso.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4">

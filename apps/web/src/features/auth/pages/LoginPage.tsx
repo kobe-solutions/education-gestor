@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -54,52 +54,23 @@ export function LoginPage() {
   }
 
   return (
-    <div
-      className="w-full max-w-sm mx-auto flex flex-col gap-5"
-      style={{
-        background: 'hsl(var(--card))',
-        border: '1px solid hsl(var(--border))',
-        borderRadius: 16,
-        padding: '24px 24px 20px',
-        boxShadow: 'var(--shadow-lg)',
-      }}
-    >
-      {/* Logo IRIS vertical */}
-      <div className="flex flex-col items-center gap-3 mb-1">
-        <svg width="48" height="48" viewBox="0 0 120 120" aria-label="IRIS">
-          <ellipse cx="60" cy="60" rx="46" ry="24" fill="none" stroke="#312E81" strokeWidth="3.4" />
-          <circle cx="60" cy="60" r="18" fill="#818CF8" />
-          <circle cx="60" cy="60" r="12" fill="#4F46E5" />
-          <circle cx="60" cy="60" r="7"  fill="#312E81" />
-        </svg>
-        <div className="text-center">
-          <div
-            className="font-bold tracking-widest"
-            style={{ fontSize: 17, color: 'hsl(var(--primary))', letterSpacing: 3 }}
-          >
-            IRIS
-          </div>
-          <div
-            className="font-semibold tracking-widest"
-            style={{ fontSize: 10, color: 'hsl(var(--primary))', letterSpacing: 6, marginTop: 1 }}
-          >
-            EDUCAÇÃO
-          </div>
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 rounded-2xl border bg-card p-6 shadow-(--shadow-md) sm:p-8">
+      <div className="flex items-center justify-center gap-3">
+        <img src="/iris-icon.svg" alt="" className="size-12 rounded-xl bg-secondary p-1" />
+        <div>
+          <p className="text-lg font-bold tracking-widest text-primary">IRIS</p>
+          <p className="text-[10px] font-semibold tracking-[0.32em] text-primary">EDUCAÇÃO</p>
         </div>
       </div>
 
-      <div className="text-center -mt-1">
-        <h1 className="font-bold" style={{ fontSize: 18, color: 'hsl(var(--primary))' }}>
-          Bem-vindo
-        </h1>
-        <p className="text-xs mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-          Acesse a gestão escolar da sua instituição
-        </p>
+      <div className="text-center">
+        <h1 className="text-xl font-bold text-foreground">Acesse sua conta</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">Entre com o e-mail e a senha cadastrados.</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" style={{ fontSize: 13, color: 'hsl(var(--foreground))', fontWeight: 500 }}>
+          <Label htmlFor="email" className="text-sm font-medium">
             E-mail
           </Label>
           <div className="relative">
@@ -119,7 +90,7 @@ export function LoginPage() {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password" style={{ fontSize: 13, color: 'hsl(var(--foreground))', fontWeight: 500 }}>
+          <Label htmlFor="password" className="text-sm font-medium">
             Senha
           </Label>
           <div className="relative">
@@ -145,13 +116,6 @@ export function LoginPage() {
           {errors.password && (
             <p className="text-xs" style={{ color: 'hsl(var(--destructive))' }}>{errors.password.message}</p>
           )}
-          <Link
-            to="/forgot-password"
-            className="text-xs self-end"
-            style={{ color: 'hsl(var(--muted-foreground))' }}
-          >
-            Esqueci minha senha
-          </Link>
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer">
@@ -160,7 +124,7 @@ export function LoginPage() {
             onCheckedChange={(checked) => setRemember(checked)}
             className="rounded border-input"
           />
-          <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>Lembrar-me</span>
+          <span className="text-sm text-muted-foreground">Lembrar meu e-mail neste dispositivo</span>
         </label>
 
         {error && (
@@ -169,7 +133,7 @@ export function LoginPage() {
           </p>
         )}
 
-        <Button type="submit" className="w-full mt-1" disabled={isPending}>
+        <Button type="submit" className="mt-1 w-full" disabled={isPending}>
           {isPending ? 'Entrando…' : 'Entrar'}
         </Button>
       </form>

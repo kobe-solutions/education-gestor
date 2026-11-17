@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
 import { ArrowLeft, Plus, Trash2, Pencil, List, CalendarDays } from 'lucide-react'
 import { useAuth } from '../../../contexts/AuthContext'
@@ -7,7 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   useTimetableSlots,
-  useCreateTimetableSlot,
+  useAllTimetableSlots,
+  useCreateTimetableSlotsBatch,
   useUpdateTimetableSlot,
   useDeleteTimetableSlot,
   WEEK_DAY_LABELS,
@@ -23,7 +24,6 @@ import { useAllTeachers } from '../../teachers/hooks/useTeachers'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Breadcrumbs } from '../../../components/Breadcrumbs'
 import { Button } from '../../../components/ui/button'
-import { Input } from '../../../components/ui/input'
 import { Label } from '../../../components/ui/label'
 import { Badge } from '../../../components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
@@ -31,6 +31,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
+import { Checkbox } from '../../../components/ui/checkbox'
+import { findSelectedPeriodOverlaps, findSlotConflicts } from '../../scheduling/lib/conflicts'
+import { toast } from '../../../lib/toast'
 
 const WEEK_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 
@@ -50,20 +53,14 @@ export function TimetablePage() {
   const canManage = payload?.role !== 'professor'
   const { data: schoolClass } = useClass(classId!)
   const { data: slots, isLoading } = useTimetableSlots(classId!)
+  const { data: allSlots = [] } = useAllTimetableSlots()
   const { data: classPeriods = [] } = useClassPeriods()
   const { data: academicYears = [] } = useAcademicYears()
   const { data: subjects } = useSubjects()
   const { data: teachers } = useAllTeachers()
-  const createMutation = useCreateTimetableSlot()
+  const createBatchMutation = useCreateTimetableSlotsBatch()
   const updateMutation = useUpdateTimetableSlot(classId!)
   const deleteMutation = useDeleteTimetableSlot(classId!)
-
-  const createApiMutation = useApiMutation({
-    mutationFn: (data: { classId: string; academicYearId: string; classPeriodId: string; subjectId: string; teacherId: string; weekDay: string }) =>
-      createMutation.mutateAsync(data),
-    successMessage: 'Horário adicionado',
-    onSuccess: () => handleClose(),
-  })
 
   const updateApiMutation = useApiMutation({
     mutationFn: (vars: { id: string; data: SlotForm }) => updateMutation.mutateAsync(vars),
@@ -84,6 +81,8 @@ export function TimetablePage() {
   const [editing, setEditing] = useState<TimetableSlot | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [view, setView] = useState<'list' | 'week'>('list')
+  const [selectedDays, setSelectedDays] = useState<string[]>([])
+  const [selectedPeriods, setSelectedPeriods] = useState<string[]>([])
 
   const formValues: SlotForm = editing ? {
     classPeriodId: editing.classPeriodId,
@@ -97,7 +96,7 @@ export function TimetablePage() {
     weekDay: 'monday',
   }
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<SlotForm>({
+  const { handleSubmit, setValue, watch, formState: { errors } } = useForm<SlotForm>({
     resolver: zodResolver(slotSchema),
     values: formValues,
   })
@@ -109,6 +108,8 @@ export function TimetablePage() {
 
   function handleCreate() {
     setEditing(undefined)
+    setSelectedDays([])
+    setSelectedPeriods([])
     setDialogOpen(true)
   }
 
@@ -120,6 +121,8 @@ export function TimetablePage() {
   function handleClose() {
     setDialogOpen(false)
     setEditing(undefined)
+    setSelectedDays([])
+    setSelectedPeriods([])
   }
 
   function onSubmit(data: SlotForm) {
@@ -130,11 +133,39 @@ export function TimetablePage() {
     if (editing) {
       updateApiMutation.mutate({ id: editing.id, data })
     } else {
-      createApiMutation.mutate({ classId: classId!, academicYearId: activeYear.id, ...data })
+      if (selectedDays.length === 0 || selectedPeriods.length === 0) return
+      createBatchMutation.mutate({
+        classId: classId!,
+        academicYearId: activeYear.id,
+        subjectId: data.subjectId,
+        teacherId: data.teacherId,
+        weekDays: selectedDays,
+        classPeriodIds: selectedPeriods,
+      }, {
+        onSuccess: ({ created }) => {
+          toast.success(`${created} ${created === 1 ? 'aula adicionada' : 'aulas adicionadas'} à grade.`)
+          handleClose()
+        },
+      })
     }
   }
 
-  const isPending = createApiMutation.isPending || updateApiMutation.isPending
+  const selectedConflicts = useMemo(() => {
+    const existingConflicts = !teacherIdValue ? [] : selectedDays.flatMap((day) => selectedPeriods.flatMap((periodId) => {
+      const period = classPeriods.find((item) => item.id === periodId)
+      const conflicts = findSlotConflicts(allSlots, classPeriods, {
+        teacherId: teacherIdValue,
+        weekDay: day,
+        classPeriodId: periodId,
+      })
+      return conflicts.length > 0 && period ? [{ day, period: period.name }] : []
+    }))
+    const overlapsWithinSelection = findSelectedPeriodOverlaps(selectedDays, selectedPeriods, classPeriods)
+      .map(({ weekDay, periodNames }) => ({ day: weekDay, period: `${periodNames.join(' e ')} (horários sobrepostos)` }))
+    return [...existingConflicts, ...overlapsWithinSelection]
+  }, [allSlots, classPeriods, selectedDays, selectedPeriods, teacherIdValue])
+
+  const isPending = createBatchMutation.isPending || updateApiMutation.isPending
 
   // Agrupar slots por dia da semana (apenas dias que têm slots)
   const slotsByDay = WEEK_DAYS_ORDER.reduce<Record<string, TimetableSlot[]>>((acc, day) => {
@@ -273,11 +304,43 @@ export function TimetablePage() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={(v) => !v && handleClose()}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>{editing ? 'Editar horário' : 'Novo horário'}</DialogTitle>
+            {!editing && <p className="text-sm text-muted-foreground">Siga as etapas. Os horários selecionados serão adicionados de uma vez.</p>}
           </DialogHeader>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {!editing && <div className="max-h-[58vh] space-y-4 overflow-y-auto pr-1">
+              <fieldset className="space-y-2 rounded-lg border p-3">
+                <legend className="px-1 text-sm font-semibold">1. Em quais dias?</legend>
+                <p className="text-xs text-muted-foreground">Marque todos os dias em que esta aula acontece.</p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {WEEK_DAYS.map((day) => (
+                    <label key={day} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted/40">
+                      <Checkbox checked={selectedDays.includes(day)} onCheckedChange={(checked) => setSelectedDays((current) => checked === true ? [...current, day] : current.filter((item) => item !== day))} />
+                      {WEEK_DAY_LABELS[day]}
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="space-y-2 rounded-lg border p-3">
+                <legend className="px-1 text-sm font-semibold">2. Em quais aulas?</legend>
+                <p className="text-xs text-muted-foreground">Marque um ou mais tempos da turma.</p>
+                {classPeriods.length === 0 ? <p className="text-sm text-destructive">Cadastre os tempos de aula da escola antes de montar a grade.</p> : (
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {classPeriods.map((period) => (
+                      <label key={period.id} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted/40">
+                        <Checkbox checked={selectedPeriods.includes(period.id)} onCheckedChange={(checked) => setSelectedPeriods((current) => checked === true ? [...current, period.id] : current.filter((item) => item !== period.id))} />
+                        <span>{period.name} <span className="text-muted-foreground">({period.startTime}–{period.endTime})</span></span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </fieldset>
+            </div>}
+
+            {editing && <>
             <div className="space-y-1">
               <Label htmlFor="timetable-period">Horário *</Label>
               <Select value={classPeriodIdValue} onValueChange={(v) => { if (v !== null) setValue('classPeriodId', v) }}
@@ -310,6 +373,11 @@ export function TimetablePage() {
               </Select>
               {errors.weekDay && <p className="text-xs text-destructive">{errors.weekDay.message}</p>}
             </div>
+            </>}
+            {!editing && <div>
+              <h3 className="text-sm font-semibold">3. Quem dará essas aulas?</h3>
+              <p className="text-xs text-muted-foreground">A mesma disciplina e o mesmo professor serão usados nos dias e horários escolhidos.</p>
+            </div>}
             <div className="space-y-1">
               <Label htmlFor="timetable-subject">Disciplina *</Label>
               <Select value={subjectIdValue} onValueChange={(v) => { if (v !== null) setValue('subjectId', v) }}
@@ -340,9 +408,22 @@ export function TimetablePage() {
               </Select>
               {errors.teacherId && <p className="text-xs text-destructive">{errors.teacherId.message}</p>}
             </div>
+            {!editing && <>
+              <div className="rounded-lg bg-muted/40 px-3 py-2 text-sm" aria-live="polite">
+                {selectedDays.length > 0 && selectedPeriods.length > 0
+                  ? `Serão criadas ${selectedDays.length * selectedPeriods.length} aulas: ${selectedDays.map((day) => WEEK_DAY_LABELS[day]).join(', ')} × ${selectedPeriods.length} ${selectedPeriods.length === 1 ? 'horário' : 'horários'}.`
+                  : 'Escolha pelo menos um dia e um horário para ver o resumo.'}
+              </div>
+              {!activeYear && <p role="alert" className="text-sm text-destructive">Defina um ano letivo ativo antes de montar a grade.</p>}
+              {selectedConflicts.length > 0 && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+                Este professor já tem aula em: {selectedConflicts.map((item) => `${WEEK_DAY_LABELS[item.day]} — ${item.period}`).join('; ')}. Desmarque esses horários ou escolha outro professor.
+              </p>}
+            </>}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleClose}>Cancelar</Button>
-              <Button type="submit" disabled={isPending}>{isPending ? 'Salvando...' : 'Salvar'}</Button>
+              <Button type="submit" disabled={isPending || (!editing && (!activeYear || selectedDays.length === 0 || selectedPeriods.length === 0 || selectedConflicts.length > 0))}>
+                {isPending ? 'Salvando...' : editing ? 'Salvar alteração' : `Adicionar ${selectedDays.length * selectedPeriods.length || ''} aulas`}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

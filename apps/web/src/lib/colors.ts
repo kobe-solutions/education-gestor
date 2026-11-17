@@ -1,25 +1,25 @@
-export const SIDEBAR_BG = '#0a0f1a'
-export const SIDEBAR_ITEM_HOVER = '#111827'
-export const ACCENT_COLOR = '#818CF8'
+export const SIDEBAR_BG = '#ffffff'
+export const SIDEBAR_ITEM_HOVER = '#eaf4fd'
+export const ACCENT_COLOR = '#185fa5'
 
 export const TONE_CONFIG = {
   indigo: {
-    iconBg: 'rgba(79, 70, 229, 0.12)',
-    iconColor: '#818CF8',
+    iconBg: 'rgba(24, 95, 165, 0.10)',
+    iconColor: '#185FA5',
     valueColor: 'hsl(var(--foreground))',
-    borderColor: 'rgba(79, 70, 229, 0.15)',
+    borderColor: 'rgba(24, 95, 165, 0.16)',
   },
   violet: {
-    iconBg: 'rgba(129, 140, 248, 0.12)',
-    iconColor: '#A5B4FC',
+    iconBg: 'rgba(55, 138, 221, 0.10)',
+    iconColor: '#378ADD',
     valueColor: 'hsl(var(--foreground))',
-    borderColor: 'rgba(129, 140, 248, 0.15)',
+    borderColor: 'rgba(55, 138, 221, 0.16)',
   },
   slate: {
-    iconBg: 'rgba(49, 46, 129, 0.10)',
-    iconColor: '#818CF8',
+    iconBg: 'rgba(55, 87, 115, 0.08)',
+    iconColor: '#526b81',
     valueColor: 'hsl(var(--foreground))',
-    borderColor: 'rgba(49, 46, 129, 0.12)',
+    borderColor: 'rgba(55, 87, 115, 0.14)',
   },
   amber: {
     iconBg: 'rgba(180, 83, 9, 0.10)',

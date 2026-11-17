@@ -4,9 +4,10 @@ import { authorizeRoles } from '../../middlewares/authorize'
 import type { JwtPayload, TenantPayload } from '../../middlewares/authorize'
 import { injectTenant } from '../../middlewares/tenant'
 import { getSchoolId } from '../../lib/routeHelpers'
-import { createTimetableSlotBodySchema, updateTimetableSlotBodySchema } from './timetable.schema'
+import { createTimetableSlotBodySchema, createTimetableSlotsBatchBodySchema, updateTimetableSlotBodySchema } from './timetable.schema'
 import {
   createTimetableSlotService,
+  createTimetableSlotsBatchService,
   listTimetableSlotsService,
   listAllTimetableSlotsService,
   getTimetableSlotService,
@@ -53,6 +54,22 @@ export async function timetableRoutes(app: FastifyInstance) {
     } catch (error) {
       if (error instanceof Error && error.message === 'Teacher already has a slot at this time') {
         return reply.status(409).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.post('/timetable-slots/batch', { preHandler: writePreHandler }, async (request, reply) => {
+    try {
+      const body = createTimetableSlotsBatchBodySchema.parse(request.body)
+      const slots = await createTimetableSlotsBatchService(getSchoolId(request), body)
+      return reply.status(201).send({ created: slots.length })
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Teacher already has a slot at this time') {
+        return reply.status(409).send({ message: 'O professor já tem aula em um ou mais horários selecionados. Revise os dias e horários.' })
+      }
+      if (error instanceof Error && error.message === 'Class period not found') {
+        return reply.status(400).send({ message: 'Um dos horários selecionados não está mais disponível. Atualize a página e tente novamente.' })
       }
       throw error
     }

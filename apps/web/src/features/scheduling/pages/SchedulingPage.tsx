@@ -8,16 +8,18 @@ import { useAcademicYears } from '../../classes/hooks/useAcademicYears'
 import { useSubjects } from '../../subjects/hooks/useSubjects'
 import {
   useAllTimetableSlots,
-  useCreateTimetableSlot,
+  useCreateTimetableSlotsBatch,
   useDeleteTimetableSlot,
   WEEK_DAY_LABELS,
   WEEK_DAYS_ORDER,
 } from '../../timetable/hooks/useTimetable'
 import type { TimetableSlot } from '../../timetable/hooks/useTimetable'
 import { useApiMutation } from '../../../hooks/useApiMutation'
-import { computeConflictingSlotIds, findSlotConflicts } from '../lib/conflicts'
+import { computeConflictingSlotIds, findSelectedPeriodOverlaps, findSlotConflicts } from '../lib/conflicts'
+import { toast } from '../../../lib/toast'
 import { Button } from '../../../components/ui/button'
 import { SearchInput } from '../../../components/SearchInput'
+import { Checkbox } from '../../../components/ui/checkbox'
 import { Label } from '../../../components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
 import {
@@ -330,16 +332,8 @@ export function SchedulingPage() {
 
   const activeYear = academicYears.find((y) => y.status === 'active')
 
-  const createSlot = useCreateTimetableSlot()
+  const createSlotsBatch = useCreateTimetableSlotsBatch()
   const deleteSlotMutation = useDeleteTimetableSlot()
-
-  const createSlotApiMutation = useApiMutation({
-    mutationFn: (data: { classId: string; teacherId: string; subjectId: string; academicYearId: string; classPeriodId: string; weekDay: string }) =>
-      createSlot.mutateAsync(data),
-    successMessage: 'Aula alocada!',
-    onSuccess: () => setAssignTarget(null),
-    errorMessage: 'Erro ao alocar',
-  })
 
   const deleteSlotApiMutation = useApiMutation({
     mutationFn: (id: string) => deleteSlotMutation.mutateAsync(id),
@@ -357,8 +351,8 @@ export function SchedulingPage() {
   const [assignTarget, setAssignTarget] = useState<AssignTarget | null>(null)
 
   // Form state
-  const [formDay, setFormDay] = useState('monday')
-  const [formClassPeriodId, setFormClassPeriodId] = useState('')
+  const [selectedDays, setSelectedDays] = useState<string[]>([])
+  const [selectedPeriods, setSelectedPeriods] = useState<string[]>([])
   const [formSubject, setFormSubject] = useState('')
   const [formTeacher, setFormTeacher] = useState('')
 
@@ -389,8 +383,8 @@ export function SchedulingPage() {
   function openAssignForm(classId: string, teacherId?: string, teacherName?: string) {
     setAssignTarget({ classId, teacherId, teacherName })
     setFormTeacher(teacherId ?? selectedTeacher?.id ?? '')
-    setFormClassPeriodId(classPeriods[0]?.id ?? '')
-    setFormDay('monday')
+    setSelectedDays([])
+    setSelectedPeriods([])
     setFormSubject('')
   }
 
@@ -399,17 +393,22 @@ export function SchedulingPage() {
   }
 
   async function handleAssign() {
-    if (!assignTarget || !formTeacher || !formSubject || !formClassPeriodId || !formDay || !activeYear) {
+    if (!assignTarget || !formTeacher || !formSubject || selectedDays.length === 0 || selectedPeriods.length === 0 || !activeYear) {
       return
     }
 
-    createSlotApiMutation.mutate({
+    createSlotsBatch.mutate({
       classId: assignTarget.classId,
       teacherId: formTeacher,
       subjectId: formSubject,
       academicYearId: activeYear.id,
-      classPeriodId: formClassPeriodId,
-      weekDay: formDay,
+      weekDays: selectedDays,
+      classPeriodIds: selectedPeriods,
+    }, {
+      onSuccess: ({ created }) => {
+        toast.success(`${created} ${created === 1 ? 'aula alocada' : 'aulas alocadas'} com sucesso.`)
+        setAssignTarget(null)
+      },
     })
   }
 
@@ -418,13 +417,21 @@ export function SchedulingPage() {
   }
 
   const assignConflicts = useMemo(() => {
-    if (!assignTarget || !formTeacher || !formDay || !formClassPeriodId) return []
-    return findSlotConflicts(allSlots, classPeriods, {
-      teacherId: formTeacher,
-      weekDay: formDay,
-      classPeriodId: formClassPeriodId,
-    })
-  }, [allSlots, classPeriods, assignTarget, formTeacher, formDay, formClassPeriodId])
+    const existingConflicts = !assignTarget || !formTeacher ? [] : selectedDays.flatMap((day) => selectedPeriods.flatMap((periodId) => {
+      const period = classPeriods.find((item) => item.id === periodId)
+      const conflicts = findSlotConflicts(allSlots, classPeriods, {
+        teacherId: formTeacher,
+        weekDay: day,
+        classPeriodId: periodId,
+      })
+      if (!period || conflicts.length === 0) return []
+      const classNames = conflicts.map((slot) => classes.find((item) => item.id === slot.classId)?.name ?? 'outra turma')
+      return [{ day, period: period.name, classNames: [...new Set(classNames)] }]
+    }))
+    const overlapsWithinSelection = findSelectedPeriodOverlaps(selectedDays, selectedPeriods, classPeriods)
+      .map(({ weekDay, periodNames }) => ({ day: weekDay, period: `${periodNames.join(' e ')} (horários sobrepostos)`, classNames: ['aulas selecionadas'] }))
+    return [...existingConflicts, ...overlapsWithinSelection]
+  }, [allSlots, classPeriods, assignTarget, formTeacher, selectedDays, selectedPeriods, classes])
 
   const hasAssignConflict = assignConflicts.length > 0
 
@@ -549,10 +556,10 @@ export function SchedulingPage() {
 
       {/* ── Dialog: Alocar aula ───────────────────────────────────────────── */}
       <Dialog open={!!assignTarget} onOpenChange={(v) => !v && setAssignTarget(null)}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Alocar aula
+              Alocar aulas
               {assignTarget && (
                 <span className="ml-2 text-sm font-normal text-muted-foreground">
                   → {classes.find((c) => c.id === assignTarget.classId)?.name}
@@ -561,70 +568,61 @@ export function SchedulingPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="assign-teacher">Professor *</Label>
-              <Select value={formTeacher} onValueChange={(v) => setFormTeacher(v ?? '')}
-                items={teachers.map((t) => ({ value: t.id, label: t.name }))}>
-                <SelectTrigger id="assign-teacher">
-                  <SelectValue placeholder="Selecionar professor" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teachers.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      <span className="flex items-center gap-2">
-                        <span
-                          className={`inline-flex h-5 w-5 rounded-full items-center justify-center text-[9px] font-bold text-white ${TEACHER_COLORS[teacherColorMap[t.id] ?? 0].bg}`}
-                        >
-                          {initials(t.name)}
-                        </span>
-                        {t.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="max-h-[65vh] space-y-4 overflow-y-auto pr-1">
+            <fieldset className="space-y-2 rounded-lg border p-3">
+              <legend className="px-1 text-sm font-semibold">1. Escolha os dias</legend>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {WEEK_DAYS_ORDER.map((day) => (
+                  <label key={day} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted/40">
+                    <Checkbox checked={selectedDays.includes(day)} onCheckedChange={(checked) => setSelectedDays((current) => checked === true ? [...current, day] : current.filter((item) => item !== day))} />
+                    {WEEK_DAY_LABELS[day]}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
-            <div className="space-y-1">
-              <Label htmlFor="assign-subject">Disciplina *</Label>
-              <Select value={formSubject} onValueChange={(v) => setFormSubject(v ?? '')}
-                items={subjects.map((s) => ({ value: s.id, label: s.name }))}>
-                <SelectTrigger id="assign-subject"><SelectValue placeholder="Selecionar disciplina" /></SelectTrigger>
-                <SelectContent>
-                  {subjects.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+            <fieldset className="space-y-2 rounded-lg border p-3">
+              <legend className="px-1 text-sm font-semibold">2. Escolha as aulas</legend>
+              <p className="text-xs text-muted-foreground">Marque os tempos em que a turma terá aula.</p>
+              {classPeriods.length === 0 ? <p className="text-sm text-destructive">Cadastre os tempos de aula da escola antes de continuar.</p> : (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {classPeriods.map((period) => (
+                    <label key={period.id} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-muted/40">
+                      <Checkbox checked={selectedPeriods.includes(period.id)} onCheckedChange={(checked) => setSelectedPeriods((current) => checked === true ? [...current, period.id] : current.filter((item) => item !== period.id))} />
+                      <span>{period.name} <span className="text-muted-foreground">({period.startTime}–{period.endTime})</span></span>
+                    </label>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+                </div>
+              )}
+            </fieldset>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3 rounded-lg border p-3">
+              <div>
+                <h3 className="text-sm font-semibold">3. Defina quem dará as aulas</h3>
+                <p className="text-xs text-muted-foreground">A mesma disciplina e o mesmo professor serão usados nos dias e horários escolhidos.</p>
+              </div>
               <div className="space-y-1">
-                <Label htmlFor="assign-day">Dia *</Label>
-                <Select value={formDay} onValueChange={(v) => setFormDay(v ?? '')}
-                  items={WEEK_DAYS_ORDER.map((d) => ({ value: d, label: WEEK_DAY_LABELS[d] }))}>
-                  <SelectTrigger id="assign-day"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {WEEK_DAYS_ORDER.map((d) => (
-                      <SelectItem key={d} value={d}>{WEEK_DAY_LABELS[d]}</SelectItem>
-                    ))}
-                  </SelectContent>
+                <Label htmlFor="assign-teacher">Professor *</Label>
+                <Select value={formTeacher} onValueChange={(v) => setFormTeacher(v ?? '')} items={teachers.map((t) => ({ value: t.id, label: t.name }))}>
+                  <SelectTrigger id="assign-teacher"><SelectValue placeholder="Selecionar professor" /></SelectTrigger>
+                  <SelectContent>{teachers.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="assign-period">Horário *</Label>
-                <Select value={formClassPeriodId} onValueChange={(v) => setFormClassPeriodId(v ?? '')}
-                  items={classPeriods.map((cp) => ({ value: cp.id, label: `${cp.name} (${cp.startTime}–${cp.endTime})` }))}>
-                  <SelectTrigger id="assign-period"><SelectValue placeholder="Selecionar horário" /></SelectTrigger>
-                  <SelectContent>
-                    {classPeriods.map((cp) => (
-                      <SelectItem key={cp.id} value={cp.id}>{cp.name} ({cp.startTime}–{cp.endTime})</SelectItem>
-                    ))}
-                  </SelectContent>
+                <Label htmlFor="assign-subject">Disciplina *</Label>
+                <Select value={formSubject} onValueChange={(v) => setFormSubject(v ?? '')} items={subjects.map((s) => ({ value: s.id, label: s.name }))}>
+                  <SelectTrigger id="assign-subject"><SelectValue placeholder="Selecionar disciplina" /></SelectTrigger>
+                  <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
+
+            <div className="rounded-lg bg-muted/40 px-3 py-2 text-sm" aria-live="polite">
+              {selectedDays.length > 0 && selectedPeriods.length > 0
+                ? `Serão alocadas ${selectedDays.length * selectedPeriods.length} aulas: ${selectedDays.map((day) => WEEK_DAY_LABELS[day]).join(', ')} × ${selectedPeriods.length} ${selectedPeriods.length === 1 ? 'horário' : 'horários'}.`
+                : 'Marque pelo menos um dia e um horário para ver o resumo.'}
+            </div>
+            {!activeYear && <p role="alert" className="text-sm text-destructive">Defina um ano letivo ativo antes de alocar as aulas.</p>}
           </div>
 
           {hasAssignConflict && (
@@ -635,12 +633,7 @@ export function SchedulingPage() {
                   Conflito de horário
                 </p>
                 <p className="text-xs text-red-600/80 dark:text-red-400/80 mt-0.5">
-                  Este professor já está alocado{' '}
-                  {assignConflicts.map((c) => {
-                    const cls = classes.find((x) => x.id === c.classId)
-                    return cls?.name ?? 'em outra turma'
-                  }).join(', ')}{' '}
-                  no mesmo horário. Escolha outro dia ou período.
+                  Este professor já tem aula em: {assignConflicts.map((conflict) => `${WEEK_DAY_LABELS[conflict.day]} — ${conflict.period} (${conflict.classNames.join(', ')})`).join('; ')}. Desmarque esses horários ou escolha outro professor.
                 </p>
               </div>
             </div>
@@ -648,8 +641,8 @@ export function SchedulingPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setAssignTarget(null)}>Cancelar</Button>
-            <Button onClick={handleAssign} disabled={createSlotApiMutation.isPending || hasAssignConflict}>
-              {createSlotApiMutation.isPending ? 'Alocando...' : 'Alocar'}
+            <Button onClick={handleAssign} disabled={createSlotsBatch.isPending || hasAssignConflict || selectedDays.length === 0 || selectedPeriods.length === 0 || !formTeacher || !formSubject || !activeYear}>
+              {createSlotsBatch.isPending ? 'Alocando...' : `Alocar ${selectedDays.length * selectedPeriods.length || ''} aulas`}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -281,8 +281,8 @@ export function TeacherFormPage() {
         <div className="text-5xl">🏫</div>
         <h2 className="text-xl font-semibold">Nenhuma escola vinculada</h2>
         <p className="text-muted-foreground">
-          Sua secretaria não está vinculada a nenhuma escola. Entre em contato com um administrador
-          para vincular sua secretaria a pelo menos uma escola antes de cadastrar professores.
+          Esta Secretaria de Educação ainda não tem escolas vinculadas. Peça a um administrador
+          da plataforma para incluir escolas na rede antes de cadastrar professores.
         </p>
         <Button variant="outline" onClick={() => navigate('/teachers')}>
           Voltar para professores
@@ -319,16 +319,18 @@ export function TeacherFormPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="pessoal">
-        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-          <TabsList className="w-full justify-start min-w-max">
-            <TabsTrigger value="pessoal">Dados Pessoais</TabsTrigger>
-            <TabsTrigger value="endereco" disabled={!isEdit}>Endereço</TabsTrigger>
-            <TabsTrigger value="profissional" disabled={!isEdit}>Dados Profissionais</TabsTrigger>
-            <TabsTrigger value="formacao" disabled={!isEdit}>Formação</TabsTrigger>
-            <TabsTrigger value="disciplinas" disabled={!isEdit}>Disciplinas</TabsTrigger>
-            <TabsTrigger value="documentos" disabled={!isEdit}>Documentos</TabsTrigger>
-            <TabsTrigger value="financeiro" disabled={!isEdit}>Dados Bancários & Senha</TabsTrigger>
+      {!isEdit && <p className="rounded-lg border border-primary/20 bg-secondary px-4 py-3 text-sm text-secondary-foreground">Comece pelos dados pessoais. Depois de salvar o cadastro, as outras etapas ficarão disponíveis.</p>}
+      <Tabs defaultValue="pessoal" className="space-y-4">
+        <div>
+          {isEdit && <p className="mb-2 text-sm text-muted-foreground">As informações são separadas por assunto. Salve uma etapa antes de seguir para outra.</p>}
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl bg-transparent p-0 sm:grid-cols-3 lg:grid-cols-4">
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="pessoal">1. Dados pessoais</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="endereco" disabled={!isEdit}>2. Endereço</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="profissional" disabled={!isEdit}>3. Trabalho</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="formacao" disabled={!isEdit}>4. Formação</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="disciplinas" disabled={!isEdit}>5. Disciplinas</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="documentos" disabled={!isEdit}>6. Documentos</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="financeiro" disabled={!isEdit}>7. Banco e senha</TabsTrigger>
           </TabsList>
         </div>
 

@@ -10,6 +10,19 @@ export function overlapsTime(aStart: string, aEnd: string, bStart: string, bEnd:
   return aStart < bEnd && bStart < aEnd
 }
 
+export function findSelectedPeriodOverlaps(
+  weekDays: string[],
+  periodIds: string[],
+  periods: Array<ClassPeriodLike & { name: string }>,
+) {
+  const selectedPeriods = periodIds.map((id) => periods.find((period) => period.id === id)).filter((period): period is ClassPeriodLike & { name: string } => !!period)
+  return weekDays.flatMap((weekDay) => selectedPeriods.flatMap((period, index) =>
+    selectedPeriods.slice(index + 1)
+      .filter((other) => overlapsTime(period.startTime, period.endTime, other.startTime, other.endTime))
+      .map((other) => ({ weekDay, periodNames: [period.name, other.name] })),
+  ))
+}
+
 /** Encontra slots em conflito para o mesmo professor no mesmo dia/horário. */
 export function findSlotConflicts(
   slots: TimetableSlot[],

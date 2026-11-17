@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm'
+import { and, eq, inArray, ne } from 'drizzle-orm'
 import { db } from '../../db'
 import { timetableSlots, subjects, teachers, classPeriods } from '../../db/schema'
 
@@ -40,6 +40,10 @@ type CreateInput = {
 export async function createTimetableSlotRepository(input: CreateInput) {
   const [slot] = await db.insert(timetableSlots).values(input).returning(slotFields)
   return slot
+}
+
+export async function createTimetableSlotsBatchRepository(inputs: CreateInput[]) {
+  return db.insert(timetableSlots).values(inputs).returning(slotFields)
 }
 
 export async function listTimetableSlotsRepository(schoolId: string, classId: string) {
@@ -89,6 +93,38 @@ export async function findConflictingSlotRepository(
     .limit(1)
 
   return conflict
+}
+
+export async function listTeacherSlotTimesByDaysRepository(
+  schoolId: string,
+  teacherId: string,
+  academicYearId: string,
+  weekDays: string[],
+) {
+  return db.select({
+    weekDay: timetableSlots.weekDay,
+    startTime: classPeriods.startTime,
+    endTime: classPeriods.endTime,
+  })
+    .from(timetableSlots)
+    .innerJoin(classPeriods, eq(timetableSlots.classPeriodId, classPeriods.id))
+    .where(and(
+      eq(timetableSlots.schoolId, schoolId),
+      eq(timetableSlots.teacherId, teacherId),
+      eq(timetableSlots.academicYearId, academicYearId),
+      inArray(timetableSlots.weekDay, weekDays),
+    ))
+}
+
+export async function listClassPeriodTimesRepository(schoolId: string, ids: string[]) {
+  return db.select({
+    id: classPeriods.id,
+    name: classPeriods.name,
+    startTime: classPeriods.startTime,
+    endTime: classPeriods.endTime,
+  })
+    .from(classPeriods)
+    .where(and(eq(classPeriods.schoolId, schoolId), inArray(classPeriods.id, ids)))
 }
 
 export async function updateTimetableSlotRepository(

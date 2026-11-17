@@ -1,14 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../../lib/api'
+import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Subject } from '@education-gestor/types'
 
 export function useSubjects() {
+  const { schoolKey, enabled } = useSchoolKey()
   return useQuery({
-    queryKey: ['subjects'],
+    queryKey: ['subjects', schoolKey],
     queryFn: async () => {
       const res = await api.get<Subject[]>('/subjects')
       return res.data
     },
+    enabled,
   })
 }
 

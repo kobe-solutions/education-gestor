@@ -12,7 +12,7 @@ import {
   deleteSubjectService,
 } from './subjects.service'
 
-const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor', 'professor'])]
+const readPreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
 const writePreHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor'])]
 
 export async function subjectsRoutes(app: FastifyInstance) {

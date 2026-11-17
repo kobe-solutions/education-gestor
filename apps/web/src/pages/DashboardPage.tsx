@@ -8,6 +8,7 @@ import {
   Clock,
   Building2,
   School,
+  DollarSign,
   CalendarClock,
   ArrowRight,
   Activity,
@@ -235,10 +236,16 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
         </p>
       </div>
 
+      <div className="flex flex-wrap gap-2 border-b pb-5">
+        <Link to="/schools"><Button size="lg"><School size={17} /> Gerenciar escolas</Button></Link>
+        <Link to="/secretarias"><Button variant="outline" size="lg"><Building2 size={17} /> Gerenciar secretarias</Button></Link>
+        <Link to="/admin/activity"><Button variant="ghost" size="lg"><Activity size={17} /> Ver atividade recente</Button></Link>
+      </div>
+
       {/* ── KPIs ───────────────────────────────────────────────────────── */}
       <section className="space-y-4">
         <SectionHeader title="Indicadores da plataforma" />
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
           <DashMetric
             icon={Building2}
             value={data.secretariasCount}
@@ -252,6 +259,19 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
             label="Escolas"
             tone="violet"
           />
+        </div>
+      </section>
+
+      <details className="group rounded-xl border bg-card px-5 open:pb-5">
+        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
+          <span>Ver mais indicadores, escolas e atividade</span>
+          <span className="text-sm font-medium text-primary group-open:hidden">Mostrar</span>
+          <span className="hidden text-sm font-medium text-primary group-open:inline">Ocultar</span>
+        </summary>
+        <div className="space-y-8 pt-3">
+        <section className="space-y-4">
+          <SectionHeader title="Pessoas e turmas" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <DashMetric
             icon={Users}
             value={data.studentsCount}
@@ -281,8 +301,8 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
               tone="emerald"
             />
           )}
-        </div>
-      </section>
+          </div>
+        </section>
 
       {!hideFinancialData && (
         <section className="space-y-4">
@@ -451,6 +471,8 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
           )}
         </div>
       </section>
+        </div>
+      </details>
     </div>
   )
 }
@@ -468,14 +490,14 @@ function NoSchoolView() {
       </div>
       <div className="text-center">
         <p className="font-semibold" style={{ color: 'hsl(var(--foreground))' }}>
-          Nenhuma escola selecionada
+          Escolha uma escola da rede
         </p>
         <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-          Selecione uma escola para visualizar o painel
+          Para abrir o painel e as rotinas, selecione uma escola vinculada à sua Secretaria de Educação.
         </p>
       </div>
       <Link to="/my-schools">
-        <Button size="sm">Ir para Minhas Escolas</Button>
+        <Button size="sm">Ver escolas da rede</Button>
       </Link>
     </div>
   )
@@ -485,6 +507,7 @@ function NoSchoolView() {
 
 function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/useDashboard').SchoolDashboard }) {
   const { payload } = useAuth()
+  const { activeSchoolName } = useSchoolContext()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const isProfessor = payload?.role === 'professor'
 
@@ -497,7 +520,9 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
             Painel
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Visão geral da escola — {new Date().getFullYear()}
+            {payload?.role === 'secretaria'
+              ? `Visão geral de ${activeSchoolName ?? 'escola selecionada'} na rede — ${new Date().getFullYear()}`
+              : `Visão geral da escola — ${new Date().getFullYear()}`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -516,6 +541,15 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         </div>
       </div>
 
+
+      <div className="flex flex-wrap gap-2 border-b pb-5">
+        <Link to="/students/new"><Button size="lg"><Users size={17} /> Cadastrar aluno</Button></Link>
+        <Link to={payload?.role === 'gestor' ? '/academic' : '/people'}><Button variant="outline" size="lg"><BookOpen size={17} /> {payload?.role === 'gestor' ? 'Organizar rotina escolar' : 'Acessar cadastros'}</Button></Link>
+        {!financialBlocked && <Link to="/financial"><Button variant="ghost" size="lg"><DollarSign size={17} /> Consultar mensalidades</Button></Link>}
+      </div>
+
+      <DemandSection alerts={data.alerts} blocked={financialBlocked} />
+
       {payload?.role === 'gestor' && <LessonTrackingCard />}
 
       {/* ── Visão geral ──────────────────────────────────────────────────── */}
@@ -528,6 +562,13 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         </div>
       </section>
 
+      <details className="group rounded-xl border bg-card px-5 open:pb-5">
+        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 font-semibold [&::-webkit-details-marker]:hidden">
+          <span>Ver indicadores e detalhes da escola</span>
+          <span className="text-sm font-medium text-primary group-open:hidden">Mostrar</span>
+          <span className="hidden text-sm font-medium text-primary group-open:inline">Ocultar</span>
+        </summary>
+        <div className="space-y-8 pt-3">
       {/* ── Rendimento acadêmico ─────────────────────────────────────────── */}
       <section className="space-y-4">
         <SectionHeader
@@ -696,10 +737,8 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
 
       {/* ── Financeiro ──────────────────────────────────────────────────── */}
       <FinanceSection tuitions={data.tuitions} blocked={financialBlocked} />
-
-      {/* ── Controle de Demandas ────────────────────────────────────────── */}
-      <DemandSection alerts={data.alerts} blocked={financialBlocked} />
-
+        </div>
+      </details>
     </div>
   )
 }

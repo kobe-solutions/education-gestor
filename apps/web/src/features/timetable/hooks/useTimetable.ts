@@ -36,6 +36,15 @@ interface CreateInput {
   weekDay: string
 }
 
+interface CreateBatchInput {
+  classId: string
+  academicYearId: string
+  subjectId: string
+  teacherId: string
+  weekDays: string[]
+  classPeriodIds: string[]
+}
+
 interface UpdateInput {
   subjectId?: string
   teacherId?: string
@@ -69,6 +78,18 @@ export function useCreateTimetableSlot() {
       const res = await api.post<TimetableSlot>('/timetable-slots', data)
       return res.data
     },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['timetable-slots', vars.classId] })
+      qc.invalidateQueries({ queryKey: ['timetable-slots', 'all'] })
+    },
+  })
+}
+
+export function useCreateTimetableSlotsBatch() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: CreateBatchInput) =>
+      (await api.post<{ created: number }>('/timetable-slots/batch', data)).data,
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['timetable-slots', vars.classId] })
       qc.invalidateQueries({ queryKey: ['timetable-slots', 'all'] })

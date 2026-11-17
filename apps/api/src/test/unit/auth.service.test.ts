@@ -39,7 +39,7 @@ describe('authenticateService', () => {
 
     const result = await authenticateService({ email: 'admin@test.com', password: 'senha123!' })
 
-    expect(result).toEqual({ userId: 'admin-id', schoolId: 'admin-id', name: 'Admin', role: 'admin' })
+    expect(result).toEqual({ userId: 'admin-id', name: 'Admin', role: 'admin' })
   })
 
   it('autentica secretaria com credenciais corretas', async () => {
