@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import {
   Activity, BookOpen, Building2, CalendarCheck, ChartNoAxesColumn, ClipboardList,
   DollarSign, Eye, EyeOff, GraduationCap, LayoutDashboard, LogOut, Menu, Moon, School,
-  Settings2, Sun, Users, X,
+  Sun, Users, X,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -32,7 +32,7 @@ const navItems: NavItem[] = [
   { to: '/', label: 'Início', icon: LayoutDashboard, roles: ['admin', 'gestor', 'secretaria'], matchPaths: ['/'] },
   { to: '/professor', label: 'Meu dia', icon: CalendarCheck, roles: ['professor'], matchPaths: ['/professor'] },
   { to: '/people', label: 'Pessoas', icon: Users, roles: ['gestor', 'secretaria'], matchPaths: ['/people', '/students', '/teachers'] },
-  { to: '/academic', label: 'Rotina escolar', icon: BookOpen, roles: ['gestor', 'secretaria'], matchPaths: ['/academic', '/classes', '/structure', '/education-levels', '/series', '/scheduling', '/academic-years', '/class-periods', '/school-events', '/grades', '/attendance', '/lesson-records', '/dashboard/registration-status'] },
+  { to: '/academic', label: 'Rotina escolar', icon: BookOpen, roles: ['gestor', 'secretaria'], matchPaths: ['/academic', '/classes', '/structure', '/education-levels', '/series', '/scheduling', '/academic-years', '/academic-periods', '/class-periods', '/subjects', '/school-events', '/grades', '/attendance', '/lesson-records', '/dashboard/registration-status'] },
   { to: '/professor/classes', label: 'Minhas turmas', icon: GraduationCap, roles: ['professor'], matchPaths: ['/professor/classes', '/classes'] },
   { to: '/lesson-records', label: 'Registro de aulas', icon: ClipboardList, roles: ['professor'], matchPaths: ['/lesson-records'] },
   { to: '/professor/grades', label: 'Notas', icon: ChartNoAxesColumn, roles: ['professor'], matchPaths: ['/professor/grades', '/professor/performance'] },
@@ -40,7 +40,6 @@ const navItems: NavItem[] = [
   { to: '/school-events', label: 'Calendário', icon: CalendarCheck, roles: ['professor'], matchPaths: ['/school-events'] },
   { to: '/professor/profile', label: 'Meu perfil', icon: Users, roles: ['professor'], matchPaths: ['/professor/profile'] },
   { to: '/financial', label: 'Financeiro', icon: DollarSign, roles: ['gestor', 'secretaria'], matchPaths: ['/financial', '/financial-control'] },
-  { to: '/settings', label: 'Escola', icon: Settings2, roles: ['gestor'], matchPaths: ['/settings', '/subjects', '/academic-periods'] },
   { to: '/schools-hub', label: 'Rede de escolas', icon: School, roles: ['secretaria'], matchPaths: ['/schools-hub', '/schools', '/my-schools'] },
   { to: '/admin', label: 'Organizações', icon: Building2, roles: ['admin'], matchPaths: ['/admin', '/schools', '/secretarias'] },
   { to: '/admin/activity', label: 'Atividade', icon: Activity, roles: ['admin'], matchPaths: ['/admin/activity'] },

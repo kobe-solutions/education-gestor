@@ -2,7 +2,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { PageHead } from '../components/PageHead'
 import { TaskSection, type TaskLinkItem } from '../components/TaskNavigation'
 import {
-  Network, CalendarRange, UserPlus, BookOpen, CheckSquare, Settings2,
+  Network, CalendarRange, UserPlus, BookOpen, CheckSquare, BookMarked, Clock,
   ClipboardCheck, PartyPopper, FileText, GraduationCap,
 } from 'lucide-react'
 
@@ -35,7 +35,10 @@ export function AcademicHubPage() {
     { to: '/school-events', icon: PartyPopper, title: 'Calendário da escola', description: 'Consulte e organize eventos escolares.', action: 'Abrir calendário' },
   ]
 
-  if (isManager) routine.push({ to: '/settings', icon: Settings2, title: 'Disciplinas e horários', description: 'Configure disciplinas e tempos de aula.', action: 'Configurar' })
+  if (isManager) routine.push(
+    { to: '/subjects', icon: BookMarked, title: 'Disciplinas', description: 'Cadastre as matérias oferecidas pela escola.', action: 'Registrar disciplinas' },
+    { to: '/class-periods', icon: Clock, title: 'Horários de aula', description: 'Defina os horários usados para montar as grades das turmas.', action: 'Registrar horários' },
+  )
 
   return (
     <div className="space-y-8">
