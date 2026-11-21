@@ -64,7 +64,7 @@ export function GradesPage() {
         <CardContent className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="grades-class" className="text-xs text-muted-foreground">Turma</Label>
-          <Select value={selectedClassId} onValueChange={(v) => updateParams({ class: v, subject: '', period: '', page: '' })}
+          <Select value={selectedClassId} onValueChange={(v) => updateParams({ class: v ?? '', subject: '', period: '', page: '' })}
             items={classes?.map((c) => ({ value: c.id, label: `${c.name} — ${c.serie?.name ?? formatShiftLabel(c.shift)}` }))}>
             <SelectTrigger id="grades-class" className="w-full min-w-0"><SelectValue placeholder="Selecione a turma" /></SelectTrigger>
             <SelectContent>
@@ -74,7 +74,7 @@ export function GradesPage() {
         </div>
         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="grades-subject" className="text-xs text-muted-foreground">Disciplina</Label>
-          <Select value={selectedSubjectId || 'all'} onValueChange={(v) => updateParams({ subject: v === 'all' ? '' : v, page: '' })}
+          <Select value={selectedSubjectId || 'all'} onValueChange={(v) => updateParams({ subject: !v || v === 'all' ? '' : v, page: '' })}
             items={[{ value: 'all', label: 'Todas as disciplinas' }, ...subjects.map(([id, name]) => ({ value: id, label: name }))]}>
             <SelectTrigger id="grades-subject" className="w-full min-w-0"><SelectValue placeholder="Todas as disciplinas" /></SelectTrigger>
             <SelectContent>
@@ -85,7 +85,7 @@ export function GradesPage() {
         </div>
         <div className="min-w-0 space-y-1.5">
           <Label htmlFor="grades-period" className="text-xs text-muted-foreground">Período</Label>
-          <Select value={selectedPeriodId || 'all'} onValueChange={(v) => updateParams({ period: v === 'all' ? '' : v, page: '' })}
+          <Select value={selectedPeriodId || 'all'} onValueChange={(v) => updateParams({ period: !v || v === 'all' ? '' : v, page: '' })}
             items={[{ value: 'all', label: 'Todos os períodos' }, ...periods.map(([id, name]) => ({ value: id, label: name }))]}>
             <SelectTrigger id="grades-period" className="w-full min-w-0"><SelectValue placeholder="Todos os períodos" /></SelectTrigger>
             <SelectContent>
