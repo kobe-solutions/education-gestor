@@ -35,6 +35,8 @@ function Opt() {
   return <span className="ml-1 text-[10px] font-normal text-muted-foreground">(opcional)</span>
 }
 
+const teacherStepClass = '!h-auto !min-h-11 !w-full whitespace-normal rounded-lg border border-border !bg-background px-2 text-left text-xs data-active:!border-primary data-active:!bg-secondary sm:text-sm'
+
 // ─── Schemas ──────────────────────────────────────────────────────────────────
 
 const pessoalSchema = z.object({
@@ -323,14 +325,14 @@ export function TeacherFormPage() {
       <Tabs defaultValue="pessoal" className="space-y-4">
         <div>
           {isEdit && <p className="mb-2 text-sm text-muted-foreground">As informações são separadas por assunto. Salve uma etapa antes de seguir para outra.</p>}
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl bg-transparent p-0 sm:grid-cols-3 lg:grid-cols-4">
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="pessoal">1. Dados pessoais</TabsTrigger>
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="endereco" disabled={!isEdit}>2. Endereço</TabsTrigger>
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="profissional" disabled={!isEdit}>3. Trabalho</TabsTrigger>
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="formacao" disabled={!isEdit}>4. Formação</TabsTrigger>
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="disciplinas" disabled={!isEdit}>5. Disciplinas</TabsTrigger>
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="documentos" disabled={!isEdit}>6. Documentos</TabsTrigger>
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="financeiro" disabled={!isEdit}>7. Banco e senha</TabsTrigger>
+          <TabsList className="!grid !h-auto !w-full grid-cols-2 gap-2 rounded-xl bg-transparent p-0 sm:grid-cols-3 lg:grid-cols-4">
+            <TabsTrigger className={teacherStepClass} value="pessoal">1. Dados pessoais</TabsTrigger>
+            <TabsTrigger className={teacherStepClass} value="endereco" disabled={!isEdit}>2. Endereço</TabsTrigger>
+            <TabsTrigger className={teacherStepClass} value="profissional" disabled={!isEdit}>3. Trabalho</TabsTrigger>
+            <TabsTrigger className={teacherStepClass} value="formacao" disabled={!isEdit}>4. Formação</TabsTrigger>
+            <TabsTrigger className={teacherStepClass} value="disciplinas" disabled={!isEdit}>5. Disciplinas</TabsTrigger>
+            <TabsTrigger className={teacherStepClass} value="documentos" disabled={!isEdit}>6. Documentos</TabsTrigger>
+            <TabsTrigger className={teacherStepClass} value="financeiro" disabled={!isEdit}>7. Banco e senha</TabsTrigger>
           </TabsList>
         </div>
 
