@@ -6,16 +6,17 @@ interface PaginationProps {
   total: number
   limit: number
   onPageChange: (page: number) => void
+  itemName?: string
 }
 
-export function Pagination({ page, total, limit, onPageChange }: PaginationProps) {
+export function Pagination({ page, total, limit, onPageChange, itemName = 'registro' }: PaginationProps) {
   const totalPages = Math.ceil(total / limit)
   if (total <= 0) return null
 
   return (
     <div className="flex items-center justify-between px-2 py-3">
       <p className="text-xs text-muted-foreground">
-        {total} {total === 1 ? 'registro' : 'registros'} · Página {page} de {totalPages}
+        {total} {total === 1 ? itemName : `${itemName}s`} · Página {page} de {totalPages}
       </p>
       <div className="flex items-center gap-1">
         <Button
