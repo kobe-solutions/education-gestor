@@ -10,7 +10,6 @@ export interface RegistrationSubject {
   periodStartTime: string
   periodEndTime: string
   attendanceRegistered: boolean
-  gradesRegistered: boolean
 }
 
 export interface RegistrationClass {
@@ -28,7 +27,6 @@ export interface RegistrationTeacher {
 export interface RegistrationSummary {
   totalSlots: number
   attendanceRegistered: number
-  gradesRegistered: number
 }
 
 export interface RegistrationStatusData {

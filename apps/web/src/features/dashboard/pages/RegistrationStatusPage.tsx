@@ -52,7 +52,6 @@ export function RegistrationStatusPage() {
         periodEndTime: subj.periodEndTime,
         weekDay: subj.weekDay,
         attendanceRegistered: subj.attendanceRegistered,
-        gradesRegistered: subj.gradesRegistered,
       })),
     ),
   )
@@ -74,13 +73,13 @@ export function RegistrationStatusPage() {
       <div>
         <h1 className="text-xl font-semibold">Registro de Aulas</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Acompanhe o status de frequência e notas por professor e turma
+          Acompanhe o status de frequência por professor e turma
         </p>
       </div>
 
       {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -107,23 +106,6 @@ export function RegistrationStatusPage() {
                       : 0}%
                   </p>
                   <p className="text-xs text-muted-foreground">Frequência registrada</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {summary.totalSlots > 0
-                      ? Math.round((summary.gradesRegistered / summary.totalSlots) * 100)
-                      : 0}%
-                  </p>
-                  <p className="text-xs text-muted-foreground">Notas lançadas</p>
                 </div>
               </div>
             </CardContent>
@@ -211,7 +193,6 @@ export function RegistrationStatusPage() {
                   <TableHead className="text-center">Horário</TableHead>
                   <TableHead className="text-center">Dia</TableHead>
                   <TableHead className="text-center">Frequência</TableHead>
-                  <TableHead className="text-center">Notas</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -235,14 +216,6 @@ export function RegistrationStatusPage() {
                         <StatusIcon registered={row.attendanceRegistered} />
                         <span className="text-xs text-muted-foreground">
                           {row.attendanceRegistered ? 'Registrada' : 'Pendente'}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <StatusIcon registered={row.gradesRegistered} />
-                        <span className="text-xs text-muted-foreground">
-                          {row.gradesRegistered ? 'Lançada' : 'Pendente'}
                         </span>
                       </div>
                     </TableCell>
