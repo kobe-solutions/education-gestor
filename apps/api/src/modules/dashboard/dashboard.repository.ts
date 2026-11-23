@@ -704,7 +704,6 @@ export async function getRegistrationStatusRepository(
         periodStartTime: string
         periodEndTime: string
         attendanceRegistered: boolean
-        gradesRegistered: boolean
       }>
     }>
   }>()
