@@ -34,7 +34,6 @@ const SeriesPage = lazy(() => import('./features/series/pages/SeriesPage').then(
 const TimetablePage = lazy(() => import('./features/timetable/pages/TimetablePage').then(m => ({ default: m.TimetablePage })))
 const SchedulingPage = lazy(() => import('./features/scheduling/pages/SchedulingPage').then(m => ({ default: m.SchedulingPage })))
 const StudentSchedulingPage = lazy(() => import('./features/scheduling/pages/StudentSchedulingPage').then(m => ({ default: m.StudentSchedulingPage })))
-const StructurePage = lazy(() => import('./features/structure/pages/StructurePage').then(m => ({ default: m.StructurePage })))
 const ClassStructurePage = lazy(() => import('./features/academic-hub/pages/ClassStructurePage').then(m => ({ default: m.ClassStructurePage })))
 const HubPeoplePage = lazy(() => import('./pages/HubPeoplePage').then(m => ({ default: m.HubPeoplePage })))
 const AcademicHubPage = lazy(() => import('./pages/AcademicHubPage').then(m => ({ default: m.AcademicHubPage })))
@@ -88,7 +87,6 @@ export function App() {
 
                 {/* Hubs de navegação — gestor */}
                 <Route element={<PrivateRoute allowedRoles={['gestor']} />}>
-                  <Route path="/structure" element={<Suspense fallback={<PageLoader />}><StructurePage /></Suspense>} />
                   <Route path="/structure/classes" element={<Suspense fallback={<PageLoader />}><ClassStructurePage /></Suspense>} />
                   <Route path="/settings" element={<Suspense fallback={<PageLoader />}><HubSettingsPage /></Suspense>} />
                   <Route path="/subjects" element={<Suspense fallback={<PageLoader />}><SubjectsPage /></Suspense>} />

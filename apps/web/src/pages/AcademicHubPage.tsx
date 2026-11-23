@@ -12,7 +12,7 @@ export function AcademicHubPage() {
   const isManager = payload?.role === 'gestor'
 
   const organization: TaskLinkItem[] = [
-    { to: '/structure', icon: Network, title: 'Turmas e séries', description: 'Organize níveis de ensino, séries e turmas.', action: 'Organizar' },
+    { to: '/education-levels', icon: Network, title: 'Níveis, séries e turmas', description: 'Organize níveis de ensino, séries e turmas.', action: 'Organizar' },
     { to: '/academic-years', icon: CalendarRange, title: 'Ano letivo', description: 'Defina o calendário e os períodos do ano.', action: 'Configurar' },
     { to: '/scheduling', icon: CalendarRange, title: 'Horários das turmas', description: 'Monte a grade semanal de aulas.', action: 'Ver horários' },
     { to: '/scheduling/students', icon: UserPlus, title: 'Matrículas em turmas', description: 'Confira alunos sem turma e organize as vagas.', action: 'Organizar alunos' },
