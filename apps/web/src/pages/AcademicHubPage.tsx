@@ -3,7 +3,7 @@ import { PageHead } from '../components/PageHead'
 import { TaskSection, type TaskLinkItem } from '../components/TaskNavigation'
 import {
   Network, CalendarRange, UserPlus, BookOpen, CheckSquare, BookMarked, Clock,
-  ClipboardCheck, PartyPopper, FileText, GraduationCap,
+  ClipboardCheck, FileText, GraduationCap,
 } from 'lucide-react'
 
 export function AcademicHubPage() {
@@ -31,9 +31,7 @@ export function AcademicHubPage() {
         { to: '/lesson-records', icon: FileText, title: 'Registros de aula', description: 'Consulte o conteúdo registrado pelos professores.', action: 'Consultar' },
       ]
 
-  const routine: TaskLinkItem[] = [
-    { to: '/school-events', icon: PartyPopper, title: 'Calendário da escola', description: 'Consulte e organize eventos escolares.', action: 'Abrir calendário' },
-  ]
+  const routine: TaskLinkItem[] = []
 
   if (isManager) routine.push(
     { to: '/subjects', icon: BookMarked, title: 'Disciplinas', description: 'Cadastre as matérias oferecidas pela escola.', action: 'Registrar disciplinas' },
@@ -42,10 +40,10 @@ export function AcademicHubPage() {
 
   return (
     <div className="space-y-8">
-      <PageHead title={isProfessor ? 'Minha rotina de ensino' : 'Rotina escolar'} subtitle={isProfessor ? 'Acesse suas turmas e conclua os registros do dia.' : 'Organize as turmas, acompanhe a aprendizagem e cuide do calendário escolar.'} />
+      <PageHead title={isProfessor ? 'Minha rotina de ensino' : 'Rotina escolar'} subtitle={isProfessor ? 'Acesse suas turmas e conclua os registros do dia.' : 'Organize as turmas e acompanhe a aprendizagem.'} />
       {!isProfessor && <TaskSection title="Organizar a escola" description="Prepare a estrutura e distribua os alunos nas turmas." items={organization} />}
       <TaskSection title={isProfessor ? 'Trabalhar com as turmas' : 'Acompanhar a aprendizagem'} description={isProfessor ? undefined : 'Consulte o andamento das notas, presenças e registros de aula.'} items={learning} />
-      <TaskSection title="Calendário e configurações" items={routine} />
+      {routine.length > 0 && <TaskSection title="Configurações" items={routine} />}
     </div>
   )
 }
