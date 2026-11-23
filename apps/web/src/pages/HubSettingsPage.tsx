@@ -8,7 +8,7 @@ export function HubSettingsPage() {
       <PageHead title="Configurar a escola" subtitle="Ajuste os cadastros que serão usados nas turmas e no calendário letivo." />
       <TaskSection title="Preparar o ano letivo" description="Faça esta configuração antes de organizar turmas e matrículas." items={[
         { to: '/academic-years', icon: Calendar, title: 'Anos e períodos letivos', description: 'Defina o ano, as datas e os períodos de avaliação.', action: 'Configurar calendário' },
-        { to: '/structure', icon: Network, title: 'Níveis, séries e turmas', description: 'Monte a estrutura que representa as etapas de ensino da escola.', action: 'Organizar estrutura' },
+        { to: '/education-levels', icon: Network, title: 'Níveis, séries e turmas', description: 'Monte a estrutura que representa as etapas de ensino da escola.', action: 'Organizar estrutura' },
       ]} />
       <TaskSection title="Completar os cadastros" items={[
         { to: '/subjects', icon: BookMarked, title: 'Disciplinas', description: 'Cadastre as matérias oferecidas pela escola.', action: 'Ver disciplinas' },

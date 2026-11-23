@@ -62,7 +62,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
         : (user as TenantPayload).schoolId
 
     if (!schoolId) {
-      return reply.send({ data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0, gradesRegistered: 0 } })
+      return reply.send({ data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0 } })
     }
 
     const query = request.query as Record<string, string | undefined>

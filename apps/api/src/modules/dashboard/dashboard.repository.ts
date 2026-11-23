@@ -568,7 +568,6 @@ export type RegistrationStatusTeacher = {
       periodStartTime: string
       periodEndTime: string
       attendanceRegistered: boolean
-      gradesRegistered: boolean
     }>
   }>
 }
@@ -579,7 +578,6 @@ export type RegistrationStatusResult = {
   summary: {
     totalSlots: number
     attendanceRegistered: number
-    gradesRegistered: number
   }
 }
 
@@ -596,7 +594,7 @@ export async function getRegistrationStatusRepository(
     .limit(1)
 
   if (!activeYear) {
-    return { data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0, gradesRegistered: 0 } }
+    return { data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0 } }
   }
 
   // 2. Find current academic period
@@ -647,7 +645,7 @@ export async function getRegistrationStatusRepository(
     .orderBy(teachers.name, schoolClasses.name, classPeriods.order)
 
   if (slots.length === 0) {
-    return { data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0, gradesRegistered: 0 } }
+    return { data: [], total: 0, summary: { totalSlots: 0, attendanceRegistered: 0 } }
   }
 
   const classIds = [...new Set(slots.map((s) => s.classId))]
@@ -691,25 +689,6 @@ export async function getRegistrationStatusRepository(
     }
   }
 
-  // 7. Check grades per class+subject within the current period
-  const gradesRegisteredSet = new Set<string>()
-  if (currentPeriod) {
-    const gradeRows = await db
-      .selectDistinct({ classId: grades.classId, subjectId: grades.subjectId })
-      .from(grades)
-      .where(
-        and(
-          eq(grades.schoolId, schoolId),
-          inArray(grades.classId, classIds),
-          eq(grades.academicPeriodId, currentPeriod.id),
-        ),
-      )
-
-    for (const row of gradeRows) {
-      gradesRegisteredSet.add(`${row.classId}:${row.subjectId}`)
-    }
-  }
-
   // 8. Group slots by teacher → class → subjects
   const teacherMap = new Map<string, {
     teacherId: string
@@ -725,14 +704,12 @@ export async function getRegistrationStatusRepository(
         periodStartTime: string
         periodEndTime: string
         attendanceRegistered: boolean
-        gradesRegistered: boolean
       }>
     }>
   }>()
 
   let totalSlots = 0
   let attendanceRegisteredCount = 0
-  let gradesRegisteredCount = 0
 
   for (const slot of slots) {
     totalSlots++
@@ -752,11 +729,8 @@ export async function getRegistrationStatusRepository(
     const expectedCount = expectedWeekdayCounts.get(slot.classId) ?? 0
     const actualCount = attendanceDateCounts.get(slot.classId) ?? 0
     const attendanceRegistered = expectedCount > 0 && actualCount >= expectedCount
-    const gradesKey = `${slot.classId}:${slot.subjectId}`
-    const gradesRegistered = gradesRegisteredSet.has(gradesKey)
 
     if (attendanceRegistered) attendanceRegisteredCount++
-    if (gradesRegistered) gradesRegisteredCount++
 
     classEntry.subjects.push({
       subjectId: slot.subjectId,
@@ -766,7 +740,6 @@ export async function getRegistrationStatusRepository(
       periodStartTime: slot.classPeriodStartTime,
       periodEndTime: slot.classPeriodEndTime,
       attendanceRegistered,
-      gradesRegistered,
     })
   }
 
@@ -782,6 +755,6 @@ export async function getRegistrationStatusRepository(
   return {
     data: paginatedTeachers,
     total: allTeachers.length,
-    summary: { totalSlots, attendanceRegistered: attendanceRegisteredCount, gradesRegistered: gradesRegisteredCount },
+    summary: { totalSlots, attendanceRegistered: attendanceRegisteredCount },
   }
 }

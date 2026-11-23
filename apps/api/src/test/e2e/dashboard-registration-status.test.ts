@@ -143,7 +143,7 @@ describe('GET /dashboard/registration-status', () => {
     vi.mocked(dashboardRepo.getRegistrationStatusRepository).mockResolvedValue({
       data: [],
       total: 0,
-      summary: { totalSlots: 0, attendanceRegistered: 0, gradesRegistered: 0 },
+      summary: { totalSlots: 0, attendanceRegistered: 0 },
     })
 
     const res = await app.inject({

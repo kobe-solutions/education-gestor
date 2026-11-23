@@ -15,7 +15,6 @@ export const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/financial': ['gestor', 'secretaria'],
   '/academic': ['gestor', 'professor', 'secretaria'],
   '/scheduling': ['gestor', 'secretaria'],
-  '/structure': ['gestor'],
   '/settings': ['gestor'],
   '/professor': ['professor'],
 }
