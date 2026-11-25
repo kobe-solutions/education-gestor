@@ -3,6 +3,17 @@ import { toast } from 'sonner'
 import { queryClient } from './queryClient'
 import { extractErrorMessage } from './errors'
 
+export interface ApiSuccessResponse<T> {
+  message: string
+  status: number
+  data: T
+}
+
+export interface ApiErrorResponse {
+  error: string
+  status: number
+}
+
 export const api = axios.create({
   baseURL: '/api',
 })

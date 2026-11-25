@@ -1,5 +1,7 @@
 import type { AxiosError } from 'axios'
+import type { ApiErrorResponse } from './api'
 
 export function extractErrorMessage(err: unknown, fallback = 'Erro inesperado') {
-  return (err as AxiosError<{ message: string }>)?.response?.data?.message ?? fallback
+  const responseData = (err as AxiosError<ApiErrorResponse & { message?: string }>)?.response?.data
+  return responseData?.message ?? responseData?.error ?? fallback
 }

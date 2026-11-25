@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { SchoolClass, AcademicPeriod } from '@education-gestor/types'
 
@@ -92,8 +92,8 @@ export function useAcademicPeriods() {
   return useQuery({
     queryKey: ['academic-periods'],
     queryFn: async () => {
-      const res = await api.get<AcademicPeriod[]>('/academic-periods')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<AcademicPeriod[]>>('/academic-periods')
+      return res.data.data
     },
   })
 }

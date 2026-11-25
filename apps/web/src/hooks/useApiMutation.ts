@@ -24,8 +24,12 @@ export function useApiMutation<TData, TVariables>({
   return useMutation({
     mutationFn,
     onSuccess: (data) => {
-      if (successMessage) {
-        const msg = typeof successMessage === 'function' ? successMessage(data) : successMessage
+      const apiMessage =
+        typeof data === 'object' && data !== null && 'message' in data && typeof data.message === 'string'
+          ? data.message
+          : undefined
+      const msg = apiMessage ?? (typeof successMessage === 'function' ? successMessage(data) : successMessage)
+      if (msg) {
         toast.success(msg)
       }
       if (invalidate) {
