@@ -112,8 +112,8 @@ export function useClassPeriods() {
   return useQuery({
     queryKey: ['class-periods', schoolKey],
     queryFn: async () => {
-      const res = await api.get<ClassPeriod[]>('/class-periods')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<ClassPeriod[]>>('/class-periods')
+      return res.data.data
     },
     enabled,
   })
@@ -123,8 +123,8 @@ export function useCreateClassPeriod() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: { name: string; startTime: string; endTime: string; order: number }) => {
-      const res = await api.post<ClassPeriod>('/class-periods', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<ClassPeriod>>('/class-periods', data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['class-periods'] }),
   })
@@ -134,8 +134,8 @@ export function useUpdateClassPeriod() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<{ name: string; startTime: string; endTime: string; order: number }> }) => {
-      const res = await api.put<ClassPeriod>(`/class-periods/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<ClassPeriod>>(`/class-periods/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['class-periods'] }),
   })
