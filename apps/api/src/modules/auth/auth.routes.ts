@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { loginBodySchema } from './auth.schema'
 import { authenticateService } from './auth.service'
 import { loginRateLimitConfig } from '../../middlewares/rateLimit'
+import { errorHandler } from '../../lib/responseHandlers'
 
 export async function authRoutes(app: FastifyInstance) {
   app.post('/sessions', { config: { rateLimit: loginRateLimitConfig } }, async (request, reply) => {
@@ -12,9 +13,10 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.send({ accessToken })
     } catch (error) {
       if (error instanceof Error && error.message === 'Invalid credentials') {
-        return reply.status(401).send({ message: error.message })
+        // return reply.status(401).send({ message: error.message })
+        return errorHandler(reply, "Credenciais invalida. Verifique as informações e tente novamente.", 401)
       }
-      throw error
+      return errorHandler(reply, "Erro interno do servidor.", 500)
     }
   })
 }
