@@ -34,8 +34,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status
+    const isLoginRequest = error.config?.url === '/sessions'
 
-    if (status === 401) {
+    if (status === 401 && !isLoginRequest) {
       localStorage.removeItem('token')
       sessionStorage.clear()
       queryClient.clear()

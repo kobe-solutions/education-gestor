@@ -63,14 +63,19 @@ describe('POST /sessions', () => {
     expect(response.json()).toHaveProperty('message', 'Validation error')
   })
 
-  it('retorna 400 com senha curta demais', async () => {
+  it('retorna 401 com senha curta incorreta', async () => {
+    vi.mocked(authService.authenticateService).mockRejectedValue(
+      new Error('Invalid credentials'),
+    )
+
     const response = await app.inject({
       method: 'POST',
       url: '/sessions',
       body: { email: 'gestor@escola.com', password: '123' },
     })
 
-    expect(response.statusCode).toBe(400)
+    expect(response.statusCode).toBe(401)
+    expect(response.json()).toHaveProperty('error', 'Credenciais inválidas. Verifique as informações e tente novamente.')
   })
 
   it('retorna 400 sem body', async () => {
