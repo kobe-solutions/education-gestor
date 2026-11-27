@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import type { EducationLevel } from '../../educationLevels/hooks/useEducationLevels'
 
 export interface Serie {
@@ -28,8 +28,8 @@ export function useSeries(educationLevelId?: string) {
     queryKey: ['series', educationLevelId],
     queryFn: async () => {
       const params = educationLevelId ? `?educationLevelId=${educationLevelId}` : ''
-      const res = await api.get<Serie[]>(`/series${params}`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<Serie[]>>(`/series${params}`)
+      return res.data.data
     },
   })
 }
@@ -38,8 +38,8 @@ export function useCreateSerie() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: CreateInput) => {
-      const res = await api.post<Serie>('/series', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<Serie>>('/series', data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['series'] }),
   })
@@ -49,8 +49,8 @@ export function useUpdateSerie() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateInput }) => {
-      const res = await api.put<Serie>(`/series/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<Serie>>(`/series/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['series'] }),
   })
