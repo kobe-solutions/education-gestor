@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 
 export interface RegistrationSubject {
@@ -53,8 +53,8 @@ export function useRegistrationStatus(filters?: RegistrationStatusFilters) {
       if (filters?.page) params.set('page', String(filters.page))
       if (filters?.limit) params.set('limit', String(filters.limit))
       const qs = params.toString()
-      const res = await api.get<RegistrationStatusData>(`/dashboard/registration-status${qs ? `?${qs}` : ''}`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<RegistrationStatusData>>(`/dashboard/registration-status${qs ? `?${qs}` : ''}`)
+      return res.data.data
     },
     enabled,
   })
