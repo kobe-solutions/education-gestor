@@ -18,10 +18,9 @@ import {
   AlertCircle,
 } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
-import { useTeacherDashboard, type TeacherClass, type AttendanceSummaryEntry } from '../hooks/useTeacherDashboard'
+import { useTeacherDashboard, useTeacherDisplayName, type TeacherClass, type AttendanceSummaryEntry } from '../hooks/useTeacherDashboard'
 import { useClass } from '../../classes/hooks/useClasses'
 import { useClassAttendance, useRegisterBulkAttendance } from '../../academic/hooks/useAcademic'
-import { useAuth } from '../../../contexts/AuthContext'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Button } from '../../../components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
@@ -878,7 +877,7 @@ function AttendanceSummary({ classes, attendanceSummary }: AttendanceSummaryProp
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 export function AttendancePage() {
-  const { payload } = useAuth()
+  const teacherName = useTeacherDisplayName()
   const { data, isLoading, isError, error } = useTeacherDashboard()
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = searchParams.get('tab') ?? 'registro'
@@ -925,7 +924,7 @@ export function AttendancePage() {
               Frequência
             </h1>
             <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Registro e resumo de frequência — {payload?.name}
+              Registro e resumo de frequência — {teacherName}
             </p>
           </div>
         </div>
@@ -968,7 +967,7 @@ export function AttendancePage() {
             Frequência Escolar
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Lançamento rápido e resumo consolidado — {payload?.name}
+            Lançamento rápido e resumo consolidado — {teacherName}
           </p>
         </div>
       </div>

@@ -11,8 +11,7 @@ import {
   UserCheck,
   GraduationCap,
 } from 'lucide-react'
-import { useTeacherDashboard } from '../hooks/useTeacherDashboard'
-import { useAuth } from '../../../contexts/AuthContext'
+import { useTeacherDashboard, useTeacherDisplayName } from '../hooks/useTeacherDashboard'
 import { Button, buttonVariants } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Badge } from '../../../components/ui/badge'
@@ -508,7 +507,7 @@ function WeeklyTimetable({ slots }: { slots: import('../hooks/useTeacherDashboar
 // ── Main page ─────────────────────────────────────────────────────────────
 
 export function ProfessorDashboardPage() {
-  const { payload } = useAuth()
+  const teacherName = useTeacherDisplayName()
   const { data, isLoading } = useTeacherDashboard()
 
   if (isLoading) return <DashboardSkeleton cardCount={3} />
@@ -532,7 +531,7 @@ export function ProfessorDashboardPage() {
           Painel do Professor
         </h1>
         <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-          Bem-vindo, {payload?.name} — {new Date().getFullYear()}
+          Bem-vindo, {teacherName} — {new Date().getFullYear()}
         </p>
       </div>
 

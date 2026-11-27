@@ -11,8 +11,7 @@ import {
   Award,
   AlertTriangle,
 } from 'lucide-react'
-import { useTeacherDashboard } from '../hooks/useTeacherDashboard'
-import { useAuth } from '../../../contexts/AuthContext'
+import { useTeacherDashboard, useTeacherDisplayName } from '../hooks/useTeacherDashboard'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Button } from '../../../components/ui/button'
 import {
@@ -156,7 +155,7 @@ function ClassPerformanceSkeleton() {
 }
 
 export function ClassPerformancePage() {
-  const { payload } = useAuth()
+  const teacherName = useTeacherDisplayName()
   const { data, isLoading } = useTeacherDashboard()
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedClassId = searchParams.get('class') ?? 'all'
@@ -230,7 +229,7 @@ export function ClassPerformancePage() {
             Desempenho das Turmas
           </h1>
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Médias por disciplina — {payload?.name}
+            Médias por disciplina — {teacherName}
           </p>
         </div>
       </div>

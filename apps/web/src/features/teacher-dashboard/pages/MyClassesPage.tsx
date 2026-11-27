@@ -10,8 +10,7 @@ import {
   Search,
   School,
 } from 'lucide-react'
-import { useTeacherDashboard } from '../hooks/useTeacherDashboard'
-import { useAuth } from '../../../contexts/AuthContext'
+import { useTeacherDashboard, useTeacherDisplayName } from '../hooks/useTeacherDashboard'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Badge } from '../../../components/ui/badge'
 import { Input } from '../../../components/ui/input'
@@ -178,7 +177,7 @@ function MyClassesSkeleton() {
 }
 
 export function MyClassesPage() {
-  const { payload } = useAuth()
+  const teacherName = useTeacherDisplayName()
   const { data, isLoading } = useTeacherDashboard()
   const [searchParams, setSearchParams] = useSearchParams()
   const searchQuery = searchParams.get('q') ?? ''
@@ -252,7 +251,7 @@ export function MyClassesPage() {
           <p className="mt-1 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
             {data.classes.length}{' '}
             {data.classes.length === 1 ? 'turma atribuída' : 'turmas atribuídas'} —{' '}
-            {payload?.name}
+            {teacherName}
           </p>
         </div>
       </div>

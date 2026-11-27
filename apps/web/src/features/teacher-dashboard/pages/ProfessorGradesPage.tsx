@@ -9,7 +9,7 @@ import {
   School,
   ClipboardList,
 } from 'lucide-react'
-import { useTeacherDashboard } from '../hooks/useTeacherDashboard'
+import { useTeacherDashboard, useTeacherDisplayName } from '../hooks/useTeacherDashboard'
 import { useClass } from '../../classes/hooks/useClasses'
 import { useClassGrades } from '../../academic/hooks/useAcademic'
 import { useAcademicPeriods } from '../../classes/hooks/useClasses'
@@ -72,6 +72,7 @@ function MetricCard({
 
 export function ProfessorGradesPage() {
   const { payload } = useAuth()
+  const teacherName = useTeacherDisplayName()
   const { data: dashboard, isLoading: loadingDashboard } = useTeacherDashboard()
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedClassId = searchParams.get('class') ?? ''
@@ -91,8 +92,6 @@ export function ProfessorGradesPage() {
 
   const students = classDetail?.students ?? []
   const hasSelection = !!selectedClassId && !!effectiveSubjectId
-
-  const teacherName = payload?.name ?? ''
 
   // Skeleton state
   if (loadingDashboard) {
