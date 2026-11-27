@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 
 export interface TimetableSlot {
   id: string
@@ -56,7 +56,7 @@ interface UpdateInput {
 export function useAllTimetableSlots() {
   return useQuery({
     queryKey: ['timetable-slots', 'all'],
-    queryFn: async () => (await api.get<TimetableSlot[]>('/timetable-slots')).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<TimetableSlot[]>>('/timetable-slots')).data.data,
   })
 }
 
@@ -64,8 +64,8 @@ export function useTimetableSlots(classId: string) {
   return useQuery({
     queryKey: ['timetable-slots', classId],
     queryFn: async () => {
-      const res = await api.get<TimetableSlot[]>(`/timetable-slots?classId=${classId}`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<TimetableSlot[]>>(`/timetable-slots?classId=${classId}`)
+      return res.data.data
     },
     enabled: !!classId,
   })
@@ -75,8 +75,8 @@ export function useCreateTimetableSlot() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: CreateInput) => {
-      const res = await api.post<TimetableSlot>('/timetable-slots', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<TimetableSlot>>('/timetable-slots', data)
+      return res.data.data
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['timetable-slots', vars.classId] })
@@ -89,7 +89,7 @@ export function useCreateTimetableSlotsBatch() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: CreateBatchInput) =>
-      (await api.post<{ created: number }>('/timetable-slots/batch', data)).data,
+      (await api.post<ApiSuccessResponse<{ created: number }>>('/timetable-slots/batch', data)).data.data,
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['timetable-slots', vars.classId] })
       qc.invalidateQueries({ queryKey: ['timetable-slots', 'all'] })
@@ -101,8 +101,8 @@ export function useUpdateTimetableSlot(classId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateInput }) => {
-      const res = await api.put<TimetableSlot>(`/timetable-slots/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<TimetableSlot>>(`/timetable-slots/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['timetable-slots', classId] })
