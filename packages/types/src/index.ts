@@ -229,6 +229,33 @@ export interface AcademicPeriod {
   updatedAt: string
 }
 
+export type GradeCalculationMethod = 'simple' | 'weighted'
+
+export interface Assessment {
+  id: string
+  schoolId: string
+  classId: string
+  subjectId: string
+  academicPeriodId: string
+  teacherId: string
+  name: string
+  weight: string
+  order: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface PeriodGradeConfig {
+  id: string
+  schoolId: string
+  classId: string
+  subjectId: string
+  academicPeriodId: string
+  calculationMethod: GradeCalculationMethod
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Grade {
   id: string
   classId: string
@@ -236,9 +263,11 @@ export interface Grade {
   teacherId: string
   subjectId: string
   academicPeriodId: string
+  assessmentId: string | null
   value: string
   subject: { id: string; name: string } | null
   academicPeriod: { id: string; name: string } | null
+  assessment?: { id: string; name: string; weight: string } | null
   createdAt: string
 }
 
