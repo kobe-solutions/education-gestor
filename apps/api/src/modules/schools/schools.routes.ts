@@ -19,15 +19,15 @@ import { validateImageFile, extFromMime } from '../../lib/validators'
 import { errorHandler, handleRouteError, successHandler } from '../../lib/responseHandlers'
 
 const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
-const secretariaOnly = [authenticate, injectTenant, authorizeRoles(['secretaria'])]
 const adminOrSecretaria = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria'])]
 
 export async function schoolsRoutes(app: FastifyInstance) {
-  app.post('/schools', { preHandler: secretariaOnly }, async (request: FastifyRequest, reply: FastifyReply) => {
+  app.post('/schools', { preHandler: adminOrSecretaria }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const user = request.user as SecretariaPayload
+      const user = request.user as JwtPayload
       const body = createSchoolBodySchema.parse(request.body)
-      const school = await createSchoolService({ ...body, secretariaId: user.secretariaId })
+      const secretariaId = user.role === 'secretaria' ? (user as SecretariaPayload).secretariaId : undefined
+      const school = await createSchoolService({ ...body, secretariaId })
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: school.id }, 'CREATE', 'school', school.id)
       return successHandler(reply, 'Escola criada com sucesso.', 201, school)
     } catch (error) {

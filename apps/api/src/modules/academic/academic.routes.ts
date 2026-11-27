@@ -8,12 +8,21 @@ import {
   registerAttendanceBodySchema,
   bulkAttendanceBodySchema,
   bulkGradeBodySchema,
+  createAssessmentBodySchema,
+  updateAssessmentBodySchema,
+  upsertPeriodGradeConfigBodySchema,
 } from './academic.schema'
 import {
   registerGradeService,
   registerBulkGradesService,
   getStudentGradesService,
   getClassGradesService,
+  getClassAssessmentsService,
+  createAssessmentService,
+  updateAssessmentService,
+  deleteAssessmentService,
+  getClassPeriodGradeConfigsService,
+  upsertPeriodGradeConfigService,
   registerAttendanceService,
   registerBulkAttendanceService,
   getStudentAttendancesService,
@@ -90,6 +99,96 @@ export async function academicRoutes(app: FastifyInstance) {
         return errorHandler(reply, 'A turma informada não foi encontrada.', 404)
       }
       return errorHandler(reply, 'Erro interno no servidor.', 500)
+    }
+  })
+
+  app.get('/school-classes/:id/assessments', { preHandler: preHandlerAll }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const { subjectId, academicPeriodId } = request.query as {
+        subjectId?: string
+        academicPeriodId?: string
+      }
+      return reply.send(
+        await getClassAssessmentsService(getSchoolId(request), id, subjectId, academicPeriodId),
+      )
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Class not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.post('/assessments', { preHandler: preHandlerAll }, async (request, reply) => {
+    try {
+      const body = createAssessmentBodySchema.parse(request.body)
+      const assessment = await createAssessmentService({ schoolId: getSchoolId(request), ...body })
+      return reply.status(201).send(assessment)
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Class not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      if (error instanceof Error && error.message === 'Assessment weight must be positive') {
+        return reply.status(400).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.patch('/assessments/:id', { preHandler: preHandlerAll }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const body = updateAssessmentBodySchema.parse(request.body)
+      const assessment = await updateAssessmentService(getSchoolId(request), id, body)
+      return reply.send(assessment)
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Assessment not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      if (error instanceof Error && error.message === 'Assessment weight must be positive') {
+        return reply.status(400).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.delete('/assessments/:id', { preHandler: preHandlerAll }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      await deleteAssessmentService(getSchoolId(request), id)
+      return reply.status(204).send()
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Assessment not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.get('/school-classes/:id/grade-configs', { preHandler: preHandlerAll }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const { subjectId } = request.query as { subjectId?: string }
+      return reply.send(await getClassPeriodGradeConfigsService(getSchoolId(request), id, subjectId))
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Class not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
+    }
+  })
+
+  app.put('/period-grade-configs', { preHandler: preHandlerAll }, async (request, reply) => {
+    try {
+      const body = upsertPeriodGradeConfigBodySchema.parse(request.body)
+      const config = await upsertPeriodGradeConfigService({ schoolId: getSchoolId(request), ...body })
+      return reply.send(config)
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Class not found') {
+        return reply.status(404).send({ message: error.message })
+      }
+      throw error
     }
   })
 

@@ -30,7 +30,7 @@ export function Avatar({ name, size = 32, className, photoUrl }: AvatarProps) {
           src={photoUrl}
           alt={name}
           onError={() => setImgError(true)}
-          className="h-full w-full object-cover p-2"
+          className="h-full w-full object-cover"
         />
       </div>
     )

@@ -8,10 +8,19 @@ import {
   findAttendancesByStudentRepository,
   findAttendancesByClassAndDateRepository,
   upsertBulkGradesRepository,
+  deleteGradesByIdsRepository,
+  findAssessmentsByClassRepository,
+  findAssessmentByIdRepository,
+  createAssessmentRepository,
+  updateAssessmentRepository,
+  deleteAssessmentRepository,
+  findPeriodGradeConfigsByClassRepository,
+  upsertPeriodGradeConfigRepository,
   findStudentReportDataRepository,
 } from './academic.repository'
 import type {
   StudentReportAttendanceRow,
+  StudentReportGradeRow,
 } from './academic.repository'
 import { getStudentService } from '../students/students.service'
 import { getSchoolClassService } from '../classes/schoolClasses.service'
@@ -19,6 +28,7 @@ import { findStudentCurrentClassRepository } from '../classes/schoolClasses.repo
 import { findSubjectsByClassRepository } from '../timetable/timetable.repository'
 import { validateGradeValue } from '../../lib/validators'
 import type {
+  GradeCalculationMethod,
   ReportAttendance,
   ReportSituation,
   StudentReport,
@@ -32,6 +42,7 @@ type RegisterGradeInput = {
   teacherId: string
   subjectId: string
   academicPeriodId: string
+  assessmentId?: string | null
   value: number
 }
 
@@ -55,7 +66,13 @@ type BulkGradeInput = {
   classId: string
   teacherId: string
   subjectId: string
-  grades: Array<{ studentId: string; academicPeriodId: string; value: number }>
+  grades: Array<{
+    studentId: string
+    academicPeriodId: string
+    assessmentId?: string | null
+    value: number
+  }>
+  deleteGradeIds?: string[]
 }
 
 export async function registerGradeService(input: RegisterGradeInput) {
@@ -80,6 +97,10 @@ export async function registerBulkGradesService(input: BulkGradeInput) {
     validateGradeValue(grade.value)
   }
 
+  if (input.deleteGradeIds && input.deleteGradeIds.length > 0) {
+    await deleteGradesByIdsRepository(input.schoolId, input.deleteGradeIds)
+  }
+
   const rows = input.grades.map((grade) => ({
     schoolId: input.schoolId,
     classId: input.classId,
@@ -87,10 +108,78 @@ export async function registerBulkGradesService(input: BulkGradeInput) {
     subjectId: input.subjectId,
     studentId: grade.studentId,
     academicPeriodId: grade.academicPeriodId,
+    assessmentId: grade.assessmentId ?? null,
     value: grade.value,
   }))
 
   return upsertBulkGradesRepository(rows)
+}
+
+export async function getClassAssessmentsService(
+  schoolId: string,
+  classId: string,
+  subjectId?: string,
+  academicPeriodId?: string,
+) {
+  const schoolClass = await getSchoolClassService(schoolId, classId)
+  if (!schoolClass) throw new Error('Class not found')
+  return findAssessmentsByClassRepository(schoolId, classId, subjectId, academicPeriodId)
+}
+
+export async function createAssessmentService(input: {
+  schoolId: string
+  classId: string
+  subjectId: string
+  academicPeriodId: string
+  teacherId: string
+  name: string
+  weight: number
+}) {
+  const schoolClass = await getSchoolClassService(input.schoolId, input.classId)
+  if (!schoolClass) throw new Error('Class not found')
+  if (input.weight <= 0) throw new Error('Assessment weight must be positive')
+  return createAssessmentRepository(input)
+}
+
+export async function updateAssessmentService(
+  schoolId: string,
+  id: string,
+  data: { name?: string; weight?: number; order?: number },
+) {
+  const existing = await findAssessmentByIdRepository(schoolId, id)
+  if (!existing) throw new Error('Assessment not found')
+  if (data.weight !== undefined && data.weight <= 0) {
+    throw new Error('Assessment weight must be positive')
+  }
+  return updateAssessmentRepository(schoolId, id, data)
+}
+
+export async function deleteAssessmentService(schoolId: string, id: string) {
+  const existing = await findAssessmentByIdRepository(schoolId, id)
+  if (!existing) throw new Error('Assessment not found')
+  return deleteAssessmentRepository(schoolId, id)
+}
+
+export async function getClassPeriodGradeConfigsService(
+  schoolId: string,
+  classId: string,
+  subjectId?: string,
+) {
+  const schoolClass = await getSchoolClassService(schoolId, classId)
+  if (!schoolClass) throw new Error('Class not found')
+  return findPeriodGradeConfigsByClassRepository(schoolId, classId, subjectId)
+}
+
+export async function upsertPeriodGradeConfigService(input: {
+  schoolId: string
+  classId: string
+  subjectId: string
+  academicPeriodId: string
+  calculationMethod: GradeCalculationMethod
+}) {
+  const schoolClass = await getSchoolClassService(input.schoolId, input.classId)
+  if (!schoolClass) throw new Error('Class not found')
+  return upsertPeriodGradeConfigRepository(input)
 }
 
 export async function getStudentGradesService(schoolId: string, studentId: string) {
@@ -193,13 +282,39 @@ function overallSituation(
   return 'approved'
 }
 
+function computePeriodAverage(
+  rows: StudentReportGradeRow[],
+  method: GradeCalculationMethod,
+): string {
+  if (rows.length === 1 && !rows[0].assessmentId) {
+    return rows[0].value
+  }
+  if (method === 'weighted') {
+    let weightedSum = 0
+    let totalWeight = 0
+    for (const row of rows) {
+      const val = parseFloat(row.value)
+      const weight = parseFloat(row.assessmentWeight ?? '1')
+      if (!Number.isNaN(val) && !Number.isNaN(weight) && weight > 0) {
+        weightedSum += val * weight
+        totalWeight += weight
+      }
+    }
+    if (totalWeight > 0) {
+      return roundAverage(weightedSum / totalWeight).toFixed(2)
+    }
+  }
+  const avg = computeAverage(rows.map((r) => parseFloat(r.value)))
+  return avg !== null ? avg.toFixed(2) : '0.00'
+}
+
 export async function getStudentReportService(
   schoolId: string,
   studentId: string,
 ): Promise<StudentReport> {
   const student = await getStudentService(schoolId, studentId)
 
-  const [{ grades, attendances }, currentClass] = await Promise.all([
+  const [{ grades, attendances, configs = [] }, currentClass] = await Promise.all([
     findStudentReportDataRepository(schoolId, studentId),
     findStudentCurrentClassRepository(studentId),
   ])
@@ -207,6 +322,14 @@ export async function getStudentReportService(
   const classSubjects = currentClass
     ? await findSubjectsByClassRepository(schoolId, currentClass.classId)
     : []
+
+  const configMap = new Map<string, GradeCalculationMethod>()
+  for (const cfg of configs) {
+    configMap.set(
+      `${cfg.classId}:${cfg.subjectId}:${cfg.academicPeriodId}`,
+      cfg.calculationMethod === 'weighted' ? 'weighted' : 'simple',
+    )
+  }
 
   const periods = Array.from(
     grades.reduce((acc, grade) => {
@@ -221,28 +344,53 @@ export async function getStudentReportService(
     }, new Map<string, { id: string; name: string; order: number }>()).values(),
   ).sort((a, b) => a.order - b.order)
 
-  const subjectsByKey = new Map<string, SubjectReport>()
+  // Group grades by subjectId -> academicPeriodId
+  const gradesBySubjectPeriod = new Map<string, Map<string, StudentReportGradeRow[]>>()
+  const subjectMeta = new Map<string, { subjectName: string; classId: string; className: string | null }>()
+
   for (const grade of grades) {
-    const existing = subjectsByKey.get(grade.subjectId)
-    const gradeEntry = {
-      academicPeriodId: grade.academicPeriodId,
-      academicPeriodName: grade.academicPeriodName ?? 'Período',
-      value: grade.value,
-    }
-    if (existing) {
-      existing.grades.push(gradeEntry)
-    } else {
-      subjectsByKey.set(grade.subjectId, {
-        subjectId: grade.subjectId,
+    if (!subjectMeta.has(grade.subjectId)) {
+      subjectMeta.set(grade.subjectId, {
         subjectName: grade.subjectName ?? 'Disciplina',
         classId: grade.classId,
         className: grade.className,
-        grades: [gradeEntry],
-        average: null,
-        status: null,
-        attendance: null,
       })
     }
+    let byPeriod = gradesBySubjectPeriod.get(grade.subjectId)
+    if (!byPeriod) {
+      byPeriod = new Map()
+      gradesBySubjectPeriod.set(grade.subjectId, byPeriod)
+    }
+    const list = byPeriod.get(grade.academicPeriodId) ?? []
+    list.push(grade)
+    byPeriod.set(grade.academicPeriodId, list)
+  }
+
+  const subjectsByKey = new Map<string, SubjectReport>()
+  for (const [subjectId, byPeriod] of gradesBySubjectPeriod.entries()) {
+    const meta = subjectMeta.get(subjectId)!
+    const periodEntries: SubjectReport['grades'] = []
+
+    for (const [academicPeriodId, periodRows] of byPeriod.entries()) {
+      const first = periodRows[0]
+      const method = configMap.get(`${first.classId}:${subjectId}:${academicPeriodId}`) ?? 'simple'
+      periodEntries.push({
+        academicPeriodId,
+        academicPeriodName: first.academicPeriodName ?? 'Período',
+        value: computePeriodAverage(periodRows, method),
+      })
+    }
+
+    subjectsByKey.set(subjectId, {
+      subjectId,
+      subjectName: meta.subjectName,
+      classId: meta.classId,
+      className: meta.className,
+      grades: periodEntries,
+      average: null,
+      status: null,
+      attendance: null,
+    })
   }
 
   for (const subject of classSubjects) {

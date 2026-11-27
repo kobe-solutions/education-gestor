@@ -117,13 +117,13 @@ describe('updateAcademicPeriodService', () => {
   })
 
   it('atualiza nome e datas individualmente', async () => {
-    const updated = { ...mockPeriod, name: '2º Bimestre', startDate: '2025-05-01' }
+    const updated = { ...mockPeriod, name: '2º Bimestre', startDate: '2025-03-01' }
     vi.mocked(repo.findAcademicPeriodByIdRepository).mockResolvedValue(mockPeriod)
     vi.mocked(repo.updateAcademicPeriodRepository).mockResolvedValue(updated)
 
     const result = await updateAcademicPeriodService(SCHOOL_ID, YEAR_ID, PERIOD_ID, {
       name: '2º Bimestre',
-      startDate: '2025-05-01',
+      startDate: '2025-03-01',
     })
 
     expect(result.name).toBe('2º Bimestre')
@@ -131,7 +131,7 @@ describe('updateAcademicPeriodService', () => {
       SCHOOL_ID,
       YEAR_ID,
       PERIOD_ID,
-      expect.objectContaining({ name: '2º Bimestre', startDate: '2025-05-01' }),
+      expect.objectContaining({ name: '2º Bimestre', startDate: '2025-03-01' }),
     )
   })
 })

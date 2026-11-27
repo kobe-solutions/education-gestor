@@ -35,6 +35,12 @@ export async function updateClassPeriodService(
   const existing = await findClassPeriodByIdRepository(schoolId, id)
   if (!existing) throw new Error('Class period not found')
 
+  const startTime = body.startTime ?? existing.startTime
+  const endTime = body.endTime ?? existing.endTime
+  if (endTime <= startTime) {
+    throw new Error('O horário de término deve ser posterior ao horário de início.')
+  }
+
   const updated = await updateClassPeriodRepository(schoolId, id, {
     ...body,
     name: body.name?.trim(),

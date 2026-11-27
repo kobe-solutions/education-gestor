@@ -5,9 +5,11 @@ import { z } from 'zod'
 import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '../../../../components/ui/button'
 import { Input } from '../../../../components/ui/input'
+import { MaskedInput } from '../../../../components/ui/masked-input'
 import { Label } from '../../../../components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card'
 import { Badge } from '../../../../components/ui/badge'
+import { maskCEP, maskCPF, maskPhone } from '../../../../lib/masks'
 import type { Student, Guardian } from '@education-gestor/types'
 
 const familiaSchema = z.object({
@@ -68,8 +70,8 @@ export function FamiliaTab({
       ? {
           motherName: student.motherName ?? '',
           fatherName: student.fatherName ?? '',
-          motherPhone: student.motherPhone ?? '',
-          addressCep: student.addressCep ?? '',
+          motherPhone: student.motherPhone ? maskPhone(student.motherPhone) : '',
+          addressCep: student.addressCep ? maskCEP(student.addressCep) : '',
           addressStreet: student.addressStreet ?? '',
           addressNumber: student.addressNumber ?? '',
           addressComplement: student.addressComplement ?? '',
@@ -106,7 +108,7 @@ export function FamiliaTab({
             </div>
             <div className="space-y-1">
               <Label htmlFor="motherPhone">Telefone da mãe<Opt /></Label>
-              <Input id="motherPhone" placeholder="(00) 00000-0000" {...familiaForm.register('motherPhone')} />
+              <MaskedInput id="motherPhone" mask="phone" placeholder="(00) 00000-0000" {...familiaForm.register('motherPhone')} />
             </div>
             <div className="col-span-2 space-y-1">
               <Label htmlFor="fatherName">Nome do pai<Opt /></Label>
@@ -120,7 +122,7 @@ export function FamiliaTab({
           <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label htmlFor="family-address-cep">CEP<Opt /></Label>
-              <Input id="family-address-cep" placeholder="00000-000" {...familiaForm.register('addressCep')} />
+              <MaskedInput id="family-address-cep" mask="cep" placeholder="00000-000" {...familiaForm.register('addressCep')} />
             </div>
             <div className="col-span-2 space-y-1">
               <Label htmlFor="family-address-street">Logradouro<Opt /></Label>
@@ -189,11 +191,11 @@ export function FamiliaTab({
               </div>
               <div className="space-y-1">
                 <Label htmlFor="guardian-cpf">CPF<Opt /></Label>
-                <Input id="guardian-cpf" placeholder="000.000.000-00" {...guardianForm.register('cpf')} />
+                <MaskedInput id="guardian-cpf" mask="cpf" placeholder="000.000.000-00" {...guardianForm.register('cpf')} />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="guardian-phone">Telefone<Opt /></Label>
-                <Input id="guardian-phone" placeholder="(00) 00000-0000" {...guardianForm.register('phone')} />
+                <MaskedInput id="guardian-phone" mask="phone" placeholder="(00) 00000-0000" {...guardianForm.register('phone')} />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="guardian-profession">Profissão<Opt /></Label>
@@ -231,8 +233,8 @@ export function FamiliaTab({
                 <p className="text-sm font-medium">{g.name}</p>
                 <p className="text-xs text-muted-foreground">
                   {g.relationship}
-                  {g.phone ? ` · ${g.phone}` : ''}
-                  {g.cpf ? ` · CPF: ${g.cpf}` : ''}
+                  {g.phone ? ` · ${maskPhone(g.phone)}` : ''}
+                  {g.cpf ? ` · CPF: ${maskCPF(g.cpf)}` : ''}
                 </p>
                 <div className="flex gap-1 mt-1">
                   {g.isResponsible && <Badge variant="outline" className="text-[10px] h-4 px-1">Responsável</Badge>}

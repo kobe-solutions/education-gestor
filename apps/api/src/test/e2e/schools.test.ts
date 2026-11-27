@@ -74,14 +74,15 @@ describe('POST /schools', () => {
     expect(res.statusCode).toBe(403)
   })
 
-  it('retorna 403 para admin (apenas secretaria pode criar)', async () => {
+  it('permite que admin crie uma escola sem vínculo de secretaria', async () => {
+    vi.mocked(schoolsService.createSchoolService).mockResolvedValue({ ...mockSchool, role: 'gestor' })
     const res = await app.inject({
       method: 'POST',
       url: '/schools',
       headers: { authorization: `Bearer ${adminToken}` },
       body: validBody,
     })
-    expect(res.statusCode).toBe(403)
+    expect(res.statusCode).toBe(201)
   })
 
   it('retorna 201 com token de secretaria', async () => {

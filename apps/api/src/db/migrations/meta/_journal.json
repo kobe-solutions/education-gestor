@@ -218,6 +218,13 @@
       "when": 1792800000001,
       "tag": "0030_lesson_record_timetable_slot",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1795644420603,
+      "tag": "0031_clear_mojo",
+      "breakpoints": true
     }
   ]
 }

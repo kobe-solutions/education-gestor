@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-17T00:00:00.000Z",
+  "title": "Design System: IRIS Educação",
+  "extensions": {
+    "colorMeta": {
+      "iris-blue": { "role": "primary", "displayName": "Azul IRIS", "tonalRamp": ["hsl(209 76% 15%)", "hsl(209 76% 25%)", "hsl(209 76% 37%)", "hsl(209 76% 48%)", "hsl(209 76% 60%)", "hsl(209 76% 72%)", "hsl(209 76% 84%)", "hsl(209 76% 95%)"] },
+      "iris-navy": { "role": "primary", "displayName": "Navy institucional", "tonalRamp": ["#04182C", "#042C53", "#073C70", "#0B4C8C", "#185FA5", "#378ADD", "#85B7EB", "#EAF4FD"] },
+      "iris-blue-glow": { "role": "primary", "displayName": "Azul de foco", "tonalRamp": ["hsl(209 70% 15%)", "hsl(209 70% 25%)", "hsl(209 70% 37%)", "hsl(209 70% 48%)", "hsl(209 70% 60%)", "hsl(209 70% 72%)", "hsl(209 70% 84%)", "hsl(209 70% 95%)"] },
+      "blue-wash": { "role": "secondary", "displayName": "Lavagem azul", "tonalRamp": ["hsl(207 75% 15%)", "hsl(207 75% 25%)", "hsl(207 75% 37%)", "hsl(207 75% 48%)", "hsl(207 75% 60%)", "hsl(207 75% 72%)", "hsl(207 75% 84%)", "hsl(207 75% 95%)"] },
+      "app-background": { "role": "neutral", "displayName": "Fundo frio", "tonalRamp": ["hsl(210 40% 15%)", "hsl(210 40% 25%)", "hsl(210 40% 37%)", "hsl(210 40% 48%)", "hsl(210 40% 60%)", "hsl(210 40% 72%)", "hsl(210 40% 84%)", "hsl(210 40% 98%)"] },
+      "ink": { "role": "neutral", "displayName": "Tinta grafite azulada", "tonalRamp": ["hsl(210 28% 15%)", "hsl(210 28% 18%)", "hsl(210 28% 30%)", "hsl(210 28% 42%)", "hsl(210 28% 54%)", "hsl(210 28% 66%)", "hsl(210 28% 78%)", "hsl(210 28% 90%)"] },
+      "muted-surface": { "role": "neutral", "displayName": "Superfície suave", "tonalRamp": ["hsl(210 24% 15%)", "hsl(210 24% 25%)", "hsl(210 24% 37%)", "hsl(210 24% 48%)", "hsl(210 24% 60%)", "hsl(210 24% 72%)", "hsl(210 24% 84%)", "hsl(210 24% 94%)"] },
+      "muted-ink": { "role": "neutral", "displayName": "Texto secundário", "tonalRamp": ["hsl(215 12% 15%)", "hsl(215 12% 25%)", "hsl(215 12% 37%)", "hsl(215 12% 43%)", "hsl(215 12% 60%)", "hsl(215 12% 72%)", "hsl(215 12% 84%)", "hsl(215 12% 95%)"] },
+      "border": { "role": "neutral", "displayName": "Linha fria", "tonalRamp": ["hsl(214 20% 15%)", "hsl(214 20% 25%)", "hsl(214 20% 37%)", "hsl(214 20% 48%)", "hsl(214 20% 60%)", "hsl(214 20% 72%)", "hsl(214 20% 84%)", "hsl(214 20% 95%)"] },
+      "card": { "role": "neutral", "displayName": "Branco de superfície", "tonalRamp": ["hsl(0 0% 15%)", "hsl(0 0% 25%)", "hsl(0 0% 37%)", "hsl(0 0% 48%)", "hsl(0 0% 60%)", "hsl(0 0% 72%)", "hsl(0 0% 84%)", "hsl(0 0% 100%)"] },
+      "danger": { "role": "tertiary", "displayName": "Vermelho de erro", "tonalRamp": ["hsl(0 84% 15%)", "hsl(0 84% 25%)", "hsl(0 84% 37%)", "hsl(0 84% 48%)", "hsl(0 84% 60%)", "hsl(0 84% 72%)", "hsl(0 84% 84%)", "hsl(0 84% 95%)"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Título de página", "purpose": "Cabeçalhos principais de páginas e fluxos." },
+      "headline": { "displayName": "Título de área", "purpose": "Títulos de formulários e áreas importantes." },
+      "title": { "displayName": "Título de seção", "purpose": "Seções e nomes de tarefas." },
+      "body": { "displayName": "Texto de interface", "purpose": "Texto corrente, descrições e controles." },
+      "label": { "displayName": "Rótulo compacto", "purpose": "Metadados e informação auxiliar." }
+    },
+    "shadows": [
+      { "name": "card", "value": "0 1px 3px hsl(209 50% 25% / 0.08), 0 1px 2px hsl(209 50% 25% / 0.04)", "purpose": "Elevação discreta de cartões e métricas." },
+      { "name": "medium", "value": "0 8px 20px -8px hsl(209 50% 25% / 0.16)", "purpose": "Hover e superfícies suspensas." },
+      { "name": "high", "value": "0 16px 40px -16px hsl(209 50% 25% / 0.2)", "purpose": "Diálogos e superfícies de maior elevação." },
+      { "name": "focus", "value": "0 0 0 3px hsl(207 70% 48% / 0.18)", "purpose": "Anel de foco azul." }
+    ],
+    "motion": [
+      { "name": "accordion", "value": "0.2s ease-out", "purpose": "Abertura e fechamento de divulgações." },
+      { "name": "state", "value": "transition-colors", "purpose": "Mudanças de cor em controles e navegação." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ],
+    "browserThemeColor": "#185fa5"
+  },
+  "components": [
+    {
+      "name": "Botão principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal em azul IRIS, com foco claramente visível.",
+      "html": "<button class=\"ds-button-primary\">Salvar alterações</button>",
+      "css": ".ds-button-primary { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); padding: 0 12px; height: 44px; border: 1px solid transparent; border-radius: 6px; font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; transition: all 160ms ease; cursor: pointer; } .ds-button-primary:hover { background: hsl(var(--primary) / .8); } .ds-button-primary:focus-visible { outline: 3px solid hsl(var(--ring) / .3); outline-offset: 2px; } .ds-button-primary:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Campo de texto",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Campo de formulário compacto com superfície suave e foco azul.",
+      "html": "<input class=\"ds-input\" placeholder=\"Nome completo\" aria-label=\"Nome completo\" />",
+      "css": ".ds-input { width: 100%; min-width: 0; height: 36px; padding: 4px 12px; border: 1px solid transparent; border-radius: 8px; background: hsl(var(--input) / .5); color: hsl(var(--foreground)); font: 400 14px/1.5 'Plus Jakarta Sans', sans-serif; transition: color 160ms ease, box-shadow 160ms ease, background-color 160ms ease; } .ds-input::placeholder { color: hsl(var(--muted-foreground)); } .ds-input:focus-visible { border-color: hsl(var(--ring)); outline: 3px solid hsl(var(--ring) / .3); outline-offset: 1px; }"
+    },
+    {
+      "name": "Item de navegação",
+      "kind": "nav",
+      "description": "Destino da sidebar com estado ativo em lavagem azul.",
+      "html": "<a class=\"ds-nav-item\" href=\"#\" aria-current=\"page\"><svg aria-hidden=\"true\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-6v-6h-4v6H4a1 1 0 0 1-1-1z\"/></svg> Rotina escolar</a>",
+      "css": ".ds-nav-item { display: flex; min-height: 44px; align-items: center; gap: 12px; padding: 0 12px; border-radius: 8px; color: hsl(var(--foreground) / .75); text-decoration: none; font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; transition: background-color 160ms ease, color 160ms ease; } .ds-nav-item:hover { background: hsl(var(--sidebar-accent) / .7); color: hsl(var(--sidebar-foreground)); } .ds-nav-item[aria-current=page] { background: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); } .ds-nav-item:focus-visible { outline: 3px solid hsl(var(--ring) / .3); outline-offset: 2px; }"
+    },
+    {
+      "name": "Linha de tarefa",
+      "kind": "custom",
+      "refersTo": "task-row",
+      "description": "Linha agrupada com nome da tarefa, explicação e chamada à ação.",
+      "html": "<a class=\"ds-task-row\" href=\"#\"><span class=\"ds-task-icon\" aria-hidden=\"true\"><svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 19.5A2.5 2.5 0 0 1 6.5 17H20\"/><path d=\"M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z\"/></svg></span><span class=\"ds-task-copy\"><strong>Turmas e horários</strong><small>Organize as turmas e a grade da escola.</small></span><span class=\"ds-task-action\">Acessar →</span></a>",
+      "css": ".ds-task-row { display: flex; min-height: 76px; align-items: center; gap: 16px; padding: 12px 4px; border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); text-decoration: none; font: 400 14px/1.5 'Plus Jakarta Sans', sans-serif; } .ds-task-row:hover strong, .ds-task-row:hover .ds-task-action { color: hsl(var(--primary)); } .ds-task-row:focus-visible { outline: 3px solid hsl(var(--ring) / .3); outline-offset: 3px; } .ds-task-icon { display: grid; width: 40px; height: 40px; flex: none; place-items: center; border-radius: 8px; background: hsl(var(--secondary)); color: hsl(var(--primary)); } .ds-task-copy { display: grid; min-width: 0; flex: 1; gap: 2px; } .ds-task-copy strong { font-weight: 600; } .ds-task-copy small { color: hsl(var(--muted-foreground)); font-size: 14px; line-height: 20px; } .ds-task-action { color: hsl(var(--primary)); font-weight: 600; } @media (max-width: 639px) { .ds-task-row { gap: 12px; } .ds-task-action { font-size: 0; } .ds-task-action::after { content: '→'; font-size: 17px; } }"
+    },
+    {
+      "name": "Cartão de superfície",
+      "kind": "card",
+      "description": "Container branco com borda fina e cantos suaves.",
+      "html": "<section class=\"ds-card\"><strong>Visão geral</strong><p>Dados acadêmicos e estrutura da escola.</p></section>",
+      "css": ".ds-card { padding: 20px; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--card-foreground)); font: 400 14px/1.5 'Plus Jakarta Sans', sans-serif; } .ds-card strong { font-size: 16px; font-weight: 600; } .ds-card p { margin: 6px 0 0; color: hsl(var(--muted-foreground)); }"
+    },
+    {
+      "name": "Divulgação de indicadores",
+      "kind": "custom",
+      "description": "Resumo com controle textual de mostrar ou ocultar dados adicionais.",
+      "html": "<details class=\"ds-disclosure\"><summary><span>Ver mais indicadores e atividade</span><span class=\"ds-disclosure-action\">Mostrar</span></summary><p>Detalhes secundários aparecem quando solicitados.</p></details>",
+      "css": ".ds-disclosure { padding: 0 20px; border: 1px solid hsl(var(--border)); border-radius: 12px; background: hsl(var(--card)); color: hsl(var(--foreground)); font: 400 14px/1.5 'Plus Jakarta Sans', sans-serif; } .ds-disclosure summary { display: flex; min-height: 56px; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; font-weight: 600; } .ds-disclosure summary::-webkit-details-marker { display: none; } .ds-disclosure-action { color: hsl(var(--primary)); font-size: 14px; font-weight: 500; } .ds-disclosure[open] .ds-disclosure-action { font-size: 0; } .ds-disclosure[open] .ds-disclosure-action::after { content: 'Ocultar'; font-size: 14px; } .ds-disclosure p { padding: 12px 0 16px; color: hsl(var(--muted-foreground)); } .ds-disclosure summary:focus-visible { outline: 3px solid hsl(var(--ring) / .3); outline-offset: 2px; }"
+    },
+    {
+      "name": "Etapas do formulário",
+      "kind": "custom",
+      "description": "Abas numeradas que mostram a posição no formulário e etapas ainda indisponíveis.",
+      "html": "<nav class=\"ds-form-steps\" aria-label=\"Etapas do cadastro\"><button class=\"ds-form-step is-active\" aria-current=\"step\">1. Dados pessoais</button><button class=\"ds-form-step\" disabled>2. Família</button><button class=\"ds-form-step\">3. Documentos</button></nav>",
+      "css": ".ds-form-steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .ds-form-step { min-height: 44px; padding: 8px; border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--card)); color: hsl(var(--foreground)); text-align: left; font: 500 12px/1.4 'Plus Jakarta Sans', sans-serif; cursor: pointer; } .ds-form-step:hover:not(:disabled) { border-color: hsl(var(--ring)); } .ds-form-step.is-active { border-color: hsl(var(--primary)); background: hsl(var(--secondary)); color: hsl(var(--primary)); } .ds-form-step:focus-visible { outline: 3px solid hsl(var(--ring) / .3); outline-offset: 2px; } .ds-form-step:disabled { cursor: not-allowed; opacity: .5; } @media (min-width: 640px) { .ds-form-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } } @media (min-width: 1024px) { .ds-form-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); } }"
+    },
+    {
+      "name": "Painel público IRIS",
+      "kind": "custom",
+      "refersTo": "login-panel",
+      "description": "Painel navy sólido de identidade e resumo das áreas do produto em telas largas.",
+      "html": "<aside class=\"ds-login-panel\"><div class=\"ds-login-brand\"><span class=\"ds-login-mark\" aria-hidden=\"true\"><svg width=\"32\" height=\"32\" viewBox=\"0 0 120 120\" fill=\"none\"><ellipse cx=\"60\" cy=\"60\" rx=\"46\" ry=\"24\" stroke=\"currentColor\" stroke-width=\"8\"/><circle cx=\"60\" cy=\"60\" r=\"17\" fill=\"currentColor\"/><circle cx=\"60\" cy=\"60\" r=\"8\" fill=\"#042C53\"/></svg></span><span><strong>IRIS</strong><small>EDUCAÇÃO</small></span></div><div class=\"ds-login-story\"><h2>A rotina da escola, mais fácil de acompanhar.</h2><p>Acesse as informações e tarefas do seu perfil em um só lugar.</p><ul><li>Pessoas — alunos, responsáveis e professores</li><li>Rotina escolar — turmas, horários, notas e frequência</li><li>Financeiro — mensalidades e pagamentos</li></ul></div><small class=\"ds-login-footer\">IRIS Educação · Gestão escolar</small></aside>",
+      "css": ".ds-login-panel { display: flex; min-height: 100vh; width: 40%; flex-direction: column; justify-content: space-between; padding: 48px 40px; background: #042C53; color: #fff; font: 400 14px/1.5 'Plus Jakarta Sans', sans-serif; } .ds-login-brand { display: flex; align-items: center; gap: 16px; } .ds-login-mark { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 12px; background: #fff; color: #042C53; } .ds-login-brand strong, .ds-login-brand small { display: block; } .ds-login-brand strong { font-size: 18px; letter-spacing: .2em; } .ds-login-brand small { margin-top: 2px; color: rgb(255 255 255 / .75); font-size: 12px; letter-spacing: .32em; } .ds-login-story { max-width: 448px; padding: 40px 0; } .ds-login-story h2 { font-size: 30px; font-weight: 700; line-height: 1.2; letter-spacing: -.025em; } .ds-login-story p, .ds-login-story li { color: rgb(255 255 255 / .75); } .ds-login-story p { margin-top: 16px; max-width: 320px; font-size: 16px; line-height: 28px; } .ds-login-story ul { display: grid; gap: 20px; margin-top: 36px; padding-left: 20px; } .ds-login-footer { color: rgb(255 255 255 / .55); font-size: 12px; } @media (max-width: 1023px) { .ds-login-panel { display: none; } }"
+    },
+    {
+      "name": "Cartão de acesso",
+      "kind": "custom",
+      "refersTo": "login-card",
+      "description": "Formulário de login centralizado, compacto e responsivo.",
+      "html": "<section class=\"ds-login-card\"><div class=\"ds-login-card-brand\"><span class=\"ds-login-card-mark\" aria-hidden=\"true\"><svg width=\"30\" height=\"30\" viewBox=\"0 0 120 120\" fill=\"none\"><ellipse cx=\"60\" cy=\"60\" rx=\"46\" ry=\"24\" stroke=\"currentColor\" stroke-width=\"8\"/><circle cx=\"60\" cy=\"60\" r=\"17\" fill=\"currentColor\"/><circle cx=\"60\" cy=\"60\" r=\"8\" fill=\"#EAF4FD\"/></svg></span><strong>IRIS<small>EDUCAÇÃO</small></strong></div><header><h2>Acesse sua conta</h2><p>Entre com o e-mail e a senha cadastrados.</p></header><label>E-mail<input placeholder=\"email@escola.com\" /></label><label>Senha<input type=\"password\" /></label><label class=\"ds-login-remember\"><input type=\"checkbox\" />Lembrar meu e-mail neste dispositivo</label><button>Entrar</button></section>",
+      "css": ".ds-login-card { display: flex; width: 100%; max-width: 448px; flex-direction: column; gap: 24px; margin: auto; padding: 24px; border: 1px solid hsl(var(--border)); border-radius: 16px; background: hsl(var(--card)); color: hsl(var(--foreground)); box-shadow: var(--shadow-md); font: 400 14px/1.5 'Plus Jakarta Sans', sans-serif; } .ds-login-card-brand { display: flex; align-items: center; justify-content: center; gap: 12px; color: hsl(var(--primary)); } .ds-login-card-mark { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 12px; background: hsl(var(--secondary)); } .ds-login-card-brand strong { font-size: 18px; letter-spacing: .2em; } .ds-login-card-brand small { display: block; font-size: 10px; letter-spacing: .32em; } .ds-login-card header { text-align: center; } .ds-login-card h2 { font-size: 20px; font-weight: 700; } .ds-login-card header p { margin-top: 6px; color: hsl(var(--muted-foreground)); } .ds-login-card > label:not(.ds-login-remember) { display: grid; gap: 6px; font-weight: 500; } .ds-login-card label input:not([type=checkbox]) { width: 100%; height: 36px; padding: 4px 12px; border: 1px solid hsl(var(--border)); border-radius: 8px; background: hsl(var(--input) / .5); color: hsl(var(--foreground)); } .ds-login-card .ds-login-remember { display: flex; align-items: center; gap: 8px; color: hsl(var(--muted-foreground)); } .ds-login-card button { width: 100%; height: 44px; border: 0; border-radius: 6px; background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font: 500 14px/1.5 'Plus Jakarta Sans', sans-serif; cursor: pointer; } .ds-login-card button:hover { background: hsl(var(--primary) / .8); } @media (min-width: 640px) { .ds-login-card { padding: 32px; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A escola encontra seu próximo passo",
+    "overview": "IRIS organiza a gestão escolar em uma superfície institucional, familiar e direta. O azul da marca ancora ações e orientação; fundos frios e cartões brancos deixam dados e tarefas legíveis sem competir com o trabalho. A entrada pública combina um painel navy sólido com uma área de formulário centralizada, identidade IRIS e instruções concisas. A linguagem de interface é brasileira, clara e acolhedora, com nomes que descrevem o que cada pessoa veio fazer.\n\nO sistema organiza a navegação conforme o papel da pessoa e reúne tarefas relacionadas em listas agrupadas. A tela inicial destaca prioridades e indicadores; detalhes adicionais ficam sob divulgações explícitas. Formulários longos se dividem em abas numeradas, com rótulos concretos e etapas posteriores bloqueadas até que o cadastro exista. A composição reduz opções concorrentes sem esconder o caminho para as rotinas completas.",
+    "keyCharacteristics": [
+      "Azul institucional IRIS em ações, foco e seleção.",
+      "Navegação curta e filtrada pelo papel da pessoa.",
+      "Listas de tarefas com título, explicação e ação visível.",
+      "Hierarquia progressiva: resumo primeiro, detalhes sob demanda.",
+      "Português brasileiro simples em controles e orientação.",
+      "Entrada pública com painel navy sólido e formulário centralizado responsivo."
+    ],
+    "rules": [
+      { "name": "The Blue Means Action Rule", "body": "Reserve o azul saturado para ações, foco, seleção e orientação da marca; use a lavagem azul para apoio sem competir com o conteúdo.", "section": "colors" },
+      { "name": "The Plain Language Rule", "body": "Escreva rótulos como tarefas reconhecíveis em português brasileiro; mantenha descrições curtas e factuais.", "section": "typography" },
+      { "name": "The Quiet Elevation Rule", "body": "Deixe bordas e diferenças de superfície estabelecerem a hierarquia; aplique sombra azul suave quando a interação ou elevação pedir.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do mantenha Plus Jakarta Sans e o azul IRIS como identidade visual.",
+      "Do mostre apenas os destinos permitidos ao papel atual.",
+      "Do agrupe tarefas com título, descrição curta e ação reconhecível.",
+      "Do revele informações secundárias por divulgações nomeadas “Mostrar/Ocultar”.",
+      "Do mantenha alvo de toque confortável e a hierarquia responsiva do shell.",
+      "Do use formato brasileiro para datas, moeda e notas."
+    ],
+    "donts": [
+      "Don't substitua a identidade azul por paletas roxas ou degradês decorativos.",
+      "Don't use navegação genérica que ignore o papel e as tarefas escolares.",
+      "Don't apresente toda a densidade de indicadores antes das prioridades.",
+      "Don't dependa apenas da cor para comunicar status ou foco.",
+      "Don't use linguagem técnica ou promocional nos rótulos de tarefa."
+    ]
+  }
+}

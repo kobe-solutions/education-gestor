@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte } from 'drizzle-orm'
+import { and, desc, eq, gte, lte, ne } from 'drizzle-orm'
 import { db } from '../../db'
 import { lessonRecords, schoolClasses, subjects, teachers, timetableSlots } from '../../db/schema'
 import type { LessonRecordAttachment } from '../../db/schema/lessonRecords'
@@ -63,6 +63,24 @@ export async function findLessonRecordRepository(schoolId: string, id: string) {
   return record
 }
 
+export async function findLessonRecordForSlotRepository(
+  schoolId: string,
+  teacherId: string,
+  timetableSlotId: string,
+  date: string,
+  exceptId?: string,
+) {
+  const conditions = [
+    eq(lessonRecords.schoolId, schoolId),
+    eq(lessonRecords.teacherId, teacherId),
+    eq(lessonRecords.timetableSlotId, timetableSlotId),
+    eq(lessonRecords.date, date),
+  ]
+  if (exceptId) conditions.push(ne(lessonRecords.id, exceptId))
+  const [record] = await db.select({ id: lessonRecords.id }).from(lessonRecords).where(and(...conditions)).limit(1)
+  return record
+}
+
 export async function createLessonRecordRepository(input: {
   schoolId: string
   teacherId: string
@@ -116,7 +134,20 @@ export async function deleteLessonRecordRepository(schoolId: string, id: string,
   return deleted
 }
 
-export async function getLessonRecordCalendarRepository(schoolId: string, from: string, to: string) {
+export async function getLessonRecordCalendarRepository(
+  schoolId: string,
+  from: string,
+  to: string,
+  teacherId?: string,
+) {
+  const scheduleConditions = [
+    eq(timetableSlots.schoolId, schoolId),
+    eq(teachers.schoolId, schoolId),
+    eq(schoolClasses.schoolId, schoolId),
+    eq(subjects.schoolId, schoolId),
+  ]
+  if (teacherId) scheduleConditions.push(eq(timetableSlots.teacherId, teacherId))
+
   const schedule = await db.select({
     teacherId: timetableSlots.teacherId,
     classId: timetableSlots.classId,
@@ -126,22 +157,21 @@ export async function getLessonRecordCalendarRepository(schoolId: string, from: 
     .innerJoin(teachers, eq(timetableSlots.teacherId, teachers.id))
     .innerJoin(schoolClasses, eq(timetableSlots.classId, schoolClasses.id))
     .innerJoin(subjects, eq(timetableSlots.subjectId, subjects.id))
-    .where(and(
-      eq(timetableSlots.schoolId, schoolId),
-      eq(teachers.schoolId, schoolId),
-      eq(schoolClasses.schoolId, schoolId),
-      eq(subjects.schoolId, schoolId),
-    ))
+    .where(and(...scheduleConditions))
+
+  const recordConditions = [
+    eq(lessonRecords.schoolId, schoolId),
+    gte(lessonRecords.date, from),
+    lte(lessonRecords.date, to),
+  ]
+  if (teacherId) recordConditions.push(eq(lessonRecords.teacherId, teacherId))
 
   const records = await db.select({
     teacherId: lessonRecords.teacherId,
     classId: lessonRecords.classId,
     subjectId: lessonRecords.subjectId,
     date: lessonRecords.date,
-  }).from(lessonRecords).where(and(
-    eq(lessonRecords.schoolId, schoolId),
-    gte(lessonRecords.date, from),
-    lte(lessonRecords.date, to),
-  ))
+  }).from(lessonRecords).where(and(...recordConditions))
+
   return { schedule, records }
 }

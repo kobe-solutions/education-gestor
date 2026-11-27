@@ -381,12 +381,24 @@ export function SchedulingPage() {
   )
 
   function openAssignForm(classId: string, teacherId?: string, teacherName?: string) {
+    const targetTeacherId = teacherId ?? selectedTeacher?.id ?? ''
+    const teacherObj = teachers.find((t) => t.id === targetTeacherId)
     setAssignTarget({ classId, teacherId, teacherName })
-    setFormTeacher(teacherId ?? selectedTeacher?.id ?? '')
+    setFormTeacher(targetTeacherId)
     setSelectedDays([])
     setSelectedPeriods([])
-    setFormSubject('')
+    setFormSubject(teacherObj?.subjects.length === 1 ? teacherObj.subjects[0].id : '')
   }
+
+  const selectedFormTeacher = useMemo(
+    () => teachers.find((t) => t.id === formTeacher) ?? null,
+    [teachers, formTeacher],
+  )
+
+  const availableSubjects = useMemo(
+    () => (selectedFormTeacher ? selectedFormTeacher.subjects : subjects),
+    [selectedFormTeacher, subjects],
+  )
 
   function handleDrop(classId: string, teacherId: string, teacherName: string) {
     openAssignForm(classId, teacherId, teacherName)
@@ -603,17 +615,57 @@ export function SchedulingPage() {
               </div>
               <div className="space-y-1">
                 <Label htmlFor="assign-teacher">Professor *</Label>
-                <Select value={formTeacher} onValueChange={(v) => setFormTeacher(v ?? '')} items={teachers.map((t) => ({ value: t.id, label: t.name }))}>
+                <Select
+                  value={formTeacher}
+                  onValueChange={(v) => {
+                    const nextTeacherId = v ?? ''
+                    setFormTeacher(nextTeacherId)
+                    const nextTeacher = teachers.find((t) => t.id === nextTeacherId)
+                    if (nextTeacher) {
+                      const stillTeaches = nextTeacher.subjects.some((s) => s.id === formSubject)
+                      if (!stillTeaches) {
+                        setFormSubject(nextTeacher.subjects.length === 1 ? nextTeacher.subjects[0].id : '')
+                      }
+                    } else {
+                      setFormSubject('')
+                    }
+                  }}
+                  items={teachers.map((t) => ({ value: t.id, label: t.name }))}
+                >
                   <SelectTrigger id="assign-teacher"><SelectValue placeholder="Selecionar professor" /></SelectTrigger>
                   <SelectContent>{teachers.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="assign-subject">Disciplina *</Label>
-                <Select value={formSubject} onValueChange={(v) => setFormSubject(v ?? '')} items={subjects.map((s) => ({ value: s.id, label: s.name }))}>
-                  <SelectTrigger id="assign-subject"><SelectValue placeholder="Selecionar disciplina" /></SelectTrigger>
-                  <SelectContent>{subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                <Select
+                  value={formSubject}
+                  onValueChange={(v) => setFormSubject(v ?? '')}
+                  items={availableSubjects.map((s) => ({ value: s.id, label: s.name }))}
+                  disabled={!formTeacher || availableSubjects.length === 0}
+                >
+                  <SelectTrigger id="assign-subject">
+                    <SelectValue
+                      placeholder={
+                        !formTeacher
+                          ? 'Selecione um professor primeiro'
+                          : availableSubjects.length === 0
+                            ? 'Professor sem disciplinas vinculadas'
+                            : 'Selecionar disciplina'
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSubjects.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
+                {selectedFormTeacher && availableSubjects.length === 0 && (
+                  <p className="text-xs text-destructive">
+                    Este professor não possui disciplinas vinculadas.
+                  </p>
+                )}
               </div>
             </div>
 

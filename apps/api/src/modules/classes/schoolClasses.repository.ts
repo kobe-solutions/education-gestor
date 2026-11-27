@@ -172,6 +172,20 @@ export async function countStudentsByClassesRepository(classIds: string[]) {
   return Object.fromEntries(rows.map((r) => [r.classId, Number(r.total)])) as Record<string, number>
 }
 
+export async function findStudentsByClassesRepository(classIds: string[]) {
+  if (classIds.length === 0) return []
+  return db
+    .select({
+      classId: classStudents.classId,
+      id: students.id,
+      name: students.name,
+      enrollmentCode: students.enrollmentCode,
+    })
+    .from(classStudents)
+    .innerJoin(students, eq(classStudents.studentId, students.id))
+    .where(inArray(classStudents.classId, classIds))
+}
+
 export async function findClassesByStudentRepository(schoolId: string, studentId: string) {
   return db
     .select({

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { fireEvent } from '@testing-library/react'
 import { createProviders } from '../../render'
-import { useKeyboardShortcuts, SHORTCUTS } from '../../../hooks/useKeyboardShortcuts'
+import { getShortcutsForRole, useKeyboardShortcuts, SHORTCUTS } from '../../../hooks/useKeyboardShortcuts'
 
 function setup() {
   const onOpenHelp = vi.fn()
@@ -35,5 +35,13 @@ describe('useKeyboardShortcuts', () => {
   it('expõe atalhos para a cheat sheet', () => {
     expect(SHORTCUTS.length).toBeGreaterThanOrEqual(6)
     expect(SHORTCUTS.some((s) => s.keys === '?')).toBe(true)
+  })
+
+  it('filtra os atalhos de navegação conforme o perfil', () => {
+    const professorShortcuts = getShortcutsForRole('professor')
+
+    expect(professorShortcuts.some((shortcut) => shortcut.keys === 'g → a')).toBe(true)
+    expect(professorShortcuts.some((shortcut) => shortcut.keys === 'g → p')).toBe(false)
+    expect(professorShortcuts.some((shortcut) => shortcut.keys === 'g → f')).toBe(false)
   })
 })

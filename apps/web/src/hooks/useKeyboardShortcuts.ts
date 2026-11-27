@@ -1,21 +1,27 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router'
+import type { UserRole } from '@education-gestor/types'
+import { useAuth } from '../contexts/AuthContext'
 
-interface ShortcutAction {
+export interface ShortcutAction {
   keys: string
   label: string
   to?: string
+  roles?: UserRole[]
 }
 
 export const SHORTCUTS: ShortcutAction[] = [
   { keys: '/', label: 'Focar na busca' },
-  { keys: 'g → p', label: 'Ir para Pessoas', to: '/people' },
-  { keys: 'g → a', label: 'Ir para Acadêmico', to: '/academic' },
-  { keys: 'g → f', label: 'Ir para Financeiro', to: '/financial' },
-  { keys: 'g → e', label: 'Ir para Eventos escolares', to: '/school-events' },
-  { keys: 'g → s', label: 'Ir para Configurações', to: '/settings' },
+  { keys: 'g → p', label: 'Ir para Pessoas', to: '/people', roles: ['gestor', 'secretaria'] },
+  { keys: 'g → a', label: 'Ir para Acadêmico', to: '/academic', roles: ['gestor', 'secretaria', 'professor'] },
+  { keys: 'g → f', label: 'Ir para Financeiro', to: '/financial', roles: ['gestor', 'secretaria'] },
+  { keys: 'g → e', label: 'Ir para Eventos escolares', to: '/school-events', roles: ['gestor', 'secretaria', 'professor'] },
   { keys: '?', label: 'Mostrar atalhos' },
 ]
+
+export function getShortcutsForRole(role?: UserRole): ShortcutAction[] {
+  return SHORTCUTS.filter((shortcut) => !shortcut.roles || (role && shortcut.roles.includes(role)))
+}
 
 function isTypingTarget(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false
@@ -37,7 +43,9 @@ function isTypingTarget(target: EventTarget | null) {
  */
 export function useKeyboardShortcuts(onOpenHelp: () => void) {
   const navigate = useNavigate()
+  const { payload } = useAuth()
   const gPressed = useRef<number | null>(null)
+  const role = payload?.role as UserRole | undefined
 
   const focusSearch = useCallback(() => {
     const searchInput = document.querySelector<HTMLInputElement>('input[type="search"]')
@@ -67,18 +75,11 @@ export function useKeyboardShortcuts(onOpenHelp: () => void) {
 
       // sequência g → letra dentro de 1s
       if (gPressed.current !== null && Date.now() - gPressed.current <= 1000) {
-        const map: Record<string, string> = {
-          p: '/people',
-          a: '/academic',
-          f: '/financial',
-          e: '/school-events',
-          s: '/settings',
-        }
-        const to = map[e.key]
+        const shortcut = getShortcutsForRole(role).find((item) => item.keys === `g → ${e.key}`)
         gPressed.current = null
-        if (to) {
+        if (shortcut?.to) {
           e.preventDefault()
-          navigate(to)
+          navigate(shortcut.to)
         }
       } else if (gPressed.current !== null) {
         gPressed.current = null
@@ -87,5 +88,5 @@ export function useKeyboardShortcuts(onOpenHelp: () => void) {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [navigate, onOpenHelp, focusSearch])
+  }, [navigate, onOpenHelp, focusSearch, role])
 }

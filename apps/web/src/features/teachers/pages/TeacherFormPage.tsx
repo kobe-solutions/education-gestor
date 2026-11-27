@@ -5,10 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { ArrowLeft, Upload, FileText, Trash2, Camera } from 'lucide-react'
 import { toast } from '../../../lib/toast'
+import { maskCEP, maskCPF, maskPhone, maskRG } from '../../../lib/masks'
 import { useUnsavedChanges } from '../../../lib/useUnsavedChanges'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
+import { MaskedInput } from '../../../components/ui/masked-input'
 import { Label } from '../../../components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select'
@@ -119,13 +121,13 @@ export function TeacherFormPage() {
       name: teacher.name,
       email: teacher.email,
       password: '',
-      cpf: teacher.cpf ?? '',
-      rg: teacher.rg ?? '',
+      cpf: teacher.cpf ? maskCPF(teacher.cpf) : '',
+      rg: teacher.rg ? maskRG(teacher.rg) : '',
       birthDate: teacher.birthDate ?? '',
       sex: (teacher.sex as 'M' | 'F' | 'outro') ?? undefined,
       nationality: teacher.nationality ?? '',
       maritalStatus: teacher.maritalStatus ?? '',
-      phone: teacher.phone ?? '',
+      phone: teacher.phone ? maskPhone(teacher.phone) : '',
     } : undefined,
   })
 
@@ -135,7 +137,7 @@ export function TeacherFormPage() {
     resolver: zodResolver(enderecoSchema),
     mode: 'onBlur',
     values: teacher ? {
-      addressCep: teacher.addressCep ?? '',
+      addressCep: teacher.addressCep ? maskCEP(teacher.addressCep) : '',
       addressStreet: teacher.addressStreet ?? '',
       addressNumber: teacher.addressNumber ?? '',
       addressComplement: teacher.addressComplement ?? '',
@@ -378,11 +380,11 @@ export function TeacherFormPage() {
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="cpf">CPF<Opt /></Label>
-                  <Input placeholder="000.000.000-00" {...pessoalForm.register('cpf')} />
+                  <MaskedInput mask="cpf" placeholder="000.000.000-00" {...pessoalForm.register('cpf')} />
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="rg">RG<Opt /></Label>
-                  <Input placeholder="00.000.000-0" {...pessoalForm.register('rg')} />
+                  <MaskedInput mask="rg" placeholder="00.000.000-0" {...pessoalForm.register('rg')} />
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="birthDate">Data de nascimento<Opt /></Label>
@@ -418,7 +420,7 @@ export function TeacherFormPage() {
               <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="phone">Telefone<Opt /></Label>
-                  <Input placeholder="(00) 00000-0000" {...pessoalForm.register('phone')} />
+                  <MaskedInput mask="phone" placeholder="(00) 00000-0000" {...pessoalForm.register('phone')} />
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="email">Email *</Label>
@@ -458,7 +460,7 @@ export function TeacherFormPage() {
               <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label htmlFor="addressCep">CEP<Opt /></Label>
-                  <Input placeholder="00000-000" {...enderecoForm.register('addressCep')} />
+                  <MaskedInput mask="cep" placeholder="00000-000" {...enderecoForm.register('addressCep')} />
                 </div>
                 <div className="col-span-2 space-y-1">
                   <Label htmlFor="addressStreet">Logradouro<Opt /></Label>

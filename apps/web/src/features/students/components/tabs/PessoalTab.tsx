@@ -5,10 +5,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '../../../../components/ui/button'
 import { Input } from '../../../../components/ui/input'
+import { MaskedInput } from '../../../../components/ui/masked-input'
 import { Label } from '../../../../components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card'
 import { Textarea } from '../../../../components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select'
+import { maskCPF, maskPhone, maskRG } from '../../../../lib/masks'
 import { useUnsavedChanges } from '../../../../lib/useUnsavedChanges'
 import type { Student } from '@education-gestor/types'
 
@@ -49,13 +51,13 @@ export function PessoalTab({ isEdit, student, uploadingPhoto, saving, onSave, on
       ? {
           name: student.name,
           email: student.email ?? '',
-          cpf: student.cpf ?? '',
-          rg: student.rg ?? '',
+          cpf: student.cpf ? maskCPF(student.cpf) : '',
+          rg: student.rg ? maskRG(student.rg) : '',
           birthDate: student.birthDate ?? '',
           sex: (student.sex as 'M' | 'F' | 'outro') ?? undefined,
           bloodType: (student.bloodType as PessoalForm['bloodType']) ?? undefined,
           naturalidade: student.naturalidade ?? '',
-          phone: student.phone ?? '',
+          phone: student.phone ? maskPhone(student.phone) : '',
           comorbidities: student.comorbidities ?? '',
           observations: student.observations ?? '',
         }
@@ -145,11 +147,11 @@ export function PessoalTab({ isEdit, student, uploadingPhoto, saving, onSave, on
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="cpf">CPF<Opt /></Label>
-                <Input placeholder="000.000.000-00" {...form.register('cpf')} />
+                <MaskedInput mask="cpf" placeholder="000.000.000-00" {...form.register('cpf')} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="rg">RG<Opt /></Label>
-                <Input placeholder="00.000.000-0" {...form.register('rg')} />
+                <MaskedInput mask="rg" placeholder="00.000.000-0" {...form.register('rg')} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="birthDate">Data de nascimento<Opt /></Label>
@@ -189,7 +191,7 @@ export function PessoalTab({ isEdit, student, uploadingPhoto, saving, onSave, on
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="phone">Telefone<Opt /></Label>
-                <Input placeholder="(00) 00000-0000" {...form.register('phone')} />
+                <MaskedInput mask="phone" placeholder="(00) 00000-0000" {...form.register('phone')} />
               </div>
               <div className="col-span-1 sm:col-span-2 space-y-1.5">
                 <Label htmlFor="email">Email<Opt /></Label>

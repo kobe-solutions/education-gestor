@@ -1,6 +1,8 @@
 import { Keyboard } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
-import { SHORTCUTS } from '../hooks/useKeyboardShortcuts'
+import { getShortcutsForRole } from '../hooks/useKeyboardShortcuts'
+import { useAuth } from '../contexts/AuthContext'
+import type { UserRole } from '@education-gestor/types'
 
 interface ShortcutsHelpProps {
   open: boolean
@@ -8,6 +10,9 @@ interface ShortcutsHelpProps {
 }
 
 export function ShortcutsHelp({ open, onOpenChange }: ShortcutsHelpProps) {
+  const { payload } = useAuth()
+  const shortcuts = getShortcutsForRole(payload?.role as UserRole | undefined)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -21,7 +26,7 @@ export function ShortcutsHelp({ open, onOpenChange }: ShortcutsHelpProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-1.5">
-          {SHORTCUTS.map((s) => (
+          {shortcuts.map((s) => (
             <div
               key={s.keys}
               className="flex items-center justify-between rounded-lg border bg-card px-3 py-2"

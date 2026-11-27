@@ -9,6 +9,9 @@ export const createAcademicPeriodBodySchema = z.object({
   startDate: z.string().date(),
   endDate: z.string().date(),
   gradeClosingDate: z.string().date().optional(),
+}).refine((data) => data.startDate < data.endDate, {
+  message: 'A data de término deve ser posterior à data de início.',
+  path: ['endDate'],
 })
 
 export const updateAcademicPeriodBodySchema = z.object({
