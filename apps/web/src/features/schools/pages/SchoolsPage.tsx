@@ -25,9 +25,11 @@ import { useSchools, useCreateSchool, useUpdateSchool, useDeleteSchool, useChang
 import { useUploadSchoolLogo } from '../hooks/useSchools'
 import { useAuth } from '../../../contexts/AuthContext'
 import { toast } from '../../../lib/toast'
+import { maskPhone } from '../../../lib/masks'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
+import { MaskedInput } from '../../../components/ui/masked-input'
 import { Label } from '../../../components/ui/label'
 import { Switch } from '../../../components/ui/switch'
 import { Separator } from '../../../components/ui/separator'
@@ -41,7 +43,6 @@ import { useToggleSchoolFinancialVisibility } from '../hooks/useSchools'
 
 const createSchema = z.object({
   name: z.string().min(2, 'Nome obrigatório'),
-  slug: z.string().min(2, 'Slug obrigatório').regex(/^[a-z0-9-]+$/, 'Apenas letras minúsculas, números e hífens'),
   email: z.string().email('Email inválido'),
   password: z.string().min(8, 'Mínimo 8 caracteres'),
   director: z.string().optional(),
@@ -159,7 +160,7 @@ function SchoolCard({ school, canManage, isSecretaria, isAdmin, onEdit, onDelete
               {school.phone && (
                 <div className="flex items-center gap-2 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                   <Phone size={14} className="shrink-0" />
-                  <span>{school.phone}</span>
+                  <span>{maskPhone(school.phone)}</span>
                 </div>
               )}
               {school.address && (
@@ -255,7 +256,6 @@ export function SchoolsPage() {
   const createForm = useForm<CreateForm>({ resolver: zodResolver(createSchema) })
   const editForm = useForm<EditForm>({ resolver: zodResolver(editSchema) })
   const passwordForm = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) })
-  const slugManuallyEdited = useRef(false)
   const editSlugManuallyEdited = useRef(false)
 
   const filtered = schools?.filter((s) =>
@@ -277,7 +277,7 @@ export function SchoolsPage() {
       email: school.email,
       director: school.director ?? '',
       coordinator: school.coordinator ?? '',
-      phone: school.phone ?? '',
+      phone: school.phone ? maskPhone(school.phone) : '',
       address: school.address ?? '',
     })
   }
@@ -291,6 +291,7 @@ export function SchoolsPage() {
     createMutation.mutate(
       {
         ...data,
+        slug: slugify(data.name),
         director: data.director || undefined,
         coordinator: data.coordinator || undefined,
         phone: data.phone || undefined,
@@ -500,45 +501,28 @@ export function SchoolsPage() {
       )}
 
       {/* Dialog criação */}
-      <Dialog open={createOpen} onOpenChange={(v) => { if (!v) { setCreateOpen(false); createForm.reset(); slugManuallyEdited.current = false } }}>
+      <Dialog open={createOpen} onOpenChange={(v) => { if (!v) { setCreateOpen(false); createForm.reset() } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Nova escola</DialogTitle>
             <DialogDescription className="sr-only">Criar uma nova escola</DialogDescription>
           </DialogHeader>
           <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <p className="text-xs text-muted-foreground">Os campos com * são obrigatórios. O identificador técnico da escola será criado automaticamente.</p>
               <div className="space-y-1">
                 <Label htmlFor="create-school-name">Nome *</Label>
                 <Input
                   id="create-school-name"
                   {...createForm.register('name')}
-                  onChange={(e) => {
-                    createForm.setValue('name', e.target.value)
-                    if (!slugManuallyEdited.current) {
-                      createForm.setValue('slug', slugify(e.target.value))
-                    }
-                  }}
+                  onChange={(e) => createForm.setValue('name', e.target.value)}
                 />
                 {createForm.formState.errors.name && (
                   <p className="text-xs text-destructive">{createForm.formState.errors.name.message}</p>
                 )}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="create-school-slug">Slug *</Label>
-                <Input
-                  placeholder="ex: escola-modelo"
-                  id="create-school-slug"
-                  {...createForm.register('slug')}
-                  onChange={(e) => {
-                    slugManuallyEdited.current = true
-                    createForm.setValue('slug', e.target.value)
-                  }}
-                />
-                {createForm.formState.errors.slug && (
-                  <p className="text-xs text-destructive">{createForm.formState.errors.slug.message}</p>
-                )}
-              </div>
+            </div>
+            <div className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">Acesso do gestor escolar</p>
+              <p className="mt-0.5">O e-mail e a senha abaixo serão as credenciais usadas pelo gestor para entrar na plataforma.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -569,7 +553,7 @@ export function SchoolsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="create-school-phone">Telefone</Label>
-                <Input id="create-school-phone" placeholder="(00) 00000-0000" {...createForm.register('phone')} />
+                <MaskedInput id="create-school-phone" mask="phone" placeholder="(00) 00000-0000" {...createForm.register('phone')} />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="create-school-address">Endereço</Label>
@@ -577,7 +561,7 @@ export function SchoolsPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setCreateOpen(false); createForm.reset(); slugManuallyEdited.current = false }}>
+              <Button type="button" variant="outline" onClick={() => { setCreateOpen(false); createForm.reset() }}>
                 Cancelar
               </Button>
               <Button type="submit" disabled={createMutation.isPending}>
@@ -649,7 +633,7 @@ export function SchoolsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="edit-school-phone">Telefone</Label>
-                <Input id="edit-school-phone" placeholder="(00) 00000-0000" {...editForm.register('phone')} />
+                <MaskedInput id="edit-school-phone" mask="phone" placeholder="(00) 00000-0000" {...editForm.register('phone')} />
               </div>
               <div className="space-y-1">
                 <Label htmlFor="edit-school-address">Endereço</Label>

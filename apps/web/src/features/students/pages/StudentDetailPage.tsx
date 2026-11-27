@@ -29,11 +29,13 @@ import { useStudentClasses } from '../../classes/hooks/useClasses'
 import { TuitionStatusBadge } from '../../financial/components/TuitionStatusBadge'
 import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
+import { maskCEP, maskCPF, maskPhone, maskRG } from '../../../lib/masks'
 import { toast } from '../../../lib/toast'
 import { Timeline, type TimelineEntry } from '../../../components/Timeline'
 import { ENROLLMENT_STATUS_LABELS } from '../../../lib/labels'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
+import { MaskedInput } from '../../../components/ui/masked-input'
 import { Label } from '../../../components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../../components/ui/dialog'
 import { Badge } from '../../../components/ui/badge'
@@ -276,7 +278,7 @@ export function StudentDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Telefone</p>
-                  <p className="text-sm font-medium mt-0.5">{student.phone || '—'}</p>
+                  <p className="text-sm font-medium mt-0.5">{student.phone ? maskPhone(student.phone) : '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Nascimento</p>
@@ -292,11 +294,11 @@ export function StudentDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">CPF</p>
-                  <p className="text-sm font-medium mt-0.5">{student.cpf || '—'}</p>
+                  <p className="text-sm font-medium mt-0.5">{student.cpf ? maskCPF(student.cpf) : '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">RG</p>
-                  <p className="text-sm font-medium mt-0.5">{student.rg || '—'}</p>
+                  <p className="text-sm font-medium mt-0.5">{student.rg ? maskRG(student.rg) : '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Tipo sanguíneo</p>
@@ -348,7 +350,7 @@ export function StudentDetailPage() {
                     {student.motherPhone && (
                       <div>
                         <p className="text-xs text-muted-foreground">Telefone da mãe</p>
-                        <p className="text-sm font-medium mt-0.5">{student.motherPhone}</p>
+                        <p className="text-sm font-medium mt-0.5">{maskPhone(student.motherPhone)}</p>
                       </div>
                     )}
                     {student.fatherName && (
@@ -372,7 +374,7 @@ export function StudentDetailPage() {
                         student.addressCity && student.addressState
                           ? `${student.addressCity}/${student.addressState}`
                           : student.addressCity,
-                        student.addressCep ? `CEP: ${student.addressCep}` : undefined,
+                        student.addressCep ? `CEP: ${maskCEP(student.addressCep)}` : undefined,
                       ]
                         .filter(Boolean)
                         .join(', ')}
@@ -413,9 +415,9 @@ export function StudentDetailPage() {
                         <p className="text-sm font-semibold text-foreground">{g.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {g.relationship}
-                          {g.phone ? ` · ${g.phone}` : ''}
+                          {g.phone ? ` · ${maskPhone(g.phone)}` : ''}
                           {g.email ? ` · ${g.email}` : ''}
-                          {g.cpf ? ` · CPF: ${g.cpf}` : ''}
+                          {g.cpf ? ` · CPF: ${maskCPF(g.cpf)}` : ''}
                         </p>
                         <div className="flex gap-1.5 pt-1">
                           {g.isResponsible && (
@@ -614,13 +616,13 @@ export function StudentDetailPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="detail-guardian-phone">Telefone</Label>
-                <Input id="detail-guardian-phone" {...register('phone')} placeholder="(00) 00000-0000" />
+                <MaskedInput id="detail-guardian-phone" mask="phone" {...register('phone')} placeholder="(00) 00000-0000" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="detail-guardian-cpf">CPF</Label>
-                <Input id="detail-guardian-cpf" {...register('cpf')} placeholder="000.000.000-00" />
+                <MaskedInput id="detail-guardian-cpf" mask="cpf" {...register('cpf')} placeholder="000.000.000-00" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="detail-guardian-profession">Profissão</Label>

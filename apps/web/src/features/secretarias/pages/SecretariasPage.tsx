@@ -26,6 +26,7 @@ import {
   X,
 } from 'lucide-react'
 import { extractErrorMessage } from '../../../lib/errors'
+import { maskPhone } from '../../../lib/masks'
 import { toast } from '../../../lib/toast'
 import type { Secretaria, School } from '@education-gestor/types'
 import {
@@ -45,6 +46,7 @@ import { useSchools } from '../../schools/hooks/useSchools'
 import { useApiMutation } from '../../../hooks/useApiMutation'
 import { Button } from '../../../components/ui/button'
 import { Input } from '../../../components/ui/input'
+import { MaskedInput } from '../../../components/ui/masked-input'
 import { Label } from '../../../components/ui/label'
 import { Switch } from '../../../components/ui/switch'
 import { Separator } from '../../../components/ui/separator'
@@ -205,7 +207,7 @@ function SecretariaCard({ secretaria, onEdit, onDelete, onResetPassword, onSchoo
               {secretaria.phone && (
                 <div className="flex items-center gap-2.5 text-sm" style={{ color: 'hsl(var(--muted-foreground))' }}>
                   <Phone size={14} className="shrink-0" style={{ color: ACCENT_COLOR }} />
-                  <span>{secretaria.phone}</span>
+                  <span>{maskPhone(secretaria.phone)}</span>
                 </div>
               )}
               {secretaria.address && (
@@ -448,7 +450,7 @@ export function SecretariasPage() {
       name: secretaria.name,
       email: secretaria.email,
       responsible: secretaria.responsible ?? '',
-      phone: secretaria.phone ?? '',
+      phone: secretaria.phone ? maskPhone(secretaria.phone) : '',
       address: secretaria.address ?? '',
       active: secretaria.active,
     })
@@ -764,7 +766,7 @@ export function SecretariasPage() {
             </div>
             <div className="space-y-1">
               <Label htmlFor="create-secretaria-phone">Telefone</Label>
-              <Input id="create-secretaria-phone" {...registerCreate('phone')} />
+              <MaskedInput id="create-secretaria-phone" mask="phone" placeholder="(00) 00000-0000" {...registerCreate('phone')} />
             </div>
             <div className="space-y-1">
               <Label htmlFor="create-secretaria-address">Endereço</Label>
@@ -819,7 +821,7 @@ export function SecretariasPage() {
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-secretaria-phone">Telefone</Label>
-              <Input id="edit-secretaria-phone" {...registerEdit('phone')} />
+              <MaskedInput id="edit-secretaria-phone" mask="phone" placeholder="(00) 00000-0000" {...registerEdit('phone')} />
             </div>
             <div className="space-y-1">
               <Label htmlFor="edit-secretaria-address">Endereço</Label>
