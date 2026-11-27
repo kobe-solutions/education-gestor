@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { toast } from 'sonner'
 
 export type ImportResultRow = {
@@ -23,10 +23,10 @@ export function useImportStudents() {
     mutationFn: async (file: File) => {
       const form = new FormData()
       form.append('file', file)
-      const { data } = await api.post<ImportResult>('/students/import', form, {
+      const { data } = await api.post<ApiSuccessResponse<ImportResult>>('/students/import', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
-      return data
+      return data.data
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['students'] })

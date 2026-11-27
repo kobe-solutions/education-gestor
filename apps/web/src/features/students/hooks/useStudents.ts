@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Student, Guardian, StudentMedical, StudentDocument } from '@education-gestor/types'
 
@@ -17,7 +17,7 @@ export function useStudents(params?: { page?: number; limit?: number; search?: s
   return useQuery({
     queryKey: ['students', schoolKey, { page, limit, search, status, sex, minAge, maxAge }],
     queryFn: async () => {
-      const res = await api.get<{ data: Student[]; total: number }>('/students', {
+      const res = await api.get<ApiSuccessResponse<{ data: Student[]; total: number }>>('/students', {
         params: {
           page,
           limit,
@@ -28,8 +28,7 @@ export function useStudents(params?: { page?: number; limit?: number; search?: s
           ...(maxAge ? { maxAge } : {}),
         },
       })
-      const body = res.data
-      return { data: body.data, total: body.total }
+      return { data: res.data.data.data, total: res.data.data.total }
     },
     enabled,
   })
@@ -40,8 +39,8 @@ export function useAllStudents() {
   return useQuery({
     queryKey: ['students', 'all', schoolKey],
     queryFn: async () => {
-      const res = await api.get<{ data: Student[]; total: number }>('/students', { params: { page: 1, limit: 200 } })
-      return res.data.data
+      const res = await api.get<ApiSuccessResponse<{ data: Student[]; total: number }>>('/students', { params: { page: 1, limit: 200 } })
+      return res.data.data.data
     },
     enabled,
   })
@@ -50,7 +49,7 @@ export function useAllStudents() {
 export function useStudent(id: string) {
   return useQuery({
     queryKey: ['students', id],
-    queryFn: async () => (await api.get<Student>(`/students/${id}`)).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<Student>>(`/students/${id}`)).data.data,
     enabled: !!id,
   })
 }
@@ -67,7 +66,7 @@ export function useCreateStudent() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Partial<CreateStudentInput> & { name: string }) => {
-      return (await api.post<Student>('/students', data)).data
+      return (await api.post<ApiSuccessResponse<Student>>('/students', data)).data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students'] }),
   })
@@ -77,7 +76,7 @@ export function useUpdateStudent(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Partial<CreateStudentInput> & { enrollmentStatus?: string }) => {
-      return (await api.put<Student>(`/students/${id}`, data)).data
+      return (await api.put<ApiSuccessResponse<Student>>(`/students/${id}`, data)).data.data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students'] })
@@ -110,9 +109,9 @@ export function useUploadStudentPhoto(studentId: string) {
     mutationFn: async (file: File) => {
       const form = new FormData()
       form.append('file', file)
-      return (await api.post<Student>(`/students/${studentId}/photo`, form, {
+      return (await api.post<ApiSuccessResponse<Student>>(`/students/${studentId}/photo`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      })).data
+      })).data.data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['students', studentId] })
@@ -126,7 +125,7 @@ export function useUploadStudentPhoto(studentId: string) {
 export function useStudentGuardians(studentId: string) {
   return useQuery({
     queryKey: ['students', studentId, 'guardians'],
-    queryFn: async () => (await api.get<Guardian[]>(`/students/${studentId}/guardians`)).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<Guardian[]>>(`/students/${studentId}/guardians`)).data.data,
     enabled: !!studentId,
   })
 }
@@ -137,7 +136,7 @@ export function useAddGuardian(studentId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: GuardianInput) =>
-      (await api.post<Guardian>(`/students/${studentId}/guardians`, data)).data,
+      (await api.post<ApiSuccessResponse<Guardian>>(`/students/${studentId}/guardians`, data)).data.data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'guardians'] }),
   })
 }
@@ -146,7 +145,7 @@ export function useUpdateGuardian(studentId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<GuardianInput> }) =>
-      (await api.put<Guardian>(`/students/${studentId}/guardians/${id}`, data)).data,
+      (await api.put<ApiSuccessResponse<Guardian>>(`/students/${studentId}/guardians/${id}`, data)).data.data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'guardians'] }),
   })
 }
@@ -166,7 +165,7 @@ export function useDeleteGuardian(studentId: string) {
 export function useStudentMedical(studentId: string) {
   return useQuery({
     queryKey: ['students', studentId, 'medical'],
-    queryFn: async () => (await api.get<StudentMedical>(`/students/${studentId}/medical`)).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<StudentMedical>>(`/students/${studentId}/medical`)).data.data,
     enabled: !!studentId,
   })
 }
@@ -175,7 +174,7 @@ export function useUpsertMedical(studentId: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Partial<Omit<StudentMedical, 'id' | 'studentId' | 'createdAt' | 'updatedAt'>>) =>
-      (await api.put<StudentMedical>(`/students/${studentId}/medical`, data)).data,
+      (await api.put<ApiSuccessResponse<StudentMedical>>(`/students/${studentId}/medical`, data)).data.data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'medical'] }),
   })
 }
@@ -185,7 +184,7 @@ export function useUpsertMedical(studentId: string) {
 export function useStudentDocuments(studentId: string) {
   return useQuery({
     queryKey: ['students', studentId, 'documents'],
-    queryFn: async () => (await api.get<StudentDocument[]>(`/students/${studentId}/documents`)).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<StudentDocument[]>>(`/students/${studentId}/documents`)).data.data,
     enabled: !!studentId,
   })
 }
@@ -196,11 +195,11 @@ export function useUploadDocument(studentId: string) {
     mutationFn: async ({ file, type }: { file: File; type: string }) => {
       const form = new FormData()
       form.append('file', file)
-      return (await api.post<StudentDocument>(
+      return (await api.post<ApiSuccessResponse<StudentDocument>>(
         `/students/${studentId}/documents?type=${type}`,
         form,
         { headers: { 'Content-Type': 'multipart/form-data' } },
-      )).data
+      )).data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['students', studentId, 'documents'] }),
   })
