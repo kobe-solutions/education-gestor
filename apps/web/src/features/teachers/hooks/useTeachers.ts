@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Teacher, TeacherDocument } from '@education-gestor/types'
 
@@ -24,10 +24,10 @@ export function useTeachers(params?: { page?: number; limit?: number }) {
   return useQuery({
     queryKey: ['teachers', schoolKey, { page, limit }],
     queryFn: async () => {
-      const res = await api.get<{ data: Teacher[]; total: number }>('/teachers', {
+      const res = await api.get<ApiSuccessResponse<{ data: Teacher[]; total: number }>>('/teachers', {
         params: { page, limit },
       })
-      return { data: res.data.data, total: res.data.total }
+      return { data: res.data.data.data, total: res.data.data.total }
     },
     enabled,
   })
@@ -38,9 +38,8 @@ export function useAllTeachers() {
   return useQuery({
     queryKey: ['teachers', schoolKey],
     queryFn: async () => {
-      const res = await api.get<{ data: Teacher[]; total: number } | Teacher[]>('/teachers')
-      const body = res.data
-      return Array.isArray(body) ? body : body.data
+      const res = await api.get<ApiSuccessResponse<{ data: Teacher[]; total: number }>>('/teachers')
+      return res.data.data.data
     },
     enabled,
   })
@@ -49,7 +48,7 @@ export function useAllTeachers() {
 export function useTeacher(id: string) {
   return useQuery({
     queryKey: ['teachers', id],
-    queryFn: async () => (await api.get<Teacher>(`/teachers/${id}`)).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<Teacher>>(`/teachers/${id}`)).data.data,
     enabled: !!id,
   })
 }
@@ -58,7 +57,7 @@ export function useCreateTeacher() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Partial<TeacherCreateInput> & { name: string; email: string; password: string }) =>
-      (await api.post<Teacher>('/teachers', data)).data,
+      (await api.post<ApiSuccessResponse<Teacher>>('/teachers', data)).data.data,
     onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers'] }),
   })
 }
@@ -67,7 +66,7 @@ export function useUpdateTeacher(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: TeacherUpdateInput) =>
-      (await api.put<Teacher>(`/teachers/${id}`, data)).data,
+      (await api.put<ApiSuccessResponse<Teacher>>(`/teachers/${id}`, data)).data.data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teachers'] })
       qc.invalidateQueries({ queryKey: ['teachers', id] })
@@ -131,7 +130,7 @@ export function useUpdateMyProfile() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: TeacherUpdateInput) =>
-      (await api.put<Teacher>('/teachers/me', data)).data,
+      (await api.put<ApiSuccessResponse<Teacher>>('/teachers/me', data)).data.data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teachers'] })
     },
@@ -152,9 +151,9 @@ export function useUploadTeacherPhoto(id: string) {
     mutationFn: async (file: File) => {
       const form = new FormData()
       form.append('file', file)
-      return (await api.post<Teacher>(`/teachers/${id}/photo`, form, {
+      return (await api.post<ApiSuccessResponse<Teacher>>(`/teachers/${id}/photo`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      })).data
+      })).data.data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teachers', id] })
@@ -167,8 +166,8 @@ export function useTeacherDocuments(teacherId: string) {
   return useQuery({
     queryKey: ['teachers', teacherId, 'documents'],
     queryFn: async () => {
-      const res = await api.get<TeacherDocument[]>(`/teachers/${teacherId}/documents`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<TeacherDocument[]>>(`/teachers/${teacherId}/documents`)
+      return res.data.data
     },
     enabled: !!teacherId,
   })
@@ -180,11 +179,11 @@ export function useUploadTeacherDocument(teacherId: string) {
     mutationFn: async ({ file, type }: { file: File; type: string }) => {
       const form = new FormData()
       form.append('file', file)
-      return (await api.post<TeacherDocument>(
+      return (await api.post<ApiSuccessResponse<TeacherDocument>>(
         `/teachers/${teacherId}/documents?type=${type}`,
         form,
         { headers: { 'Content-Type': 'multipart/form-data' } },
-      )).data
+      )).data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['teachers', teacherId, 'documents'] }),
   })
@@ -206,9 +205,9 @@ export function useUploadMyPhoto() {
     mutationFn: async (file: File) => {
       const form = new FormData()
       form.append('file', file)
-      return (await api.post<Teacher>('/teachers/me/photo', form, {
+      return (await api.post<ApiSuccessResponse<Teacher>>('/teachers/me/photo', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      })).data
+      })).data.data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teachers'] })
