@@ -1,5 +1,4 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify'
-import { ZodError } from 'zod'
 import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles, type JwtPayload, type SecretariaPayload } from '../../middlewares/authorize'
@@ -17,6 +16,7 @@ import {
 } from './schools.service'
 import { createSchoolBodySchema, updateSchoolBodySchema, changePasswordBodySchema } from './schools.schema'
 import { validateImageFile, extFromMime } from '../../lib/validators'
+import { errorHandler, handleRouteError, successHandler } from '../../lib/responseHandlers'
 
 const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
 const secretariaOnly = [authenticate, injectTenant, authorizeRoles(['secretaria'])]
@@ -29,22 +29,23 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const body = createSchoolBodySchema.parse(request.body)
       const school = await createSchoolService({ ...body, secretariaId: user.secretariaId })
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: school.id }, 'CREATE', 'school', school.id)
-      return reply.status(201).send(school)
+      return successHandler(reply, 'Escola criada com sucesso.', 201, school)
     } catch (error) {
-      if (error instanceof ZodError) {
-        return reply.status(400).send({ message: 'Validation error', issues: error.issues })
-      }
-      if (error instanceof Error && error.message === 'School already exists with this slug or email') {
-        return reply.status(409).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Os dados da escola são inválidos.', [
+        { message: 'School already exists with this slug or email', status: 409, responseMessage: 'Já existe uma escola com este endereço ou e-mail.' },
+      ])
     }
   })
 
   app.get('/schools', { preHandler: adminOrSecretaria }, async (request: FastifyRequest, reply: FastifyReply) => {
     const user = request.user as JwtPayload
     const secretariaId = user.role === 'secretaria' ? (user as SecretariaPayload).secretariaId : undefined
-    return reply.send(await listSchoolsService(secretariaId))
+    try {
+      const schools = await listSchoolsService(secretariaId)
+      return successHandler(reply, 'Escolas carregadas com sucesso.', 200, schools)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar as escolas.')
+    }
   })
 
   const adminOrSecretariaOrSchool = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
@@ -52,12 +53,12 @@ export async function schoolsRoutes(app: FastifyInstance) {
   app.get('/schools/:id', { preHandler: adminOrSecretariaOrSchool }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const { id } = request.params as { id: string }
-      return reply.send(await getSchoolService(id))
+      const school = await getSchoolService(id)
+      return successHandler(reply, 'Escola carregada com sucesso.', 200, school)
     } catch (error) {
-      if (error instanceof Error && error.message === 'School not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível carregar a escola.', [
+        { message: 'School not found', status: 404 },
+      ])
     }
   })
 
@@ -69,17 +70,13 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const body = updateSchoolBodySchema.parse(request.body)
       const result = await updateSchoolService(id, body, { role: user.role, secretariaId })
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'UPDATE', 'school', id)
-      return reply.send(result)
+      return successHandler(reply, 'Escola atualizada com sucesso.', 200, result)
     } catch (error) {
-      if (error instanceof ZodError) {
-        return reply.status(400).send({ message: 'Validation error', issues: error.issues })
-      }
-      if (error instanceof Error) {
-        if (error.message === 'School not found') return reply.status(404).send({ message: error.message })
-        if (error.message === 'Forbidden') return reply.status(403).send({ message: 'Sem permissão para editar esta escola' })
-        if (error.message === 'School already exists with this slug or email') return reply.status(409).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Os dados da escola são inválidos.', [
+        { message: 'School not found', status: 404 },
+        { message: 'Forbidden', status: 403, responseMessage: 'Sem permissão para editar esta escola.' },
+        { message: 'School already exists with this slug or email', status: 409, responseMessage: 'Já existe uma escola com este endereço ou e-mail.' },
+      ])
     }
   })
 
@@ -90,16 +87,12 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const secretariaId = user.role === 'secretaria' ? (user as SecretariaPayload).secretariaId : undefined
       const body = changePasswordBodySchema.parse(request.body)
       await changeSchoolPasswordService(id, body.password, { role: user.role, secretariaId })
-      return reply.status(204).send()
+      return successHandler(reply, 'Senha da escola atualizada com sucesso.', 200, null)
     } catch (error) {
-      if (error instanceof ZodError) {
-        return reply.status(400).send({ message: 'Validation error', issues: error.issues })
-      }
-      if (error instanceof Error) {
-        if (error.message === 'School not found') return reply.status(404).send({ message: error.message })
-        if (error.message === 'Forbidden') return reply.status(403).send({ message: 'Sem permissão para alterar a senha desta escola' })
-      }
-      throw error
+      return handleRouteError(reply, error, 'A senha informada é inválida.', [
+        { message: 'School not found', status: 404 },
+        { message: 'Forbidden', status: 403, responseMessage: 'Sem permissão para alterar a senha desta escola.' },
+      ])
     }
   })
 
@@ -109,13 +102,12 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const user = request.user as JwtPayload
       const result = await toggleSchoolFinancialVisibilityService(id)
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'UPDATE', 'school', id)
-      return reply.send(result)
+      return successHandler(reply, 'Visibilidade financeira atualizada com sucesso.', 200, result)
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'School not found') return reply.status(404).send({ message: error.message })
-        if (error.message === 'Forbidden') return reply.status(403).send({ message: 'Sem permissão' })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível atualizar a visibilidade financeira.', [
+        { message: 'School not found', status: 404 },
+        { message: 'Forbidden', status: 403, responseMessage: 'Sem permissão.' },
+      ])
     }
   })
 
@@ -123,18 +115,18 @@ export async function schoolsRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       const data = await request.file()
-      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+      if (!data) return errorHandler(reply, 'Nenhum arquivo enviado.', 400)
 
       const buffer = await data.toBuffer()
       const validation = validateImageFile(data.mimetype, buffer.length)
-      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+      if (!validation.valid) return errorHandler(reply, validation.message, 400)
 
-      return reply.send(await uploadSchoolLogoServices(id, buffer, data.mimetype, extFromMime(data.mimetype)))
+      const result = await uploadSchoolLogoServices(id, buffer, data.mimetype, extFromMime(data.mimetype))
+      return successHandler(reply, 'Logotipo da escola atualizado com sucesso.', 200, result)
     } catch (error) {
-      if (error instanceof Error && error.message === 'School not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível atualizar o logotipo da escola.', [
+        { message: 'School not found', status: 404 },
+      ])
     }
   })
 
@@ -145,13 +137,12 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const secretariaId = user.role === 'secretaria' ? (user as SecretariaPayload).secretariaId : undefined
       await deleteSchoolService(id, { role: user.role, secretariaId })
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'DELETE', 'school', id)
-      return reply.status(204).send()
+      return successHandler(reply, 'Escola removida com sucesso.', 200, null)
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'School not found') return reply.status(404).send({ message: error.message })
-        if (error.message === 'Forbidden') return reply.status(403).send({ message: 'Sem permissão para remover esta escola' })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível remover a escola.', [
+        { message: 'School not found', status: 404 },
+        { message: 'Forbidden', status: 403, responseMessage: 'Sem permissão para remover esta escola.' },
+      ])
     }
   })
 
@@ -161,12 +152,11 @@ export async function schoolsRoutes(app: FastifyInstance) {
       const user = request.user as JwtPayload
       await permanentDeleteSchoolService(id)
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: id }, 'DELETE', 'school', id, { permanent: true })
-      return reply.status(204).send()
+      return successHandler(reply, 'Escola removida permanentemente com sucesso.', 200, null)
     } catch (error) {
-      if (error instanceof Error && error.message === 'School not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível remover permanentemente a escola.', [
+        { message: 'School not found', status: 404 },
+      ])
     }
   })
 }

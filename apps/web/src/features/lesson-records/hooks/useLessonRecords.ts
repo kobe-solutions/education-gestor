@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 
 export interface LessonRecord {
@@ -32,7 +32,7 @@ export function useLessonRecordSummary(month?: string) {
   const { schoolKey, enabled } = useSchoolKey()
   return useQuery({
     queryKey: ['lesson-record-summary', schoolKey, month],
-    queryFn: async () => (await api.get<LessonRecordSummary>('/lesson-records/summary', { params: month ? { month } : {} })).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<LessonRecordSummary>>('/lesson-records/summary', { params: month ? { month } : {} })).data.data,
     enabled,
     staleTime: 60_000,
   })
@@ -44,9 +44,9 @@ export function useLessonRecords(month: string, filters: { teacherId?: string; c
   const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate()
   return useQuery({
     queryKey: ['lesson-records', schoolKey, month, filters.teacherId, filters.classId],
-    queryFn: async () => (await api.get<LessonRecord[]>('/lesson-records', {
+    queryFn: async () => (await api.get<ApiSuccessResponse<LessonRecord[]>>('/lesson-records', {
       params: { from: `${month}-01`, to: `${month}-${String(lastDay).padStart(2, '0')}`, ...filters },
-    })).data,
+    })).data.data,
     enabled,
   })
 }
@@ -54,7 +54,7 @@ export function useLessonRecords(month: string, filters: { teacherId?: string; c
 export function useCreateLessonRecord() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (form: FormData) => (await api.post<LessonRecord>('/lesson-records', form)).data,
+    mutationFn: async (form: FormData) => (await api.post<ApiSuccessResponse<LessonRecord>>('/lesson-records', form)).data.data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['lesson-records'] })
       qc.invalidateQueries({ queryKey: ['lesson-record-summary'] })
@@ -66,7 +66,7 @@ export function useUpdateLessonRecord() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, form }: { id: string; form: FormData }) =>
-      (await api.put<LessonRecord>(`/lesson-records/${id}`, form)).data,
+      (await api.put<ApiSuccessResponse<LessonRecord>>(`/lesson-records/${id}`, form)).data.data,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['lesson-records'] })
       qc.invalidateQueries({ queryKey: ['lesson-record-summary'] })

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { extractErrorMessage } from '../../../lib/errors'
 import type { Grade, Attendance, StudentReport } from '@education-gestor/types'
 
@@ -8,8 +8,8 @@ export function useStudentGrades(studentId: string) {
   return useQuery({
     queryKey: ['grades', 'student', studentId],
     queryFn: async () => {
-      const res = await api.get<Grade[]>(`/students/${studentId}/grades`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<Grade[]>>(`/students/${studentId}/grades`)
+      return res.data.data
     },
     enabled: !!studentId,
   })
@@ -19,8 +19,8 @@ export function useStudentReport(studentId: string) {
   return useQuery({
     queryKey: ['grades', 'student', studentId, 'report'],
     queryFn: async () => {
-      const res = await api.get<StudentReport>(`/students/${studentId}/report`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<StudentReport>>(`/students/${studentId}/report`)
+      return res.data.data
     },
     enabled: !!studentId,
   })
@@ -30,8 +30,8 @@ export function useClassGrades(classId: string) {
   return useQuery({
     queryKey: ['grades', 'class', classId],
     queryFn: async () => {
-      const res = await api.get<Grade[]>(`/school-classes/${classId}/grades`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<Grade[]>>(`/school-classes/${classId}/grades`)
+      return res.data.data
     },
     enabled: !!classId,
   })
@@ -50,10 +50,11 @@ export function useRegisterGrade() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: RegisterGradeInput) => {
-      const res = await api.post<Grade>('/grades', data)
+      const res = await api.post<ApiSuccessResponse<Grade>>('/grades', data)
       return res.data
     },
-    onSuccess: (_, vars) => {
+    onSuccess: (response, vars) => {
+      toast.success(response.message)
       qc.invalidateQueries({ queryKey: ['grades', 'class', vars.classId] })
       qc.invalidateQueries({ queryKey: ['grades', 'student', vars.studentId] })
     },
@@ -74,10 +75,11 @@ export function useRegisterBulkGrades() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: RegisterBulkGradeInput) => {
-      const res = await api.post<Grade[]>('/grades/bulk', data)
+      const res = await api.post<ApiSuccessResponse<Grade[]>>('/grades/bulk', data)
       return res.data
     },
-    onSuccess: (_, vars) => {
+    onSuccess: (response, vars) => {
+      toast.success(response.message)
       qc.invalidateQueries({ queryKey: ['grades', 'class', vars.classId] })
     },
     onError: (err) => {
@@ -90,8 +92,8 @@ export function useStudentAttendances(studentId: string) {
   return useQuery({
     queryKey: ['attendances', 'student', studentId],
     queryFn: async () => {
-      const res = await api.get<Attendance[]>(`/students/${studentId}/attendances`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<Attendance[]>>(`/students/${studentId}/attendances`)
+      return res.data.data
     },
     enabled: !!studentId,
   })
@@ -101,8 +103,8 @@ export function useClassAttendance(classId: string, date: string) {
   return useQuery({
     queryKey: ['attendances', 'class', classId, date],
     queryFn: async () => {
-      const res = await api.get<Attendance[]>(`/school-classes/${classId}/attendances?date=${date}`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<Attendance[]>>(`/school-classes/${classId}/attendances?date=${date}`)
+      return res.data.data
     },
     enabled: !!classId && !!date,
   })
@@ -118,10 +120,11 @@ export function useRegisterBulkAttendance() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: RegisterBulkAttendanceInput) => {
-      const res = await api.post<Attendance[]>('/attendances/bulk', data)
+      const res = await api.post<ApiSuccessResponse<Attendance[]>>('/attendances/bulk', data)
       return res.data
     },
-    onSuccess: (_, vars) => {
+    onSuccess: (response, vars) => {
+      toast.success(response.message)
       qc.invalidateQueries({ queryKey: ['attendances', 'class', vars.classId] })
     },
     onError: (err) => {

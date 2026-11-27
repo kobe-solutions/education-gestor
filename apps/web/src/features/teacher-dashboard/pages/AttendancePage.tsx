@@ -31,7 +31,6 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '.
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs'
 import { Switch } from '../../../components/ui/switch'
 import { Input } from '../../../components/ui/input'
-import { toast } from '../../../lib/toast'
 import { parseLocalDate, formatDateBR } from '../../../lib/format'
 import { cn } from '../../../lib/utils'
 
@@ -277,10 +276,7 @@ function AttendanceForm({ classes }: AttendanceFormProps) {
       studentId,
       present,
     }))
-    registerBulk.mutate(
-      { classId: selectedClassId, date: selectedDate, attendances },
-      { onSuccess: () => toast.success('Frequência registrada com sucesso!') },
-    )
+    registerBulk.mutate({ classId: selectedClassId, date: selectedDate, attendances })
   }, [selectedClassId, selectedDate, attendanceMap, registerBulk])
 
   const markAllPresent = useCallback(() => {

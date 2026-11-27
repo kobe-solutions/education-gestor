@@ -4,7 +4,7 @@ import { AlertCircle, AlertTriangle, FileText, Users, ChevronLeft, ChevronRight,
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { SectionHeader } from './SectionHeader'
 import { TONE_CONFIG, type ToneKey } from '../../../lib/colors'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { Alerts } from '../hooks/useDashboard'
 
@@ -172,8 +172,8 @@ function DemandCrudSection({ showForm, setShowForm }: { showForm: boolean; setSh
   const { data, isLoading } = useQuery({
     queryKey: ['demands', schoolKey],
     queryFn: async () => {
-      const res = await api.get<{ demands: Demand[]; total: number }>('/demands')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<{ demands: Demand[]; total: number }>>('/demands')
+      return res.data.data
     },
     enabled: !!schoolKey,
   })

@@ -32,6 +32,7 @@ import {
 import { logAudit } from '../../lib/audit'
 import type { TenantPayload } from '../../middlewares/authorize'
 import { importStudentsService } from './import-students.service'
+import { errorHandler, handleRouteError, successHandler } from '../../lib/responseHandlers'
 
 const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor'])]
 const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
@@ -43,7 +44,8 @@ export async function studentsRoutes(app: FastifyInstance) {
     }
     const limitN = Math.min(parseInt(limit, 10) || 50, 200)
     const offset = (parseInt(page, 10) - 1 || 0) * limitN
-    return reply.send(await listStudentsService(getSchoolId(request), {
+    try {
+      const students = await listStudentsService(getSchoolId(request), {
       limit: limitN,
       offset,
       ...(search ? { search } : {}),
@@ -51,16 +53,22 @@ export async function studentsRoutes(app: FastifyInstance) {
       ...(sex ? { sex } : {}),
       ...(minAge ? { minAge: parseInt(minAge, 10) } : {}),
       ...(maxAge ? { maxAge: parseInt(maxAge, 10) } : {}),
-    }))
+      })
+      return successHandler(reply, 'Alunos carregados com sucesso.', 200, students)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar os alunos.')
+    }
   })
 
   app.get('/students/:id', { preHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
-      return reply.send(await getStudentService(getSchoolId(request), id))
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      const student = await getStudentService(getSchoolId(request), id)
+      return successHandler(reply, 'Aluno carregado com sucesso.', 200, student)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar o aluno.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -70,15 +78,12 @@ export async function studentsRoutes(app: FastifyInstance) {
       const user = request.user as TenantPayload
       const student = await createStudentService(getSchoolId(request), body, { role: user.role, secretariaId: (user as Record<string, unknown>).secretariaId as string | undefined })
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'CREATE', 'student', student.id)
-      return reply.status(201).send(student)
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Enrollment code already in use') {
-        return reply.status(409).send({ message: e.message })
-      }
-      if (e instanceof Error && e.message === 'Secretaria não possui escolas vinculadas') {
-        return reply.status(403).send({ message: e.message })
-      }
-      throw e
+      return successHandler(reply, 'Aluno cadastrado com sucesso.', 201, student)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os dados do aluno são inválidos. Insira os dados corretamente', [
+        { message: 'Enrollment code already in use', status: 409, responseMessage: 'Este código de matrícula já está em uso.' },
+        { message: 'Secretaria não possui escolas vinculadas', status: 403 },
+      ])
     }
   })
 
@@ -87,18 +92,18 @@ export async function studentsRoutes(app: FastifyInstance) {
   app.post('/students/import', { preHandler }, async (request, reply) => {
     try {
       const data = await request.file()
-      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+      if (!data) return errorHandler(reply, 'Nenhum arquivo enviado.', 400)
 
       const buffer = await data.toBuffer()
       const MAX_IMPORT_SIZE = 10 * 1024 * 1024
       if (buffer.length > MAX_IMPORT_SIZE) {
-        return reply.status(400).send({ message: 'Arquivo muito grande. Máximo 10MB.' })
+        return errorHandler(reply, 'Arquivo muito grande. O limite é 10 MB.', 400)
       }
 
       const fileName = data.filename
       const ext = fileName.toLowerCase().split('.').pop()
       if (ext !== 'csv' && ext !== 'xlsx' && ext !== 'xls') {
-        return reply.status(400).send({ message: 'Formato inválido. Use CSV ou XLSX.' })
+        return errorHandler(reply, 'Formato inválido. Use CSV ou XLSX.', 400)
       }
 
       const user = request.user as TenantPayload
@@ -109,12 +114,11 @@ export async function studentsRoutes(app: FastifyInstance) {
         fileName,
         { userId: user.userId, userRole: user.role, schoolId },
       )
-      return reply.send(result)
-    } catch (e) {
-      if (e instanceof Error && e.message.includes('Formato')) {
-        return reply.status(400).send({ message: e.message })
-      }
-      throw e
+      return successHandler(reply, 'Importação de alunos concluída.', 200, result)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível importar os alunos.', [
+        { message: 'Formato', status: 400, includes: true },
+      ])
     }
   })
 
@@ -125,13 +129,12 @@ export async function studentsRoutes(app: FastifyInstance) {
       const result = await updateStudentService(getSchoolId(request), id, body)
       const user = request.user as TenantPayload
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'UPDATE', 'student', id)
-      return reply.send(result)
-    } catch (e) {
-      if (e instanceof Error) {
-        if (e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-        if (e.message === 'Enrollment code already in use') return reply.status(409).send({ message: e.message })
-      }
-      throw e
+      return successHandler(reply, 'Aluno atualizado com sucesso.', 200, result)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os dados do aluno são inválidos.', [
+        { message: 'Student not found', status: 404 },
+        { message: 'Enrollment code already in use', status: 409, responseMessage: 'Este código de matrícula já está em uso.' },
+      ])
     }
   })
 
@@ -141,10 +144,11 @@ export async function studentsRoutes(app: FastifyInstance) {
       await deleteStudentService(getSchoolId(request), id)
       const user = request.user as TenantPayload
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'DELETE', 'student', id)
-      return reply.status(204).send()
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      return successHandler(reply, 'Aluno removido com sucesso.', 200, null)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível remover o aluno.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -154,10 +158,11 @@ export async function studentsRoutes(app: FastifyInstance) {
       await permanentDeleteStudentService(getSchoolId(request), id)
       const user = request.user as TenantPayload
       await logAudit({ userId: user.userId, userRole: user.role, schoolId: getSchoolId(request) }, 'DELETE', 'student', id, { permanent: true })
-      return reply.status(204).send()
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      return successHandler(reply, 'Aluno removido permanentemente com sucesso.', 200, null)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível remover permanentemente o aluno.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -167,18 +172,20 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       const data = await request.file()
-      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+      if (!data) return errorHandler(reply, 'Nenhum arquivo enviado.', 400)
 
       const buffer = await data.toBuffer()
       const validation = validateImageFile(data.mimetype, buffer.length)
-      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+      if (!validation.valid) return errorHandler(reply, validation.message, 400)
 
-      return reply.send(await uploadStudentPhotoService(
+      const photo = await uploadStudentPhotoService(
         getSchoolId(request), id, buffer, data.mimetype, extFromMime(data.mimetype),
-      ))
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      )
+      return successHandler(reply, 'Foto do aluno atualizada com sucesso.', 200, photo)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível atualizar a foto do aluno.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -187,10 +194,12 @@ export async function studentsRoutes(app: FastifyInstance) {
   app.get('/students/:id/guardians', { preHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
-      return reply.send(await listGuardiansService(getSchoolId(request), id))
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      const guardians = await listGuardiansService(getSchoolId(request), id)
+      return successHandler(reply, 'Responsáveis do aluno carregados com sucesso.', 200, guardians)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar os responsáveis do aluno.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -198,10 +207,12 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       const body = createGuardianBodySchema.parse(request.body)
-      return reply.status(201).send(await addGuardianService(getSchoolId(request), id, body))
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      const guardian = await addGuardianService(getSchoolId(request), id, body)
+      return successHandler(reply, 'Responsável cadastrado com sucesso.', 201, guardian)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os dados do responsável são inválidos.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -209,14 +220,13 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const { id, guardianId } = request.params as { id: string; guardianId: string }
       const body = updateGuardianBodySchema.parse(request.body)
-      return reply.send(await updateGuardianService(getSchoolId(request), id, guardianId, body))
-    } catch (e) {
-      if (e instanceof Error) {
-        if (e.message === 'Student not found' || e.message === 'Guardian not found') {
-          return reply.status(404).send({ message: e.message })
-        }
-      }
-      throw e
+      const guardian = await updateGuardianService(getSchoolId(request), id, guardianId, body)
+      return successHandler(reply, 'Responsável atualizado com sucesso.', 200, guardian)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os dados do responsável são inválidos.', [
+        { message: 'Student not found', status: 404 },
+        { message: 'Guardian not found', status: 404, responseMessage: 'O responsável informado não foi encontrado.' },
+      ])
     }
   })
 
@@ -224,10 +234,12 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const { id, guardianId } = request.params as { id: string; guardianId: string }
       await deleteGuardianService(getSchoolId(request), id, guardianId)
-      return reply.status(204).send()
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      return successHandler(reply, 'Responsável removido com sucesso.', 200, null)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível remover o responsável.', [
+        { message: 'Student not found', status: 404 },
+        { message: 'Guardian not found', status: 404 },
+      ])
     }
   })
 
@@ -236,10 +248,12 @@ export async function studentsRoutes(app: FastifyInstance) {
   app.get('/students/:id/medical', { preHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
-      return reply.send(await getMedicalService(getSchoolId(request), id) ?? {})
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      const medical = await getMedicalService(getSchoolId(request), id)
+      return successHandler(reply, 'Ficha médica carregada com sucesso.', 200, medical ?? {})
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar a ficha médica.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -247,10 +261,12 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       const body = upsertMedicalBodySchema.parse(request.body)
-      return reply.send(await upsertMedicalService(getSchoolId(request), id, body))
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      const medical = await upsertMedicalService(getSchoolId(request), id, body)
+      return successHandler(reply, 'Ficha médica atualizada com sucesso.', 200, medical)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os dados da ficha médica são inválidos.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -259,10 +275,12 @@ export async function studentsRoutes(app: FastifyInstance) {
   app.get('/students/:id/documents', { preHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
-      return reply.send(await listDocumentsService(getSchoolId(request), id))
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      const documents = await listDocumentsService(getSchoolId(request), id)
+      return successHandler(reply, 'Documentos do aluno carregados com sucesso.', 200, documents)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar os documentos do aluno.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -272,19 +290,20 @@ export async function studentsRoutes(app: FastifyInstance) {
       const { type = 'outros' } = request.query as { type?: string }
 
       const data = await request.file()
-      if (!data) return reply.status(400).send({ message: 'Nenhum arquivo enviado' })
+      if (!data) return errorHandler(reply, 'Nenhum arquivo enviado.', 400)
 
       const buffer = await data.toBuffer()
       const validation = validateDocumentFile(data.mimetype, buffer.length)
-      if (!validation.valid) return reply.status(400).send({ message: validation.message })
+      if (!validation.valid) return errorHandler(reply, validation.message, 400)
 
       const doc = await uploadDocumentService(
         getSchoolId(request), id, buffer, data.filename, type, data.mimetype, buffer.length, extFromMime(data.mimetype),
       )
-      return reply.status(201).send(doc)
-    } catch (e) {
-      if (e instanceof Error && e.message === 'Student not found') return reply.status(404).send({ message: e.message })
-      throw e
+      return successHandler(reply, 'Documento enviado com sucesso.', 201, doc)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível enviar o documento.', [
+        { message: 'Student not found', status: 404 },
+      ])
     }
   })
 
@@ -292,14 +311,12 @@ export async function studentsRoutes(app: FastifyInstance) {
     try {
       const { id, docId } = request.params as { id: string; docId: string }
       await deleteDocumentService(getSchoolId(request), id, docId)
-      return reply.status(204).send()
-    } catch (e) {
-      if (e instanceof Error) {
-        if (e.message === 'Student not found' || e.message === 'Document not found') {
-          return reply.status(404).send({ message: e.message })
-        }
-      }
-      throw e
+      return successHandler(reply, 'Documento removido com sucesso.', 200, null)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível remover o documento.', [
+        { message: 'Student not found', status: 404 },
+        { message: 'Document not found', status: 404, responseMessage: 'O documento informado não foi encontrado.' },
+      ])
     }
   })
 }

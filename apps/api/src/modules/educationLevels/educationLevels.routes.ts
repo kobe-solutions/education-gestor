@@ -3,6 +3,7 @@ import { authenticate } from '../../middlewares/auth'
 import { authorizeRoles } from '../../middlewares/authorize'
 import { injectTenant } from '../../middlewares/tenant'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { handleRouteError, successHandler } from '../../lib/responseHandlers'
 import { createEducationLevelBodySchema, updateEducationLevelBodySchema } from './educationLevels.schema'
 import {
   createEducationLevelService,
@@ -16,18 +17,23 @@ const preHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'gestor
 
 export async function educationLevelsRoutes(app: FastifyInstance) {
   app.get('/education-levels', { preHandler }, async (request, reply) => {
-    return reply.send(await listEducationLevelsService(getSchoolId(request)))
+    try {
+      const levels = await listEducationLevelsService(getSchoolId(request))
+      return successHandler(reply, 'Níveis de ensino carregados com sucesso.', 200, levels)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar os níveis de ensino.')
+    }
   })
 
   app.get('/education-levels/:id', { preHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
-      return reply.send(await getEducationLevelService(getSchoolId(request), id))
+      const level = await getEducationLevelService(getSchoolId(request), id)
+      return successHandler(reply, 'Nível de ensino carregado com sucesso.', 200, level)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Education level not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível carregar o nível de ensino.', [
+        { message: 'Education level not found', status: 404 },
+      ])
     }
   })
 
@@ -35,12 +41,11 @@ export async function educationLevelsRoutes(app: FastifyInstance) {
     try {
       const body = createEducationLevelBodySchema.parse(request.body)
       const level = await createEducationLevelService({ schoolId: getSchoolId(request), ...body })
-      return reply.status(201).send(level)
+      return successHandler(reply, 'Nível de ensino criado com sucesso.', 201, level)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Education level already exists with this name') {
-        return reply.status(409).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Os dados do nível de ensino são inválidos.', [
+        { message: 'Education level already exists with this name', status: 409, responseMessage: 'Já existe um nível de ensino com este nome.' },
+      ])
     }
   })
 
@@ -48,13 +53,13 @@ export async function educationLevelsRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       const body = updateEducationLevelBodySchema.parse(request.body)
-      return reply.send(await updateEducationLevelService(getSchoolId(request), id, body))
+      const level = await updateEducationLevelService(getSchoolId(request), id, body)
+      return successHandler(reply, 'Nível de ensino atualizado com sucesso.', 200, level)
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'Education level not found') return reply.status(404).send({ message: error.message })
-        if (error.message === 'Education level already exists with this name') return reply.status(409).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Os dados do nível de ensino são inválidos.', [
+        { message: 'Education level not found', status: 404 },
+        { message: 'Education level already exists with this name', status: 409, responseMessage: 'Já existe um nível de ensino com este nome.' },
+      ])
     }
   })
 
@@ -62,12 +67,11 @@ export async function educationLevelsRoutes(app: FastifyInstance) {
     try {
       const { id } = request.params as { id: string }
       await deleteEducationLevelService(getSchoolId(request), id)
-      return reply.status(204).send()
+      return successHandler(reply, 'Nível de ensino excluído com sucesso.', 200, null)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Education level not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível excluir o nível de ensino.', [
+        { message: 'Education level not found', status: 404 },
+      ])
     }
   })
 }

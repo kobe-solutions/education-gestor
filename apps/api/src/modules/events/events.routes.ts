@@ -3,6 +3,7 @@ import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles, type TenantPayload } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { handleRouteError, successHandler } from '../../lib/responseHandlers'
 import { logAudit } from '../../lib/audit'
 import { createEventBodySchema, updateEventBodySchema, listEventsQuerySchema } from './events.schema'
 import {
@@ -18,19 +19,24 @@ const writeHandler = [authenticate, injectTenant, authorizeRoles(['admin', 'secr
 
 export async function eventsRoutes(app: FastifyInstance) {
   app.get('/events', { preHandler: readHandler }, async (request, reply) => {
-    const query = listEventsQuerySchema.parse(request.query)
-    return reply.send(await listEventsService(getSchoolId(request), query))
+    try {
+      const query = listEventsQuerySchema.parse(request.query)
+      const events = await listEventsService(getSchoolId(request), query)
+      return successHandler(reply, 'Eventos carregados com sucesso.', 200, events)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os filtros dos eventos são inválidos.')
+    }
   })
 
   app.get('/events/:id', { preHandler: readHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
-      return reply.send(await getEventService(getSchoolId(request), id))
+      const event = await getEventService(getSchoolId(request), id)
+      return successHandler(reply, 'Evento carregado com sucesso.', 200, event)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Event not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível carregar o evento.', [
+        { message: 'Event not found', status: 404 },
+      ])
     }
   })
 
@@ -45,13 +51,12 @@ export async function eventsRoutes(app: FastifyInstance) {
         'event',
         event.id,
       )
-      return reply.status(201).send(event)
+      return successHandler(reply, 'Evento criado com sucesso.', 201, event)
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'Event not found') return reply.status(404).send({ message: error.message })
-        if (error.message === 'Event already exists at this time') return reply.status(409).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Os dados do evento são inválidos.', [
+        { message: 'Event not found', status: 404 },
+        { message: 'Event already exists at this time', status: 409, responseMessage: 'Já existe um evento neste horário.' },
+      ])
     }
   })
 
@@ -67,13 +72,12 @@ export async function eventsRoutes(app: FastifyInstance) {
         'event',
         id,
       )
-      return reply.send(event)
+      return successHandler(reply, 'Evento atualizado com sucesso.', 200, event)
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === 'Event not found') return reply.status(404).send({ message: error.message })
-        if (error.message === 'Event already exists at this time') return reply.status(409).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Os dados do evento são inválidos.', [
+        { message: 'Event not found', status: 404 },
+        { message: 'Event already exists at this time', status: 409, responseMessage: 'Já existe um evento neste horário.' },
+      ])
     }
   })
 
@@ -88,12 +92,11 @@ export async function eventsRoutes(app: FastifyInstance) {
         'event',
         id,
       )
-      return reply.status(204).send()
+      return successHandler(reply, 'Evento excluído com sucesso.', 200, null)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Event not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível excluir o evento.', [
+        { message: 'Event not found', status: 404 },
+      ])
     }
   })
 }

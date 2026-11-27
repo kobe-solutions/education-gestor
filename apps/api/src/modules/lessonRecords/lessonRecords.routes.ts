@@ -4,6 +4,7 @@ import { authenticate } from '../../middlewares/auth'
 import { injectTenant } from '../../middlewares/tenant'
 import { authorizeRoles, type TenantPayload } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
+import { errorHandler, handleRouteError, successHandler } from '../../lib/responseHandlers'
 import { deleteFile, uploadFile } from '../../lib/storage'
 import { logAudit } from '../../lib/audit'
 import { createLessonRecordSchema, listLessonRecordsQuerySchema, updateLessonRecordSchema } from './lessonRecords.schema'
@@ -34,39 +35,50 @@ const allowedContentTypes = new Set([
 export async function lessonRecordsRoutes(app: FastifyInstance) {
   app.get('/lesson-records/summary', { preHandler: managerAccess }, async (request, reply) => {
     const { month } = request.query as { month?: string }
-    return reply.send(await getLessonRecordSummaryService(getSchoolId(request), month))
+    try {
+      const summary = await getLessonRecordSummaryService(getSchoolId(request), month)
+      return successHandler(reply, 'Resumo das aulas carregado com sucesso.', 200, summary)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar o resumo das aulas.')
+    }
   })
 
   app.get('/lesson-records', { preHandler: readAccess }, async (request, reply) => {
-    const query = listLessonRecordsQuerySchema.parse(request.query)
-    const user = request.user as TenantPayload
-    return reply.send(await listLessonRecordsService(getSchoolId(request), {
-      ...query,
-      ...(user.role === 'professor' ? { ownTeacherId: user.userId } : {}),
-    }))
+    try {
+      const query = listLessonRecordsQuerySchema.parse(request.query)
+      const user = request.user as TenantPayload
+      const records = await listLessonRecordsService(getSchoolId(request), {
+        ...query,
+        ...(user.role === 'professor' ? { ownTeacherId: user.userId } : {}),
+      })
+      return successHandler(reply, 'Registros de aula carregados com sucesso.', 200, records)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os filtros dos registros de aula são inválidos.')
+    }
   })
 
   app.get('/lesson-records/:id', { preHandler: readAccess }, async (request, reply) => {
     const { id } = request.params as { id: string }
     const user = request.user as TenantPayload
     try {
-      return reply.send(await getLessonRecordService(getSchoolId(request), id, user.role === 'professor' ? user.userId : undefined))
+      const record = await getLessonRecordService(getSchoolId(request), id, user.role === 'professor' ? user.userId : undefined)
+      return successHandler(reply, 'Registro de aula carregado com sucesso.', 200, record)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Lesson record not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível carregar o registro de aula.', [
+        { message: 'Lesson record not found', status: 404 },
+      ])
     }
   })
 
   app.post('/lesson-records', { preHandler: teacherAccess }, async (request, reply) => {
+    try {
     const fields: Record<string, string> = {}
     const files: Array<{ filename: string; contentType: string; buffer: Buffer }> = []
     for await (const part of request.parts({ limits: { files: 5, fileSize: 10 * 1024 * 1024, fields: 8 } })) {
       if (part.type === 'file') {
         if (!allowedContentTypes.has(part.mimetype)) {
           await part.toBuffer()
-          return reply.status(400).send({ message: `Formato não permitido: ${part.filename}` })
+          return errorHandler(reply, `Formato não permitido: ${part.filename}`, 400)
         }
         files.push({ filename: part.filename, contentType: part.mimetype, buffer: await part.toBuffer() })
       } else if (typeof part.value === 'string') {
@@ -75,13 +87,13 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
     }
 
     const parsed = createLessonRecordSchema.safeParse(fields)
-    if (!parsed.success) return reply.status(400).send({ message: 'Dados do registro inválidos', issues: parsed.error.flatten() })
+    if (!parsed.success) return errorHandler(reply, 'Dados do registro inválidos. Confira os campos e tente novamente.', 400)
     const user = request.user as TenantPayload
     const schoolId = getSchoolId(request)
     try {
       await validateLessonAssignmentService(schoolId, user.userId, parsed.data.classId, parsed.data.subjectId, parsed.data.timetableSlotId, parsed.data.date)
     } catch {
-      return reply.status(403).send({ message: 'A turma ou disciplina não está vinculada a este professor.' })
+      return errorHandler(reply, 'A turma ou disciplina não está vinculada a este professor.', 403)
     }
 
     const attachments = await Promise.all(files.map(async (file) => {
@@ -104,12 +116,16 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
       description: parsed.data.description || null,
       attachments,
     })
-    if (!record) return reply.status(500).send({ message: 'Não foi possível criar o registro.' })
+    if (!record) return errorHandler(reply, 'Não foi possível criar o registro.', 500)
     await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'CREATE', 'lessonRecord', record.id)
-    return reply.status(201).send(record)
+    return successHandler(reply, 'Registro de aula criado com sucesso.', 201, record)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível criar o registro de aula. Confira os dados e tente novamente.')
+    }
   })
 
   app.put('/lesson-records/:id', { preHandler: teacherAccess }, async (request, reply) => {
+    try {
     const { id } = request.params as { id: string }
     const fields: Record<string, string> = {}
     const files: Array<{ filename: string; contentType: string; buffer: Buffer }> = []
@@ -117,7 +133,7 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
       if (part.type === 'file') {
         if (!allowedContentTypes.has(part.mimetype)) {
           await part.toBuffer()
-          return reply.status(400).send({ message: `Formato não permitido: ${part.filename}` })
+          return errorHandler(reply, `Formato não permitido: ${part.filename}`, 400)
         }
         files.push({ filename: part.filename, contentType: part.mimetype, buffer: await part.toBuffer() })
       } else if (typeof part.value === 'string') {
@@ -126,7 +142,7 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
     }
 
     const parsed = updateLessonRecordSchema.safeParse(fields)
-    if (!parsed.success) return reply.status(400).send({ message: 'Dados do registro inválidos', issues: parsed.error.flatten() })
+    if (!parsed.success) return errorHandler(reply, 'Dados do registro inválidos. Confira os campos e tente novamente.', 400)
     const user = request.user as TenantPayload
     const schoolId = getSchoolId(request)
     let existing
@@ -134,12 +150,12 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
       existing = await getLessonRecordService(schoolId, id, user.userId)
     } catch (error) {
       if (error instanceof Error && error.message === 'Lesson record not found') {
-        return reply.status(404).send({ message: error.message })
+        return errorHandler(reply, 'O registro de aula informado não foi encontrado.', 404)
       }
       throw error
     }
     if (existing.attachments.length + files.length > 5) {
-      return reply.status(400).send({ message: 'O registro pode ter no máximo 5 anexos.' })
+      return errorHandler(reply, 'O registro pode ter no máximo 5 anexos.', 400)
     }
 
     try {
@@ -152,7 +168,7 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
         parsed.data.date,
       )
     } catch {
-      return reply.status(403).send({ message: 'A turma ou disciplina não está vinculada a este professor.' })
+      return errorHandler(reply, 'A turma ou disciplina não está vinculada a este professor.', 403)
     }
 
     const newAttachments = await Promise.all(files.map(async (file) => {
@@ -173,9 +189,12 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
       description: parsed.data.description || null,
       attachments: [...existing.attachments, ...newAttachments],
     })
-    if (!record) return reply.status(404).send({ message: 'Lesson record not found' })
+    if (!record) return errorHandler(reply, 'O registro de aula informado não foi encontrado.', 404)
     await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'UPDATE', 'lessonRecord', id)
-    return reply.send(record)
+    return successHandler(reply, 'Registro de aula atualizado com sucesso.', 200, record)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível atualizar o registro de aula. Confira os dados e tente novamente.')
+    }
   })
 
   app.delete('/lesson-records/:id', { preHandler: teacherAccess }, async (request, reply) => {
@@ -184,15 +203,14 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
     const schoolId = getSchoolId(request)
     try {
       const record = await deleteLessonRecordService(schoolId, id, user.userId)
-      if (!record) return reply.status(404).send({ message: 'Lesson record not found' })
+      if (!record) return errorHandler(reply, 'O registro de aula informado não foi encontrado.', 404)
       await Promise.all(record.attachments.map((attachment) => deleteFile(attachment.key).catch(() => null)))
       await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'DELETE', 'lessonRecord', id)
-      return reply.status(204).send()
+      return successHandler(reply, 'Registro de aula excluído com sucesso.', 200, null)
     } catch (error) {
-      if (error instanceof Error && error.message === 'Lesson record not found') {
-        return reply.status(404).send({ message: error.message })
-      }
-      throw error
+      return handleRouteError(reply, error, 'Não foi possível excluir o registro de aula.', [
+        { message: 'Lesson record not found', status: 404 },
+      ])
     }
   })
 }

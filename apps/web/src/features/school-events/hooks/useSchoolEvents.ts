@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 
 export interface SchoolEventRecord {
@@ -32,7 +32,7 @@ export function useSchoolEvents(from: string, to: string) {
   const { schoolKey, enabled } = useSchoolKey()
   return useQuery({
     queryKey: ['school-events', schoolKey, { from, to }],
-    queryFn: async () => (await api.get<SchoolEventRecord[]>('/events', { params: { from, to } })).data,
+    queryFn: async () => (await api.get<ApiSuccessResponse<SchoolEventRecord[]>>('/events', { params: { from, to } })).data.data,
     enabled,
   })
 }
@@ -40,7 +40,7 @@ export function useSchoolEvents(from: string, to: string) {
 export function useCreateSchoolEvent() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (input: SchoolEventInput) => (await api.post<SchoolEventRecord>('/events', input)).data,
+    mutationFn: async (input: SchoolEventInput) => (await api.post<ApiSuccessResponse<SchoolEventRecord>>('/events', input)).data.data,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['school-events'] }),
   })
 }
@@ -49,7 +49,7 @@ export function useUpdateSchoolEvent() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, input }: { id: string; input: SchoolEventInput }) =>
-      (await api.put<SchoolEventRecord>(`/events/${id}`, input)).data,
+      (await api.put<ApiSuccessResponse<SchoolEventRecord>>(`/events/${id}`, input)).data.data,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['school-events'] }),
   })
 }

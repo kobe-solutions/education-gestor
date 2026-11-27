@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 
 export interface TeacherClass {
@@ -71,8 +71,8 @@ export function useTeacherDashboard(enabledForRole = true) {
   return useQuery({
     queryKey: ['teacher-dashboard', schoolKey],
     queryFn: async () => {
-      const res = await api.get<TeacherDashboardData>('/teacher/dashboard')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<TeacherDashboardData>>('/teacher/dashboard')
+      return res.data.data
     },
     enabled: enabled && enabledForRole,
     staleTime: 60_000,

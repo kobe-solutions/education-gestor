@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 
 export interface TuitionStat {
@@ -119,8 +119,8 @@ export function useDashboard() {
   return useQuery({
     queryKey: ['dashboard', schoolKey],
     queryFn: async () => {
-      const res = await api.get<DashboardData>('/dashboard')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<DashboardData>>('/dashboard')
+      return res.data.data
     },
     enabled,
   })

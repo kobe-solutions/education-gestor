@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import type { Secretaria, School } from '@education-gestor/types'
 
 export function useSecretarias() {
   return useQuery({
     queryKey: ['secretarias'],
     queryFn: async () => {
-      const res = await api.get<Secretaria[]>('/secretarias')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<Secretaria[]>>('/secretarias')
+      return res.data.data
     },
   })
 }
@@ -16,8 +16,8 @@ export function useSecretariaSchools(secretariaId: string) {
   return useQuery({
     queryKey: ['secretarias', secretariaId, 'schools'],
     queryFn: async () => {
-      const res = await api.get<School[]>(`/secretarias/${secretariaId}/schools`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<School[]>>(`/secretarias/${secretariaId}/schools`)
+      return res.data.data
     },
     enabled: !!secretariaId,
   })
@@ -36,8 +36,8 @@ export function useCreateSecretaria() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: CreateSecretariaInput) => {
-      const res = await api.post<Secretaria>('/secretarias', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<Secretaria>>('/secretarias', data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['secretarias'] }),
   })
@@ -56,8 +56,8 @@ export function useUpdateSecretaria() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateSecretariaInput }) => {
-      const res = await api.put<Secretaria>(`/secretarias/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<Secretaria>>(`/secretarias/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['secretarias'] }),
   })
@@ -115,9 +115,9 @@ export function useUploadSecretariaLogo() {
     mutationFn: async ({ id, file }: { id: string; file: File }) => {
       const form = new FormData()
       form.append('file', file)
-      return (await api.post<Secretaria>(`/secretarias/${id}/logo`, form, {
+      return (await api.post<ApiSuccessResponse<Secretaria>>(`/secretarias/${id}/logo`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      })).data
+      })).data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['secretarias'] }),
   })
@@ -127,8 +127,8 @@ export function useToggleSecretariaFinancialVisibility() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.patch<Secretaria>(`/secretarias/${id}/financial-visibility`)
-      return res.data
+      const res = await api.patch<ApiSuccessResponse<Secretaria>>(`/secretarias/${id}/financial-visibility`)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['secretarias'] }),
   })

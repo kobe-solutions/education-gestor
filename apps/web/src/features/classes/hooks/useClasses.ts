@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
 import type { SchoolClass, AcademicPeriod } from '@education-gestor/types'
 
@@ -8,8 +8,8 @@ export function useClasses() {
   return useQuery({
     queryKey: ['classes', schoolKey],
     queryFn: async () => {
-      const res = await api.get<SchoolClass[]>('/school-classes')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<SchoolClass[]>>('/school-classes')
+      return res.data.data
     },
     enabled,
   })
@@ -19,8 +19,8 @@ export function useClass(id: string) {
   return useQuery({
     queryKey: ['classes', id],
     queryFn: async () => {
-      const res = await api.get<SchoolClass>(`/school-classes/${id}`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<SchoolClass>>(`/school-classes/${id}`)
+      return res.data.data
     },
     enabled: !!id,
   })
@@ -37,8 +37,8 @@ export function useCreateClass() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: ClassInput) => {
-      const res = await api.post<SchoolClass>('/school-classes', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<SchoolClass>>('/school-classes', data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['classes'] }),
   })
@@ -48,8 +48,8 @@ export function useUpdateClass(id: string) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Partial<ClassInput>) => {
-      const res = await api.put<SchoolClass>(`/school-classes/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<SchoolClass>>(`/school-classes/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['classes'] })
@@ -92,8 +92,8 @@ export function useAcademicPeriods() {
   return useQuery({
     queryKey: ['academic-periods'],
     queryFn: async () => {
-      const res = await api.get<AcademicPeriod[]>('/academic-periods')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<AcademicPeriod[]>>('/academic-periods')
+      return res.data.data
     },
   })
 }
@@ -112,8 +112,8 @@ export function useClassPeriods() {
   return useQuery({
     queryKey: ['class-periods', schoolKey],
     queryFn: async () => {
-      const res = await api.get<ClassPeriod[]>('/class-periods')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<ClassPeriod[]>>('/class-periods')
+      return res.data.data
     },
     enabled,
   })
@@ -123,8 +123,8 @@ export function useCreateClassPeriod() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: { name: string; startTime: string; endTime: string; order: number }) => {
-      const res = await api.post<ClassPeriod>('/class-periods', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<ClassPeriod>>('/class-periods', data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['class-periods'] }),
   })
@@ -134,8 +134,8 @@ export function useUpdateClassPeriod() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<{ name: string; startTime: string; endTime: string; order: number }> }) => {
-      const res = await api.put<ClassPeriod>(`/class-periods/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<ClassPeriod>>(`/class-periods/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['class-periods'] }),
   })
@@ -184,10 +184,10 @@ export function useStudentClasses(studentId: string) {
   return useQuery({
     queryKey: ['student-classes', studentId],
     queryFn: async () => {
-      const res = await api.get<{ id: string; name: string; shift: string; serieId: string | null }[]>(
+      const res = await api.get<ApiSuccessResponse<{ id: string; name: string; shift: string; serieId: string | null }[]>>(
         `/school-classes/students/${studentId}`,
       )
-      return res.data
+      return res.data.data
     },
     enabled: !!studentId,
   })

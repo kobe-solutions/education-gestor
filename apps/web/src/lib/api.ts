@@ -3,6 +3,17 @@ import { toast } from 'sonner'
 import { queryClient } from './queryClient'
 import { extractErrorMessage } from './errors'
 
+export interface ApiSuccessResponse<T> {
+  message: string
+  status: number
+  data: T
+}
+
+export interface ApiErrorResponse {
+  error: string
+  status: number
+}
+
 export const api = axios.create({
   baseURL: '/api',
 })
@@ -23,8 +34,9 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status
+    const isLoginRequest = error.config?.url === '/sessions'
 
-    if (status === 401) {
+    if (status === 401 && !isLoginRequest) {
       localStorage.removeItem('token')
       sessionStorage.clear()
       queryClient.clear()

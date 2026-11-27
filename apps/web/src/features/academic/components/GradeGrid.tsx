@@ -11,7 +11,6 @@ import {
 import { Input } from '../../../components/ui/input'
 import { Button } from '../../../components/ui/button'
 import { cn } from '../../../lib/utils'
-import { toast } from '../../../lib/toast'
 import { useRegisterBulkGrades } from '../hooks/useAcademic'
 import type { AcademicPeriod, Grade } from '@education-gestor/types'
 
@@ -114,7 +113,6 @@ export function GradeGrid({
 
     saveGrades.mutate(payload, {
       onSuccess: () => {
-        toast.success('Notas salvas')
         setDirty(new Set())
       },
     })

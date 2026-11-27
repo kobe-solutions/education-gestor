@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useFinancialVisibility } from '../contexts/FinancialVisibilityContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
-import { api } from './api'
+import { api, type ApiSuccessResponse } from './api'
 import type { School } from '@education-gestor/types'
 
 export function useFinancialBlocked() {
@@ -17,8 +17,8 @@ export function useFinancialBlocked() {
   const { data: school, isLoading } = useQuery({
     queryKey: ['school-financial-setting', schoolId],
     queryFn: async () => {
-      const res = await api.get<School>(`/schools/${schoolId}`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<School>>(`/schools/${schoolId}`)
+      return res.data.data
     },
     enabled: !!schoolId && ['gestor', 'professor', 'secretaria'].includes(payload?.role ?? ''),
   })
