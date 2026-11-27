@@ -7,6 +7,9 @@ export const createClassPeriodBodySchema = z.object({
   startTime: z.string().regex(timeRegex, 'Formato HH:MM'),
   endTime: z.string().regex(timeRegex, 'Formato HH:MM'),
   order: z.number().int().min(1),
+}).refine((data) => data.endTime > data.startTime, {
+  message: 'O horário de término deve ser posterior ao horário de início.',
+  path: ['endTime'],
 })
 
 export const updateClassPeriodBodySchema = z.object({

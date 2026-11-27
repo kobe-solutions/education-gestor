@@ -33,10 +33,15 @@ const allowedContentTypes = new Set([
 ])
 
 export async function lessonRecordsRoutes(app: FastifyInstance) {
-  app.get('/lesson-records/summary', { preHandler: managerAccess }, async (request, reply) => {
+  app.get('/lesson-records/summary', { preHandler: readAccess }, async (request, reply) => {
     const { month } = request.query as { month?: string }
     try {
-      const summary = await getLessonRecordSummaryService(getSchoolId(request), month)
+      const user = request.user as TenantPayload
+      const summary = await getLessonRecordSummaryService(
+        getSchoolId(request),
+        month,
+        user.role === 'professor' ? user.userId : undefined,
+      )
       return successHandler(reply, 'Resumo das aulas carregado com sucesso.', 200, summary)
     } catch (error) {
       return handleRouteError(reply, error, 'Não foi possível carregar o resumo das aulas.')
@@ -86,6 +91,9 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
       }
     }
 
+    if (!fields.title?.trim() && fields.topic?.trim()) {
+      fields.title = fields.topic.trim().slice(0, 120)
+    }
     const parsed = createLessonRecordSchema.safeParse(fields)
     if (!parsed.success) return errorHandler(reply, 'Dados do registro inválidos. Confira os campos e tente novamente.', 400)
     const user = request.user as TenantPayload
@@ -120,7 +128,9 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
     await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'CREATE', 'lessonRecord', record.id)
     return successHandler(reply, 'Registro de aula criado com sucesso.', 201, record)
     } catch (error) {
-      return handleRouteError(reply, error, 'Não foi possível criar o registro de aula. Confira os dados e tente novamente.')
+      return handleRouteError(reply, error, 'Não foi possível criar o registro de aula. Confira os dados e tente novamente.', [
+        { message: 'Já existe um registro para esta aula nesta data.', status: 409 },
+      ])
     }
   })
 
@@ -141,6 +151,9 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
       }
     }
 
+    if (!fields.title?.trim() && fields.topic?.trim()) {
+      fields.title = fields.topic.trim().slice(0, 120)
+    }
     const parsed = updateLessonRecordSchema.safeParse(fields)
     if (!parsed.success) return errorHandler(reply, 'Dados do registro inválidos. Confira os campos e tente novamente.', 400)
     const user = request.user as TenantPayload
@@ -193,7 +206,9 @@ export async function lessonRecordsRoutes(app: FastifyInstance) {
     await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'UPDATE', 'lessonRecord', id)
     return successHandler(reply, 'Registro de aula atualizado com sucesso.', 200, record)
     } catch (error) {
-      return handleRouteError(reply, error, 'Não foi possível atualizar o registro de aula. Confira os dados e tente novamente.')
+      return handleRouteError(reply, error, 'Não foi possível atualizar o registro de aula. Confira os dados e tente novamente.', [
+        { message: 'Já existe um registro para esta aula nesta data.', status: 409 },
+      ])
     }
   })
 

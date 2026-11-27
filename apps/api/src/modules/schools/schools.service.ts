@@ -21,7 +21,7 @@ type CreateSchoolServiceInput = {
   slug: string
   email: string
   password: string
-  secretariaId: string
+  secretariaId?: string
   director?: string
   coordinator?: string
   phone?: string
@@ -48,7 +48,9 @@ export async function createSchoolService(input: CreateSchoolServiceInput) {
     address: input.address?.trim() || null,
   })
 
-  await linkSchoolToSecretariaRepository(school.id, input.secretariaId)
+  if (input.secretariaId) {
+    await linkSchoolToSecretariaRepository(school.id, input.secretariaId)
+  }
 
   return {
     ...school,

@@ -3,6 +3,11 @@ import {
   registerGradeService,
   registerBulkGradesService,
   getStudentGradesService,
+  getClassAssessmentsService,
+  createAssessmentService,
+  updateAssessmentService,
+  deleteAssessmentService,
+  upsertPeriodGradeConfigService,
   registerAttendanceService,
   registerBulkAttendanceService,
   getStudentAttendancesService,
@@ -441,5 +446,118 @@ describe('getStudentReportService', () => {
       'Student not found',
     )
     expect(repo.findStudentReportDataRepository).not.toHaveBeenCalled()
+  })
+
+  it('calcula média simples e média ponderada entre múltiplas avaliações no mesmo bimestre', async () => {
+    mockReport({
+      grades: [
+        { classId: 'class-id', className: '1A', subjectId: 'math-id', subjectName: 'Matemática', academicPeriodId: 'p1-id', academicPeriodName: '1º Bimestre', academicPeriodOrder: 1, assessmentId: 'a1', assessmentWeight: '2.00', value: '8.00' },
+        { classId: 'class-id', className: '1A', subjectId: 'math-id', subjectName: 'Matemática', academicPeriodId: 'p1-id', academicPeriodName: '1º Bimestre', academicPeriodOrder: 1, assessmentId: 'a2', assessmentWeight: '1.00', value: '5.00' },
+        { classId: 'class-id', className: '1A', subjectId: 'port-id', subjectName: 'Português', academicPeriodId: 'p1-id', academicPeriodName: '1º Bimestre', academicPeriodOrder: 1, assessmentId: 'a3', assessmentWeight: '2.00', value: '8.00' },
+        { classId: 'class-id', className: '1A', subjectId: 'port-id', subjectName: 'Português', academicPeriodId: 'p1-id', academicPeriodName: '1º Bimestre', academicPeriodOrder: 1, assessmentId: 'a4', assessmentWeight: '1.00', value: '5.00' },
+      ],
+      configs: [
+        { classId: 'class-id', subjectId: 'math-id', academicPeriodId: 'p1-id', calculationMethod: 'weighted' },
+        { classId: 'class-id', subjectId: 'port-id', academicPeriodId: 'p1-id', calculationMethod: 'simple' },
+      ],
+    } as any)
+
+    const report = await getStudentReportService('school-id', 'student-id')
+
+    const math = report.subjects.find((s) => s.subjectName === 'Matemática')
+    // (8*2 + 5*1) / 3 = 7.00
+    expect(math?.grades[0].value).toBe('7.00')
+    expect(math?.average).toBe(7)
+
+    const port = report.subjects.find((s) => s.subjectName === 'Português')
+    // (8 + 5) / 2 = 6.50
+    expect(port?.grades[0].value).toBe('6.50')
+    expect(port?.average).toBe(6.5)
+  })
+})
+
+describe('assessments e periodGradeConfigs', () => {
+  it('cria avaliação quando turma existe e peso é válido', async () => {
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.createAssessmentRepository).mockResolvedValue({
+      id: 'a1',
+      name: 'Prova 1',
+      weight: '2.00',
+    } as any)
+
+    const res = await createAssessmentService({
+      schoolId: 'school-id',
+      classId: 'class-id',
+      subjectId: 'subject-id',
+      academicPeriodId: 'p1-id',
+      teacherId: 'teacher-id',
+      name: 'Prova 1',
+      weight: 2,
+    })
+
+    expect(res.name).toBe('Prova 1')
+    expect(repo.createAssessmentRepository).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Prova 1', weight: 2 }),
+    )
+  })
+
+  it('rejeita avaliação com peso <= 0', async () => {
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    await expect(
+      createAssessmentService({
+        schoolId: 'school-id',
+        classId: 'class-id',
+        subjectId: 'subject-id',
+        academicPeriodId: 'p1-id',
+        teacherId: 'teacher-id',
+        name: 'Prova 1',
+        weight: 0,
+      }),
+    ).rejects.toThrow('Assessment weight must be positive')
+  })
+
+  it('atualiza e exclui avaliação existente', async () => {
+    vi.mocked(repo.findAssessmentByIdRepository).mockResolvedValue({ id: 'a1' } as any)
+    vi.mocked(repo.updateAssessmentRepository).mockResolvedValue({ id: 'a1', name: 'Prova Final', weight: '3.00' } as any)
+    vi.mocked(repo.deleteAssessmentRepository).mockResolvedValue({ id: 'a1' } as any)
+
+    const updated = await updateAssessmentService('school-id', 'a1', { name: 'Prova Final', weight: 3 })
+    expect(updated?.name).toBe('Prova Final')
+
+    const deleted = await deleteAssessmentService('school-id', 'a1')
+    expect(deleted?.id).toBe('a1')
+  })
+
+  it('lança erro ao atualizar avaliação inexistente', async () => {
+    vi.mocked(repo.findAssessmentByIdRepository).mockResolvedValue(null as any)
+    await expect(updateAssessmentService('school-id', 'missing', { name: 'X' })).rejects.toThrow(
+      'Assessment not found',
+    )
+  })
+
+  it('lista avaliações da turma', async () => {
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.findAssessmentsByClassRepository).mockResolvedValue([{ id: 'a1', name: 'Prova 1' }] as any)
+
+    const list = await getClassAssessmentsService('school-id', 'class-id', 'subject-id')
+    expect(list).toHaveLength(1)
+  })
+
+  it('salva configuração de cálculo da média bimestral', async () => {
+    vi.mocked(classService.getSchoolClassService).mockResolvedValue(mockClass as any)
+    vi.mocked(repo.upsertPeriodGradeConfigRepository).mockResolvedValue({
+      id: 'cfg-1',
+      calculationMethod: 'weighted',
+    } as any)
+
+    const cfg = await upsertPeriodGradeConfigService({
+      schoolId: 'school-id',
+      classId: 'class-id',
+      subjectId: 'subject-id',
+      academicPeriodId: 'p1-id',
+      calculationMethod: 'weighted',
+    })
+
+    expect(cfg.calculationMethod).toBe('weighted')
   })
 })

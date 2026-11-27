@@ -60,7 +60,7 @@ describe('POST /sessions', () => {
     })
 
     expect(response.statusCode).toBe(400)
-    expect(response.json()).toHaveProperty('message', 'Validation error')
+    expect(response.json()).toHaveProperty('message', 'Informe um e-mail válido.')
   })
 
   it('retorna 401 com senha curta incorreta', async () => {

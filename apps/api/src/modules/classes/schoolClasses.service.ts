@@ -8,6 +8,7 @@ import {
   removeStudentFromClassRepository,
   findClassStudentLinkRepository,
   findStudentsByClassRepository,
+  findStudentsByClassesRepository,
   countStudentsByClassesRepository,
   findClassesByStudentRepository,
   findStudentCurrentClassRepository,
@@ -35,10 +36,23 @@ type UpdateSchoolClassServiceInput = {
 
 export async function listSchoolClassesService(schoolId: string) {
   const classes = await findAllSchoolClassesRepository(schoolId) as any[]
-  if (classes.length === 0) return classes.map((c: any) => ({ ...c, studentCount: 0 }))
+  if (classes.length === 0) return classes.map((c: any) => ({ ...c, studentCount: 0, students: [] }))
   const classIds = classes.map((c: any) => c.id)
-  const counts = await countStudentsByClassesRepository(classIds)
-  return classes.map((c: any) => ({ ...c, studentCount: counts[c.id] ?? 0 }))
+  const [counts, studentRows] = await Promise.all([
+    countStudentsByClassesRepository(classIds),
+    findStudentsByClassesRepository(classIds),
+  ])
+  const studentsByClass = new Map<string, { id: string; name: string; enrollmentCode: string | null }[]>()
+  for (const row of studentRows) {
+    const list = studentsByClass.get(row.classId) ?? []
+    list.push({ id: row.id, name: row.name, enrollmentCode: row.enrollmentCode })
+    studentsByClass.set(row.classId, list)
+  }
+  return classes.map((c: any) => ({
+    ...c,
+    studentCount: counts[c.id] ?? 0,
+    students: studentsByClass.get(c.id) ?? [],
+  }))
 }
 
 export async function getSchoolClassService(schoolId: string, id: string) {

@@ -77,11 +77,13 @@ describe('listSchoolClassesService', () => {
 
     expect(result).toEqual([])
     expect(repo.countStudentsByClassesRepository).not.toHaveBeenCalled()
+    expect(repo.findStudentsByClassesRepository).not.toHaveBeenCalled()
   })
 
   it('inclui contagem de alunos por turma', async () => {
     vi.mocked(repo.findAllSchoolClassesRepository).mockResolvedValue([mockClass] as any)
     vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({ 'class-id': 25 })
+    vi.mocked(repo.findStudentsByClassesRepository).mockResolvedValue([])
 
     const result = await listSchoolClassesService('school-id')
 
@@ -92,10 +94,36 @@ describe('listSchoolClassesService', () => {
   it('usa 0 como contagem quando turma não tem alunos no mapa', async () => {
     vi.mocked(repo.findAllSchoolClassesRepository).mockResolvedValue([mockClass] as any)
     vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({})
+    vi.mocked(repo.findStudentsByClassesRepository).mockResolvedValue([])
 
     const result = await listSchoolClassesService('school-id')
 
     expect(result[0].studentCount).toBe(0)
+  })
+
+  it('inclui lista de alunos agrupada por turma', async () => {
+    vi.mocked(repo.findAllSchoolClassesRepository).mockResolvedValue([mockClass] as any)
+    vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({ 'class-id': 1 })
+    vi.mocked(repo.findStudentsByClassesRepository).mockResolvedValue([
+      { classId: 'class-id', id: 'student-id', name: 'João Silva', enrollmentCode: '20250001' },
+    ])
+
+    const result = await listSchoolClassesService('school-id')
+
+    expect(result[0].students).toEqual([
+      { id: 'student-id', name: 'João Silva', enrollmentCode: '20250001' },
+    ])
+    expect(repo.findStudentsByClassesRepository).toHaveBeenCalledWith(['class-id'])
+  })
+
+  it('retorna students vazio quando turma não tem alunos', async () => {
+    vi.mocked(repo.findAllSchoolClassesRepository).mockResolvedValue([mockClass] as any)
+    vi.mocked(repo.countStudentsByClassesRepository).mockResolvedValue({ 'class-id': 0 })
+    vi.mocked(repo.findStudentsByClassesRepository).mockResolvedValue([])
+
+    const result = await listSchoolClassesService('school-id')
+
+    expect(result[0].students).toEqual([])
   })
 })
 

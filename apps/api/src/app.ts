@@ -69,7 +69,15 @@ export function buildApp() {
 
   app.setErrorHandler((error, _request, reply) => {
     if (error instanceof ZodError) {
-      return reply.status(400).send({ message: "Validation error", issues: error.issues });
+      const firstIssue = error.issues[0]
+      const issueMessage = firstIssue?.message
+        .replace('Invalid email', 'Informe um e-mail válido.')
+        .replace('Required', 'Este campo é obrigatório.')
+        .replace('Invalid input', 'Valor inválido.')
+      return reply.status(400).send({
+        message: issueMessage || "Revise os campos informados e tente novamente.",
+        issues: error.issues,
+      });
     }
     if (error instanceof MissingTenantError) {
       return reply.status(400).send({ message: error.message });

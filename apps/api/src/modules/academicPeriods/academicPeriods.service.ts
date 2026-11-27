@@ -53,6 +53,9 @@ export async function updateAcademicPeriodService(
 
   const startDate = body.startDate ?? existing.startDate
   const endDate = body.endDate ?? existing.endDate
+  if (startDate >= endDate) {
+    throw new Error('A data de término deve ser posterior à data de início.')
+  }
 
   const existingPeriods = await findAllAcademicPeriodsRepository(schoolId, academicYearId)
   validateNoPeriodOverlap(startDate, endDate, existingPeriods, id)
