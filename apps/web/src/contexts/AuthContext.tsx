@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import { queryClient } from '../lib/queryClient'
 import type { JwtPayload } from '@education-gestor/types'
@@ -13,9 +13,13 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export { AuthContext }
-function parseToken(token: string): JwtPayload | null {
+type DecodedPayload = JwtPayload & { exp?: number }
+
+function parseToken(token: string): DecodedPayload | null {
   try {
-    return jwtDecode<JwtPayload>(token)
+    const payload = jwtDecode<DecodedPayload>(token)
+    if (payload.exp && payload.exp * 1000 <= Date.now()) return null
+    return payload
   } catch {
     return null
   }
@@ -50,6 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null)
     setPayload(null)
   }, [])
+
+  useEffect(() => {
+    if (!token) return
+    const decoded = jwtDecode<DecodedPayload>(token)
+    if (!decoded.exp) return
+    const timeout = window.setTimeout(logout, Math.max(0, decoded.exp * 1000 - Date.now()))
+    return () => window.clearTimeout(timeout)
+  }, [token, logout])
 
   return <AuthContext.Provider value={{ token, payload, login, logout }}>{children}</AuthContext.Provider>
 }

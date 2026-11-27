@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import {
-  Activity, BookOpen, Building2, CalendarCheck, ChartNoAxesColumn, ClipboardList,
+  Activity, BookOpen, Building2, CalendarCheck, ChartNoAxesColumn, ClipboardList, Keyboard,
   DollarSign, Eye, EyeOff, GraduationCap, LayoutDashboard, LogOut, Menu, Moon, School,
   Sun, Users, X,
 } from 'lucide-react'
@@ -19,6 +19,8 @@ import { useSchool } from '../../features/schools/hooks/useSchools'
 import { NotificationsMenu } from '../../features/notifications/components/NotificationsMenu'
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts'
 import { ShortcutsHelp } from '../ShortcutsHelp'
+import { useSchoolContext } from '../../contexts/SchoolContext'
+import { toast } from '../../lib/toast'
 
 interface NavItem {
   to: string
@@ -36,11 +38,13 @@ const navItems: NavItem[] = [
   { to: '/school-events', label: 'Calendário', icon: CalendarCheck, roles: ['gestor'], matchPaths: ['/school-events'] },
   { to: '/professor/classes', label: 'Minhas turmas', icon: GraduationCap, roles: ['professor'], matchPaths: ['/professor/classes', '/classes'] },
   { to: '/lesson-records', label: 'Registro de aulas', icon: ClipboardList, roles: ['professor'], matchPaths: ['/lesson-records'] },
-  { to: '/professor/grades', label: 'Notas', icon: ChartNoAxesColumn, roles: ['professor'], matchPaths: ['/professor/grades', '/professor/performance'] },
+  { to: '/professor/grades', label: 'Notas', icon: ChartNoAxesColumn, roles: ['professor'], matchPaths: ['/professor/grades'] },
+  { to: '/professor/performance', label: 'Desempenho', icon: ChartNoAxesColumn, roles: ['professor'], matchPaths: ['/professor/performance'] },
   { to: '/professor/attendance', label: 'Frequência', icon: CalendarCheck, roles: ['professor'], matchPaths: ['/professor/attendance'] },
   { to: '/school-events', label: 'Calendário', icon: CalendarCheck, roles: ['professor'], matchPaths: ['/school-events'] },
   { to: '/professor/profile', label: 'Meu perfil', icon: Users, roles: ['professor'], matchPaths: ['/professor/profile'] },
-  { to: '/financial', label: 'Financeiro', icon: DollarSign, roles: ['gestor', 'secretaria'], matchPaths: ['/financial', '/financial-control'] },
+  { to: '/financial', label: 'Mensalidades', icon: DollarSign, roles: ['gestor', 'secretaria'], matchPaths: ['/financial'] },
+  { to: '/financial-control', label: 'Controle financeiro', icon: ChartNoAxesColumn, roles: ['gestor', 'secretaria'], matchPaths: ['/financial-control'] },
   { to: '/schools-hub', label: 'Rede de escolas', icon: School, roles: ['secretaria'], matchPaths: ['/schools-hub', '/schools', '/my-schools'] },
   { to: '/admin', label: 'Organizações', icon: Building2, roles: ['admin'], matchPaths: ['/admin', '/schools', '/secretarias'] },
   { to: '/admin/activity', label: 'Atividade', icon: Activity, roles: ['admin'], matchPaths: ['/admin/activity'] },
@@ -83,7 +87,7 @@ function BrandMark() {
   )
 }
 
-function Sidebar({ items, pathname, onNavigate, userName, userPhotoUrl, schoolName, role, onLogout }: {
+function Sidebar({ items, pathname, onNavigate, userName, userPhotoUrl, schoolName, role, onLogout, onOpenShortcuts }: {
   items: NavItem[]
   pathname: string
   onNavigate?: () => void
@@ -92,6 +96,7 @@ function Sidebar({ items, pathname, onNavigate, userName, userPhotoUrl, schoolNa
   schoolName?: string
   role?: string
   onLogout: () => void
+  onOpenShortcuts?: () => void
 }) {
   const activeItem = getActiveItem(items, pathname)
   return (
@@ -128,6 +133,7 @@ function Sidebar({ items, pathname, onNavigate, userName, userPhotoUrl, schoolNa
         </div>
       </nav>
       <div className="border-t p-3">
+        {onOpenShortcuts && <Button variant="ghost" className="mb-1 w-full justify-start gap-3 px-2 text-xs text-muted-foreground" onClick={onOpenShortcuts}><Keyboard size={16} /> Atalhos de teclado <kbd className="ml-auto rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px]">?</kbd></Button>}
         <div className="flex items-center gap-3 rounded-lg px-2 py-2">
           <Avatar name={userName} photoUrl={userPhotoUrl} size={36} />
           <div className="min-w-0 flex-1">
@@ -151,7 +157,18 @@ export function AppLayout() {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const { activeSchoolName } = useSchoolContext()
   useKeyboardShortcuts(() => setShortcutsOpen(true))
+
+  useEffect(() => {
+    const state = location.state as { accessDenied?: boolean; requiresSchoolSelection?: boolean } | null
+    if (!state?.accessDenied && !state?.requiresSchoolSelection) return
+
+    toast.error(state.requiresSchoolSelection
+      ? 'Selecione uma escola antes de acessar os dados da rede.'
+      : 'Você não tem permissão para acessar essa página.')
+    navigate(location.pathname, { replace: true, state: null })
+  }, [location.pathname, location.state, navigate])
 
   const role = payload?.role
   const { data: teacherProfile } = useTeacher(role === 'professor' ? payload!.userId : '')
@@ -162,7 +179,8 @@ export function AppLayout() {
   const userPhotoUrl = role === 'professor' ? teacherProfile?.photoUrl : undefined
   const { hideFinancialData, toggleFinancialVisibility } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
-  const userName = payload?.name ?? 'Usuário'
+  const userName = teacherProfile?.name ?? payload?.name ?? 'Usuário'
+  const contextSchoolName = role === 'secretaria' ? activeSchoolName : schoolProfile?.name
   const userEmail = payload && 'email' in payload ? (payload as { email?: string }).email : undefined
 
   const visibleItems = navItems.filter((item) => {
@@ -194,13 +212,13 @@ export function AppLayout() {
   return (
     <div className="flex h-dvh overflow-hidden bg-background text-foreground">
       <div className="hidden md:block">
-        <Sidebar items={visibleItems} pathname={location.pathname} userName={userName} userPhotoUrl={userPhotoUrl ?? undefined} schoolName={schoolProfile?.name} role={role} onLogout={handleLogout} />
+        <Sidebar items={visibleItems} pathname={location.pathname} userName={userName} userPhotoUrl={userPhotoUrl ?? undefined} schoolName={contextSchoolName ?? undefined} role={role} onLogout={handleLogout} onOpenShortcuts={() => setShortcutsOpen(true)} />
       </div>
 
       {mobileMenuOpen && <button type="button" className="fixed inset-0 z-40 bg-slate-950/45 md:hidden" aria-label="Fechar menu" onClick={() => setMobileMenuOpen(false)} />}
       <div className={cn('fixed inset-y-0 left-0 z-50 transition-transform duration-200 md:hidden', mobileMenuOpen ? 'translate-x-0' : '-translate-x-full')} role="dialog" aria-modal="true" aria-label="Menu principal" aria-hidden={!mobileMenuOpen} inert={!mobileMenuOpen}>
         <div className="flex h-full">
-          <Sidebar items={visibleItems} pathname={location.pathname} onNavigate={() => setMobileMenuOpen(false)} userName={userName} userPhotoUrl={userPhotoUrl ?? undefined} schoolName={schoolProfile?.name} role={role} onLogout={handleLogout} />
+          <Sidebar items={visibleItems} pathname={location.pathname} onNavigate={() => setMobileMenuOpen(false)} userName={userName} userPhotoUrl={userPhotoUrl ?? undefined} schoolName={contextSchoolName ?? undefined} role={role} onLogout={handleLogout} onOpenShortcuts={() => setShortcutsOpen(true)} />
           <Button variant="ghost" size="icon" className="absolute right-2 top-4 size-9" aria-label="Fechar menu" onClick={() => setMobileMenuOpen(false)}><X size={18} /></Button>
         </div>
       </div>
@@ -210,7 +228,7 @@ export function AppLayout() {
           <Button variant="ghost" size="icon" className="size-10 md:hidden" aria-label="Abrir menu" onClick={() => setMobileMenuOpen(true)}><Menu size={20} /></Button>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{activeItem?.label ?? 'IRIS Educação'}</p>
-            <p className="hidden truncate text-xs text-muted-foreground sm:block">{schoolProfile?.name ?? ROLE_LABELS[role ?? ''] ?? 'Gestão escolar'}</p>
+            <p className="hidden truncate text-xs text-muted-foreground sm:block">{contextSchoolName ? `Escola ativa: ${contextSchoolName}` : ROLE_LABELS[role ?? ''] ?? 'Gestão escolar'}</p>
           </div>
           {role === 'secretaria' && (
             <div className="flex items-center gap-2">
@@ -219,10 +237,13 @@ export function AppLayout() {
             </div>
           )}
           <NotificationsMenu />
-          {role === 'admin' && (
+          {(role === 'admin' || role === 'gestor') && !financialBlocked && (
             <Tooltip>
-              <TooltipTrigger render={<Button variant="ghost" size="icon" className="size-10" aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'} onClick={toggleFinancialVisibility}>{hideFinancialData ? <EyeOff size={18} /> : <Eye size={18} />}</Button>} />
-              <TooltipContent>{hideFinancialData ? 'Mostrar valores' : 'Ocultar valores'}</TooltipContent>
+              <TooltipTrigger render={<Button variant="ghost" size="icon" className="relative size-10" aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'} onClick={toggleFinancialVisibility}>
+                {hideFinancialData ? <EyeOff size={18} /> : <Eye size={18} />}
+                <DollarSign className="absolute bottom-1 right-1 rounded-full bg-background p-0.5" size={10} aria-hidden="true" />
+              </Button>} />
+              <TooltipContent>{hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}</TooltipContent>
             </Tooltip>
           )}
           <Tooltip>
