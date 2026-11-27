@@ -27,6 +27,9 @@ const schema = z.object({
   startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM'),
   endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM'),
   order: z.coerce.number().int().min(1, 'Ordem obrigatória'),
+}).refine((data) => data.endTime > data.startTime, {
+  message: 'O horário de término deve ser posterior ao horário de início.',
+  path: ['endTime'],
 })
 
 type FormData = z.infer<typeof schema>
@@ -63,12 +66,12 @@ export function ClassPeriodsPage() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', startTime: '', endTime: '', order: 1 },
+    defaultValues: { name: '', startTime: '07:30', endTime: '08:20', order: 1 },
   })
 
   function handleCreate() {
     setEditing(undefined)
-    reset({ name: '', startTime: '', endTime: '', order: (periods?.length ?? 0) + 1 })
+    reset({ name: '', startTime: '07:30', endTime: '08:20', order: (periods?.length ?? 0) + 1 })
     setDialogOpen(true)
   }
 
@@ -86,7 +89,7 @@ export function ClassPeriodsPage() {
   function handleClose() {
     setDialogOpen(false)
     setEditing(undefined)
-    reset({ name: '', startTime: '', endTime: '', order: 1 })
+    reset({ name: '', startTime: '07:30', endTime: '08:20', order: 1 })
   }
 
   function onSubmit(data: FormData) {
@@ -103,13 +106,13 @@ export function ClassPeriodsPage() {
   return (
     <div className="space-y-5">
       <PageHead
-        title="Períodos de Aula"
-        subtitle="Defina os blocos de horário usados na grade horária (ex: 1º tempo, 2º tempo)"
+        title="Tempos de aula"
+        subtitle="Defina cada bloco da grade. Ex.: 1º tempo: 07:30 às 08:20."
         backTo={() => navigate(-1)}
         actions={
           <Button size="sm" onClick={handleCreate}>
             <Plus className="h-4 w-4 mr-1" />
-            Novo período
+            Novo tempo
           </Button>
         }
       />

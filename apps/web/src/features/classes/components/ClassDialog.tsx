@@ -163,6 +163,7 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
                 {academicYears?.map((year) => <SelectItem key={year.id} value={year.id}>{year.name}</SelectItem>)}
               </SelectContent>
             </Select>
+            {academicYears?.length === 0 && <p className="text-xs text-muted-foreground">Nenhum ano letivo cadastrado. Crie um ano letivo antes de organizar esta turma.</p>}
           </div>
           </>}
           {!isEdit && step === 2 && (

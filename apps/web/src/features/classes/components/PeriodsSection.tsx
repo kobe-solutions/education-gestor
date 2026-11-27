@@ -110,6 +110,7 @@ export function PeriodsSection({ year }: { year: AcademicYear }) {
           open={dialogOpen}
           yearId={year.id}
           editing={editingPeriod}
+          existingPeriods={sorted}
           onClose={() => { setDialogOpen(false); setEditingPeriod(undefined) }}
         />
       )}
