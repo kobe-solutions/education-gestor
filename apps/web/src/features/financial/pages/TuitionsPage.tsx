@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Plus, EyeOff, FileText, Receipt, Pencil } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from '../../../lib/toast'
+import { extractErrorMessage } from '../../../lib/errors'
 import { useTuitions, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
 import { TuitionCreateDialog } from '../components/TuitionCreateDialog'
 import { TuitionEditDialog } from '../components/TuitionEditDialog'
@@ -79,14 +80,14 @@ export function TuitionsPage() {
   function handleBoletoUpload(tuitionId: string, file: File) {
     uploadBoleto.mutate({ id: tuitionId, file }, {
       onSuccess: () => toast.success('Boleto anexado'),
-      onError: () => toast.error('Erro ao anexar boleto'),
+      onError: (err) => toast.error(extractErrorMessage(err, 'Erro ao anexar boleto')),
     })
   }
 
   function handleReceiptUpload(tuitionId: string, file: File) {
     uploadReceipt.mutate({ id: tuitionId, file }, {
       onSuccess: () => toast.success('Comprovante anexado'),
-      onError: () => toast.error('Erro ao anexar comprovante'),
+      onError: (err) => toast.error(extractErrorMessage(err, 'Erro ao anexar comprovante')),
     })
   }
 
