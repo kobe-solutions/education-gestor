@@ -7,6 +7,12 @@ vi.mock('../../modules/academic/academic.service', () => ({
   registerBulkGradesService: vi.fn(),
   getStudentGradesService: vi.fn(),
   getClassGradesService: vi.fn(),
+  getClassAssessmentsService: vi.fn(),
+  createAssessmentService: vi.fn(),
+  updateAssessmentService: vi.fn(),
+  deleteAssessmentService: vi.fn(),
+  getClassPeriodGradeConfigsService: vi.fn(),
+  upsertPeriodGradeConfigService: vi.fn(),
   registerAttendanceService: vi.fn(),
   registerBulkAttendanceService: vi.fn(),
   getStudentAttendancesService: vi.fn(),
@@ -372,5 +378,123 @@ describe('GET /students/:id/report', () => {
     })
 
     expect(response.statusCode).toBe(401)
+  })
+})
+
+describe('Assessments & Period Grade Configs routes', () => {
+  it('GET /school-classes/:id/assessments retorna 200 com avaliações', async () => {
+    vi.mocked(academicService.getClassAssessmentsService).mockResolvedValue([
+      { id: 'a1', name: 'Prova 1', weight: '2.00' } as any,
+    ])
+
+    const response = await app.inject({
+      method: 'GET',
+      url: `/school-classes/${IDS.class}/assessments?subjectId=${IDS.subject}`,
+      headers: { authorization: `Bearer ${professorToken}` },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json()).toHaveLength(1)
+  })
+
+  it('POST /assessments retorna 201 ao criar avaliação', async () => {
+    vi.mocked(academicService.createAssessmentService).mockResolvedValue({
+      id: 'a1',
+      name: 'Prova 1',
+      weight: '2.00',
+    } as any)
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/assessments',
+      headers: { authorization: `Bearer ${professorToken}` },
+      body: {
+        classId: IDS.class,
+        subjectId: IDS.subject,
+        academicPeriodId: IDS.period,
+        teacherId: IDS.teacher,
+        name: 'Prova 1',
+        weight: 2,
+      },
+    })
+
+    expect(response.statusCode).toBe(201)
+    expect(response.json().name).toBe('Prova 1')
+  })
+
+  it('POST /assessments retorna 400 quando peso é inválido', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/assessments',
+      headers: { authorization: `Bearer ${professorToken}` },
+      body: {
+        classId: IDS.class,
+        subjectId: IDS.subject,
+        academicPeriodId: IDS.period,
+        teacherId: IDS.teacher,
+        name: 'Prova 1',
+        weight: 0,
+      },
+    })
+
+    expect(response.statusCode).toBe(400)
+  })
+
+  it('PATCH /assessments/:id retorna 200 ao atualizar e 404 quando não existe', async () => {
+    vi.mocked(academicService.updateAssessmentService).mockResolvedValue({
+      id: 'a1',
+      name: 'Trabalho',
+      weight: '1.50',
+    } as any)
+
+    const ok = await app.inject({
+      method: 'PATCH',
+      url: '/assessments/a1',
+      headers: { authorization: `Bearer ${professorToken}` },
+      body: { name: 'Trabalho', weight: 1.5 },
+    })
+    expect(ok.statusCode).toBe(200)
+
+    vi.mocked(academicService.updateAssessmentService).mockRejectedValue(new Error('Assessment not found'))
+    const notFound = await app.inject({
+      method: 'PATCH',
+      url: '/assessments/missing',
+      headers: { authorization: `Bearer ${professorToken}` },
+      body: { name: 'Trabalho' },
+    })
+    expect(notFound.statusCode).toBe(404)
+  })
+
+  it('DELETE /assessments/:id retorna 204 ao excluir', async () => {
+    vi.mocked(academicService.deleteAssessmentService).mockResolvedValue({ id: 'a1' } as any)
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: '/assessments/a1',
+      headers: { authorization: `Bearer ${professorToken}` },
+    })
+    expect(response.statusCode).toBe(204)
+  })
+
+  it('PUT /period-grade-configs retorna 200 ao salvar método de cálculo', async () => {
+    vi.mocked(academicService.upsertPeriodGradeConfigService).mockResolvedValue({
+      id: 'cfg1',
+      calculationMethod: 'weighted',
+    } as any)
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/period-grade-configs',
+      headers: { authorization: `Bearer ${professorToken}` },
+      body: {
+        classId: IDS.class,
+        subjectId: IDS.subject,
+        academicPeriodId: IDS.period,
+        calculationMethod: 'weighted',
+      },
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.json().calculationMethod).toBe('weighted')
   })
 })

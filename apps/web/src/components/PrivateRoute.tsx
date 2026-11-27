@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
-import { SECRETARIA_PUBLIC_PATHS } from '../lib/routes'
+import { canAccessRoute, SECRETARIA_PUBLIC_PATHS } from '../lib/routes'
 import type { UserRole } from '@education-gestor/types'
 
 interface PrivateRouteProps {
@@ -18,18 +18,25 @@ export function PrivateRoute({ allowedRoles, requireSchool }: PrivateRouteProps)
     return <Navigate to="/login" replace />
   }
 
-  if (allowedRoles && !allowedRoles.includes(payload.role as UserRole)) {
-    return <Navigate to="/" replace />
+  const role = payload.role as UserRole
+  const allowedByRoute = canAccessRoute(role, location.pathname)
+
+  if (!allowedByRoute || (allowedRoles && !allowedRoles.includes(role))) {
+    const destination = payload.role === 'professor' ? '/professor' : payload.role === 'admin' ? '/admin' : '/'
+    return <Navigate to={destination} replace state={{ accessDenied: true }} />
   }
 
   // Secretaria sem escola selecionada tentando acessar rota que precisa de escola
+  const isSecretariaPublicPath = SECRETARIA_PUBLIC_PATHS.some((path) =>
+    path === '/' ? location.pathname === '/' : location.pathname === path || location.pathname.startsWith(`${path}/`),
+  )
   const needsSchool = requireSchool !== false &&
     payload.role === 'secretaria' &&
     !activeSchoolId &&
-    !SECRETARIA_PUBLIC_PATHS.some((p) => location.pathname.startsWith(p))
+    !isSecretariaPublicPath
 
   if (needsSchool) {
-    return <Navigate to="/my-schools" replace />
+    return <Navigate to="/my-schools" replace state={{ requiresSchoolSelection: true }} />
   }
 
   return <Outlet />

@@ -14,7 +14,7 @@ const mockPatch = vi.mocked(api.patch)
 const mockUseSchoolKey = vi.mocked(useSchoolKey)
 
 function axiosRes(body: unknown) {
-  return { data: body } as unknown as Awaited<ReturnType<typeof api.get>>
+  return { data: { data: body } } as unknown as Awaited<ReturnType<typeof api.get>>
 }
 
 function createWrapper() {

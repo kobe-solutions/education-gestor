@@ -1,4 +1,4 @@
-import { createLessonRecordRepository, deleteLessonRecordRepository, findLessonRecordRepository, getLessonRecordCalendarRepository, listLessonRecordsRepository, updateLessonRecordRepository } from './lessonRecords.repository'
+import { createLessonRecordRepository, deleteLessonRecordRepository, findLessonRecordForSlotRepository, findLessonRecordRepository, getLessonRecordCalendarRepository, listLessonRecordsRepository, updateLessonRecordRepository } from './lessonRecords.repository'
 import { db } from '../../db'
 import { and, eq } from 'drizzle-orm'
 import { timetableSlots, teachers, schoolClasses, subjects } from '../../db/schema'
@@ -12,9 +12,18 @@ function monthBounds(month?: string) {
   return { month: chosen, from, to }
 }
 
-export async function getLessonRecordSummaryService(schoolId: string, month?: string) {
+export async function getLessonRecordSummaryService(
+  schoolId: string,
+  month?: string,
+  teacherId?: string,
+) {
   const bounds = monthBounds(month)
-  const { schedule, records } = await getLessonRecordCalendarRepository(schoolId, bounds.from, bounds.to)
+  const { schedule, records } = await getLessonRecordCalendarRepository(
+    schoolId,
+    bounds.from,
+    bounds.to,
+    teacherId,
+  )
   const weekday: Record<string, string> = {
     monday: '1', tuesday: '2', wednesday: '3', thursday: '4', friday: '5', saturday: '6', sunday: '0',
   }
@@ -110,7 +119,7 @@ export async function validateLessonAssignmentService(
   }
 }
 
-export function createLessonRecordService(input: {
+export async function createLessonRecordService(input: {
   schoolId: string
   teacherId: string
   classId: string
@@ -122,10 +131,12 @@ export function createLessonRecordService(input: {
   description: string | null
   attachments: LessonRecordAttachment[]
 }) {
+  const duplicate = await findLessonRecordForSlotRepository(input.schoolId, input.teacherId, input.timetableSlotId, input.date)
+  if (duplicate) throw new Error('Já existe um registro para esta aula nesta data.')
   return createLessonRecordRepository(input)
 }
 
-export function updateLessonRecordService(
+export async function updateLessonRecordService(
   schoolId: string,
   id: string,
   teacherId: string,
@@ -140,6 +151,10 @@ export function updateLessonRecordService(
     attachments: LessonRecordAttachment[]
   },
 ) {
+  if (input.timetableSlotId) {
+    const duplicate = await findLessonRecordForSlotRepository(schoolId, teacherId, input.timetableSlotId, input.date, id)
+    if (duplicate) throw new Error('Já existe um registro para esta aula nesta data.')
+  }
   return updateLessonRecordRepository(schoolId, id, teacherId, input)
 }
 

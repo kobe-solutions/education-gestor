@@ -1,23 +1,22 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router'
 import {
   Users,
   Clock,
   CalendarDays,
-  ChevronDown,
-  ChevronRight,
   AlertCircle,
   Radio,
   UserCheck,
   GraduationCap,
+  BookOpen,
 } from 'lucide-react'
 import { useTeacherDashboard, useTeacherDisplayName } from '../hooks/useTeacherDashboard'
-import { Button, buttonVariants } from '../../../components/ui/button'
+import { buttonVariants } from '../../../components/ui/button'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Badge } from '../../../components/ui/badge'
 import { WEEK_DAY_LABELS, WEEK_DAYS_ORDER } from '../../timetable/hooks/useTimetable'
 import { TONE_CONFIG, type ToneKey } from '../../../lib/colors'
 import { cn } from '../../../lib/utils'
+import { LessonTrackingCard } from '../../lesson-records/components/LessonTrackingCard'
 
 // ── Inline components (same pattern as DashboardPage.tsx) ─────────────────
 
@@ -181,11 +180,11 @@ function SlotActionLinks({ slot, today }: SlotActionLinksProps) {
         Chamada
       </Link>
       <Link
-        to={`/professor/grades?class=${slot.class.id}&subject=${slot.subject.id}`}
+        to="/lesson-records"
         className={buttonVariants({ variant: 'outline', size: 'sm' })}
       >
-        <GraduationCap />
-        Notas
+        <BookOpen />
+        Adicionar registro de aula
       </Link>
     </div>
   )
@@ -395,111 +394,97 @@ function TodayScheduleTable({
 // ── Section 3: Grade Horária Semanal ──────────────────────────────────────
 
 function WeeklyTimetable({ slots }: { slots: import('../hooks/useTeacherDashboard').TimetableSlotInfo[] }) {
-  const [expandedDay, setExpandedDay] = useState<string | null>(null)
-  const today = new Date()
-  const jsDay = today.getDay()
+  const jsDay = new Date().getDay()
   const todayWeekDay = jsDay >= 1 && jsDay <= 6 ? WEEK_DAYS_ORDER[jsDay - 1] : null
 
-  useEffect(() => {
-    if (todayWeekDay) setExpandedDay(todayWeekDay)
-  }, [todayWeekDay])
+  const periods = Array.from(
+    new Map(
+      slots.map((slot) => [
+        slot.classPeriod.id,
+        {
+          id: slot.classPeriod.id,
+          startTime: slot.classPeriod.startTime,
+          endTime: slot.classPeriod.endTime,
+          order: slot.classPeriod.order,
+        },
+      ]),
+    ).values(),
+  ).sort((a, b) => a.order - b.order || a.startTime.localeCompare(b.startTime))
 
-  const slotsByDay = new Map<string, typeof slots>()
-  for (const s of slots) {
-    const arr = slotsByDay.get(s.weekDay) ?? []
-    arr.push(s)
-    slotsByDay.set(s.weekDay, arr)
-  }
+  const slotMap = new Map(slots.map((slot) => [`${slot.weekDay}-${slot.classPeriod.id}`, slot]))
+  const daysWithSlots = WEEK_DAYS_ORDER.filter((day) => slots.some((slot) => slot.weekDay === day))
 
-  const daysWithSlots = WEEK_DAYS_ORDER.filter((d) => slotsByDay.has(d))
-
-  if (daysWithSlots.length === 0) {
+  if (slots.length === 0 || periods.length === 0) {
     return <EmptyState icon={CalendarDays} title="Nenhuma aula na grade horária" />
   }
 
   return (
-    <div className="space-y-2">
-      {daysWithSlots.map((day) => {
-        const daySlots = slotsByDay.get(day) ?? []
-        const isExpanded = expandedDay === day
-        const isToday = day === todayWeekDay
-
-        return (
-          <div
-            key={day}
-            className="rounded-xl overflow-hidden"
-            style={{
-              background: 'hsl(var(--card))',
-              border: `1px solid ${isToday ? 'rgba(79, 70, 229, 0.3)' : 'hsl(var(--border))'}`,
-              boxShadow: isToday ? '0 0 0 1px rgba(79, 70, 229, 0.1)' : 'var(--shadow-sm)',
-            }}
-          >
-            <Button
-              variant="ghost"
-              className="w-full justify-between px-4 py-3 h-auto text-left font-normal"
-              onClick={() => setExpandedDay(isExpanded ? null : day)}
-            >
-              <div className="flex items-center gap-2">
-                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                <span className="font-semibold text-sm" style={{ color: 'hsl(var(--foreground))' }}>
+    <div
+      className="overflow-hidden rounded-xl"
+      style={{
+        background: 'hsl(var(--card))',
+        border: '1px solid hsl(var(--border))',
+        boxShadow: 'var(--shadow-sm)',
+      }}
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[44rem] border-collapse text-sm">
+          <thead>
+            <tr>
+              <th
+                className="whitespace-nowrap border-b px-3 py-2.5 text-left text-xs font-semibold tracking-wider uppercase"
+                style={{ color: 'hsl(var(--muted-foreground))', width: 112 }}
+              >
+                Horário
+              </th>
+              {daysWithSlots.map((day) => (
+                <th
+                  key={day}
+                  className={cn(
+                    'border-b px-3 py-2.5 text-center text-xs font-semibold tracking-wider uppercase',
+                    day === todayWeekDay ? 'bg-primary/5 text-primary' : 'text-muted-foreground',
+                  )}
+                >
                   {WEEK_DAY_LABELS[day]}
-                </span>
-                {isToday && (
-                  <span
-                    className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-sm"
-                    style={{ background: 'rgba(79, 70, 229, 0.10)', color: '#818CF8' }}
-                  >
-                    Hoje
-                  </span>
-                )}
-              </div>
-              <span className="text-xs" style={{ color: 'hsl(var(--muted-foreground))' }}>
-                {daySlots.length} aula{daySlots.length !== 1 ? 's' : ''}
-              </span>
-            </Button>
-            {isExpanded && (
-              <div className="overflow-x-auto" style={{ borderTop: '1px solid hsl(var(--border))' }}>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                      {['Horário', 'Turma', 'Disciplina'].map((h) => (
-                        <th
-                          key={h}
-                          className="text-left px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider"
-                          style={{ color: 'hsl(var(--muted-foreground))' }}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {periods.map((period) => (
+              <tr key={period.id}>
+                <td
+                  className="whitespace-nowrap border-b px-3 py-3 font-mono text-xs tabular-nums"
+                  style={{ color: 'hsl(var(--muted-foreground))' }}
+                >
+                  {period.startTime} – {period.endTime}
+                </td>
+                {daysWithSlots.map((day) => {
+                  const slot = slotMap.get(`${day}-${period.id}`)
+                  return (
+                    <td
+                      key={day}
+                      className={cn('border-b px-3 py-3 align-top', day === todayWeekDay && 'bg-primary/5')}
+                    >
+                      {slot ? (
+                        <Link
+                          to={`/classes/${slot.class.id}`}
+                          className="block rounded-sm text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {daySlots.map((s) => (
-                      <tr
-                        key={s.slotId}
-                        className="transition-colors duration-150 hover:bg-accent"
-                        style={{ borderBottom: '1px solid hsl(var(--border))' }}
-                      >
-                        <td className="px-5 py-2.5 tabular-nums font-medium" style={{ color: 'hsl(var(--foreground))' }}>
-                          {s.classPeriod.startTime} — {s.classPeriod.endTime}
-                        </td>
-                        <td className="px-5 py-2.5">
-                          <Link to={`/classes/${s.class.id}`} className="font-semibold hover:underline" style={{ color: 'hsl(var(--foreground))' }}>
-                            {s.class.name}
-                          </Link>
-                        </td>
-                        <td className="px-5 py-2.5" style={{ color: 'hsl(var(--foreground))' }}>
-                          {s.subject.name}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )
-      })}
+                          <p className="text-xs font-semibold text-primary">{slot.subject.name}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">{slot.class.name}</p>
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground/30">—</span>
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -520,7 +505,7 @@ export function ProfessorDashboardPage() {
   }
 
   const today = new Date().toISOString().slice(0, 10)
-  const pendingTotal = data.pendingToday.attendance + data.pendingToday.grades
+  const pendingTotal = data.pendingToday.attendance
   const hasPending = pendingTotal > 0
 
   return (
@@ -545,10 +530,13 @@ export function ProfessorDashboardPage() {
           label="Pendências do Dia"
           tone={hasPending ? 'amber' : 'emerald'}
           sub={hasPending
-            ? `${data.pendingToday.attendance} chamada(s) · ${data.pendingToday.grades} notas`
+            ? `${data.pendingToday.attendance} chamada(s) a registrar`
             : 'Tudo em dia'}
         />
       </div>
+
+      {/* Acompanhamento de Aulas do professor */}
+      <LessonTrackingCard />
 
       {/* Aula corrente / próxima aula */}
       <section className="space-y-4">
@@ -571,7 +559,7 @@ export function ProfessorDashboardPage() {
 
       {/* Section 3: Grade Horária Semanal */}
       <section className="space-y-4">
-        <SectionHeader title="Grade Horária Semanal" subtitle="Clique no dia para expandir" />
+        <SectionHeader title="Grade Horária Semanal" subtitle="Visão completa da semana" />
         <WeeklyTimetable slots={data.weeklyTimetable} />
       </section>
     </div>

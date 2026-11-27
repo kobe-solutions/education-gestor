@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import {
-  ChevronRight, ChevronDown, Users, BookOpen,
+  ChevronRight, ChevronDown, Users, BookOpen, Plus,
   GraduationCap, UserCircle2, ExternalLink,
 } from 'lucide-react'
 import { useSeries } from '../../series/hooks/useSeries'
@@ -256,6 +256,7 @@ function LevelSection({ levelName, levelType, seriesWithClasses, studentSearch }
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export function ClassStructurePage() {
+  const navigate = useNavigate()
   const { data: series = [] } = useSeries()
   const { data: allClasses = [], isLoading } = useClasses()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -311,6 +312,7 @@ export function ClassStructurePage() {
             {series.length} séries · {allClasses.length} turmas · {totalAlunos} alunos matriculados
           </p>
         </div>
+        <Button onClick={() => navigate('/classes')}><Plus className="mr-2 size-4" />Gerenciar turmas</Button>
       </div>
 
       {/* Barra de busca dupla */}

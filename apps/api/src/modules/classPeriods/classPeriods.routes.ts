@@ -36,6 +36,9 @@ function handleClassPeriodError(
     if (error.message === 'Class period not found') {
       return errorHandler(reply, 'O período de aula informado não foi encontrado.', 404)
     }
+    if (error.message.includes('término')) {
+      return errorHandler(reply, error.message, 400)
+    }
     if (error.message.includes('Não é possível excluir')) {
       return errorHandler(reply, error.message, 409)
     }

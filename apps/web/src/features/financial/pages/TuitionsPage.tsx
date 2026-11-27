@@ -262,7 +262,7 @@ export function TuitionsPage() {
             <input
               ref={(el) => { fileInputRefs.current[`boleto-${t.id}`] = el }}
               type="file"
-              accept=".pdf,image/*"
+              accept="application/pdf,image/jpeg,image/png"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0]
@@ -273,11 +273,13 @@ export function TuitionsPage() {
             <Button
               size="sm"
               variant="ghost"
-              title="Anexar boleto"
-              aria-label="Anexar boleto"
+              title="Anexar boleto (PDF, JPEG ou PNG; máximo 10 MB)"
+              aria-label="Anexar boleto (PDF, JPEG ou PNG; máximo 10 MB)"
+              disabled={uploadBoleto.isPending}
               onClick={() => fileInputRefs.current[`boleto-${t.id}`]?.click()}
             >
               <FileText className="h-4 w-4" />
+              <span className="sr-only">{uploadBoleto.isPending ? 'Enviando boleto...' : 'Anexar boleto'}</span>
             </Button>
             {t.boletoUrl && (
               <Button size="sm" variant="ghost" title="Ver boleto" aria-label="Ver boleto" onClick={() => window.open(t.boletoUrl!, '_blank')}>

@@ -35,9 +35,9 @@ const TimetablePage = lazy(() => import('./features/timetable/pages/TimetablePag
 const SchedulingPage = lazy(() => import('./features/scheduling/pages/SchedulingPage').then(m => ({ default: m.SchedulingPage })))
 const StudentSchedulingPage = lazy(() => import('./features/scheduling/pages/StudentSchedulingPage').then(m => ({ default: m.StudentSchedulingPage })))
 const ClassStructurePage = lazy(() => import('./features/academic-hub/pages/ClassStructurePage').then(m => ({ default: m.ClassStructurePage })))
+const ClassesPage = lazy(() => import('./features/classes/pages/ClassesPage').then(m => ({ default: m.ClassesPage })))
 const HubPeoplePage = lazy(() => import('./pages/HubPeoplePage').then(m => ({ default: m.HubPeoplePage })))
 const AcademicHubPage = lazy(() => import('./pages/AcademicHubPage').then(m => ({ default: m.AcademicHubPage })))
-const HubSettingsPage = lazy(() => import('./pages/HubSettingsPage').then(m => ({ default: m.HubSettingsPage })))
 const HubAdminPage = lazy(() => import('./pages/HubAdminPage').then(m => ({ default: m.HubAdminPage })))
 const AdminActivityPage = lazy(() => import('./features/admin/pages/AdminActivityPage').then(m => ({ default: m.AdminActivityPage })))
 const HubSchoolsPage = lazy(() => import('./pages/HubSchoolsPage').then(m => ({ default: m.HubSchoolsPage })))
@@ -88,7 +88,8 @@ export function App() {
                 {/* Hubs de navegação — gestor */}
                 <Route element={<PrivateRoute allowedRoles={['gestor']} />}>
                   <Route path="/structure/classes" element={<Suspense fallback={<PageLoader />}><ClassStructurePage /></Suspense>} />
-                  <Route path="/settings" element={<Suspense fallback={<PageLoader />}><HubSettingsPage /></Suspense>} />
+                  <Route path="/classes" element={<Suspense fallback={<PageLoader />}><ClassesPage /></Suspense>} />
+                  <Route path="/settings" element={<Navigate to="/academic" replace />} />
                   <Route path="/subjects" element={<Suspense fallback={<PageLoader />}><SubjectsPage /></Suspense>} />
                   <Route path="/education-levels" element={<Suspense fallback={<PageLoader />}><EducationLevelsPage /></Suspense>} />
                   <Route path="/education-levels/:levelId/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />

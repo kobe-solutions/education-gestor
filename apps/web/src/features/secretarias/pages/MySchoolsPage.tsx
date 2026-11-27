@@ -6,6 +6,7 @@ import type { SecretariaPayload } from '@education-gestor/types'
 import { Surface } from '../../../components/Surface'
 import { Button } from '../../../components/ui/button'
 import { StatusBadge } from '../../../components/StatusBadge'
+import { toast } from '../../../lib/toast'
 
 export function MySchoolsPage() {
   const { payload } = useAuth()
@@ -17,6 +18,7 @@ export function MySchoolsPage() {
 
   function handleAccess(schoolId: string, schoolName: string) {
     setActiveSchool(schoolId, schoolName)
+    toast.success(`Você está operando na escola ${schoolName}.`)
     navigate('/')
   }
 
@@ -30,7 +32,10 @@ export function MySchoolsPage() {
       {isLoading && <p className="text-muted-foreground text-sm">Carregando escolas...</p>}
 
       {!isLoading && schools?.length === 0 && (
-        <p className="text-muted-foreground text-sm">Nenhuma escola está vinculada a esta Secretaria de Educação.</p>
+        <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">Ainda não há escolas vinculadas à sua rede.</p>
+          <p className="mt-1">Peça ao administrador da plataforma para vincular uma escola antes de começar a operar.</p>
+        </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

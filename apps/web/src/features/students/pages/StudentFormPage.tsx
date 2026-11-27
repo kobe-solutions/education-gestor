@@ -244,11 +244,11 @@ export function StudentFormPage() {
         <div>
           {isEdit && <p className="mb-2 text-sm text-muted-foreground">Você pode preencher cada etapa e voltar para completar ou atualizar as informações.</p>}
           <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-xl bg-transparent p-0 sm:grid-cols-3 lg:grid-cols-5">
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="pessoal">1. Dados pessoais</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="pessoal"><span aria-hidden="true">1. </span><span>Dados Pessoais</span></TabsTrigger>
             <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="familia" disabled={!isEdit}>2. Família</TabsTrigger>
             <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="saude" disabled={!isEdit}>3. Saúde</TabsTrigger>
             <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="documentos" disabled={!isEdit}>4. Documentos</TabsTrigger>
-            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="matricula">5. Turmas e matrícula</TabsTrigger>
+            <TabsTrigger className="min-h-11 h-auto whitespace-normal rounded-lg border bg-card px-2 text-left text-xs data-active:border-primary data-active:bg-secondary sm:text-sm" value="matricula"><span aria-hidden="true">5. </span><span>Matrícula &amp; Turmas</span></TabsTrigger>
           </TabsList>
         </div>
 

@@ -8,6 +8,8 @@ import { useAuth } from '../../../contexts/AuthContext'
 import { useTeacher, useUpdateMyProfile, useChangeMyPassword, useUploadMyPhoto } from '../../teachers/hooks/useTeachers'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../../components/ui/card'
 import { Input } from '../../../components/ui/input'
+import { MaskedInput } from '../../../components/ui/masked-input'
+import { maskPhone } from '../../../lib/masks'
 import { Button } from '../../../components/ui/button'
 import { Label } from '../../../components/ui/label'
 import { Separator } from '../../../components/ui/separator'
@@ -50,7 +52,7 @@ export function ProfessorProfilePage() {
     values: {
       name: teacher?.name ?? '',
       email: teacher?.email ?? '',
-      phone: teacher?.phone ?? '',
+      phone: teacher?.phone ? maskPhone(teacher.phone) : '',
     },
   })
 
@@ -176,7 +178,7 @@ export function ProfessorProfilePage() {
             </div>
             <div className="space-y-1">
               <Label htmlFor="phone">Telefone</Label>
-              <Input id="phone" placeholder="(11) 99999-9999" {...regProfile('phone')} />
+              <MaskedInput id="phone" mask="phone" placeholder="(11) 99999-9999" {...regProfile('phone')} />
               {profileErrors.phone && (
                 <p className="text-sm text-red-500">{profileErrors.phone.message}</p>
               )}

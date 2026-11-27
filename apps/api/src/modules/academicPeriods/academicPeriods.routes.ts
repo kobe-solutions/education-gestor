@@ -36,6 +36,10 @@ function handleAcademicPeriodError(
     return errorHandler(reply, 'O período letivo informado não foi encontrado.', 404)
   }
 
+  if (error instanceof Error && error.message.includes('término')) {
+    return errorHandler(reply, error.message, 400)
+  }
+
   if (error instanceof Error && error.message.startsWith('Período sobrepõe com')) {
     return errorHandler(reply, 'As datas informadas se sobrepõem a outro período letivo.', 409)
   }

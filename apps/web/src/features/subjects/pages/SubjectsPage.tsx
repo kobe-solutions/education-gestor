@@ -73,6 +73,8 @@ export function SubjectsPage() {
     setEditing(undefined)
     setForm(emptyForm)
     setErrors({})
+    createApiMutation.reset()
+    updateApiMutation.reset()
     setDialogOpen(true)
   }
 
@@ -84,6 +86,8 @@ export function SubjectsPage() {
       weeklyHours: String(subject.weeklyHours),
     })
     setErrors({})
+    createApiMutation.reset()
+    updateApiMutation.reset()
     setDialogOpen(true)
   }
 
@@ -109,6 +113,8 @@ export function SubjectsPage() {
     setErrors({})
     createMutation.reset()
     updateMutation.reset()
+    createApiMutation.reset()
+    updateApiMutation.reset()
   }
 
   function validate(): boolean {
