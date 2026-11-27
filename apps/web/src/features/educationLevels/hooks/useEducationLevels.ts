@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 
 export interface EducationLevel {
   id: string
@@ -46,8 +46,8 @@ export function useEducationLevels() {
   return useQuery({
     queryKey: ['education-levels'],
     queryFn: async () => {
-      const res = await api.get<EducationLevel[]>('/education-levels')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<EducationLevel[]>>('/education-levels')
+      return res.data.data
     },
   })
 }
@@ -56,8 +56,8 @@ export function useCreateEducationLevel() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: CreateInput) => {
-      const res = await api.post<EducationLevel>('/education-levels', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<EducationLevel>>('/education-levels', data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['education-levels'] }),
   })
@@ -67,8 +67,8 @@ export function useUpdateEducationLevel() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateInput }) => {
-      const res = await api.put<EducationLevel>(`/education-levels/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<EducationLevel>>(`/education-levels/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['education-levels'] }),
   })
