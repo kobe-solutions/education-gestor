@@ -1,6 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { api, type ApiSuccessResponse } from '../../../lib/api'
 import { useSchoolKey } from '../../../lib/useSchoolKey'
+import { useAuth } from '../../../contexts/AuthContext'
+import { useTeacher } from '../../teachers/hooks/useTeachers'
+
+export function useTeacherDisplayName(): string {
+  const { payload } = useAuth()
+  const teacherId = payload?.role === 'professor' ? payload.userId : ''
+  const { data: teacherProfile } = useTeacher(teacherId)
+  return teacherProfile?.name ?? payload?.name ?? ''
+}
 
 export interface TeacherClass {
   id: string
