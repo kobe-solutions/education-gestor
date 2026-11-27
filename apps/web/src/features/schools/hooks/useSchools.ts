@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api } from '../../../lib/api'
+import { api, type ApiSuccessResponse } from '../../../lib/api'
 import type { School } from '@education-gestor/types'
 
 interface CreateSchoolInput {
@@ -17,8 +17,8 @@ export function useCreateSchool() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: CreateSchoolInput) => {
-      const res = await api.post<School>('/schools', data)
-      return res.data
+      const res = await api.post<ApiSuccessResponse<School>>('/schools', data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
   })
@@ -28,8 +28,8 @@ export function useSchool(id: string) {
   return useQuery({
     queryKey: ['schools', id],
     queryFn: async () => {
-      const res = await api.get<School>(`/schools/${id}`)
-      return res.data
+      const res = await api.get<ApiSuccessResponse<School>>(`/schools/${id}`)
+      return res.data.data
     },
     enabled: !!id,
   })
@@ -39,8 +39,8 @@ export function useSchools() {
   return useQuery({
     queryKey: ['schools'],
     queryFn: async () => {
-      const res = await api.get<School[]>('/schools')
-      return res.data
+      const res = await api.get<ApiSuccessResponse<School[]>>('/schools')
+      return res.data.data
     },
   })
 }
@@ -59,8 +59,8 @@ export function useUpdateSchool() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, data }: { id: string; data: UpdateSchoolInput }) => {
-      const res = await api.put<School>(`/schools/${id}`, data)
-      return res.data
+      const res = await api.put<ApiSuccessResponse<School>>(`/schools/${id}`, data)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
   })
@@ -100,9 +100,9 @@ export function useUploadSchoolLogo() {
     mutationFn: async ({ id, file }: { id: string; file: File }) => {
       const form = new FormData()
       form.append('file', file)
-      return (await api.post<School>(`/schools/${id}/logo`, form, {
+      return (await api.post<ApiSuccessResponse<School>>(`/schools/${id}/logo`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-      })).data
+      })).data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
   })
@@ -112,8 +112,8 @@ export function useToggleSchoolFinancialVisibility() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (id: string) => {
-      const res = await api.patch<School>(`/schools/${id}/financial-visibility`)
-      return res.data
+      const res = await api.patch<ApiSuccessResponse<School>>(`/schools/${id}/financial-visibility`)
+      return res.data.data
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['schools'] }),
   })
