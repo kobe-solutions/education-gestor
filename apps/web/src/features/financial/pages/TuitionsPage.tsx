@@ -10,7 +10,6 @@ import { UpcomingTuitions } from '../components/UpcomingTuitions'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
 import { fmtBRL, formatDateBR } from '../../../lib/format'
 import { useApiMutation } from '../../../hooks/useApiMutation'
-import { useFinancialVisibility } from '../../../contexts/FinancialVisibilityContext'
 import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
 import { PageHead } from '../../../components/PageHead'
 import { Button } from '../../../components/ui/button'
@@ -23,7 +22,6 @@ import type { Tuition } from '@education-gestor/types'
 const PAGE_SIZE = 15
 
 export function TuitionsPage() {
-  const { hideFinancialData } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const [page, setPage] = useState(1)
   const [classFilter, setClassFilter] = useState<string>('all')
@@ -133,7 +131,7 @@ export function TuitionsPage() {
     },
   ]
 
-  if (hideFinancialData || financialBlocked) {
+  if (financialBlocked) {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4">
         <div
@@ -147,7 +145,7 @@ export function TuitionsPage() {
             Dados financeiros ocultos
           </p>
           <p className="text-sm mt-1" style={{ color: 'hsl(var(--muted-foreground))' }}>
-            Ative a visualização de dados financeiros no menu lateral ou no cabeçalho para acessar as mensalidades.
+            A visualização financeira desta escola está desativada. Peça ao administrador da rede para liberá-la.
           </p>
         </div>
       </div>

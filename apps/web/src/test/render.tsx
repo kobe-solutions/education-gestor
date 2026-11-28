@@ -5,7 +5,6 @@ import { MemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import { AuthContext } from '../contexts/AuthContext'
 import { SchoolContext } from '../contexts/SchoolContext'
-import { FinancialVisibilityProvider } from '../contexts/FinancialVisibilityContext'
 import { api } from '../lib/api'
 import type { JwtPayload } from '@education-gestor/types'
 
@@ -96,11 +95,9 @@ export function createProviders(options: ProvidersOptions = {}) {
     return (
       <AuthContext.Provider value={authValue}>
         <SchoolContext.Provider value={schoolValue}>
-          <FinancialVisibilityProvider>
-            <QueryClientProvider client={queryClient}>
-              <MemoryRouter initialEntries={[initialRoute]}>{children}</MemoryRouter>
-            </QueryClientProvider>
-          </FinancialVisibilityProvider>
+          <QueryClientProvider client={queryClient}>
+            <MemoryRouter initialEntries={[initialRoute]}>{children}</MemoryRouter>
+          </QueryClientProvider>
         </SchoolContext.Provider>
       </AuthContext.Provider>
     )

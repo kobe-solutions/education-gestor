@@ -1,9 +1,8 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router'
 import { Toaster } from './components/ui/sonner'
 import { AuthProvider } from './contexts/AuthContext'
 import { SchoolProvider } from './contexts/SchoolContext'
-import { FinancialVisibilityProvider } from './contexts/FinancialVisibilityContext'
 import { PrivateRoute } from './components/PrivateRoute'
 import { AppLayout } from './components/layout/AppLayout'
 import { PublicLayout } from './components/layout/PublicLayout'
@@ -69,10 +68,13 @@ function PageLoader() {
 }
 
 export function App() {
+  useEffect(() => {
+    localStorage.removeItem('iris-hide-financial')
+  }, [])
+
   return (
     <AuthProvider>
       <SchoolProvider>
-        <FinancialVisibilityProvider>
         <BrowserRouter>
           <Routes>
             {/* Rotas públicas */}
@@ -166,7 +168,6 @@ export function App() {
           </Routes>
           <Toaster />
         </BrowserRouter>
-      </FinancialVisibilityProvider>
       </SchoolProvider>
     </AuthProvider>
   )

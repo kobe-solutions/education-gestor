@@ -1,13 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
-import { useFinancialVisibility } from '../contexts/FinancialVisibilityContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
 import { api, type ApiSuccessResponse } from './api'
 import type { School } from '@education-gestor/types'
 
 export function useFinancialBlocked() {
   const { payload } = useAuth()
-  const { hideFinancialData } = useFinancialVisibility()
   const { activeSchoolId } = useSchoolContext()
 
   const schoolId = payload?.role === 'gestor' || payload?.role === 'professor'
@@ -20,14 +18,14 @@ export function useFinancialBlocked() {
       const res = await api.get<ApiSuccessResponse<School>>(`/schools/${schoolId}`)
       return res.data.data
     },
-    enabled: !!schoolId && ['gestor', 'professor', 'secretaria'].includes(payload?.role ?? ''),
+    enabled: !!schoolId && payload?.role === 'secretaria',
   })
 
-  const adminBlocked = hideFinancialData
   const entityBlocked = schoolId ? !school?.showFinancial : false
+  const blocked = payload?.role === 'secretaria' && entityBlocked
 
   return {
-    blocked: adminBlocked || entityBlocked,
-    loading: !!schoolId && isLoading && !school,
+    blocked,
+    loading: payload?.role === 'secretaria' && !!schoolId && isLoading && !school,
   }
 }
