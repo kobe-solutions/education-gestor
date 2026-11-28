@@ -225,6 +225,13 @@
       "when": 1795644420603,
       "tag": "0031_clear_mojo",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1795792354962,
+      "tag": "0032_clammy_grim_reaper",
+      "breakpoints": true
     }
   ]
 }
