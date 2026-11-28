@@ -44,6 +44,7 @@ const navItems: NavItem[] = [
   { to: '/professor/profile', label: 'Meu perfil', icon: Users, roles: ['professor'], matchPaths: ['/professor/profile'] },
   { to: '/financial', label: 'Mensalidades', icon: DollarSign, roles: ['gestor', 'secretaria'], matchPaths: ['/financial'] },
   { to: '/financial-control', label: 'Controle financeiro', icon: ChartNoAxesColumn, roles: ['gestor', 'secretaria'], matchPaths: ['/financial-control'] },
+  { to: '/profile', label: 'Perfil da escola', icon: School, roles: ['gestor'], matchPaths: ['/profile'] },
   { to: '/schools-hub', label: 'Rede de escolas', icon: School, roles: ['secretaria'], matchPaths: ['/schools-hub', '/schools', '/my-schools'] },
   { to: '/admin', label: 'Organizações', icon: Building2, roles: ['admin'], matchPaths: ['/admin', '/schools', '/secretarias'] },
   { to: '/admin/activity', label: 'Atividade', icon: Activity, roles: ['admin'], matchPaths: ['/admin/activity'] },
@@ -177,7 +178,7 @@ export function AppLayout() {
   const { data: schoolProfile } = useSchool(schoolId ?? '')
   const userPhotoUrl = role === 'professor' ? teacherProfile?.photoUrl : undefined
   const { blocked: financialBlocked } = useFinancialBlocked()
-  const userName = teacherProfile?.name ?? payload?.name ?? 'Usuário'
+  const userName = teacherProfile?.name ?? (role === 'gestor' ? (schoolProfile?.director || schoolProfile?.name) : undefined) ?? payload?.name ?? 'Usuário'
   const contextSchoolName = role === 'secretaria' ? activeSchoolName : schoolProfile?.name
   const userEmail = payload && 'email' in payload ? (payload as { email?: string }).email : undefined
 

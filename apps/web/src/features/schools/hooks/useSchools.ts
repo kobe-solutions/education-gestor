@@ -53,6 +53,59 @@ interface UpdateSchoolInput {
   coordinator?: string | null
   phone?: string | null
   address?: string | null
+  minPassingGrade?: number
+  minAttendancePercentage?: number
+}
+
+export function useMySchool(enabled = true) {
+  return useQuery({
+    queryKey: ['schools', 'me'],
+    queryFn: async () => {
+      const res = await api.get<ApiSuccessResponse<School>>('/schools/me')
+      return res.data.data
+    },
+    enabled,
+  })
+}
+
+export function useUpdateMySchool() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: UpdateSchoolInput) => {
+      const res = await api.put<ApiSuccessResponse<School>>('/schools/me', data)
+      return res.data.data
+    },
+    onSuccess: (updated) => {
+      qc.invalidateQueries({ queryKey: ['schools'] })
+      if (updated?.id) qc.invalidateQueries({ queryKey: ['schools', updated.id] })
+      qc.invalidateQueries({ queryKey: ['student-report'] })
+    },
+  })
+}
+
+export function useChangeMySchoolPassword() {
+  return useMutation({
+    mutationFn: async (password: string) => {
+      await api.put('/schools/me/password', { password })
+    },
+  })
+}
+
+export function useUploadMySchoolLogo() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return (await api.post<ApiSuccessResponse<School>>('/schools/me/logo', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })).data.data
+    },
+    onSuccess: (updated) => {
+      qc.invalidateQueries({ queryKey: ['schools'] })
+      if (updated?.id) qc.invalidateQueries({ queryKey: ['schools', updated.id] })
+    },
+  })
 }
 
 export function useUpdateSchool() {
