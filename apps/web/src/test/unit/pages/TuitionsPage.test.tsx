@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import { renderWithProviders } from '../../render'
 import { TuitionsPage } from '../../../features/financial/pages/TuitionsPage'
@@ -62,18 +62,11 @@ function mockResult(data: Tuition[] | undefined, total: number, isLoading: boole
   } as unknown as ReturnType<typeof useTuitions>
 }
 
-const STORAGE_KEY = 'iris-hide-financial'
-
 beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(useDashboard).mockReturnValue({ data: { upcomingTuitions: [] }, isLoading: false, isError: false } as unknown as ReturnType<typeof useDashboard>)
-  localStorage.removeItem(STORAGE_KEY)
   mockUseFinancialBlocked.mockReturnValue({ blocked: false, loading: false })
   mockUseStudents.mockReturnValue({ data: { data: [] }, isLoading: false } as never)
-})
-
-afterEach(() => {
-  localStorage.removeItem(STORAGE_KEY)
 })
 
 describe('TuitionsPage', () => {
@@ -110,16 +103,6 @@ describe('TuitionsPage', () => {
     renderWithProviders(<TuitionsPage />, { initialRoute: '/financial' })
 
     expect(screen.getByText('Nenhuma mensalidade encontrada')).toBeInTheDocument()
-  })
-
-  it('oculta dados financeiros quando configurado', () => {
-    localStorage.setItem(STORAGE_KEY, 'true')
-    mockUseTuitions.mockReturnValue(mockResult([makeTuition()], 1, false))
-
-    renderWithProviders(<TuitionsPage />, { initialRoute: '/financial' })
-
-    expect(screen.getByText('Dados financeiros ocultos')).toBeInTheDocument()
-    expect(screen.queryByText('Mensalidades')).not.toBeInTheDocument()
   })
 
   it('mostra aviso de bloqueio quando a escola não libera financeiro', () => {

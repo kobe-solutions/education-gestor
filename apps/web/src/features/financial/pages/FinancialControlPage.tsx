@@ -1,7 +1,6 @@
 import { TrendingUp, CheckCircle2, Clock } from 'lucide-react'
 import { useDashboard } from '../../dashboard/hooks/useDashboard'
 import { useFinancialBlocked } from '../../../lib/useFinancialBlocked'
-import { useFinancialVisibility } from '../../../contexts/FinancialVisibilityContext'
 import { DashMetric } from '../../dashboard/components/DashMetric'
 import { SectionHeader } from '../../dashboard/components/SectionHeader'
 import { UpcomingTuitionsTable } from '../components/UpcomingTuitionsTable'
@@ -11,9 +10,7 @@ import { Skeleton } from '../../../components/ui/skeleton'
 export function FinancialControlPage() {
   const { data, isLoading } = useDashboard()
   const { blocked: financialBlocked } = useFinancialBlocked()
-  const { hideFinancialData } = useFinancialVisibility()
-
-  const isHidden = financialBlocked || hideFinancialData
+  const isHidden = financialBlocked
 
   if (isLoading) {
     return (

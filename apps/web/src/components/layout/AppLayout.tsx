@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import {
   Activity, BookOpen, Building2, CalendarCheck, ChartNoAxesColumn, ClipboardList, Keyboard,
-  DollarSign, Eye, EyeOff, GraduationCap, LayoutDashboard, LogOut, Menu, Moon, School,
+  DollarSign, GraduationCap, LayoutDashboard, LogOut, Menu, Moon, School,
   Sun, Users, X,
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
-import { useFinancialVisibility } from '../../contexts/FinancialVisibilityContext'
 import { useFinancialBlocked } from '../../lib/useFinancialBlocked'
 import { SchoolSelector } from '../SchoolSelector'
 import { Button } from '../ui/button'
@@ -177,7 +176,6 @@ export function AppLayout() {
     : undefined
   const { data: schoolProfile } = useSchool(schoolId ?? '')
   const userPhotoUrl = role === 'professor' ? teacherProfile?.photoUrl : undefined
-  const { hideFinancialData, toggleFinancialVisibility } = useFinancialVisibility()
   const { blocked: financialBlocked } = useFinancialBlocked()
   const userName = teacherProfile?.name ?? payload?.name ?? 'Usuário'
   const contextSchoolName = role === 'secretaria' ? activeSchoolName : schoolProfile?.name
@@ -237,15 +235,6 @@ export function AppLayout() {
             </div>
           )}
           <NotificationsMenu />
-          {(role === 'admin' || role === 'gestor') && !financialBlocked && (
-            <Tooltip>
-              <TooltipTrigger render={<Button variant="ghost" size="icon" className="relative size-10" aria-label={hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'} onClick={toggleFinancialVisibility}>
-                {hideFinancialData ? <EyeOff size={18} /> : <Eye size={18} />}
-                <DollarSign className="absolute bottom-1 right-1 rounded-full bg-background p-0.5" size={10} aria-hidden="true" />
-              </Button>} />
-              <TooltipContent>{hideFinancialData ? 'Mostrar valores financeiros' : 'Ocultar valores financeiros'}</TooltipContent>
-            </Tooltip>
-          )}
           <Tooltip>
             <TooltipTrigger render={<Button variant="ghost" size="icon" className="size-10" aria-label={theme === 'dark' ? 'Usar tema claro' : 'Usar tema escuro'} onClick={toggleTheme}>{theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</Button>} />
             <TooltipContent>{theme === 'dark' ? 'Tema claro' : 'Tema escuro'}</TooltipContent>

@@ -22,7 +22,6 @@ import {
 import { useDashboard, isAdminDashboard, type DashboardData, type AdminDashboard, type SchoolDashboard } from '../features/dashboard/hooks/useDashboard'
 import { useAuth } from '../contexts/AuthContext'
 import { useSchoolContext } from '../contexts/SchoolContext'
-import { useFinancialVisibility } from '../contexts/FinancialVisibilityContext'
 import { useFinancialBlocked } from '../lib/useFinancialBlocked'
 import { fmtBRL } from '../lib/format'
 import { TONE_CONFIG, type ToneKey } from '../lib/colors'
@@ -179,7 +178,6 @@ function ActionBadge({ action }: { action: string }) {
 
 function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/useDashboard').AdminDashboard }) {
   const totalStudents = data.studentsByStatus.active + data.studentsByStatus.inactive + data.studentsByStatus.transferred + data.studentsByStatus.cancelled
-  const { hideFinancialData } = useFinancialVisibility()
 
   return (
     <div className="space-y-8">
@@ -251,19 +249,16 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
             label="Turmas"
             tone="indigo"
           />
-          {!hideFinancialData && (
-            <DashMetric
-              icon={TrendingUp}
-              value={fmtBRL(data.tuitions.paid.total)}
-              label="Receita total"
-              sub={`${data.tuitions.paid.count} pagas`}
-              tone="emerald"
-            />
-          )}
+          <DashMetric
+            icon={TrendingUp}
+            value={fmtBRL(data.tuitions.paid.total)}
+            label="Receita total"
+            sub={`${data.tuitions.paid.count} pagas`}
+            tone="emerald"
+          />
           </div>
         </section>
 
-      {!hideFinancialData && (
         <section className="space-y-4">
           <SectionHeader title="Financeiro" subtitle="Mensalidades de todas as escolas" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
@@ -290,7 +285,6 @@ function AdminDashboard({ data }: { data: import('../features/dashboard/hooks/us
             />
           </div>
         </section>
-      )}
 
       {/* ── Escolas com mais alunos ────────────────────────────────────── */}
       <section className="space-y-4">
