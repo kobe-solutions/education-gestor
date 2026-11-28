@@ -9,7 +9,7 @@ type AuditContext = {
 
 export async function logAudit(
   ctx: AuditContext,
-  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'PAY',
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'PAY' | 'REVERSE',
   entity: string,
   entityId: string,
   payload?: Record<string, unknown>,
