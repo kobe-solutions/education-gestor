@@ -400,6 +400,16 @@ export function SchedulingPage() {
     [selectedFormTeacher, subjects],
   )
 
+  function isTeacherUnavailableForSelection(teacher: { availableDays?: string[] }) {
+    const availableDays = teacher.availableDays ?? []
+    if (availableDays.length === 0 || selectedDays.length === 0) return false
+    return selectedDays.every((day) => !availableDays.includes(day))
+  }
+
+  const unavailableSelectedDays = selectedFormTeacher && (selectedFormTeacher.availableDays?.length ?? 0) > 0
+    ? selectedDays.filter((day) => !selectedFormTeacher.availableDays?.includes(day))
+    : []
+
   function handleDrop(classId: string, teacherId: string, teacherName: string) {
     openAssignForm(classId, teacherId, teacherName)
   }
@@ -630,11 +640,31 @@ export function SchedulingPage() {
                       setFormSubject('')
                     }
                   }}
-                  items={teachers.map((t) => ({ value: t.id, label: t.name }))}
+                  items={teachers.map((t) => {
+                    const unavailable = isTeacherUnavailableForSelection(t)
+                    return {
+                      value: t.id,
+                      label: unavailable ? `${t.name} (sem disponibilidade nos dias selecionados)` : t.name,
+                    }
+                  })}
                 >
                   <SelectTrigger id="assign-teacher"><SelectValue placeholder="Selecionar professor" /></SelectTrigger>
-                  <SelectContent>{teachers.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}</SelectContent>
+                  <SelectContent>
+                    {teachers.map((t) => {
+                      const unavailable = isTeacherUnavailableForSelection(t)
+                      return (
+                        <SelectItem key={t.id} value={t.id}>
+                          {unavailable ? `${t.name} (sem disponibilidade nos dias selecionados)` : t.name}
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
                 </Select>
+                {assignTarget && unavailableSelectedDays.length > 0 && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    Aviso: este professor não marcou disponibilidade para {unavailableSelectedDays.map((day) => WEEK_DAY_LABELS[day]).join(', ')}.
+                  </p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="assign-subject">Disciplina *</Label>

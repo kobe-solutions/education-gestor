@@ -70,7 +70,18 @@ const profissionalSchema = z.object({
   workload: z.string().optional(),
   workShift: z.enum(['matutino', 'vespertino', 'noturno', 'integral']).optional(),
   employmentStatus: z.enum(['ativo', 'inativo', 'licenca']).optional(),
+  availableDays: z.array(z.string()).optional(),
+  availableShifts: z.array(z.string()).optional(),
 })
+
+const AVAILABLE_DAY_OPTIONS = [
+  { value: 'monday', label: 'Segunda' },
+  { value: 'tuesday', label: 'Terça' },
+  { value: 'wednesday', label: 'Quarta' },
+  { value: 'thursday', label: 'Quinta' },
+  { value: 'friday', label: 'Sexta' },
+  { value: 'saturday', label: 'Sábado' },
+] as const
 
 const formacaoSchema = z.object({
   educationLevel: z.string().optional(),
@@ -156,6 +167,8 @@ export function TeacherFormPage() {
       workload: teacher.workload ?? '',
       workShift: (teacher.workShift as any) ?? undefined,
       employmentStatus: teacher.employmentStatus ?? 'ativo',
+      availableDays: teacher.availableDays ?? [],
+      availableShifts: teacher.availableShifts ?? [],
     } : undefined,
   })
 
@@ -551,6 +564,56 @@ export function TeacherFormPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="sm:col-span-2 space-y-2 pt-2 border-t">
+                  <Label>Disponibilidade de dias da semana<Opt /></Label>
+                  <div className="flex flex-wrap gap-2">
+                    {AVAILABLE_DAY_OPTIONS.map((day) => {
+                      const selected = (profissionalForm.watch('availableDays') ?? []).includes(day.value)
+                      return (
+                        <Button
+                          key={day.value}
+                          type="button"
+                          size="sm"
+                          variant={selected ? 'default' : 'outline'}
+                          onClick={() => {
+                            const current = profissionalForm.getValues('availableDays') ?? []
+                            const next = selected
+                              ? current.filter((d) => d !== day.value)
+                              : [...current, day.value]
+                            profissionalForm.setValue('availableDays', next, { shouldDirty: true })
+                          }}
+                        >
+                          {day.label}
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div className="sm:col-span-2 space-y-2">
+                  <Label>Turnos disponíveis<Opt /></Label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(SHIFT_LABELS).map(([value, label]) => {
+                      const selected = (profissionalForm.watch('availableShifts') ?? []).includes(value)
+                      return (
+                        <Button
+                          key={value}
+                          type="button"
+                          size="sm"
+                          variant={selected ? 'default' : 'outline'}
+                          onClick={() => {
+                            const current = profissionalForm.getValues('availableShifts') ?? []
+                            const next = selected
+                              ? current.filter((s) => s !== value)
+                              : [...current, value]
+                            profissionalForm.setValue('availableShifts', next, { shouldDirty: true })
+                          }}
+                        >
+                          {label}
+                        </Button>
+                      )
+                    })}
+                  </div>
                 </div>
               </CardContent>
             </Card>
