@@ -2,7 +2,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { PageHead } from '../components/PageHead'
 import { TaskSection, type TaskLinkItem } from '../components/TaskNavigation'
 import {
-  Network, CalendarRange, UserPlus, BookOpen, CheckSquare, BookMarked, Clock,
+  Network, CalendarRange, UserPlus, BookOpen, CheckSquare, BookMarked, Clock, School,
   ClipboardCheck, FileText, GraduationCap,
 } from 'lucide-react'
 
@@ -15,6 +15,7 @@ export function AcademicHubPage() {
   const managerOrganization: TaskLinkItem[] = [
     { to: '/academic-years', icon: CalendarRange, title: 'Comece pelo ano letivo', description: 'Defina o calendário e os períodos antes de configurar as demais rotinas.', action: 'Configurar ano' },
     { to: '/education-levels', icon: Network, title: 'Turmas e séries', description: 'Organize níveis de ensino, séries e turmas.', action: 'Organizar' },
+    { to: '/classes', icon: School, title: 'Turmas cadastradas', description: 'Consulte as turmas registradas e cadastre novas turmas.', action: 'Ver turmas' },
     { to: '/scheduling', icon: CalendarRange, title: 'Horários das turmas', description: 'Monte a grade semanal de aulas depois de criar as turmas.', action: 'Ver horários' },
     { to: '/scheduling/students', icon: UserPlus, title: 'Matrículas em turmas', description: 'Confira alunos sem turma e organize as vagas.', action: 'Organizar alunos' },
   ]
