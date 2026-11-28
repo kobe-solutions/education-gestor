@@ -38,6 +38,8 @@ export const updateSchoolBodySchema = z.object({
   coordinator: z.string().optional().nullable(),
   phone: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
+  minPassingGrade: z.number().min(0).max(10).optional(),
+  minAttendancePercentage: z.number().int().min(0).max(100).optional(),
 })
 
 export const changePasswordBodySchema = z.object({

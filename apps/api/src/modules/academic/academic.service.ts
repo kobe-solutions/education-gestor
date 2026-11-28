@@ -26,6 +26,7 @@ import { getStudentService } from '../students/students.service'
 import { getSchoolClassService } from '../classes/schoolClasses.service'
 import { findStudentCurrentClassRepository } from '../classes/schoolClasses.repository'
 import { findSubjectsByClassRepository } from '../timetable/timetable.repository'
+import { findSchoolByIdRepository } from '../schools/schools.repository'
 import { validateGradeValue } from '../../lib/validators'
 import type {
   GradeCalculationMethod,
@@ -257,9 +258,9 @@ function computeAverage(values: number[]): number | null {
   return roundAverage(total / values.length)
 }
 
-function subjectSituation(average: number | null): ReportSituation | null {
+function subjectSituation(average: number | null, minPassingGrade = PASSING_AVERAGE): ReportSituation | null {
   if (average === null) return null
-  if (average >= PASSING_AVERAGE) return 'approved'
+  if (average >= minPassingGrade) return 'approved'
   if (average >= RECOVERY_MIN_AVERAGE) return 'recovery'
   return 'failed'
 }
@@ -274,9 +275,10 @@ function attendanceSummary(rows: StudentReportAttendanceRow[]): ReportAttendance
 function overallSituation(
   subjects: SubjectReport[],
   attendance: ReportAttendance,
+  minAttendancePercentage = MIN_ATTENDANCE_RATE,
 ): ReportSituation | null {
   if (subjects.length === 0) return null
-  if (attendance.rate !== null && attendance.rate < MIN_ATTENDANCE_RATE) return 'failed'
+  if (attendance.rate !== null && attendance.rate < minAttendancePercentage) return 'failed'
   if (subjects.some((subject) => subject.status === 'failed')) return 'failed'
   if (subjects.some((subject) => subject.status === 'recovery')) return 'recovery'
   return 'approved'
@@ -314,10 +316,13 @@ export async function getStudentReportService(
 ): Promise<StudentReport> {
   const student = await getStudentService(schoolId, studentId)
 
-  const [{ grades, attendances, configs = [] }, currentClass] = await Promise.all([
+  const [{ grades, attendances, configs = [] }, currentClass, school] = await Promise.all([
     findStudentReportDataRepository(schoolId, studentId),
     findStudentCurrentClassRepository(studentId),
+    findSchoolByIdRepository(schoolId).catch(() => null),
   ])
+  const minPassingGrade = school?.minPassingGrade ?? PASSING_AVERAGE
+  const minAttendancePercentage = school?.minAttendancePercentage ?? MIN_ATTENDANCE_RATE
 
   const classSubjects = currentClass
     ? await findSubjectsByClassRepository(schoolId, currentClass.classId)
@@ -419,7 +424,7 @@ export async function getStudentReportService(
       return {
         ...subject,
         average,
-        status: subjectSituation(average),
+        status: subjectSituation(average, minPassingGrade),
         attendance: attendanceSummary(subjectAttendances),
       }
     })
@@ -436,10 +441,14 @@ export async function getStudentReportService(
     subjects,
     overall: {
       average: computeAverage(gradedSubjects.map((subject) => subject.average as number)),
-      status: overallSituation(subjects, overallAttendance),
+      status: overallSituation(subjects, overallAttendance, minAttendancePercentage),
       attendance: overallAttendance,
       approvedSubjects: subjects.filter((subject) => subject.status === 'approved').length,
       totalSubjects: subjects.length,
+    },
+    approvalRules: {
+      minPassingGrade,
+      minAttendancePercentage,
     },
     generatedAt: new Date().toISOString(),
   }

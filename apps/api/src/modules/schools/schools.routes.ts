@@ -17,9 +17,11 @@ import {
 import { createSchoolBodySchema, updateSchoolBodySchema, changePasswordBodySchema } from './schools.schema'
 import { validateImageFile, extFromMime } from '../../lib/validators'
 import { errorHandler, handleRouteError, successHandler } from '../../lib/responseHandlers'
+import { getSchoolId } from '../../lib/routeHelpers'
 
 const adminOnly = [authenticate, injectTenant, authorizeRoles(['admin'])]
 const adminOrSecretaria = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria'])]
+const gestorOnly = [authenticate, injectTenant, authorizeRoles(['gestor'])]
 
 export async function schoolsRoutes(app: FastifyInstance) {
   app.post('/schools', { preHandler: adminOrSecretaria }, async (request: FastifyRequest, reply: FastifyReply) => {
@@ -49,6 +51,67 @@ export async function schoolsRoutes(app: FastifyInstance) {
   })
 
   const adminOrSecretariaOrSchool = [authenticate, injectTenant, authorizeRoles(['admin', 'secretaria', 'gestor', 'professor'])]
+
+  app.get('/schools/me', { preHandler: gestorOnly }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const school = await getSchoolService(getSchoolId(request))
+      return successHandler(reply, 'Perfil da escola carregado com sucesso.', 200, school)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível carregar o perfil da escola.', [
+        { message: 'School not found', status: 404 },
+      ])
+    }
+  })
+
+  app.put('/schools/me', { preHandler: gestorOnly }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const schoolId = getSchoolId(request)
+      const user = request.user as JwtPayload
+      const body = updateSchoolBodySchema.parse(request.body)
+      const result = await updateSchoolService(schoolId, body, { role: user.role })
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'UPDATE', 'school', schoolId)
+      return successHandler(reply, 'Perfil atualizado com sucesso.', 200, result)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os dados do perfil são inválidos.', [
+        { message: 'School not found', status: 404 },
+        { message: 'School already exists with this slug or email', status: 409, responseMessage: 'Já existe uma escola com este endereço ou e-mail.' },
+      ])
+    }
+  })
+
+  app.put('/schools/me/password', { preHandler: gestorOnly }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const schoolId = getSchoolId(request)
+      const user = request.user as JwtPayload
+      const body = changePasswordBodySchema.parse(request.body)
+      await changeSchoolPasswordService(schoolId, body.password, { role: user.role })
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'UPDATE', 'school', schoolId, { passwordChanged: true })
+      return successHandler(reply, 'Senha atualizada com sucesso.', 200, null)
+    } catch (error) {
+      return handleRouteError(reply, error, 'A senha informada é inválida.', [
+        { message: 'School not found', status: 404 },
+      ])
+    }
+  })
+
+  app.post('/schools/me/logo', { preHandler: gestorOnly }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const schoolId = getSchoolId(request)
+      const data = await request.file()
+      if (!data) return errorHandler(reply, 'Nenhum arquivo enviado.', 400)
+
+      const buffer = await data.toBuffer()
+      const validation = validateImageFile(data.mimetype, buffer.length)
+      if (!validation.valid) return errorHandler(reply, validation.message, 400)
+
+      const result = await uploadSchoolLogoServices(schoolId, buffer, data.mimetype, extFromMime(data.mimetype))
+      return successHandler(reply, 'Logotipo atualizado com sucesso.', 200, result)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível atualizar o logotipo.', [
+        { message: 'School not found', status: 404 },
+      ])
+    }
+  })
 
   app.get('/schools/:id', { preHandler: adminOrSecretariaOrSchool }, async (request: FastifyRequest, reply: FastifyReply) => {
     try {

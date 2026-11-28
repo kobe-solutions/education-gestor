@@ -13,6 +13,8 @@ const schoolFields = {
   address: schools.address,
   logoUrl: schools.logoUrl,
   showFinancial: schools.showFinancial,
+  minPassingGrade: schools.minPassingGrade,
+  minAttendancePercentage: schools.minAttendancePercentage,
   createdAt: schools.createdAt,
 }
 
@@ -96,6 +98,8 @@ export async function updateSchoolRepository(
     phone?: string | null
     address?: string | null
     logoUrl?: string | null
+    minPassingGrade?: number
+    minAttendancePercentage?: number
   },
 ) {
   const [school] = await db

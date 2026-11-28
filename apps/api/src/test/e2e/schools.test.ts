@@ -36,6 +36,8 @@ const mockSchool = {
   address: null,
   logoUrl: null,
   showFinancial: true,
+  minPassingGrade: 6,
+  minAttendancePercentage: 75,
   createdAt: new Date(),
 }
 
