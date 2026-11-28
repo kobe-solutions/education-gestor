@@ -39,6 +39,7 @@ export const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/financial-control': SCHOOL_OPERATORS,
   '/school-events': ['gestor', 'secretaria', 'professor'],
   '/lesson-records': ['gestor', 'professor'],
+  '/profile': ['gestor'],
   '/settings': ['gestor'],
   '/professor': ['professor'],
 }

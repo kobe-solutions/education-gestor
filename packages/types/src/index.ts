@@ -33,6 +33,8 @@ export interface School {
   address: string | null
   logoUrl: string | null
   showFinancial: boolean
+  minPassingGrade: number
+  minAttendancePercentage: number
   createdAt: string
 }
 
@@ -167,6 +169,8 @@ export interface Teacher {
   contractType: ContractType | null
   workload: string | null
   workShift: WorkShift | null
+  availableDays?: string[]
+  availableShifts?: string[]
   employmentStatus: EmploymentStatus
   educationLevel: string | null
   degree: string | null
@@ -315,6 +319,10 @@ export interface StudentReport {
     attendance: ReportAttendance | null
     approvedSubjects: number
     totalSubjects: number
+  }
+  approvalRules?: {
+    minPassingGrade: number
+    minAttendancePercentage: number
   }
   generatedAt: string
 }

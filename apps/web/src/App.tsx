@@ -27,6 +27,7 @@ const SecretariasPage = lazy(() => import('./features/secretarias/pages/Secretar
 const MySchoolsPage = lazy(() => import('./features/secretarias/pages/MySchoolsPage').then(m => ({ default: m.MySchoolsPage })))
 const SubjectsPage = lazy(() => import('./features/subjects/pages/SubjectsPage').then(m => ({ default: m.SubjectsPage })))
 const SchoolsPage = lazy(() => import('./features/schools/pages/SchoolsPage').then(m => ({ default: m.SchoolsPage })))
+const GestorProfilePage = lazy(() => import('./features/schools/pages/GestorProfilePage').then(m => ({ default: m.GestorProfilePage })))
 const AcademicYearsPage = lazy(() => import('./features/classes/pages/AcademicYearsPage').then(m => ({ default: m.AcademicYearsPage })))
 const EducationLevelsPage = lazy(() => import('./features/educationLevels/pages/EducationLevelsPage').then(m => ({ default: m.EducationLevelsPage })))
 const SeriesPage = lazy(() => import('./features/series/pages/SeriesPage').then(m => ({ default: m.SeriesPage })))
@@ -98,6 +99,7 @@ export function App() {
                   <Route path="/series" element={<Suspense fallback={<PageLoader />}><SeriesPage /></Suspense>} />
                   <Route path="/academic-periods" element={<Navigate to="/academic-years" replace />} />
                   <Route path="/class-periods" element={<Suspense fallback={<PageLoader />}><ClassPeriodsPage /></Suspense>} />
+                  <Route path="/profile" element={<Suspense fallback={<PageLoader />}><GestorProfilePage /></Suspense>} />
                 </Route>
 
                 {/* Hubs de navegação — gestor e secretaria */}

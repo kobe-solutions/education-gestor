@@ -18,6 +18,8 @@ vi.mock('../../../features/financial/hooks/useFinancial', () => ({
    useCreateTuition: () => ({ mutateAsync: vi.fn() }),
    useUpdateTuition: () => ({ mutateAsync: vi.fn() }),
    useRegisterPayment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+   useReversePayment: () => ({ mutateAsync: vi.fn(), isPending: false }),
+   useCreateBulkTuitions: () => ({ mutateAsync: vi.fn(), isPending: false }),
    useUploadTuitionBoleto: () => ({ mutate: vi.fn() }),
    useUploadTuitionReceipt: () => ({ mutate: vi.fn() }),
 }))

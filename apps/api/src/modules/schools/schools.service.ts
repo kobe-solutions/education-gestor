@@ -77,6 +77,8 @@ type UpdateSchoolServiceInput = {
   coordinator?: string | null
   phone?: string | null
   address?: string | null
+  minPassingGrade?: number
+  minAttendancePercentage?: number
 }
 
 type RequesterInfo = { role: string; secretariaId?: string }

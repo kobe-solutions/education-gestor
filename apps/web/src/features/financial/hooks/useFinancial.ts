@@ -101,6 +101,44 @@ export function useRegisterPayment() {
   })
 }
 
+export function useCreateBulkTuitions() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: {
+      scope: 'school' | 'class' | 'series'
+      classId?: string
+      seriesId?: string
+      amount: number
+      firstDueDate: string
+      installments: number
+    }) => {
+      const res = await api.post<ApiSuccessResponse<{ createdCount: number; studentCount: number; installments: number }>>('/tuitions/bulk', data)
+      return res.data.data
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['tuitions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
+    },
+  })
+}
+
+export function useReversePayment() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, reason }: { id: string; reason?: string }) => {
+      const res = await api.patch<ApiSuccessResponse<Tuition>>(`/tuitions/${id}/reverse`, reason ? { reason } : {})
+      return res.data.data
+    },
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['tuitions'] })
+      qc.invalidateQueries({ queryKey: ['dashboard'] })
+      if (data?.studentId) {
+        qc.invalidateQueries({ queryKey: ['tuitions', 'student', data.studentId] })
+      }
+    },
+  })
+}
+
 export function useUploadTuitionBoleto() {
   const qc = useQueryClient()
   return useMutation({

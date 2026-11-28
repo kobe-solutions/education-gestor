@@ -501,6 +501,45 @@ function SchoolDashboard({ data }: { data: import('../features/dashboard/hooks/u
         {!financialBlocked && <Link to="/financial"><Button variant="ghost" size="lg"><DollarSign size={17} /> Consultar mensalidades</Button></Link>}
       </div>
 
+      {payload?.role === 'gestor' && (data.classesCount === 0 || data.teachersCount === 0 || data.studentsCount === 0) && (
+        <section
+          aria-label="Primeiros passos para configurar sua escola"
+          className="rounded-xl border bg-card p-5 space-y-4"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h2 className="font-bold text-base text-foreground">
+                Primeiros passos para configurar sua escola
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Siga a ordem recomendada abaixo para preparar o ano letivo, cadastrar a equipe e iniciar as turmas.
+              </p>
+            </div>
+            <Link to="/academic">
+              <Button variant="outline" size="sm">Abrir rotina escolar</Button>
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Link to="/academic-years" className="rounded-lg border p-3 hover:bg-accent/50 transition-colors">
+              <p className="text-xs font-semibold text-primary">1. Ano letivo e períodos</p>
+              <p className="text-xs text-muted-foreground mt-1">Crie o ano letivo ativo e os bimestres/trimestres.</p>
+            </Link>
+            <Link to="/classes" className="rounded-lg border p-3 hover:bg-accent/50 transition-colors">
+              <p className="text-xs font-semibold text-primary">2. Estrutura e turmas ({data.classesCount})</p>
+              <p className="text-xs text-muted-foreground mt-1">Defina níveis, séries, disciplinas e crie as turmas.</p>
+            </Link>
+            <Link to="/teachers/new" className="rounded-lg border p-3 hover:bg-accent/50 transition-colors">
+              <p className="text-xs font-semibold text-primary">3. Professores ({data.teachersCount})</p>
+              <p className="text-xs text-muted-foreground mt-1">Cadastre os docentes e vincule às disciplinas.</p>
+            </Link>
+            <Link to="/students/new" className="rounded-lg border p-3 hover:bg-accent/50 transition-colors">
+              <p className="text-xs font-semibold text-primary">4. Alunos e matrículas ({data.studentsCount})</p>
+              <p className="text-xs text-muted-foreground mt-1">Cadastre ou importe alunos e enturme-os.</p>
+            </Link>
+          </div>
+        </section>
+      )}
+
       <DemandSection alerts={data.alerts} blocked={financialBlocked} />
 
       {payload?.role === 'gestor' && <LessonTrackingCard />}

@@ -5,13 +5,20 @@ import { authorizeRoles } from '../../middlewares/authorize'
 import { getSchoolId } from '../../lib/routeHelpers'
 import { errorHandler, handleRouteError, successHandler } from '../../lib/responseHandlers'
 import { validateDocumentFile, extFromMime } from '../../lib/validators'
-import { createTuitionBodySchema, updateTuitionBodySchema } from './financial.schema'
+import {
+  createTuitionBodySchema,
+  updateTuitionBodySchema,
+  createBulkTuitionsBodySchema,
+  reversePaymentBodySchema,
+} from './financial.schema'
 import {
   listTuitionsService,
   listStudentTuitionsService,
   createTuitionService,
+  createBulkTuitionsService,
   updateTuitionService,
   registerPaymentService,
+  reversePaymentService,
   uploadTuitionBoletoService,
   uploadTuitionReceiptService,
 } from './financial.service'
@@ -59,6 +66,25 @@ export async function financialRoutes(app: FastifyInstance) {
     }
   })
 
+  app.post('/tuitions/bulk', { preHandler }, async (request, reply) => {
+    try {
+      const body = createBulkTuitionsBodySchema.parse(request.body)
+      const schoolId = getSchoolId(request)
+      const result = await createBulkTuitionsService({ schoolId, ...body })
+      const user = request.user as TenantPayload
+      await logAudit({ userId: user.userId, userRole: user.role, schoolId }, 'CREATE', 'tuition', 'bulk', {
+        scope: body.scope,
+        createdCount: result.createdCount,
+        studentCount: result.studentCount,
+      })
+      return successHandler(reply, `${result.createdCount} mensalidade(s) gerada(s) com sucesso.`, 201, result)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Os dados para geração em lote são inválidos.', [
+        { message: 'No active students found for the selected scope', status: 400, responseMessage: 'Nenhum aluno ativo encontrado para o escopo selecionado.' },
+      ])
+    }
+  })
+
   app.patch('/tuitions/:id', { preHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
@@ -88,6 +114,29 @@ export async function financialRoutes(app: FastifyInstance) {
     }
   })
 
+  app.patch('/tuitions/:id/reverse', { preHandler }, async (request, reply) => {
+    try {
+      const { id } = request.params as { id: string }
+      const body = reversePaymentBodySchema.parse(request.body ?? {})
+      const schoolId = getSchoolId(request)
+      const result = await reversePaymentService(schoolId, id)
+      const user = request.user as TenantPayload
+      await logAudit(
+        { userId: user.userId, userRole: user.role, schoolId },
+        'REVERSE',
+        'tuition',
+        id,
+        body.reason ? { reason: body.reason } : undefined,
+      )
+      return successHandler(reply, 'Pagamento estornado com sucesso.', 200, result)
+    } catch (error) {
+      return handleRouteError(reply, error, 'Não foi possível estornar o pagamento.', [
+        { message: 'Tuition not found', status: 404 },
+        { message: 'Tuition is not paid', status: 409, responseMessage: 'Apenas mensalidades pagas podem ser estornadas.' },
+      ])
+    }
+  })
+
   app.post('/tuitions/:id/boleto', { preHandler }, async (request, reply) => {
     try {
       const { id } = request.params as { id: string }
@@ -105,6 +154,7 @@ export async function financialRoutes(app: FastifyInstance) {
     } catch (error) {
       return handleRouteError(reply, error, 'Não foi possível anexar o boleto.', [
         { message: 'Tuition not found', status: 404 },
+        { message: 'Storage not configured. Set DO_SPACES_* or MINIO_* env vars.', status: 503, responseMessage: 'Serviço de armazenamento (S3/MinIO) não configurado no servidor.' },
       ])
     }
   })
@@ -126,6 +176,7 @@ export async function financialRoutes(app: FastifyInstance) {
     } catch (error) {
       return handleRouteError(reply, error, 'Não foi possível anexar o comprovante.', [
         { message: 'Tuition not found', status: 404 },
+        { message: 'Storage not configured. Set DO_SPACES_* or MINIO_* env vars.', status: 503, responseMessage: 'Serviço de armazenamento (S3/MinIO) não configurado no servidor.' },
       ])
     }
   })

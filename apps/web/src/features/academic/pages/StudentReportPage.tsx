@@ -157,7 +157,7 @@ export function StudentReportPage() {
             )}
 
             <p className="text-[10px] mt-4 leading-relaxed print:mt-3" style={{ color: 'hsl(var(--muted-foreground))' }}>
-              Aprovado: média ≥ 6,0 e frequência ≥ 75% · Recuperação: média de 3,0 a 5,9 · Reprovado: média &lt; 3,0 ou frequência &lt; 75%
+              Aprovado: média ≥ {(report?.approvalRules?.minPassingGrade ?? 6).toFixed(1).replace('.', ',')} e frequência ≥ {report?.approvalRules?.minAttendancePercentage ?? 75}% · Recuperação: média de 3,0 a {Math.max(3, (report?.approvalRules?.minPassingGrade ?? 6) - 0.1).toFixed(1).replace('.', ',')} · Reprovado: média &lt; 3,0 ou frequência &lt; {report?.approvalRules?.minAttendancePercentage ?? 75}%
             </p>
           </div>
 
@@ -246,7 +246,7 @@ export function StudentReportPage() {
                               {subject.attendance?.rate != null ? (
                                 <span
                                   className="font-semibold tabular-nums"
-                                  style={{ color: subject.attendance.rate >= 75 ? 'hsl(142 71% 45%)' : 'hsl(var(--destructive))' }}
+                                  style={{ color: subject.attendance.rate >= (report?.approvalRules?.minAttendancePercentage ?? 75) ? 'hsl(142 71% 45%)' : 'hsl(var(--destructive))' }}
                                 >
                                   {subject.attendance.rate}%
                                 </span>
@@ -306,7 +306,7 @@ export function StudentReportPage() {
 
           {/* Rodapé do documento — visível apenas na impressão */}
           <p className="hidden print:block text-[10px] text-black/60 pt-4">
-            Documento emitido por {school?.name ?? 'Education Gestor'} em {report?.generatedAt ? formatGeneratedAt(report.generatedAt) : '—'}. Regras: Aprovado — média ≥ 6,0 e frequência ≥ 75%; Recuperação — média de 3,0 a 5,9; Reprovado — média &lt; 3,0 ou frequência &lt; 75%.
+            Documento emitido por {school?.name ?? 'Education Gestor'} em {report?.generatedAt ? formatGeneratedAt(report.generatedAt) : '—'}. Regras: Aprovado — média ≥ {(report?.approvalRules?.minPassingGrade ?? 6).toFixed(1).replace('.', ',')} e frequência ≥ {report?.approvalRules?.minAttendancePercentage ?? 75}%; Recuperação — média de 3,0 a {Math.max(3, (report?.approvalRules?.minPassingGrade ?? 6) - 0.1).toFixed(1).replace('.', ',')}; Reprovado — média &lt; 3,0 ou frequência &lt; {report?.approvalRules?.minAttendancePercentage ?? 75}%.
           </p>
         </>
       )}

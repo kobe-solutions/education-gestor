@@ -1,4 +1,4 @@
-import { eq, and, count, asc } from 'drizzle-orm'
+import { eq, and, count, asc, isNull } from 'drizzle-orm'
 import { db } from '../../db'
 import { tuitions, students, classStudents, schoolClasses } from '../../db/schema'
 
@@ -223,4 +223,69 @@ export async function markTuitionAsPaidRepository(schoolId: string, id: string) 
     })
 
   return tuition
+}
+
+export async function findTargetStudentIdsForBulkTuitionRepository(
+  schoolId: string,
+  scope: 'school' | 'class' | 'series',
+  classId?: string,
+  seriesId?: string,
+): Promise<string[]> {
+  if (scope === 'class' && classId) {
+    const rows = await db
+      .select({ studentId: classStudents.studentId })
+      .from(classStudents)
+      .innerJoin(schoolClasses, eq(classStudents.classId, schoolClasses.id))
+      .innerJoin(students, eq(classStudents.studentId, students.id))
+      .where(and(
+        eq(schoolClasses.schoolId, schoolId),
+        eq(classStudents.classId, classId),
+        isNull(students.deletedAt),
+        eq(students.enrollmentStatus, 'active'),
+      ))
+    return Array.from(new Set(rows.map((r) => r.studentId)))
+  }
+
+  if (scope === 'series' && seriesId) {
+    const rows = await db
+      .select({ studentId: classStudents.studentId })
+      .from(classStudents)
+      .innerJoin(schoolClasses, eq(classStudents.classId, schoolClasses.id))
+      .innerJoin(students, eq(classStudents.studentId, students.id))
+      .where(and(
+        eq(schoolClasses.schoolId, schoolId),
+        eq(schoolClasses.serieId, seriesId),
+        isNull(students.deletedAt),
+        eq(students.enrollmentStatus, 'active'),
+      ))
+    return Array.from(new Set(rows.map((r) => r.studentId)))
+  }
+
+  const rows = await db
+    .select({ id: students.id })
+    .from(students)
+    .where(and(
+      eq(students.schoolId, schoolId),
+      isNull(students.deletedAt),
+      eq(students.enrollmentStatus, 'active'),
+    ))
+  return rows.map((r) => r.id)
+}
+
+export async function createBulkTuitionsRepository(
+  rows: Array<{ schoolId: string; studentId: string; amount: string; dueDate: string }>,
+) {
+  if (rows.length === 0) return []
+  return db
+    .insert(tuitions)
+    .values(rows)
+    .returning({
+      id: tuitions.id,
+      schoolId: tuitions.schoolId,
+      studentId: tuitions.studentId,
+      amount: tuitions.amount,
+      dueDate: tuitions.dueDate,
+      status: tuitions.status,
+      createdAt: tuitions.createdAt,
+    })
 }

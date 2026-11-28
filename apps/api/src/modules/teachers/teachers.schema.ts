@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const CONTRACT_TYPES = ['clt', 'temporario', 'horista'] as const
 export const WORK_SHIFTS = ['matutino', 'vespertino', 'noturno', 'integral'] as const
+export const AVAILABLE_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'] as const
 export const EMPLOYMENT_STATUSES = ['ativo', 'inativo', 'licenca'] as const
 export const SEX_OPTIONS = ['M', 'F', 'outro'] as const
 
@@ -34,6 +35,8 @@ export const createTeacherBodySchema = z.object({
   contractType: z.enum(CONTRACT_TYPES).optional(),
   workload: z.string().optional(),
   workShift: z.enum(WORK_SHIFTS).optional(),
+  availableDays: z.array(z.enum(AVAILABLE_DAYS)).optional(),
+  availableShifts: z.array(z.enum(WORK_SHIFTS)).optional(),
   // Formação acadêmica
   educationLevel: z.string().optional(),
   degree: z.string().optional(),

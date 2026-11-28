@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp, date, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, date, uniqueIndex, jsonb } from 'drizzle-orm/pg-core'
 import { schools } from './schools'
 
 export const teachers = pgTable(
@@ -34,6 +34,8 @@ export const teachers = pgTable(
     contractType: text('contract_type'),
     workload: text('workload'),
     workShift: text('work_shift'),
+    availableDays: jsonb('available_days').$type<string[]>().notNull().default([]),
+    availableShifts: jsonb('available_shifts').$type<string[]>().notNull().default([]),
     employmentStatus: text('employment_status').notNull().default('ativo'),
     // Formação acadêmica
     educationLevel: text('education_level'),
