@@ -27,9 +27,10 @@ interface ClassDialogProps {
   open: boolean
   onClose: () => void
   schoolClass?: SchoolClass
+  initialSerieId?: string
 }
 
-export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
+export function ClassDialog({ open, onClose, schoolClass, initialSerieId }: ClassDialogProps) {
   const isEdit = !!schoolClass
   const { data: academicYears } = useAcademicYears()
   const { data: seriesList } = useSeries()
@@ -57,9 +58,9 @@ export function ClassDialog({ open, onClose, schoolClass }: ClassDialogProps) {
         academicYearId: schoolClass.academicYearId ?? '',
       })
     } else {
-      reset({ name: '', shift: '', serieId: '', academicYearId: '' })
+      reset({ name: '', shift: '', serieId: initialSerieId ?? '', academicYearId: '' })
     }
-  }, [open, schoolClass, reset])
+  }, [open, schoolClass, initialSerieId, reset])
 
   async function handleNextStep() {
     const fields: Array<keyof FormData> = step === 0 ? ['name'] : ['shift']

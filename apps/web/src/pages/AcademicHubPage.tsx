@@ -14,7 +14,7 @@ export function AcademicHubPage() {
 
   const managerOrganization: TaskLinkItem[] = [
     { to: '/academic-years', icon: CalendarRange, title: 'Comece pelo ano letivo', description: 'Defina o calendário e os períodos antes de configurar as demais rotinas.', action: 'Configurar ano' },
-    { to: '/structure', icon: Network, title: 'Turmas e séries', description: 'Organize níveis de ensino, séries e turmas.', action: 'Organizar' },
+    { to: '/education-levels', icon: Network, title: 'Turmas e séries', description: 'Organize níveis de ensino, séries e turmas.', action: 'Organizar' },
     { to: '/scheduling', icon: CalendarRange, title: 'Horários das turmas', description: 'Monte a grade semanal de aulas depois de criar as turmas.', action: 'Ver horários' },
     { to: '/scheduling/students', icon: UserPlus, title: 'Matrículas em turmas', description: 'Confira alunos sem turma e organize as vagas.', action: 'Organizar alunos' },
   ]

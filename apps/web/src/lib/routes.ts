@@ -21,7 +21,6 @@ export const ROUTE_ROLES: Record<string, UserRole[]> = {
   '/people': SCHOOL_OPERATORS,
   '/students': SCHOOL_OPERATORS,
   '/teachers': SCHOOL_OPERATORS,
-  '/structure': ['gestor'],
   '/structure/classes': ['gestor'],
   '/classes': ['gestor'],
   '/academic': ['gestor', 'secretaria', 'professor'],

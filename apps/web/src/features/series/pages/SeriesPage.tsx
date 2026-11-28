@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useParams, useNavigate } from 'react-router'
-import { Plus, Pencil, Trash2, ArrowLeft, HelpCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, ArrowLeft, HelpCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -18,6 +18,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Skeleton } from '../../../components/ui/skeleton'
 import { Tooltip, TooltipTrigger, TooltipContent } from '../../../components/ui/tooltip'
 import { ConfirmDialog } from '../../../components/ConfirmDialog'
+import { useClasses } from '../../classes/hooks/useClasses'
+import { ClassDialog } from '../../classes/components/ClassDialog'
+import { formatShiftLabel } from '../../../lib/labels'
 
 const schema = z.object({
   educationLevelId: z.string().uuid('Nível obrigatório'),
@@ -32,6 +35,7 @@ export function SeriesPage() {
   const navigate = useNavigate()
   const { data: series, isLoading } = useSeries(levelId)
   const { data: levels } = useEducationLevels()
+  const { data: classes, isLoading: loadingClasses } = useClasses()
   const createMutation = useCreateSerie()
   const updateMutation = useUpdateSerie()
   const deleteMutation = useDeleteSerie()
@@ -58,6 +62,9 @@ export function SeriesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Serie | undefined>()
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
+  const [expandedSerieId, setExpandedSerieId] = useState<string | null>(null)
+  const [classDialogOpen, setClassDialogOpen] = useState(false)
+  const [classSerieId, setClassSerieId] = useState<string | undefined>()
 
   const currentLevel = levelId ? levels?.find((l) => l.id === levelId) : undefined
 
@@ -140,31 +147,69 @@ export function SeriesPage() {
                   <TableHead>Sequência</TableHead>
                   <TableHead>Nome</TableHead>
                   {!levelId && <TableHead>Nível de Ensino</TableHead>}
-                  <TableHead className="w-24" />
+                  <TableHead className="w-32" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {series?.map((serie) => (
-                  <TableRow key={serie.id}>
-                    <TableCell className="text-muted-foreground w-16">{serie.order}</TableCell>
-                    <TableCell className="font-medium">{serie.name}</TableCell>
-                    {!levelId && (
-                      <TableCell className="text-muted-foreground text-sm">
-                        {serie.educationLevel?.name ?? '—'}
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="icon" aria-label="Editar" onClick={() => handleEdit(serie)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleteTarget(serie.id)}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {series?.map((serie) => {
+                  const serieClasses = (classes ?? []).filter((schoolClass) => schoolClass.serieId === serie.id)
+                  const isExpanded = expandedSerieId === serie.id
+
+                  return (
+                    <Fragment key={serie.id}>
+                      <TableRow>
+                        <TableCell className="text-muted-foreground w-16">{serie.order}</TableCell>
+                        <TableCell className="font-medium">{serie.name}</TableCell>
+                        {!levelId && (
+                          <TableCell className="text-muted-foreground text-sm">
+                            {serie.educationLevel?.name ?? '—'}
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <div className="flex gap-1 justify-end">
+                            <Button variant="ghost" size="icon" aria-label={isExpanded ? `Ocultar turmas de ${serie.name}` : `Mostrar turmas de ${serie.name}`} aria-expanded={isExpanded} onClick={() => setExpandedSerieId(isExpanded ? null : serie.id)}>
+                              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                            </Button>
+                            <Button variant="ghost" size="icon" aria-label="Editar" onClick={() => handleEdit(serie)}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => setDeleteTarget(serie.id)}>
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow key={`${serie.id}-classes`}>
+                          <TableCell colSpan={levelId ? 3 : 4} className="bg-muted/20 p-4">
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <p className="text-sm font-medium">Turmas de {serie.name}</p>
+                                <Button size="sm" onClick={() => { setClassSerieId(serie.id); setClassDialogOpen(true) }}>
+                                  <Plus className="h-4 w-4" /> Nova turma
+                                </Button>
+                              </div>
+                              {loadingClasses ? (
+                                <Skeleton className="h-9 w-full" />
+                              ) : serieClasses.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">Nenhuma turma cadastrada nesta série.</p>
+                              ) : (
+                                <div className="flex flex-wrap gap-2">
+                                  {serieClasses.map((schoolClass) => (
+                                    <div key={schoolClass.id} className="rounded-md border bg-background px-3 py-2 text-sm">
+                                      <span className="font-medium">{schoolClass.name}</span>
+                                      <span className="ml-2 text-muted-foreground">{formatShiftLabel(schoolClass.shift)}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </Fragment>
+                  )
+                })}
               </TableBody>
             </Table>
           )}
@@ -229,6 +274,8 @@ export function SeriesPage() {
         }}
         onCancel={() => setDeleteTarget(null)}
       />
+
+      <ClassDialog open={classDialogOpen} onClose={() => { setClassDialogOpen(false); setClassSerieId(undefined) }} initialSerieId={classSerieId} />
     </div>
   )
 }
