@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react'
-import { Plus, EyeOff, FileText, Receipt, Pencil } from 'lucide-react'
+import { Plus, EyeOff, FileText, Receipt, Pencil, Layers, RotateCcw } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router'
 import { toast } from '../../../lib/toast'
 import { extractErrorMessage } from '../../../lib/errors'
-import { useTuitions, useRegisterPayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
+import { useTuitions, useRegisterPayment, useReversePayment, useUploadTuitionBoleto, useUploadTuitionReceipt } from '../hooks/useFinancial'
 import { TuitionCreateDialog } from '../components/TuitionCreateDialog'
+import { TuitionBulkDialog } from '../components/TuitionBulkDialog'
 import { TuitionEditDialog } from '../components/TuitionEditDialog'
 import { UpcomingTuitions } from '../components/UpcomingTuitions'
 import { TuitionStatusBadge } from '../components/TuitionStatusBadge'
@@ -37,6 +38,7 @@ export function TuitionsPage() {
   const total = tuitionsData?.total ?? 0
   const classOptions = tuitionsData?.classes ?? []
   const payMutation = useRegisterPayment()
+  const reverseMutation = useReversePayment()
 
   const payApiMutation = useApiMutation({
     mutationFn: (id: string) => payMutation.mutateAsync(id),
@@ -45,8 +47,21 @@ export function TuitionsPage() {
     onError: () => setConfirmPay(null),
   })
 
+  const reverseApiMutation = useApiMutation({
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) => reverseMutation.mutateAsync({ id, reason }),
+    successMessage: 'Pagamento estornado com sucesso',
+    onSuccess: () => {
+      setConfirmReverse(null)
+      setReverseReason('')
+    },
+    onError: () => setConfirmReverse(null),
+  })
+
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [bulkDialogOpen, setBulkDialogOpen] = useState(false)
   const [confirmPay, setConfirmPay] = useState<Tuition | null>(null)
+  const [confirmReverse, setConfirmReverse] = useState<Tuition | null>(null)
+  const [reverseReason, setReverseReason] = useState('')
   const [editTarget, setEditTarget] = useState<Tuition | null>(null)
 
   const filtered = tuitions?.filter((t) => {
@@ -158,10 +173,16 @@ export function TuitionsPage() {
         title="Mensalidades"
         subtitle={`${filtered.length} cobranças encontradas`}
         actions={
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            Nova mensalidade
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" onClick={() => setBulkDialogOpen(true)}>
+              <Layers className="h-4 w-4 mr-1" />
+              Gerar em lote
+            </Button>
+            <Button size="sm" onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Nova mensalidade
+            </Button>
+          </div>
         }
       />
 
@@ -246,6 +267,12 @@ export function TuitionsPage() {
                 Registrar pagamento
               </Button>
             )}
+            {t.status === 'paid' && (
+              <Button size="sm" variant="outline" onClick={() => setConfirmReverse(t)}>
+                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                Estornar
+              </Button>
+            )}
             {t.status !== 'paid' && (
               <Button
                 size="icon"
@@ -309,7 +336,44 @@ export function TuitionsPage() {
 
       <TuitionCreateDialog open={dialogOpen} onOpenChange={setDialogOpen} />
 
+      <TuitionBulkDialog open={bulkDialogOpen} onOpenChange={setBulkDialogOpen} />
+
       <TuitionEditDialog tuition={editTarget} onOpenChange={(v) => { if (!v) setEditTarget(null) }} />
+
+      <Dialog open={!!confirmReverse} onOpenChange={(v) => { if (!v) { setConfirmReverse(null); setReverseReason('') } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Estornar pagamento</DialogTitle>
+            <DialogDescription>
+              A mensalidade de {confirmReverse ? fmtBRL(confirmReverse.amount) : ''} voltará para pendente ou vencida e a ação será registrada na auditoria.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-1.5">
+            <label htmlFor="reverse-reason" className="text-xs font-medium text-muted-foreground">
+              Motivo do estorno (opcional)
+            </label>
+            <Input
+              id="reverse-reason"
+              placeholder="Ex: Pagamento lançado para o aluno incorreto"
+              value={reverseReason}
+              onChange={(e) => setReverseReason(e.target.value)}
+              maxLength={300}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setConfirmReverse(null); setReverseReason('') }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => confirmReverse && reverseApiMutation.mutate({ id: confirmReverse.id, reason: reverseReason.trim() || undefined })}
+              disabled={reverseApiMutation.isPending}
+            >
+              {reverseApiMutation.isPending ? 'Estornando...' : 'Confirmar estorno'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!confirmPay} onOpenChange={(v) => !v && setConfirmPay(null)}>
         <DialogContent>
