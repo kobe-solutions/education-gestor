@@ -26,6 +26,8 @@ type CreateTeacherInput = {
   contractType?: string
   workload?: string
   workShift?: string
+  availableDays?: string[]
+  availableShifts?: string[]
   educationLevel?: string
   degree?: string
   institution?: string
@@ -67,6 +69,8 @@ const teacherFields = {
   contractType: teachers.contractType,
   workload: teachers.workload,
   workShift: teachers.workShift,
+  availableDays: teachers.availableDays,
+  availableShifts: teachers.availableShifts,
   employmentStatus: teachers.employmentStatus,
   educationLevel: teachers.educationLevel,
   degree: teachers.degree,

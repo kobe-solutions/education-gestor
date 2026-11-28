@@ -62,6 +62,8 @@ export async function createTeacherService(schoolId: string, input: CreateTeache
     contractType: input.contractType,
     workload: input.workload,
     workShift: input.workShift,
+    ...(input.availableDays ? { availableDays: input.availableDays } : {}),
+    ...(input.availableShifts ? { availableShifts: input.availableShifts } : {}),
     educationLevel: input.educationLevel,
     degree: input.degree,
     institution: input.institution,

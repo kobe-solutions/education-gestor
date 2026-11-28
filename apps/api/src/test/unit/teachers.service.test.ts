@@ -36,6 +36,8 @@ const mockTeacher = {
   contractType: null as string | null,
   workload: null as string | null,
   workShift: null as string | null,
+  availableDays: [] as string[],
+  availableShifts: [] as string[],
   employmentStatus: 'ativo',
   educationLevel: null as string | null,
   degree: null as string | null,
